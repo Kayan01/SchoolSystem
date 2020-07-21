@@ -53,7 +53,7 @@ namespace NotificationSvc.Core.Services
                 BusMessageType = (int)BusMessageTypes.NEW_USER,
                 Data = JsonConvert.SerializeObject(data)
             });
-            result.Data = "Okay";
+            result.Data = "Successful";
             return result;
         }
     }
