@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using FacilitySvc.API.Utils;
-using NotificationSvc.Core.Context;
+using FacilitySvc.Core.Context;
 
 namespace FacilitySvc.API
 {

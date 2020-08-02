@@ -15,13 +15,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using NotificationSvc.Core.EventHandlers;
-using NotificationSvc.Core.Context;
+using FacilitySvc.Core.EventHandlers;
+using FacilitySvc.Core.Context;
 using Shared.PubSub;
 using Microsoft.AspNetCore.Hosting;
 using Shared.PubSub.KafkaImpl;
-using NotificationSvc.Core.Services.Interfaces;
-using NotificationSvc.Core.Services;
+using FacilitySvc.Core.Services.Interfaces;
+using FacilitySvc.Core.Services;
 using Shared.Net.WorkerService;
 
 namespace FacilitySvc.API

@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NotificationSvc.Core\NotificationSvc.Core.csproj" />
+    <ProjectReference Include="..\FacilitySvc.Core\FacilitySvc.Core.csproj" />
   </ItemGroup>
 
 
