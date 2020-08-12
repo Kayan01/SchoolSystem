@@ -34,6 +34,8 @@ namespace UserManagement.API
 
 
             services.AddScoped<ISchoolService, SchoolService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IStaffService, StaffService>();
             //services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
             //        HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
         }
