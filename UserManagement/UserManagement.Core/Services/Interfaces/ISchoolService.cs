@@ -12,7 +12,7 @@ namespace UserManagement.Core.Services.Interfaces
         Task<ResultModel<object>> GetAllSchools();
         Task<ResultModel<SchoolVM>> AddSchool(SchoolVM model);
         Task<ResultModel<SchoolVM>> GetSchoolById(long Id);
-        Task<ResultModel<bool>> UpdateSchool(SchoolUpdateVM model);
+        Task<ResultModel<SchoolUpdateVM>> UpdateSchool(SchoolUpdateVM model);
         Task<ResultModel<bool>> DeleteSchool(long Id);
     }
 }

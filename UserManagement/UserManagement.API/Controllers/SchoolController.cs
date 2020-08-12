@@ -25,7 +25,6 @@ namespace UserManagement.API.Controllers
         }
 
         [HttpPost]
-        // [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> AddSchool(SchoolVM model)
         {
@@ -85,7 +84,7 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> UpdateSchool(SchoolUpdateVM vM)

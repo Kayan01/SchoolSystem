@@ -7,7 +7,7 @@ namespace UserManagement.Core.ViewModels
 {
    public class SchoolVM
     {
-        public long Id { get; set; }
+        public long Id { get; internal set; }
         public string Name { get; set; }
 
         public static implicit operator SchoolVM(School model)

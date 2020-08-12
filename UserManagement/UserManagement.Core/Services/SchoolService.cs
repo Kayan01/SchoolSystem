@@ -57,10 +57,10 @@ namespace UserManagement.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<bool>> UpdateSchool(SchoolUpdateVM model)
+        public async Task<ResultModel<SchoolUpdateVM>> UpdateSchool(SchoolUpdateVM model)
         {
            var sch = await _schoolRepo.FirstOrDefaultAsync(model.Id);
-            var result = new ResultModel<bool>();
+            var result = new ResultModel<SchoolUpdateVM>();
 
             if (sch != null)
             {
@@ -71,7 +71,7 @@ namespace UserManagement.Core.Services
 
                 await  _schoolRepo.UpdateAsync(sch);
                 await _unitOfWork.SaveChangesAsync();
-                result.Data = true;
+                result.Data = model;
                 return result;
             }
 
