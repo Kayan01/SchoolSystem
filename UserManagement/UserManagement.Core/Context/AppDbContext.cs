@@ -36,5 +36,6 @@ namespace UserManagement.Core.Context
         public DbSet<School> Schools { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Staff> Staffs { get; set; }
+        public DbSet<SchoolClass> Classes { get; set; }
     }
 }
