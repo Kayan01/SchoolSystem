@@ -36,6 +36,7 @@ namespace UserManagement.Core.Services
         public async Task<ResultModel<SchoolVM>> AddSchool(SchoolVM model)
         {
             var result = new ResultModel<SchoolVM>();
+            //todo: add more props
             var school = _schoolRepo.Insert(new School {Name= model.Name });
             await _unitOfWork.SaveChangesAsync();
             model.Id = school.Id;
