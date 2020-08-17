@@ -5,11 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using UserManagement.Core.Models;
-using UserManagement.Core.Services.Interfaces;
-using UserManagement.Core.ViewModels.Staff;
+using Auth.Core.Models;
+using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels.Staff;
+using System.Linq;
 
-namespace UserManagement.Core.Services
+namespace Auth.Core.Services
 {
     public class StaffService : IStaffService
     {
@@ -20,16 +21,23 @@ namespace UserManagement.Core.Services
             _staffRepo = staffRepo;
             _unitOfWork = unitOfWork;
         }
-        public async Task<ResultModel<object>> GetAllStaff(long schoolId)
+        public async Task<ResultModel<object>> GetAllStaff()
         {
-            var result = new ResultModel<object>
+
+            var staffs = new List<Staff>();
+            var result = new ResultModel<object>();
+
+            staffs = await _staffRepo.GetAllListAsync();
+
+            if (staffs.Count > 0)
             {
-                Data = await _staffRepo.GetAllListAsync()
-            };
+                result.Data = staffs.Select(x => (StaffVM)x);
+            }
+
             return result;
         }
 
-        public async Task<ResultModel<StaffVM>> GetStaffById(long Id, long schoolId)
+        public async Task<ResultModel<StaffVM>> GetStaffById(long Id)
         {
             var result = new ResultModel<StaffVM>();
             var staff = await _staffRepo.FirstOrDefaultAsync(x => x.Id == Id);
@@ -42,17 +50,17 @@ namespace UserManagement.Core.Services
             result.Data = staff;
             return result;
         }
-        public async Task<ResultModel<StaffVM>> AddStaff(long schoolId, StaffVM model)
+        public async Task<ResultModel<StaffVM>> AddStaff(StaffVM model)
         {
             var result = new ResultModel<StaffVM>();
-            var staff = _staffRepo.Insert(new Staff {  SchoolId = schoolId,  FirstName = model.FirstName, LastName = model.LastName });
+            var staff = _staffRepo.Insert(new Staff { FirstName = model.FirstName, LastName = model.LastName });
             await _unitOfWork.SaveChangesAsync();
             model.Id = staff.Id;
             result.Data = model;
             return result;
         }
 
-        public async Task<ResultModel<bool>> DeleteStaff(long schoolId, long Id)
+        public async Task<ResultModel<bool>> DeleteStaff(long Id)
         {
             var result = new ResultModel<bool> { Data = false };
             await _staffRepo.DeleteAsync(Id);

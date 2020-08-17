@@ -2,17 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels.Staff;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
-using UserManagement.Core.Services.Interfaces;
-using UserManagement.Core.ViewModels.Staff;
 
 namespace UserManagement.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
+    [AllowAnonymous]
     public class StaffController : BaseController
     {
         private readonly IStaffService _staffService;
@@ -24,7 +26,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddStaff(StaffVM model, long schoolId)
+        public async Task<IActionResult> AddStaff(StaffVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -34,7 +36,7 @@ namespace UserManagement.API.Controllers
 
             try
             {
-                var result = await _staffService.AddStaff(schoolId, model);
+                var result = await _staffService.AddStaff(model);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -51,14 +53,12 @@ namespace UserManagement.API.Controllers
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllStaff([FromQuery] long schId)
+        public async Task<IActionResult> GetAllStaffInSchool()
         {
-            if (schId < 1)
-                return ApiResponse<string>(errors: "Please provide school Id");
 
             try
             {
-                var result = await _staffService.GetAllStaff(schId);
+                var result = await _staffService.GetAllStaff();
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -73,16 +73,14 @@ namespace UserManagement.API.Controllers
         [HttpGet()]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetStaffById([FromQuery] long schId, [FromQuery] long staffId)
+        public async Task<IActionResult> GetStaffById([FromQuery] long staffId)
         {
-            if (schId < 1)
-                return ApiResponse<string>(errors: "Please provide School Id");
-            else if (staffId < 1)
+            if (staffId < 1)
                 return ApiResponse<string>(errors: "Please provide Staff Id");
 
             try
             {
-                var result = await _staffService.GetStaffById(staffId, schId);
+                var result = await _staffService.GetStaffById(staffId);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -118,14 +116,14 @@ namespace UserManagement.API.Controllers
         [HttpDelete]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> DeleteStaff([FromQuery] long schId, [FromQuery] long id)
+        public async Task<IActionResult> DeleteStaff([FromQuery] long id)
         {
             if (id == 0)
                 return ApiResponse<string>(errors: "Invalid Id");
 
             try
             {
-                var result = await _staffService.DeleteStaff(schId,id);
+                var result = await _staffService.DeleteStaff(id);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

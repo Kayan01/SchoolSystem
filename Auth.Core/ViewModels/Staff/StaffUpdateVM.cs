@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UserManagement.Core.ViewModels.Staff
+namespace Auth.Core.ViewModels.Staff
 {
     public class StaffUpdateVM
     {
