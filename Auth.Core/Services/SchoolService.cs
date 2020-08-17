@@ -6,11 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using UserManagement.Core.Models;
-using UserManagement.Core.Services.Interfaces;
-using UserManagement.Core.ViewModels;
+using Auth.Core.Models;
+using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels;
+using System.Linq;
 
-namespace UserManagement.Core.Services
+namespace Auth.Core.Services
 {
     public class SchoolService : ISchoolService
     {
@@ -26,10 +27,16 @@ namespace UserManagement.Core.Services
 
         public async Task<ResultModel<object>> GetAllSchools()
         {
-            var result = new ResultModel<object>
+            var schools = new List<School>();
+            var result = new ResultModel<object>();
+
+            schools = await _schoolRepo.GetAllListAsync();
+
+            if (schools.Count > 0)
             {
-                Data = await _schoolRepo.GetAllListAsync()
-            };
+                result.Data = schools.Select(x => (SchoolVM)x);                
+            }
+           
             return result;
         }
 

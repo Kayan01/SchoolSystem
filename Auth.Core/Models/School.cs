@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace UserManagement.Core.Models
+namespace Auth.Core.Models
 {
     public class School : AuditedEntity<long>
     {

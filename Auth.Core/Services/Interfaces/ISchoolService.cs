@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using UserManagement.Core.ViewModels;
+using Auth.Core.ViewModels;
 
-namespace UserManagement.Core.Services.Interfaces
+namespace Auth.Core.Services.Interfaces
 {
    public interface ISchoolService
     {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using UserManagement.Core.Models;
+using Auth.Core.Models;
 
-namespace UserManagement.Core.ViewModels
+namespace Auth.Core.ViewModels
 {
    public class SchoolUpdateVM
     {   

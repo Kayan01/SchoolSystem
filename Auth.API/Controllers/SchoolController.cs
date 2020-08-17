@@ -2,19 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
-using UserManagement.Core.Services.Interfaces;
-using UserManagement.Core.ViewModels;
 
 namespace UserManagement.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
+    [AllowAnonymous]
     public class SchoolController : BaseController
     {
 
