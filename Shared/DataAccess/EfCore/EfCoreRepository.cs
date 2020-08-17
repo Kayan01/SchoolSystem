@@ -124,9 +124,10 @@ namespace Shared.DataAccess.EfCore
             //checks if entity requires a tenant id. if it does, it assigns the tenant id from the 
             //header of the request
 
-            var tenantId = _tenantProvider.GetTenantIdentifier();            
+                 
             if (typeof(ITenantModelType).IsAssignableFrom(typeof(TEntity)))
             { 
+                var tenantId = _tenantProvider.GetTenantIdentifier();       
                 var d = entity as ITenantModelType;
                 d.TenantId = tenantId;
                 return  Table.Add((TEntity)d).Entity;
@@ -298,10 +299,11 @@ namespace Shared.DataAccess.EfCore
 
         private IQueryable<TEntity> CheckForTenantFilter(IQueryable<TEntity> query)
         {
-            var tenantId = _tenantProvider.GetTenantIdentifier();
+           
             //add tenant filter
             if (typeof(ITenantModelType).IsAssignableFrom(typeof(TEntity)))
             {
+                var tenantId = _tenantProvider.GetTenantIdentifier();
                 query = Table.Cast<ITenantModelType>().Where(x => x.TenantId == tenantId).Cast<TEntity>();
             }
 
