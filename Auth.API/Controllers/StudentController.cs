@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels.Student;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
-using UserManagement.Core.Services.Interfaces;
-using UserManagement.Core.ViewModels.Student;
 
-namespace UserManagement.API.Controllers
+
+namespace Auth.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
+    [AllowAnonymous]
     public class StudentController : BaseController
     {
 
@@ -27,10 +30,8 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddStudent(StudentVM model, long? schoolId)
+        public async Task<IActionResult> AddStudent(StudentVM model)
         {
-            if (schoolId < 1 || schoolId == null)
-                return ApiResponse<string>(errors: "Please provide school Id");
 
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -40,7 +41,7 @@ namespace UserManagement.API.Controllers
 
             try
             {
-                var result = await _studentService.AddStudentToSchool(schoolId.Value, model);
+                var result = await _studentService.AddStudentToSchool(model);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -57,14 +58,11 @@ namespace UserManagement.API.Controllers
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllStudent([FromQuery] long? schId)
-        {
-            if (schId < 1 || schId == null)
-                return ApiResponse<string>(errors: "Please provide school Id");
-
+        public async Task<IActionResult> GetAllStudent()
+        { 
             try
             {
-                var result = await _studentService.GetAllStudentsInSchool(schId.Value);
+                var result = await _studentService.GetAllStudentsInSchool();
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -79,16 +77,14 @@ namespace UserManagement.API.Controllers
         [HttpGet()]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetStudentById([FromQuery] long? schId, [FromQuery] long? studId)
+        public async Task<IActionResult> GetStudentById([FromQuery] long? studId)
         {
-            if (schId == null || schId < 1)
-                return ApiResponse<string>(errors: "Please provide School Id");
-            else if(studId==null || studId < 1)
+            if(studId==null || studId < 1)
                 return ApiResponse<string>(errors: "Please provide Student Id");
 
             try
             {
-                var result = await _studentService.GetStudentById(studId.Value, schId.Value);
+                var result = await _studentService.GetStudentById(studId.Value);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UserManagement.Core.ViewModels.Student
+namespace Auth.Core.ViewModels.Student
 {
     public class StudentUpdateVM
     {

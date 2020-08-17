@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using UserManagement.Core.Models;
+using Auth.Core.Models;
 
-namespace UserManagement.Core.ViewModels.Student
+namespace Auth.Core.ViewModels.Student
 {
     public class StudentVM
     {
