@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Shared.DataAccess.EfCore;
 using Shared.DataAccess.Repository;
+using Shared.Tenancy;
 using Shared.Utils;
 using System;
 
@@ -37,7 +38,12 @@ namespace Shared.Utils
                     : repositoryImplementationWithPrimaryKey.MakeGenericType(entityTypeInfo.DeclaringType, entityTypeInfo.EntityType, primaryKeyType);
 
                 self.AddTransient(genericRepositoryTypeWithPrimaryKey, implTypeWithKey);
+
+               
             }
+
+            //registers tenant identifier service
+            self.AddTransient<ITenantResolutionStrategy, TenantHeaderResolutionStrategy>();
         }
     }
 }

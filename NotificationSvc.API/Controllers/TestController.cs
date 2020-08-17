@@ -14,6 +14,7 @@ using NotificationSvc.API.ViewModel;
 using NotificationSvc.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using NotificationSvc.Core.ViewModels;
+using Shared.Tenancy;
 
 namespace NotificationSvc.API.Controllers
 {
@@ -25,14 +26,35 @@ namespace NotificationSvc.API.Controllers
         private readonly INotificationService _notificationService;
 
         private readonly ILogger<TestController> _logger;
+        private readonly ITenantResolutionStrategy _tenant;
 
         public TestController(ILogger<TestController> logger, IFileStorageService fileStorageService,
-            INotificationService notificationService)
+            INotificationService notificationService, ITenantResolutionStrategy tenant)
         {
             _logger = logger;
             _fileStorageService = fileStorageService;
             _notificationService = notificationService;
+            _tenant = tenant;
         }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetTenant()
+        {
+            try
+            {
+                var result = await _notificationService.GetTestModelsWithTenants();
+                if (result == null)
+                    return ApiResponse<string>(errors: "No data");
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
 
         [HttpGet]
         [AllowAnonymous]

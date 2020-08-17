@@ -9,6 +9,7 @@ namespace NotificationSvc.Core.Services.Interfaces
 {
     public interface INotificationService
     {
+        Task<ResultModel<object>> GetTestModelsWithTenants();
         Task<ResultModel<object>> GetNotifications();
         Task<ResultModel<string>> TestBroadcast(string title);
         Task<ResultModel<NoticeVM>> AddNotification(NoticeVM model);
