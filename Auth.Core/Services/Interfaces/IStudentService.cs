@@ -9,7 +9,7 @@ namespace Auth.Core.Services.Interfaces
 {
     public interface IStudentService
     {
-        Task<ResultModel<object>> GetAllStudentsInSchool();
+        Task<ResultModel<List<StudentVM>>> GetAllStudentsInSchool();
         Task<ResultModel<StudentVM>> AddStudentToSchool(StudentVM model);
         Task<ResultModel<StudentVM>> GetStudentById(long Id);
         Task<ResultModel<StudentUpdateVM>> UpdateStudent(StudentUpdateVM model);
