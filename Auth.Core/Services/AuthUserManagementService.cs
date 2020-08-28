@@ -17,7 +17,7 @@ namespace Auth.Core.Services
         }
         public async Task<int?> AddUserAsync(string firstName, string lastName, string email, string phoneNumber, string pwd)
         {
-            var user = new User { Email = email, FirstName = firstName, LastName = lastName, PhoneNumber = phoneNumber };
+            var user = new User { Email = email, UserName = email, FirstName = firstName, LastName = lastName, PhoneNumber = phoneNumber };
 
            var result = await _userManager.CreateAsync(user, pwd);
 
