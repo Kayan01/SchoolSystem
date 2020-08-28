@@ -97,6 +97,12 @@ namespace Auth.API
             services.AddScoped<IFileStorageService, FileStorageService>();
             //services.AddTransient<IFileUploadService, FileUploadService>();        }
             services.AddScoped<ITestService, TestService>();
+
+            services.AddScoped<ISchoolService, SchoolService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IStaffService, StaffService>();
+            services.AddScoped<ISchoolClassService, SchoolClassService>();
+            services.AddScoped<IAuthUserManagement, AuthUserManagementService>();
             services.AddTransient<AuthHandler>();
         }
     }
