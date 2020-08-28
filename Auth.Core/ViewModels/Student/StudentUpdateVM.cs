@@ -8,5 +8,6 @@ namespace Auth.Core.ViewModels.Student
     {
         public string FirstName { get;  set; }
         public long Id { get;  set; }
+        public string LastName { get; set; }
     }
 }
