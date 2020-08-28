@@ -10,6 +10,8 @@ using Auth.Core.Models;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Shared.Utils;
 
 namespace Auth.Core.Services
 {
@@ -25,18 +27,16 @@ namespace Auth.Core.Services
         }
 
 
-        public async Task<ResultModel<object>> GetAllSchools()
+        public async Task<ResultModel<List<SchoolVM>>> GetAllSchools(int pageNumber, int pageSize)
         {
-            var schools = new List<School>();
-            var result = new ResultModel<object>();
+            var pagedData = await PaginatedList<SchoolVM>.CreateAsync(_schoolRepo.GetAll().Select(x => new SchoolVM { Id = x.Id, Name = x.Name }), pageNumber, pageSize);
 
-            schools = await _schoolRepo.GetAllListAsync();
-
-            if (schools.Count > 0)
+            var result = new ResultModel<List<SchoolVM>>
             {
-                result.Data = schools.Select(x => (SchoolVM)x);                
-            }
-           
+                Data = pagedData
+            };
+
+
             return result;
         }
 
@@ -44,7 +44,7 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<SchoolVM>();
             //todo: add more props
-            var school = _schoolRepo.Insert(new School {Name= model.Name });
+            var school = _schoolRepo.Insert(new School { Name = model.Name });
             await _unitOfWork.SaveChangesAsync();
             model.Id = school.Id;
             result.Data = model;
@@ -55,45 +55,57 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<SchoolVM>();
             var school = await _schoolRepo.FirstOrDefaultAsync(x => x.Id == Id);
-           
+
             if (school == null)
             {
                 return result;
             }
-                       
+
             result.Data = school;
             return result;
         }
 
         public async Task<ResultModel<SchoolUpdateVM>> UpdateSchool(SchoolUpdateVM model)
         {
-           var sch = await _schoolRepo.FirstOrDefaultAsync(model.Id);
+            var sch = await _schoolRepo.FirstOrDefaultAsync(model.Id);
             var result = new ResultModel<SchoolUpdateVM>();
 
-            if (sch != null)
+
+            if (sch == null)
             {
-                //TODO: add more props
-                sch.Name = model.Name;
-
-
-
-                await  _schoolRepo.UpdateAsync(sch);
-                await _unitOfWork.SaveChangesAsync();
-                result.Data = model;
+                result.AddError("School does not exist");
                 return result;
             }
 
+
+            //TODO: add more props
+            sch.Name = model.Name;
+
+
+            await _schoolRepo.UpdateAsync(sch);
+            await _unitOfWork.SaveChangesAsync();
+            result.Data = model;
             return result;
+
         }
 
         public async Task<ResultModel<bool>> DeleteSchool(long Id)
         {
-            var result = new ResultModel<bool> { Data = false };
+
+            var result = new ResultModel<bool>();
+
+            var sch = await _schoolRepo.FirstOrDefaultAsync(Id);
+            if (sch ==null)
+            {
+                result.AddError("School does not exist");
+                result.Data = false;
+                return result;
+            }
             await _schoolRepo.DeleteAsync(Id);
             await _unitOfWork.SaveChangesAsync();
             result.Data = true;
 
-            return result;            
+            return result;
         }
 
 

@@ -9,7 +9,7 @@ namespace Auth.Core.Services.Interfaces
 {
    public interface ISchoolService
     {
-        Task<ResultModel<object>> GetAllSchools();
+        Task<ResultModel<List<SchoolVM>>> GetAllSchools(int pageNumber, int pageSize);
         Task<ResultModel<SchoolVM>> AddSchool(SchoolVM model);
         Task<ResultModel<SchoolVM>> GetSchoolById(long Id);
         Task<ResultModel<SchoolUpdateVM>> UpdateSchool(SchoolUpdateVM model);
