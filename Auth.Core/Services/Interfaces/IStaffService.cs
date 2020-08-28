@@ -10,7 +10,7 @@ namespace Auth.Core.Services.Interfaces
    public interface IStaffService
     {
         Task<ResultModel<StaffVM>> AddStaff(StaffVM model);
-        Task<ResultModel<object>> GetAllStaff();
+        Task<ResultModel<List<StaffVM>>> GetAllStaff();
         Task<ResultModel<StaffVM>> GetStaffById(long Id);
         Task<ResultModel<StaffUpdateVM>> UpdateStaff(StaffUpdateVM model );
         Task<ResultModel<bool>> DeleteStaff(long Id);
