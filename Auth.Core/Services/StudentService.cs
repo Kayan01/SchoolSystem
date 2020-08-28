@@ -66,7 +66,7 @@ namespace Auth.Core.Services
             }
 
           
-            var stud = _studentRepo.Insert(new Student { Id = authResult.Value  });
+            var stud = _studentRepo.Insert(new Student { UserId = authResult.Value  });
             await _unitOfWork.SaveChangesAsync();
             model.Id = stud.Id;
             model.Id = stud.Id;
@@ -88,7 +88,7 @@ namespace Auth.Core.Services
 
 
             //delete auth user
-            var authResult = await _authUserManagement.DeleteUserAsync((int)Id);
+            var authResult = await _authUserManagement.DeleteUserAsync(std.UserId);
 
             if (authResult == false)
             {
@@ -118,7 +118,7 @@ namespace Auth.Core.Services
 
 
             //update auth user
-            var authResult = await _authUserManagement.UpdateUserAsync((int)model.Id, model.FirstName, model.LastName);
+            var authResult = await _authUserManagement.UpdateUserAsync(std.UserId, model.FirstName, model.LastName);
 
             if (authResult == false)
             {
