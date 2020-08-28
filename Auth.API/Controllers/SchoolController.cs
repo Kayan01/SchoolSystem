@@ -49,11 +49,11 @@ namespace UserManagement.API.Controllers
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetSchools()
+        public async Task<IActionResult> GetSchools([FromQuery] PagingVM vM)
         {
             try
             {
-                var result = await _schoolService.GetAllSchools();
+                var result = await _schoolService.GetAllSchools(vM.PageNumber, vM.PageSize);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -67,11 +67,17 @@ namespace UserManagement.API.Controllers
        
 
 
-        [HttpGet()]
+        [HttpGet("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetSchool([FromQuery] long id)
+        public async Task<IActionResult> GetSchool(long id)
         {
+            if ( id <= 0)
+            {
+                return ApiResponse<string>(errors: "Please provide valid school Id");
+            }
+
+
             try
             {
                 var result = await _schoolService.GetSchoolById(id);
@@ -107,13 +113,13 @@ namespace UserManagement.API.Controllers
         }
 
 
-        [HttpDelete()]
+        [HttpDelete("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> DeleteSchool([FromQuery]long id)
+        public async Task<IActionResult> DeleteSchool(long id)
         {
-            if (id == 0)
-                return ApiResponse<string>(errors: "Invalid Id");
+            if (id < 1)
+                return ApiResponse<string>(errors: "Invalid school Id");
 
             try
             {

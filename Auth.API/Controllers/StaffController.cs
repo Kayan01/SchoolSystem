@@ -70,10 +70,10 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpGet()]
+        [HttpGet("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetStaffById([FromQuery] long staffId)
+        public async Task<IActionResult> GetStaffById(long staffId)
         {
             if (staffId < 1)
                 return ApiResponse<string>(errors: "Please provide Staff Id");
@@ -113,10 +113,10 @@ namespace UserManagement.API.Controllers
         }
 
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> DeleteStaff([FromQuery] long id)
+        public async Task<IActionResult> DeleteStaff( long id)
         {
             if (id == 0)
                 return ApiResponse<string>(errors: "Invalid Id");

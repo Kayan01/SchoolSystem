@@ -74,17 +74,17 @@ namespace Auth.API.Controllers
             }
         }
 
-        [HttpGet()]
+        [HttpGet("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetStudentById([FromQuery] long? studId)
+        public async Task<IActionResult> GetStudentById(long id)
         {
-            if(studId==null || studId < 1)
-                return ApiResponse<string>(errors: "Please provide Student Id");
+            if(id < 1)
+                return ApiResponse<string>(errors: "Please provide valid Student Id");
 
             try
             {
-                var result = await _studentService.GetStudentById(studId.Value);
+                var result = await _studentService.GetStudentById(id);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -117,17 +117,17 @@ namespace Auth.API.Controllers
         }
 
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> DeleteStudent([FromQuery] long? id)
+        public async Task<IActionResult> DeleteStudent(long id)
         {
-            if (id == null || id <1)
-                return ApiResponse<string>(errors: "Invalid Id");
+            if ( id <1)
+                return ApiResponse<string>(errors: "Invalid student Id");
 
             try
             {
-                var result = await _studentService.DeleteStudent(id.Value);
+                var result = await _studentService.DeleteStudent(id);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
