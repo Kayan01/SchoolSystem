@@ -11,6 +11,7 @@ using Auth.Core.Models;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Student;
 using Shared.Entities;
+using Shared.Utils;
 
 namespace Auth.Core.Services
 {
@@ -27,13 +28,14 @@ namespace Auth.Core.Services
             _unitOfWork = unitOfWork;
             _authUserManagement = authUserManagement;
         }
-        public async Task<ResultModel<List<StudentVM>>> GetAllStudentsInSchool()
+        public async Task<ResultModel<List<StudentVM>>> GetAllStudentsInSchool(int pageNumber, int pageSize)
         {
+
+            var pagedData = await PaginatedList<StudentVM>.CreateAsync(_studentRepo.GetAll().Select(x => new StudentVM { Id = x.Id }), pageNumber, pageSize);
+
             var result = new ResultModel<List<StudentVM>>
             {
-                Data = await _studentRepo.GetAll()
-                .Select(x => new StudentVM { Id = x.Id })
-                .ToListAsync()
+                Data = pagedData
             };
             return result;
         }

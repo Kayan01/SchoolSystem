@@ -11,6 +11,7 @@ using Auth.Core.ViewModels.Staff;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Auth.Core.Models.Users;
+using Shared.Utils;
 
 namespace Auth.Core.Services
 {
@@ -27,14 +28,13 @@ namespace Auth.Core.Services
             _authUserManagement = authUserManagement;
             _teachingStaffRepo = teachingStaffRepo;
         }
-        public async Task<ResultModel<List<StaffVM>>> GetAllStaff()
+        public async Task<ResultModel<List<StaffVM>>> GetAllStaff(int pageNumber, int pageSize)
         {
+            var pagedData = await PaginatedList<StaffVM>.CreateAsync(_staffRepo.GetAll().Select(x => new StaffVM { Id = x.Id}), pageNumber, pageSize);
 
             var result = new ResultModel<List<StaffVM>>
             {
-                Data = await _staffRepo.GetAll()
-               .Select(x => new StaffVM { Id = x.Id})
-               .ToListAsync()
+                Data = pagedData
 
             };
 
@@ -72,7 +72,7 @@ namespace Auth.Core.Services
 
             var staff = _staffRepo.Insert(new Staff { UserId = authResult.Value, StaffType = staffType });
 
-           
+
             await _unitOfWork.SaveChangesAsync();
 
             //check if staff is teacher and adds to teachers table
@@ -148,5 +148,6 @@ namespace Auth.Core.Services
             result.Data = model;
             return result;
         }
+
     }
 }

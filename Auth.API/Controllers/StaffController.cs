@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Staff;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -53,12 +54,12 @@ namespace UserManagement.API.Controllers
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllStaffInSchool()
+        public async Task<IActionResult> GetAllStaffInSchool([FromQuery] PagingVM vM)
         {
 
             try
             {
-                var result = await _staffService.GetAllStaff();
+                var result = await _staffService.GetAllStaff(vM.PageNumber, vM.PageSize);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
