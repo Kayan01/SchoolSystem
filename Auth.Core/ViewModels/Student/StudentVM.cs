@@ -12,7 +12,7 @@ namespace Auth.Core.ViewModels.Student
         public string LastName { get;  set; }
         public string Email { get;  set; }
         public string PhoneNumber { get; set; }
-        public string Password { get; set; }
+        public string Password { internal get; set; }
 
         public static implicit operator StudentVM(Models.Student model)
         {
