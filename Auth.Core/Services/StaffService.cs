@@ -12,6 +12,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Auth.Core.Models.Users;
 using Shared.Utils;
+using Auth.Core.Context;
 
 namespace Auth.Core.Services
 {
@@ -21,16 +22,31 @@ namespace Auth.Core.Services
         private readonly IRepository<TeachingStaff, long> _teachingStaffRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAuthUserManagement _authUserManagement;
-        public StaffService(IRepository<Staff, long> staffRepo, IUnitOfWork unitOfWork, IAuthUserManagement authUserManagement, IRepository<TeachingStaff, long> teachingStaffRepo)
+        private readonly AppDbContext _appDbContext;
+        public StaffService(IRepository<Staff, long> staffRepo, IUnitOfWork unitOfWork, IAuthUserManagement authUserManagement, IRepository<TeachingStaff, long> teachingStaffRepo, AppDbContext appDbContext)
         {
             _staffRepo = staffRepo;
             _unitOfWork = unitOfWork;
             _authUserManagement = authUserManagement;
             _teachingStaffRepo = teachingStaffRepo;
+            _appDbContext = appDbContext;
         }
         public async Task<ResultModel<List<StaffVM>>> GetAllStaff(int pageNumber, int pageSize)
         {
-            var pagedData = await PaginatedList<StaffVM>.CreateAsync(_staffRepo.GetAll().Select(x => new StaffVM { Id = x.Id}), pageNumber, pageSize);
+            //use appdbcontext directly so that we can do a join with the auth users table
+            var query = _appDbContext.Staffs.Join(
+               _appDbContext.Users, student => student.UserId, authUser => authUser.Id,
+               (student, authUser) => new StaffVM
+               {
+                   FirstName = authUser.FirstName,
+                   LastName = authUser.LastName,
+                   Email = authUser.Email,
+                   PhoneNumber = authUser.PhoneNumber
+
+
+
+               });
+            var pagedData = await PaginatedList<StaffVM>.CreateAsync(query, pageNumber, pageSize);
 
             var result = new ResultModel<List<StaffVM>>
             {

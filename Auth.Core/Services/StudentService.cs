@@ -12,6 +12,8 @@ using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Student;
 using Shared.Entities;
 using Shared.Utils;
+using Microsoft.AspNetCore.Identity;
+using Auth.Core.Context;
 
 namespace Auth.Core.Services
 {
@@ -20,18 +22,36 @@ namespace Auth.Core.Services
         private readonly IRepository<Student, long> _studentRepo;
         private readonly IAuthUserManagement _authUserManagement;
         private readonly IRepository<School, long> _schoolRepo;
+
+        private readonly AppDbContext _appDbContext;
         private readonly IUnitOfWork _unitOfWork;
-        public StudentService(IRepository<Student, long> studentRepo, IRepository<School, long> schoolRepo, IUnitOfWork unitOfWork, IAuthUserManagement authUserManagement)
+        public StudentService(IRepository<Student, long> studentRepo, IRepository<School, long> schoolRepo, IUnitOfWork unitOfWork, IAuthUserManagement authUserManagement, AppDbContext appDbContext)
         {
             _studentRepo = studentRepo;
             _schoolRepo = schoolRepo;
             _unitOfWork = unitOfWork;
             _authUserManagement = authUserManagement;
+            _appDbContext = appDbContext;
         }
         public async Task<ResultModel<List<StudentVM>>> GetAllStudentsInSchool(int pageNumber, int pageSize)
         {
 
-            var pagedData = await PaginatedList<StudentVM>.CreateAsync(_studentRepo.GetAll().Select(x => new StudentVM { Id = x.Id }), pageNumber, pageSize);
+            //use appdbcontext directly so that we can do a join with the auth users table
+            var query = _appDbContext.Students.Join(
+                _appDbContext.Users, student => student.UserId, authUser => authUser.Id,
+                (student, authUser) => new StudentVM
+                {
+                    FirstName = authUser.FirstName,
+                    LastName = authUser.LastName,
+                    Email = authUser.Email,
+                    PhoneNumber = authUser.PhoneNumber
+
+
+
+                });
+
+
+            var pagedData = await PaginatedList<StudentVM>.CreateAsync(query, pageNumber, pageSize);
 
             var result = new ResultModel<List<StudentVM>>
             {
