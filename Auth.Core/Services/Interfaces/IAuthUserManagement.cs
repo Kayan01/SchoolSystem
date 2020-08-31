@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Shared.Entities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +13,7 @@ namespace Auth.Core.Services.Interfaces
         Task<int?> AddUserAsync(string firstName, string lastName, string email, string phoneNumber, string pwd);
        Task< bool> UpdateUserAsync(int id, string firstName, string lastName);
         Task<bool> DeleteUserAsync(int id);
+        IQueryable<User> GetAllAuthUsersAsync();
 
     }
 }
