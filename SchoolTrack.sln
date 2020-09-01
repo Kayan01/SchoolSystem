@@ -17,13 +17,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FacilitySvc", "FacilitySvc", "{5CC1C4BC-EC30-47AF-8ADE-A5796311739E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationSvc.API", "NotificationSvc.API\NotificationSvc.API.csproj", "{09730609-0225-45B1-A146-70B2F5C15D9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotificationSvc.API", "NotificationSvc.API\NotificationSvc.API.csproj", "{09730609-0225-45B1-A146-70B2F5C15D9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationSvc.Core", "NotificationSvc.Core\NotificationSvc.Core.csproj", "{4490BBE8-BF3D-4424-BE2A-1C1C844B876D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotificationSvc.Core", "NotificationSvc.Core\NotificationSvc.Core.csproj", "{4490BBE8-BF3D-4424-BE2A-1C1C844B876D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FacilitySvc.API", "FacilitySvc.API\FacilitySvc.API.csproj", "{93CD9A19-6481-4A86-9F85-7400B232C3DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FacilitySvc.API", "FacilitySvc.API\FacilitySvc.API.csproj", "{93CD9A19-6481-4A86-9F85-7400B232C3DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FacilitySvc.Core", "FacilitySvc.Core\FacilitySvc.Core.csproj", "{1EBD5DD7-7278-4F78-A0EB-C55B17C168B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FacilitySvc.Core", "FacilitySvc.Core\FacilitySvc.Core.csproj", "{1EBD5DD7-7278-4F78-A0EB-C55B17C168B0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UserManagement", "UserManagement", "{C72E17FB-4533-4A84-9050-5C7A176E4306}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserManagement.API", "UserManagement\UserManagement.API\UserManagement.API.csproj", "{E5DFE922-1EC1-4358-94B5-D8B9A3E37C70}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserManagement.Core", "UserManagement\UserManagement.Core\UserManagement.Core.csproj", "{AD1419F1-EBFF-4707-9743-12FFEFD34608}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +65,14 @@ Global
 		{1EBD5DD7-7278-4F78-A0EB-C55B17C168B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EBD5DD7-7278-4F78-A0EB-C55B17C168B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EBD5DD7-7278-4F78-A0EB-C55B17C168B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5DFE922-1EC1-4358-94B5-D8B9A3E37C70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5DFE922-1EC1-4358-94B5-D8B9A3E37C70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5DFE922-1EC1-4358-94B5-D8B9A3E37C70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5DFE922-1EC1-4358-94B5-D8B9A3E37C70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD1419F1-EBFF-4707-9743-12FFEFD34608}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD1419F1-EBFF-4707-9743-12FFEFD34608}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD1419F1-EBFF-4707-9743-12FFEFD34608}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD1419F1-EBFF-4707-9743-12FFEFD34608}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,6 +85,8 @@ Global
 		{4490BBE8-BF3D-4424-BE2A-1C1C844B876D} = {62FE123B-A375-4B0C-9AA4-2E914C6A14C6}
 		{93CD9A19-6481-4A86-9F85-7400B232C3DD} = {5CC1C4BC-EC30-47AF-8ADE-A5796311739E}
 		{1EBD5DD7-7278-4F78-A0EB-C55B17C168B0} = {5CC1C4BC-EC30-47AF-8ADE-A5796311739E}
+		{E5DFE922-1EC1-4358-94B5-D8B9A3E37C70} = {C72E17FB-4533-4A84-9050-5C7A176E4306}
+		{AD1419F1-EBFF-4707-9743-12FFEFD34608} = {C72E17FB-4533-4A84-9050-5C7A176E4306}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {89CAD77C-CB2E-40C2-8FFC-84A8FBEEB4B2}
