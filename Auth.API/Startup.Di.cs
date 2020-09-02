@@ -103,6 +103,7 @@ namespace Auth.API
             services.AddScoped<IStaffService, StaffService>();
             services.AddScoped<ISchoolClassService, SchoolClassService>();
             services.AddScoped<IAuthUserManagement, AuthUserManagementService>();
+            services.AddScoped<IDocumentService, DocumentService>();
             services.AddTransient<AuthHandler>();
         }
     }

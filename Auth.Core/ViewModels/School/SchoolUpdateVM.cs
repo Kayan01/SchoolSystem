@@ -12,7 +12,7 @@ namespace Auth.Core.ViewModels
         public long Id { get; set; }
         public string Name { get; set; }
 
-        public static implicit operator SchoolUpdateVM(School model)
+        public static implicit operator SchoolUpdateVM(Models.School model)
         {
             return model == null ? null : new SchoolUpdateVM
             {

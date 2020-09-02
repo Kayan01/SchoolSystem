@@ -12,6 +12,12 @@ using Auth.Core.ViewModels;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Shared.Utils;
+using Auth.Core.ViewModels.School;
+using Shared.Entities;
+using Shared.FileStorage;
+using Microsoft.OpenApi.Extensions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Auth.Core.Models.Contacts;
 
 namespace Auth.Core.Services
 {
@@ -19,11 +25,15 @@ namespace Auth.Core.Services
     {
         private readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IFileStorageService _fileStorageService;
+        private readonly IDocumentService _documentService;
 
-        public SchoolService(IRepository<School, long> schoolRepo, IUnitOfWork unitOfWork)
+        public SchoolService(IRepository<School, long> schoolRepo, IUnitOfWork unitOfWork, IFileStorageService fileStorageService, IDocumentService documentService)
         {
             _unitOfWork = unitOfWork;
             _schoolRepo = schoolRepo;
+            _fileStorageService = fileStorageService;
+            _documentService = documentService;
         }
 
 
@@ -40,11 +50,42 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<SchoolVM>> AddSchool(SchoolVM model)
+        public async Task<ResultModel<CreateSchoolVM>> AddSchool(CreateSchoolVM model)
         {
-            var result = new ResultModel<SchoolVM>();
+            var result = new ResultModel<CreateSchoolVM>();
+
+            //save logo
+            var files = _documentService.TryUploadSupportingDocuments(model.Documents);
+
+            if (files.Count() != model.Documents.Count())
+            {
+                result.AddError("Some files could not be uploaded");
+
+                return result;
+            }
+
             //todo: add more props
-            var school = _schoolRepo.Insert(new School { Name = model.Name });
+            var contactDetails = new SchoolContactDetails
+            {
+                Email = model.ContactEmail,
+                FirstName = model.ContactFirstName,
+                LastName = model.ContactLastName,
+                PhoneNo = model.ContactPhoneNo
+            };
+
+            var school = _schoolRepo.Insert(
+                new School
+                {
+                    Name = model.Name,
+                    Address = model.Address,
+                    City = model.City,
+                    ContactDetails = contactDetails,
+                    Country = model.Country,
+                    State = model.State,
+                    WebsiteAddress = model.WebsiteAddress,
+                    FileUploads = files
+                });
+
             await _unitOfWork.SaveChangesAsync();
             model.Id = school.Id;
             result.Data = model;
@@ -108,6 +149,7 @@ namespace Auth.Core.Services
             return result;
         }
 
+      
 
     }
 }

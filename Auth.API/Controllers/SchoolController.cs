@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
+using Auth.Core.ViewModels.School;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,10 +28,13 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSchool(SchoolVM model)
+        public async Task<IActionResult> AddSchool([FromForm]CreateSchoolVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
+
+            if (!ModelState.IsValid)
+                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
