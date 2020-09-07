@@ -1,5 +1,4 @@
-﻿using Auth.Core.Models.JoinTables;
-using Shared.Entities.Auditing;
+﻿using Shared.Entities.Auditing;
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;

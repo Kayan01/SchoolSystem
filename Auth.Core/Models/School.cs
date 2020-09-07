@@ -15,9 +15,7 @@ namespace Auth.Core.Models
         public string City { get; set; }
         public string State { get; set; }
         public string Country { get; set; }
-        public long ContactDetailsId { get; set; }
         public SchoolContactDetails ContactDetails { get; set; }
         public List<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
-
     }
 }
