@@ -12,7 +12,7 @@ using Shared.ViewModels.Enums;
 
 namespace Auth.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]/[action]")]
     [ApiController]
     public class ClassArmController : BaseController
     {
@@ -26,7 +26,7 @@ namespace Auth.API.Controllers
         [HttpPost]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddClassGroup(ClassArmVM model)
+        public async Task<IActionResult> AddClassArm(ClassArmVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -48,14 +48,14 @@ namespace Auth.API.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> DeleteClassGroup(long id)
+        public async Task<IActionResult> DeleteClassArm(long id)
         {
             if (id < 1)
             {
-                return ApiResponse<string>(errors: "Please provide valid class group Id");
+                return ApiResponse<string>(errors: "Please provide valid class Arm Id");
             }
 
             try
@@ -76,7 +76,7 @@ namespace Auth.API.Controllers
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllClassGroups()
+        public async Task<IActionResult> GetAllClassArms()
         {
             try
             {
@@ -96,7 +96,7 @@ namespace Auth.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateClassGroup(ClassArmVM model)
+        public async Task<IActionResult> UpdateClassArm(ClassArmVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -105,7 +105,7 @@ namespace Auth.API.Controllers
 
             try
             {
-                var result = await _classArmService.UpdateClassGroup(model);
+                var result = await _classArmService.UpdateClassArm(model);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

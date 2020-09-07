@@ -55,7 +55,7 @@ namespace Auth.Core.Services.Class
             return result;
         }
 
-        public async Task<ResultModel<ClassArmVM>> UpdateClassGroup(ClassArmVM model)
+        public async Task<ResultModel<ClassArmVM>> UpdateClassArm(ClassArmVM model)
         {
             var classArm = await _classArmRepo.FirstOrDefaultAsync(model.Id);
             var result = new ResultModel<ClassArmVM>();

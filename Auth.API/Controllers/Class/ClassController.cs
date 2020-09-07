@@ -21,13 +21,10 @@ namespace UserManagement.API.Controllers
     {
         private readonly ISchoolClassService _classService;
 
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        public ClassController(ISchoolClassService classService, IHttpContextAccessor httpContextAccesso)
+        public ClassController(ISchoolClassService classService)
         {
             _classService = classService;
-            _httpContextAccessor = httpContextAccesso;
         }
-
 
         [HttpPost]
         //[Authorize]
@@ -55,59 +52,12 @@ namespace UserManagement.API.Controllers
         [HttpPost]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddClassGroup(ClassGroupVM model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
-            }
-
-            try
-            {
-                var result = await _classService.AddClassGroup(model);
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-      
-        [HttpPost]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSection(ClassSectionVM model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
-            }
-
-            try
-            {
-                var result = await _classService.AddSection(model);
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-
-        [HttpPost]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> AddStudentToClass(ClassStudentVM vm)
         {
             if (!ModelState.IsValid)
             {
                 return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
             }
-
 
             try
             {
@@ -132,7 +82,6 @@ namespace UserManagement.API.Controllers
                 return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
             }
 
-
             try
             {
                 var result = await _classService.AssignSubjectToClass(vm);
@@ -156,7 +105,6 @@ namespace UserManagement.API.Controllers
                 return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
             }
 
-
             try
             {
                 var result = await _classService.AssignTeacherToClass(vm);
@@ -170,7 +118,7 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> DeleteClass(long id)
@@ -179,7 +127,6 @@ namespace UserManagement.API.Controllers
             {
                 return ApiResponse<string>(errors: "Please provide valid class Id");
             }
-
 
             try
             {
@@ -194,60 +141,11 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpDelete]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> DeleteClassGroup(long id)
-        {
-            if (id < 1)
-            {
-                return ApiResponse<string>(errors: "Please provide valid class group Id");
-            }
-
-
-            try
-            {
-                var result = await _classService.DeleteClassGroup(id);
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-
-
-        [HttpDelete]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> DeleteSection(long id)
-        {
-            if (id < 1)
-            {
-                return ApiResponse<string>(errors: "Please provide valid section Id");
-            }
-
-
-            try
-            {
-                var result = await _classService.DeleteSection(id);
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetAllClasses()
         {
-
             try
             {
                 var result = await _classService.GetAllClasses();
@@ -257,48 +155,11 @@ namespace UserManagement.API.Controllers
             }
             catch (Exception ex)
             {
-               return HandleError(ex);
-            }
-        }
-
-        [HttpGet]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllClassGroups()
-        {
-
-            try
-            {
-                var result = await _classService.GetAllClassGroups();
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
                 return HandleError(ex);
             }
         }
 
-        [HttpGet]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllSections()
-        {
-
-            try
-            {
-                var result = await _classService.GetAllSections();
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-        [HttpGet]
+        [HttpGet("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetClassById(long id)
@@ -307,7 +168,6 @@ namespace UserManagement.API.Controllers
             {
                 return ApiResponse<string>(errors: "Please provide valid class Id");
             }
-
 
             try
             {
@@ -334,7 +194,7 @@ namespace UserManagement.API.Controllers
 
             try
             {
-                var result = await _classService.GetAllClassGroups();
+                var result = await _classService.GetClassByIdWithStudents(id);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -344,6 +204,7 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
+
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
@@ -357,52 +218,6 @@ namespace UserManagement.API.Controllers
             try
             {
                 var result = await _classService.UpdateClass(model);
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-        
-        [HttpPut]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateClassGroup(ClassGroupVM model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
-            }
-
-            try
-            {
-                var result = await _classService.UpdateClassGroup(model);
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-
-        [HttpPut]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSection(ClassSectionUpdateVM model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
-            }
-
-            try
-            {
-                var result = await _classService.UpdateSection(model);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

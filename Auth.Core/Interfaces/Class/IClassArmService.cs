@@ -13,6 +13,6 @@ namespace Auth.Core.Services.Interfaces.Class
 
         Task<ResultModel<List<ClassArmVM>>> GetAllClassArms();
 
-        Task<ResultModel<ClassArmVM>> UpdateClassGroup(ClassArmVM model);
+        Task<ResultModel<ClassArmVM>> UpdateClassArm(ClassArmVM model);
     }
 }
