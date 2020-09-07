@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Shared.ViewModels.Enums;
+using Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;

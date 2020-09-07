@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Shared.ViewModels.Enums
+namespace Shared.Enums
 {
     public enum DocumentType
     {
