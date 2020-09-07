@@ -39,3 +39,10 @@ These are the functionalities that have been implemented, this would be updated 
 - ### User Management
 
 - ### Student Management
+
+## Microservices
+
+- ### Authentication Service port:58101
+- ### Notification Service port:58102
+- ### Facility Service port:58103
+- ### Learning Service port:58104
