@@ -31,7 +31,6 @@
     <Folder Include="error-logs\" />
     <Folder Include="FileStore\" />
     <Folder Include="logs\" />
-    <Folder Include="Utils\" />
   </ItemGroup>
 
   <ItemGroup>

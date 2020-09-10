@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using LearningSvc.API.Utils;
+using Shared.Utils;
 
 namespace LearningSvc.API
 {
