@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NotificationSvc.Core.Context
 {
@@ -32,7 +33,18 @@ namespace NotificationSvc.Core.Context
             modelBuilder.Ignore(typeof(UserToken));
         }
 
-        public DbSet<FileUpload> FileUploads { get; set; }
         public DbSet<Notice> Notices { get; set; }
+
+        public DbSet<TestModel> TestModels { get; set; }
+
+        public async Task AddSampleData()
+        {
+            TestModels.Add(new TestModel { TenantId = 1, Name = "Frank" });
+            TestModels.Add(new TestModel { TenantId = 1, Name = "John" });
+            TestModels.Add(new TestModel { TenantId = 2, Name = "Sani" });
+            TestModels.Add(new TestModel { TenantId = 2, Name = "Chisom" });
+
+          await  SaveChangesAsync();
+        }
     }
 }

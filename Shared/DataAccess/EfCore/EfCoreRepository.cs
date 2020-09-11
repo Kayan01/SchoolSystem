@@ -5,16 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading;
 using System.Data.Common;
 using System.Data;
 using System.Threading.Tasks;
 using Shared.DataAccess.Repository;
 using Shared.Collections;
+using Shared.Tenancy;
 
 namespace Shared.DataAccess.EfCore
 {
+
     /// <summary>
     /// Implements IRepository for Entity Framework.
     /// </summary>
@@ -54,12 +55,15 @@ namespace Shared.DataAccess.EfCore
 
         private readonly IDbContextProvider<TDbContext> _dbContextProvider;
 
+        private readonly ITenantResolutionStrategy _tenantProvider;
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="dbContextProvider"></param>
-        public EfCoreRepository(IDbContextProvider<TDbContext> dbContextProvider)
+        public EfCoreRepository(IDbContextProvider<TDbContext> dbContextProvider, ITenantResolutionStrategy tenantProvider)
         {
+            _tenantProvider = tenantProvider;
             _dbContextProvider = dbContextProvider;
         }
 
@@ -71,6 +75,8 @@ namespace Shared.DataAccess.EfCore
         public override IQueryable<TEntity> GetAllIncluding(params Expression<Func<TEntity, object>>[] propertySelectors)
         {
             var query = Table.AsQueryable();
+
+            query = CheckForTenantFilter(query);
 
             if (!propertySelectors.IsNullOrEmpty())
             {
@@ -115,7 +121,22 @@ namespace Shared.DataAccess.EfCore
 
         public override TEntity Insert(TEntity entity)
         {
-            return Table.Add(entity).Entity;
+            //checks if entity requires a tenant id. if it does, it assigns the tenant id from the 
+            //header of the request
+
+                 
+            if (typeof(ITenantModelType).IsAssignableFrom(typeof(TEntity)))
+            { 
+                var tenantId = _tenantProvider.GetTenantIdentifier();       
+                var d = entity as ITenantModelType;
+                d.TenantId = tenantId;
+                return  Table.Add((TEntity)d).Entity;
+            }
+            else
+            {
+                return Table.Add(entity).Entity;
+            }
+
         }
 
         public override Task<TEntity> InsertAsync(TEntity entity)
@@ -275,14 +296,27 @@ namespace Shared.DataAccess.EfCore
 
             return entry?.Entity as TEntity;
         }
+
+        private IQueryable<TEntity> CheckForTenantFilter(IQueryable<TEntity> query)
+        {
+           
+            //add tenant filter
+            if (typeof(ITenantModelType).IsAssignableFrom(typeof(TEntity)))
+            {
+                var tenantId = _tenantProvider.GetTenantIdentifier();
+                query = Table.Cast<ITenantModelType>().Where(x => x.TenantId == tenantId).Cast<TEntity>();
+            }
+
+            return query;
+        }
     }
 
     public class EfCoreRepository<TDbContext, TEntity> : EfCoreRepository<TDbContext, TEntity, int>, IRepository<TEntity>
         where TEntity : class, IEntity<int>
         where TDbContext : DbContext
     {
-        public EfCoreRepository(IDbContextProvider<TDbContext> dbContextProvider)
-            : base(dbContextProvider)
+        public EfCoreRepository(IDbContextProvider<TDbContext> dbContextProvider, ITenantResolutionStrategy tenantProvider)
+            : base(dbContextProvider,tenantProvider)
         {
         }
     }

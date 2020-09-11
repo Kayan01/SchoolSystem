@@ -13,11 +13,15 @@ namespace Shared.Utils
     {
         public static void UseCustomSwaggerApi(this IApplicationBuilder app, string name = "Base Template API V1")
         {
-            app.UseSwagger()
-               .UseSwaggerUI(c =>
-               {
-                   c.SwaggerEndpoint("/swagger/v1/swagger.json", name);
-               });
+            app.UseSwagger(c =>
+            {
+                c.RouteTemplate = "swagger/{documentname}/swagger.json";
+            })
+            .UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("../swagger/v1/swagger.json", name);
+                c.DocExpansion(DocExpansion.None);
+            });
         }
 
         public static IServiceCollection AddSwagger(this IServiceCollection services, string title = "Base Template API")
