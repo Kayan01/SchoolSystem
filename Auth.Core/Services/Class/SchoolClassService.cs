@@ -59,7 +59,12 @@ namespace Auth.Core.Services
             }
 
             //todo: add more props
-            var cls = new SchoolClass { Name = model.Name, ClassArm = classArm.Name, SchoolSectionId = model.SectionId };
+            var cls = new SchoolClass
+            {
+                Name = model.Name,
+                ClassArm = classArm.Name,
+                SchoolSectionId = model.SectionId
+            };
 
             var id = _classRepo.InsertAndGetId(cls);
             await _unitOfWork.SaveChangesAsync();
@@ -196,7 +201,11 @@ namespace Auth.Core.Services
             var result = new ResultModel<ListClassVM>();
 
             //gets class with students.
-            var @class = await _classRepo.GetAll().Include(x => x.Students).Where(x => x.Id == Id).Select(x => (ListClassVM)x).FirstOrDefaultAsync();
+            var @class = await _classRepo.GetAll()
+                .Include(x => x.Students)
+                .Where(x => x.Id == Id)
+                .Select(x => (ListClassVM)x)
+                .FirstOrDefaultAsync();
 
             if (@class == null)
             {
