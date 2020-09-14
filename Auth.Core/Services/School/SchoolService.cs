@@ -36,16 +36,17 @@ namespace Auth.Core.Services
             _documentService = documentService;
         }
 
-
         public async Task<ResultModel<List<SchoolVM>>> GetAllSchools(int pageNumber, int pageSize)
         {
-            var pagedData = await PaginatedList<SchoolVM>.CreateAsync(_schoolRepo.GetAll().Select(x => new SchoolVM { Id = x.Id, Name = x.Name }), pageNumber, pageSize);
+            var query = _schoolRepo.GetAll()
+                .Select(x => new SchoolVM { Id = x.Id, Name = x.Name });
+
+            var pagedData = await PaginatedList<SchoolVM>.CreateAsync(query, pageNumber, pageSize);
 
             var result = new ResultModel<List<SchoolVM>>
             {
                 Data = pagedData
             };
-
 
             return result;
         }
@@ -111,32 +112,27 @@ namespace Auth.Core.Services
             var sch = await _schoolRepo.FirstOrDefaultAsync(model.Id);
             var result = new ResultModel<SchoolUpdateVM>();
 
-
             if (sch == null)
             {
                 result.AddError("School does not exist");
                 return result;
             }
 
-
             //TODO: add more props
             sch.Name = model.Name;
-
 
             await _schoolRepo.UpdateAsync(sch);
             await _unitOfWork.SaveChangesAsync();
             result.Data = model;
             return result;
-
         }
 
         public async Task<ResultModel<bool>> DeleteSchool(long Id)
         {
-
             var result = new ResultModel<bool>();
 
             var sch = await _schoolRepo.FirstOrDefaultAsync(Id);
-            if (sch ==null)
+            if (sch == null)
             {
                 result.AddError("School does not exist");
                 result.Data = false;
@@ -148,8 +144,5 @@ namespace Auth.Core.Services
 
             return result;
         }
-
-      
-
     }
 }

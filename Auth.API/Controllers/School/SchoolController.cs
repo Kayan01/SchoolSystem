@@ -19,8 +19,8 @@ namespace UserManagement.API.Controllers
     [AllowAnonymous]
     public class SchoolController : BaseController
     {
-
         private readonly ISchoolService _schoolService;
+
         public SchoolController(ISchoolService schoolService)
         {
             _schoolService = schoolService;
@@ -28,7 +28,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSchool([FromForm]CreateSchoolVM model)
+        public async Task<IActionResult> AddSchool([FromForm] CreateSchoolVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -49,7 +49,6 @@ namespace UserManagement.API.Controllers
             }
         }
 
-
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
@@ -68,19 +67,15 @@ namespace UserManagement.API.Controllers
             }
         }
 
-       
-
-
         [HttpGet("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetSchool(long id)
         {
-            if ( id <= 0)
+            if (id <= 0)
             {
                 return ApiResponse<string>(errors: "Please provide valid school Id");
             }
-
 
             try
             {
@@ -98,7 +93,7 @@ namespace UserManagement.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSchool(SchoolUpdateVM vM)
+        public async Task<IActionResult> UpdateSchool([FromForm] SchoolUpdateVM vM)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
@@ -115,7 +110,6 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
-
 
         [HttpDelete("{id}")]
         //[Authorize]
@@ -137,7 +131,5 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
-
-
     }
 }
