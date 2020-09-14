@@ -1,4 +1,5 @@
 ﻿using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Shared.Entities;
 using System;
@@ -12,25 +13,25 @@ namespace Auth.Core.Services
     public class AuthUserManagementService : IAuthUserManagement
     {
         private readonly UserManager<User> _userManager;
+
         public AuthUserManagementService(UserManager<User> userManager)
         {
             _userManager = userManager;
         }
-        public async Task<int?> AddUserAsync(string firstName, string lastName, string email, string phoneNumber, string pwd)
-        {
-            var user = new User { Email = email, UserName = email, FirstName = firstName, LastName = lastName, PhoneNumber = phoneNumber };
 
-           var result = await _userManager.CreateAsync(user, pwd);
+        public async Task<int?> AddUserAsync(AuthUserModel model)
+        {
+            var user = new User { Email = model.Email, UserName = model.Email, FirstName = model.FirstName, LastName = model.LastName, PhoneNumber = model.PhoneNumber };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
             {
                 return user.Id;
             }
 
-
             return null;
         }
-
 
         public async Task<bool> DeleteUserAsync(int id)
         {
@@ -43,7 +44,6 @@ namespace Auth.Core.Services
                 return true;
             }
 
-
             return false;
         }
 
@@ -52,12 +52,12 @@ namespace Auth.Core.Services
             return _userManager.Users;
         }
 
-        public async Task<bool> UpdateUserAsync(int id, string firstName, string lastName)
+        public async Task<bool> UpdateUserAsync(int id, AuthUserModel model)
         {
             var usr = await _userManager.FindByIdAsync(id.ToString());
 
-            usr.FirstName = firstName;
-            usr.LastName = lastName;
+            usr.FirstName = model.FirstName;
+            usr.LastName = model.LastName;
 
             var result = await _userManager.UpdateAsync(usr);
 
@@ -65,7 +65,6 @@ namespace Auth.Core.Services
             {
                 return true;
             }
-
 
             return false;
         }

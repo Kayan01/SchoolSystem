@@ -11,88 +11,64 @@ using Auth.Core.Models;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.SchoolClass;
 using Auth.Core.ViewModels;
-using Auth.Core.Models.JoinTables;
 using Auth.Core.Models.Users;
 
 namespace Auth.Core.Services
 {
     public class SchoolClassService : ISchoolClassService
     {
-        private readonly IRepository<ClassGroup, long> _classGroupRepo;
+        private readonly IRepository<ClassArm, long> _classArmRepo;
         private readonly IRepository<SchoolClass, long> _classRepo;
-        private readonly IRepository<SchoolSection, long> _sectionsRepo;
-        private readonly IRepository<Staff, long> _staffRepo;
+        private readonly IRepository<SchoolSection, long> _schoolSectionsRepo;
         private readonly IRepository<TeachingStaff, long> _teachingStaffRepo;
         private readonly IRepository<Student, long> _studentRepo;
         private readonly IUnitOfWork _unitOfWork;
+
         public SchoolClassService(IUnitOfWork unitOfWork, IRepository<SchoolClass, long> classRepo,
-            IRepository<Student, long> studentRepo, IRepository<ClassGroup, long> classGroupRepo, 
-            IRepository<SchoolSection, long> sectionsRepo, IRepository<Staff, long> staffRepo, IRepository<TeachingStaff, long> teachingStaffRepo)
+            IRepository<Student, long> studentRepo, IRepository<ClassArm, long> classGroupRepo,
+            IRepository<SchoolSection, long> sectionsRepo,
+            IRepository<TeachingStaff, long> teachingStaffRepo)
         {
             _unitOfWork = unitOfWork;
             _classRepo = classRepo;
             _studentRepo = studentRepo;
-            _classGroupRepo = classGroupRepo;
-            _sectionsRepo = sectionsRepo;
-            _staffRepo = staffRepo;
+            _classArmRepo = classGroupRepo;
+            _schoolSectionsRepo = sectionsRepo;
             _teachingStaffRepo = teachingStaffRepo;
         }
+
         public async Task<ResultModel<ClassVM>> AddClass(ClassVM model)
         {
             var result = new ResultModel<ClassVM>();
 
-
             //check if section exists
-            var sc = await _sectionsRepo.FirstOrDefaultAsync(model.SectionId);
-            if (sc == null)
+            var schoolSection = await _schoolSectionsRepo.FirstOrDefaultAsync(model.SectionId);
+            if (schoolSection == null)
             {
                 result.AddError("School section does not exist.Please create school section");
                 return result;
             }
 
-            //check if school group exist
-            var gp = await _classGroupRepo.FirstOrDefaultAsync(model.ClassGroupId);
+            //check if class arm exist
+            var classArm = await _classArmRepo.FirstOrDefaultAsync(model.ClassGroupId);
 
-            if (gp == null)
+            if (classArm == null)
             {
-
-                result.AddError("Class group does not exist. Please create the class group");
+                result.AddError("Class arm does not exist. Please create the class arm");
                 return result;
             }
 
-
-
             //todo: add more props
-            var cls = new SchoolClass { Name = model.Name, SchoolSectionId = model.SectionId };
-
-            //link class to class group e.g link jss1 to A or B == jss1A or jss1B
-            var clsgrp = new Class2Group { ClassGroupId = gp.Id, SchoolClass = cls };
-
-            cls.ClassJoinGroup.Add(clsgrp);
+            var cls = new SchoolClass
+            {
+                Name = model.Name,
+                ClassArm = classArm.Name,
+                SchoolSectionId = model.SectionId
+            };
 
             var id = _classRepo.InsertAndGetId(cls);
             await _unitOfWork.SaveChangesAsync();
             model.Id = id;
-            result.Data = model;
-            return result;
-        }
-        public async Task<ResultModel<ClassGroupVM>> AddClassGroup(ClassGroupVM model)
-        {
-            var result = new ResultModel<ClassGroupVM>();
-            //todo: add more props
-            var cg = _classGroupRepo.Insert(new ClassGroup { Name = model.Name });
-            await _unitOfWork.SaveChangesAsync();
-            model.Id = cg.Id;
-            result.Data = model;
-            return result;
-        }
-        public async Task<ResultModel<ClassSectionVM>> AddSection(ClassSectionVM model)
-        {
-            var result = new ResultModel<ClassSectionVM>();
-            //todo: add more props
-            var sc = _sectionsRepo.Insert(new SchoolSection { Name = model.Name });
-            await _unitOfWork.SaveChangesAsync();
-            model.Id = sc.Id;
             result.Data = model;
             return result;
         }
@@ -118,7 +94,6 @@ namespace Auth.Core.Services
                 result.AddError("Class not found");
                 return result;
             }
-
 
             //assign student to class
             stud.ClassId = vm.ClassId;
@@ -156,7 +131,6 @@ namespace Auth.Core.Services
                 return result;
             }
 
-
             //assign student to class
             staff.ClassId = vm.ClassId;
 
@@ -169,26 +143,29 @@ namespace Auth.Core.Services
         public async Task<ResultModel<bool>> DeleteClass(long Id)
         {
             var result = new ResultModel<bool> { Data = false };
+
+            //check if class exists
+            var class_ = await _classRepo
+                .GetAllIncluding(x => x.Students)
+                .Where(x => x.Id == Id)
+                .FirstOrDefaultAsync();
+
+            if (class_ == null)
+            {
+                result.AddError($"Class does not exist");
+
+                return result;
+            }
+
+            //check if student are in class
+            if (class_.Students.Count > 0)
+            {
+                result.AddError($"Class cannot be deleted. Students exist in class");
+
+                return result;
+            }
+
             await _classRepo.DeleteAsync(Id);
-            await _unitOfWork.SaveChangesAsync();
-            result.Data = true;
-
-            return result;
-        }
-        public async Task<ResultModel<bool>> DeleteClassGroup(long Id)
-        {
-            var result = new ResultModel<bool> { Data = false };
-            await _classGroupRepo.DeleteAsync(Id);
-            await _unitOfWork.SaveChangesAsync();
-            result.Data = true;
-
-            return result;
-        }
-
-        public async Task<ResultModel<bool>> DeleteSection(long Id)
-        {
-            var result = new ResultModel<bool> { Data = false };
-            await _sectionsRepo.DeleteAsync(Id);
             await _unitOfWork.SaveChangesAsync();
             result.Data = true;
 
@@ -200,22 +177,6 @@ namespace Auth.Core.Services
             var result = new ResultModel<List<ListClassVM>>
             {
                 Data = await _classRepo.GetAll().Select(x => (ListClassVM)x).ToListAsync()
-            };
-            return result;
-        }
-        public async Task<ResultModel<List<ClassGroupVM>>> GetAllClassGroups()
-        {
-            var result = new ResultModel<List<ClassGroupVM>>
-            {
-                Data = await _classGroupRepo.GetAll().Select(x => (ClassGroupVM)x).ToListAsync()
-            };
-            return result;
-        }
-        public async Task<ResultModel<List<ClassSectionVM>>> GetAllSections()
-        {
-            var result = new ResultModel<List<ClassSectionVM>>
-            {
-                Data = await _sectionsRepo.GetAll().Select(x => (ClassSectionVM)x).ToListAsync()
             };
             return result;
         }
@@ -239,8 +200,12 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<ListClassVM>();
 
-            //gets class with students. Casting of students to studentsVM is done in the classVM
-            var @class = await _classRepo.GetAll().Include(x => x.Students).Select(x => (ListClassVM)x).FirstOrDefaultAsync(x => x.Id == Id);
+            //gets class with students.
+            var @class = await _classRepo.GetAll()
+                .Include(x => x.Students)
+                .Where(x => x.Id == Id)
+                .Select(x => (ListClassVM)x)
+                .FirstOrDefaultAsync();
 
             if (@class == null)
             {
@@ -251,6 +216,7 @@ namespace Auth.Core.Services
             result.Data = @class;
             return result;
         }
+
         public async Task<ResultModel<ClassUpdateVM>> UpdateClass(ClassUpdateVM model)
         {
             var @class = await _classRepo.FirstOrDefaultAsync(model.Id);
@@ -263,61 +229,10 @@ namespace Auth.Core.Services
                 return result;
             }
 
-
             //TODO: add more props
             @class.Name = model.Name;
-
-
 
             await _classRepo.UpdateAsync(@class);
-            await _unitOfWork.SaveChangesAsync();
-            result.Data = model;
-            return result;
-
-        }
-        public async Task<ResultModel<ClassGroupVM>> UpdateClassGroup(ClassGroupVM model)
-        {
-            var @class = await _classGroupRepo.FirstOrDefaultAsync(model.Id);
-            var result = new ResultModel<ClassGroupVM>();
-
-            if (@class == null)
-            {
-                result.AddError("Class could not be found");
-
-                return result;
-            }
-
-
-            //TODO: add more props
-            @class.Name = model.Name;
-
-
-
-            await _classGroupRepo.UpdateAsync(@class);
-            await _unitOfWork.SaveChangesAsync();
-            result.Data = model;
-            return result;
-
-        }
-        public async Task<ResultModel<ClassSectionUpdateVM>> UpdateSection(ClassSectionUpdateVM model)
-        {
-            var sec = await _sectionsRepo.FirstOrDefaultAsync(model.Id);
-            var result = new ResultModel<ClassSectionUpdateVM>();
-
-            if (sec == null)
-            {
-                result.AddError("Section could not be found");
-
-                return result;
-            }
-
-
-            //TODO: add more props
-            sec.Name = model.Name;
-
-
-
-            await _sectionsRepo.UpdateAsync(sec);
             await _unitOfWork.SaveChangesAsync();
             result.Data = model;
             return result;

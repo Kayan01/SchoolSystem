@@ -18,7 +18,6 @@ namespace Auth.Core.Context
         {
         }
 
-
         public DbSet<FileUpload> FileUploads { get; set; }
         public DbSet<Test> Tests { get; set; }
         public DbSet<School> Schools { get; set; }
@@ -26,7 +25,7 @@ namespace Auth.Core.Context
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<TeachingStaff> TeachingStaffs { get; set; }
         public DbSet<SchoolClass> Classes { get; set; }
-        public DbSet<ClassGroup>  ClassGroups { get; set; }
+        public DbSet<ClassArm> ClassGroups { get; set; }
         public DbSet<SchoolSection> SchoolSections { get; set; }
     }
 }

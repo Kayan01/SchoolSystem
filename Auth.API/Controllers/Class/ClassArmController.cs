@@ -2,41 +2,44 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Auth.Core.Services.Interfaces;
-using Auth.Core.ViewModels;
-using Microsoft.AspNetCore.Authorization;
+using Auth.Core.Services.Interfaces.Class;
+using Auth.Core.ViewModels.SchoolClass;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 
-namespace UserManagement.API.Controllers
+namespace Auth.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
-    [AllowAnonymous]
-    public class SchoolController : BaseController
+    public class ClassArmController : BaseController
     {
+        private readonly IClassArmService _classArmService;
 
-        private readonly ISchoolService _schoolService;
-        public SchoolController(ISchoolService schoolService)
+        public ClassArmController(IClassArmService classArmService)
         {
-            _schoolService = schoolService;
+            _classArmService = classArmService;
         }
 
         [HttpPost]
+        //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSchool(SchoolVM model)
+        public async Task<IActionResult> AddClassArm(ClassArmVM model)
         {
-            if (model == null)
-                return ApiResponse<string>(errors: "Empty payload");
+            if (!ModelState.IsValid)
+            {
+                return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+            }
 
             try
             {
-                var result = await _schoolService.AddSchool(model);
+                var result = await _classArmService.AddClassArm(model);
+
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
@@ -45,44 +48,43 @@ namespace UserManagement.API.Controllers
             }
         }
 
+        [HttpDelete("{id}")]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> DeleteClassArm(long id)
+        {
+            if (id < 1)
+            {
+                return ApiResponse<string>(errors: "Please provide valid class Arm Id");
+            }
+
+            try
+            {
+                var result = await _classArmService.DeleteClassArm(id);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetSchools([FromQuery] PagingVM vM)
+        public async Task<IActionResult> GetAllClassArms()
         {
             try
             {
-                var result = await _schoolService.GetAllSchools(vM.PageNumber, vM.PageSize);
+                var result = await _classArmService.GetAllClassArms();
+
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
 
-       
-
-
-        [HttpGet("{id}")]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetSchool(long id)
-        {
-            if ( id <= 0)
-            {
-                return ApiResponse<string>(errors: "Please provide valid school Id");
-            }
-
-
-            try
-            {
-                var result = await _schoolService.GetSchoolById(id);
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
@@ -94,16 +96,20 @@ namespace UserManagement.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSchool(SchoolUpdateVM vM)
+        public async Task<IActionResult> UpdateClassArm(ClassArmVM model)
         {
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+            {
+                return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+            }
 
             try
             {
-                var result = await _schoolService.UpdateSchool(vM);
+                var result = await _classArmService.UpdateClassArm(model);
+
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
@@ -111,29 +117,5 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
-
-
-        [HttpDelete("{id}")]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> DeleteSchool(long id)
-        {
-            if (id < 1)
-                return ApiResponse<string>(errors: "Invalid school Id");
-
-            try
-            {
-                var result = await _schoolService.DeleteSchool(id);
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-
-
     }
 }
