@@ -14,28 +14,78 @@ using Shared.Entities;
 using Shared.Utils;
 using Microsoft.AspNetCore.Identity;
 using Auth.Core.Context;
+using Auth.Core.ViewModels;
 
 namespace Auth.Core.Services
 {
     public class StudentService : IStudentService
     {
-        private readonly IRepository<Student, long> _studentRepo;
-        private readonly IAuthUserManagement _authUserManagement;
-        private readonly IRepository<School, long> _schoolRepo;
-
         private readonly AppDbContext _appDbContext;
+        private readonly IAuthUserManagement _authUserManagement;
+
+        private readonly IRepository<Student, long> _studentRepo;
         private readonly IUnitOfWork _unitOfWork;
-        public StudentService(IRepository<Student, long> studentRepo, IRepository<School, long> schoolRepo, IUnitOfWork unitOfWork, IAuthUserManagement authUserManagement, AppDbContext appDbContext)
+
+        public StudentService(IRepository<Student, long> studentRepo, IUnitOfWork unitOfWork, IAuthUserManagement authUserManagement, AppDbContext appDbContext)
         {
             _studentRepo = studentRepo;
-            _schoolRepo = schoolRepo;
             _unitOfWork = unitOfWork;
             _authUserManagement = authUserManagement;
             _appDbContext = appDbContext;
         }
+
+        public async Task<ResultModel<StudentVM>> AddStudentToSchool(StudentVM model)
+        {
+            var result = new ResultModel<StudentVM>();
+
+            //create auth user
+            var userModel = new AuthUserModel { FirstName = model.FirstName, LastName = model.LastName, Email = model.Email, Password = model.Password, PhoneNumber = model.PhoneNumber };
+            var authResult = await _authUserManagement.AddUserAsync(userModel);
+
+            if (authResult == null)
+            {
+                result.AddError("Failed to add authentication for student");
+                return result;
+            }
+
+            var stud = _studentRepo.Insert(new Student { UserId = authResult.Value });
+            await _unitOfWork.SaveChangesAsync();
+            model.Id = stud.Id;
+            model.Id = stud.Id;
+            result.Data = model;
+            return result;
+        }
+
+        public async Task<ResultModel<bool>> DeleteStudent(long Id)
+        {
+            var result = new ResultModel<bool> { Data = false };
+
+            //check if the student exists
+            var std = await _studentRepo.FirstOrDefaultAsync(Id);
+            if (std == null)
+            {
+                result.AddError("Student does not exist");
+                return result;
+            }
+
+            //delete auth user
+            var authResult = await _authUserManagement.DeleteUserAsync(std.UserId);
+
+            if (authResult == false)
+            {
+                result.AddError("Failed to delete authentication for student");
+                return result;
+            }
+
+            await _studentRepo.DeleteAsync(Id);
+            await _unitOfWork.SaveChangesAsync();
+            result.Data = true;
+
+            return result;
+        }
+
         public async Task<ResultModel<List<StudentVM>>> GetAllStudentsInSchool(int pageNumber, int pageSize)
         {
-
             //use appdbcontext directly so that we can do a join with the auth users table
             var query = _appDbContext.Students.Join(
                 _appDbContext.Users, student => student.UserId, authUser => authUser.Id,
@@ -45,11 +95,7 @@ namespace Auth.Core.Services
                     LastName = authUser.LastName,
                     Email = authUser.Email,
                     PhoneNumber = authUser.PhoneNumber
-
-
-
                 });
-
 
             var pagedData = await PaginatedList<StudentVM>.CreateAsync(query, pageNumber, pageSize);
 
@@ -74,58 +120,6 @@ namespace Auth.Core.Services
             result.Data = std;
             return result;
         }
-        public async Task<ResultModel<StudentVM>> AddStudentToSchool(StudentVM model)
-        {
-            var result = new ResultModel<StudentVM>();
-
-            //create auth user
-            var authResult = await _authUserManagement.AddUserAsync(model.FirstName, model.LastName, model.Email, model.PhoneNumber, model.Password);
-
-            if (authResult == null)
-            {
-                result.AddError("Failed to add authentication for student");
-                return result;
-            }
-
-          
-            var stud = _studentRepo.Insert(new Student { UserId = authResult.Value  });
-            await _unitOfWork.SaveChangesAsync();
-            model.Id = stud.Id;
-            model.Id = stud.Id;
-            result.Data = model;
-            return result;
-        }
-
-        public async Task<ResultModel<bool>> DeleteStudent(long Id)
-        {
-            var result = new ResultModel<bool> { Data = false };
-
-            //check if the student exists
-            var std = await _studentRepo.FirstOrDefaultAsync(Id);
-            if (std == null)
-            {
-                result.AddError("Student does not exist");
-                return result;
-            }
-
-
-            //delete auth user
-            var authResult = await _authUserManagement.DeleteUserAsync(std.UserId);
-
-            if (authResult == false)
-            {
-                result.AddError("Failed to delete authentication for student");
-                return result;
-            }
-
-
-            await _studentRepo.DeleteAsync(Id);
-            await _unitOfWork.SaveChangesAsync();
-            result.Data = true;
-
-            return result;
-        }
-
 
         public async Task<ResultModel<StudentUpdateVM>> UpdateStudent(StudentUpdateVM model)
         {
@@ -138,9 +132,9 @@ namespace Auth.Core.Services
                 return result;
             }
 
-
             //update auth user
-            var authResult = await _authUserManagement.UpdateUserAsync(std.UserId, model.FirstName, model.LastName);
+            var userModel = new AuthUserModel { FirstName = model.FirstName, LastName = model.LastName };
+            var authResult = await _authUserManagement.UpdateUserAsync(std.UserId, userModel);
 
             if (authResult == false)
             {
@@ -148,14 +142,12 @@ namespace Auth.Core.Services
                 return result;
             }
 
-
             //TODO: add more props
 
             await _studentRepo.UpdateAsync(std);
             await _unitOfWork.SaveChangesAsync();
             result.Data = model;
             return result;
-
         }
     }
 }

@@ -46,6 +46,7 @@ namespace Auth.Core.Services
                    Email = authUser.Email,
                    PhoneNumber = authUser.PhoneNumber
                });
+
             var pagedData = await PaginatedList<StaffVM>.CreateAsync(query, pageNumber, pageSize);
 
             var result = new ResultModel<List<StaffVM>>
@@ -75,7 +76,15 @@ namespace Auth.Core.Services
             var result = new ResultModel<StaffVM>();
 
             //create auth user
-            var userModel = new AuthUserModel { FirstName = model.FirstName, LastName = model.LastName, Email = model.Email, Password = model.Password, PhoneNumber = model.PhoneNumber };
+            var userModel = new AuthUserModel
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                Password = model.Password,
+                PhoneNumber = model.PhoneNumber
+            };
+
             var authResult = await _authUserManagement.AddUserAsync(userModel);
 
             if (authResult == null)
@@ -86,7 +95,11 @@ namespace Auth.Core.Services
 
             var staffType = model.IsTeacher ? Enumerations.StaffType.TeachingStaff : Enumerations.StaffType.NonTeachingStaff;
 
-            var staff = _staffRepo.Insert(new Staff { UserId = authResult.Value, StaffType = staffType });
+            var staff = _staffRepo.Insert(new Staff
+            {
+                UserId = authResult.Value,
+                StaffType = staffType
+            });
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -109,6 +122,7 @@ namespace Auth.Core.Services
 
             //check if the staff exists
             var std = await _staffRepo.FirstOrDefaultAsync(Id);
+
             if (std == null)
             {
                 result.AddError("Staff does not exist");
@@ -133,8 +147,9 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<StaffUpdateVM>> UpdateStaff(StaffUpdateVM model)
         {
-            var staff = await _staffRepo.FirstOrDefaultAsync(model.Id);
             var result = new ResultModel<StaffUpdateVM>();
+
+            var staff = await _staffRepo.FirstOrDefaultAsync(model.Id);
 
             if (staff == null)
             {
@@ -143,7 +158,12 @@ namespace Auth.Core.Services
             }
 
             //update auth user
-            var userModel = new AuthUserModel { FirstName = model.FirstName, LastName = model.LastName };
+            var userModel = new AuthUserModel
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName
+            };
+
             var authResult = await _authUserManagement.UpdateUserAsync((int)model.Id, userModel);
 
             if (authResult == false)
@@ -153,6 +173,7 @@ namespace Auth.Core.Services
             }
 
             //TODO: add more props
+
             await _staffRepo.UpdateAsync(staff);
             await _unitOfWork.SaveChangesAsync();
             result.Data = model;

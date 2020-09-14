@@ -56,7 +56,7 @@ namespace UserManagement.API.Controllers
         {
             try
             {
-                var result = await _schoolService.GetAllSchools(vM.PageNumber, vM.PageSize);
+                var result = await _schoolService.GetAllSchools(vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

@@ -18,6 +18,7 @@ using Shared.FileStorage;
 using Microsoft.OpenApi.Extensions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Auth.Core.Models.Contacts;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.Core.Services
 {
@@ -25,23 +26,25 @@ namespace Auth.Core.Services
     {
         private readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IFileStorageService _fileStorageService;
         private readonly IDocumentService _documentService;
 
-        public SchoolService(IRepository<School, long> schoolRepo, IUnitOfWork unitOfWork, IFileStorageService fileStorageService, IDocumentService documentService)
+        public SchoolService(IRepository<School, long> schoolRepo, IUnitOfWork unitOfWork, IDocumentService documentService)
         {
             _unitOfWork = unitOfWork;
             _schoolRepo = schoolRepo;
-            _fileStorageService = fileStorageService;
             _documentService = documentService;
         }
 
-        public async Task<ResultModel<List<SchoolVM>>> GetAllSchools(int pageNumber, int pageSize)
+        public async Task<ResultModel<List<SchoolVM>>> GetAllSchools(PagingVM model)
         {
             var query = _schoolRepo.GetAll()
-                .Select(x => new SchoolVM { Id = x.Id, Name = x.Name });
+                .Select(x => new SchoolVM
+                {
+                    Id = x.Id,
+                    Name = x.Name
+                });
 
-            var pagedData = await PaginatedList<SchoolVM>.CreateAsync(query, pageNumber, pageSize);
+            var pagedData = await PaginatedList<SchoolVM>.CreateAsync(query, model.PageNumber, model.PageSize);
 
             var result = new ResultModel<List<SchoolVM>>
             {
