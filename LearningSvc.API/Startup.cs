@@ -10,10 +10,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NotificationSvc.Core.Context;
+using LearningSvc.Core.Context;
 using Shared.Utils;
 
-namespace NotificationSvc.API
+namespace LearningSvc.API
 {
     public partial class Startup
     {
@@ -30,7 +30,7 @@ namespace NotificationSvc.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
-            services.AddSwagger("Notification Service");
+            services.AddSwagger("Learning Service");
             services.AddControllers();
 
             AddEntityFrameworkDbContext(services);

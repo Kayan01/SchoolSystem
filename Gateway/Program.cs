@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Shared.Utils;
 
-namespace NotificationSvc.API
+namespace Gateway
 {
     public class Program
     {
@@ -34,6 +34,15 @@ namespace NotificationSvc.API
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    var hostEnv = hostingContext.HostingEnvironment.EnvironmentName;
+
+                    config.AddEnvironmentVariables();
+
+                    config.AddJsonFile("ocelot.json");
+                    config.AddJsonFile($"ocelot.{hostEnv}.json", true, true);
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

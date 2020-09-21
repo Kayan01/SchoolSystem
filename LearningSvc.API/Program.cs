@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Shared.Utils;
 
-namespace NotificationSvc.API
+namespace LearningSvc.API
 {
     public class Program
     {
