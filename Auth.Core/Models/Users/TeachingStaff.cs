@@ -9,12 +9,9 @@ namespace Auth.Core.Models.Users
 {
     public class TeachingStaff : AuditedEntity<long>, ITenantModelType
     {
-        [ForeignKey(nameof(Staff))]
-        public override long Id { get; set; }
         public long? ClassId { get; set; }
         public SchoolClass Class { get; set; }
         public long TenantId { get; set; }
-
-
+        public Staff Staff { get; set; }
     }
 }
