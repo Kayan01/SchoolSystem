@@ -19,6 +19,7 @@ using Microsoft.OpenApi.Extensions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Auth.Core.Models.Contacts;
 using Microsoft.AspNetCore.Mvc;
+using IPagedList;
 
 namespace Auth.Core.Services
 {
@@ -35,7 +36,7 @@ namespace Auth.Core.Services
             _documentService = documentService;
         }
 
-        public async Task<ResultModel<List<SchoolVM>>> GetAllSchools(PagingVM model)
+        public async Task<ResultModel<PaginatedList<SchoolVM>>> GetAllSchools(PagingVM model)
         {
             var query = _schoolRepo.GetAll()
                 .Select(x => new SchoolVM
@@ -45,8 +46,8 @@ namespace Auth.Core.Services
                 });
 
             var pagedData = await PaginatedList<SchoolVM>.CreateAsync(query, model.PageNumber, model.PageSize);
-
-            var result = new ResultModel<List<SchoolVM>>
+         
+            var result = new ResultModel<PaginatedList<SchoolVM>>
             {
                 Data = pagedData
             };
