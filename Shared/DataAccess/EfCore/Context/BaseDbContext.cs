@@ -24,7 +24,7 @@ namespace Shared.DataAccess.EfCore.Context
     /// <summary>
     /// Base class for all DbContext classes in the application.
     /// </summary>
-    public abstract class BaseDbContext : IdentityDbContext<User, Role, int, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>
+    public abstract class BaseDbContext : IdentityDbContext<User, Role, long, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>
     {
         /// <summary>
         /// Reference to GUID generator.

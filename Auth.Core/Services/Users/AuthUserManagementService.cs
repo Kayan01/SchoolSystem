@@ -19,7 +19,7 @@ namespace Auth.Core.Services
             _userManager = userManager;
         }
 
-        public async Task<int?> AddUserAsync(AuthUserModel model)
+        public async Task<long?> AddUserAsync(AuthUserModel model)
         {
             var user = new User { Email = model.Email, UserName = model.Email, FirstName = model.FirstName, LastName = model.LastName, PhoneNumber = model.PhoneNumber };
 
@@ -33,7 +33,7 @@ namespace Auth.Core.Services
             return null;
         }
 
-        public async Task<bool> DeleteUserAsync(int id)
+        public async Task<bool> DeleteUserAsync(long id)
         {
             var usr = await _userManager.FindByIdAsync(id.ToString());
 
@@ -52,7 +52,7 @@ namespace Auth.Core.Services
             return _userManager.Users;
         }
 
-        public async Task<bool> UpdateUserAsync(int id, AuthUserModel model)
+        public async Task<bool> UpdateUserAsync(long id, AuthUserModel model)
         {
             var usr = await _userManager.FindByIdAsync(id.ToString());
 

@@ -7,7 +7,7 @@ namespace Shared.ViewModels
     public class PersonSharedModel
     {
         public long TenantId { get; set; }
-        public int UserId { get; set; }
+        public long UserId { get; set; }
         public bool IsDeleted { get; set; }
         public bool IsActive { get; set; }
         public string FirstName { get; set; }

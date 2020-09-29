@@ -9,7 +9,7 @@ namespace LearningSvc.Core.Models
     public class Student : AuditedEntity<long>, ITenantModelType
     {
         public long TenantId { get; set; }
-        public int UserId { get; set; }
+        public long UserId { get; set; }
         public long? ClassId { get; set; }
         public bool IsDeleted { get; set; }
         public bool IsActive { get; set; }
