@@ -11,11 +11,11 @@ namespace Auth.Core.Services.Interfaces
     public interface IAuthUserManagement
     {
         //adds user and returns id
-        Task<int?> AddUserAsync(AuthUserModel model);
+        Task<long?> AddUserAsync(AuthUserModel model);
 
-        Task<bool> UpdateUserAsync(int id, AuthUserModel model);
+        Task<bool> UpdateUserAsync(long id, AuthUserModel model);
 
-        Task<bool> DeleteUserAsync(int id);
+        Task<bool> DeleteUserAsync(long id);
 
         IQueryable<User> GetAllAuthUsersAsync();
     }

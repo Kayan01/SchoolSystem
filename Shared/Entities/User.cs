@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Shared.Entities
 {
-    public class User : IdentityUser<int>, IHasCreationTime, IHasDeletionTime, ISoftDelete, IHasModificationTime
+    public class User : IdentityUser<long>, IHasCreationTime, IHasDeletionTime, ISoftDelete, IHasModificationTime
     {
         public string FirstName { get; set; }
         public string Unit { get; set; }
@@ -31,18 +31,18 @@ namespace Shared.Entities
         }
     }
 
-    public class UserClaim : IdentityUserClaim<int> { }
+    public class UserClaim : IdentityUserClaim<long> { }
 
-    public class UserRole : IdentityUserRole<int> { }
+    public class UserRole : IdentityUserRole<long> { }
 
-    public class UserLogin : IdentityUserLogin<int>
+    public class UserLogin : IdentityUserLogin<long>
     {
         public int Id { get; set; }
     }
 
-    public class RoleClaim : IdentityRoleClaim<int> { }
+    public class RoleClaim : IdentityRoleClaim<long> { }
 
-    public class UserToken : IdentityUserToken<int> { }
+    public class UserToken : IdentityUserToken<long> { }
 
     public static class UserExtensions
     {
