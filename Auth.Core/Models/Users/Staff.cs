@@ -1,10 +1,4 @@
-﻿using Auth.Core.Enumerations;
-using NPOI.SS.Formula.Functions;
-using Shared.Entities.Auditing;
-using Shared.Tenancy;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Shared.Enums;
 
 namespace Auth.Core.Models
 {

@@ -5,16 +5,14 @@ using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Auth.Core.Models;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Student;
-using Shared.Entities;
 using Shared.Utils;
-using Microsoft.AspNetCore.Identity;
 using Auth.Core.Context;
 using Auth.Core.ViewModels;
+using Shared.PubSub;
 
 namespace Auth.Core.Services
 {
@@ -22,15 +20,20 @@ namespace Auth.Core.Services
     {
         private readonly AppDbContext _appDbContext;
         private readonly IAuthUserManagement _authUserManagement;
-
+        private readonly IPublishService _publishService;
         private readonly IRepository<Student, long> _studentRepo;
         private readonly IUnitOfWork _unitOfWork;
 
-        public StudentService(IRepository<Student, long> studentRepo, IUnitOfWork unitOfWork, IAuthUserManagement authUserManagement, AppDbContext appDbContext)
+        public StudentService(IRepository<Student, long> studentRepo,
+            IUnitOfWork unitOfWork, 
+            IAuthUserManagement authUserManagement,
+            IPublishService publishService,
+            AppDbContext appDbContext)
         {
             _studentRepo = studentRepo;
             _unitOfWork = unitOfWork;
             _authUserManagement = authUserManagement;
+            _publishService = publishService;
             _appDbContext = appDbContext;
         }
 
@@ -51,8 +54,22 @@ namespace Auth.Core.Services
             var stud = _studentRepo.Insert(new Student { UserId = authResult.Value });
             await _unitOfWork.SaveChangesAsync();
             model.Id = stud.Id;
-            model.Id = stud.Id;
             result.Data = model;
+
+            //PublishMessage
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
+            {
+                Id = stud.Id,
+                IsActive = true,
+                ClassId = stud.ClassId,
+                TenantId = stud.TenantId,
+                UserId = stud.UserId,
+                FirstName = userModel.FirstName,
+                LastName = userModel.LastName,
+                Email = userModel.Email,
+                Phone = userModel.PhoneNumber
+            });
+
             return result;
         }
 
@@ -123,10 +140,10 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<StudentUpdateVM>> UpdateStudent(StudentUpdateVM model)
         {
-            var std = await _studentRepo.FirstOrDefaultAsync(model.Id);
+            var stud = await _studentRepo.FirstOrDefaultAsync(model.Id);
             var result = new ResultModel<StudentUpdateVM>();
 
-            if (std == null)
+            if (stud == null)
             {
                 result.AddError("Student does not exist");
                 return result;
@@ -134,7 +151,8 @@ namespace Auth.Core.Services
 
             //update auth user
             var userModel = new AuthUserModel { FirstName = model.FirstName, LastName = model.LastName };
-            var authResult = await _authUserManagement.UpdateUserAsync(std.UserId, userModel);
+            var authResult = await _authUserManagement.UpdateUserAsync(stud.UserId, userModel);
+            //TODO would have to access _userManager directly so that we can have access to the auth user
 
             if (authResult == false)
             {
@@ -144,9 +162,23 @@ namespace Auth.Core.Services
 
             //TODO: add more props
 
-            await _studentRepo.UpdateAsync(std);
+            await _studentRepo.UpdateAsync(stud);
             await _unitOfWork.SaveChangesAsync();
             result.Data = model;
+
+            //PublishMessage
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
+            {
+                IsActive = true,
+                ClassId = stud.ClassId,
+                TenantId = stud.TenantId,
+                UserId = stud.UserId,
+                FirstName = userModel.FirstName,
+                LastName = userModel.LastName,
+                Email = userModel.Email,
+                Phone = userModel.PhoneNumber
+            });
+
             return result;
         }
     }

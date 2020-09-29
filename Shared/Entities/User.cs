@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Shared.Entities.Auditing;
 using Shared.Entities.Common;
+using Shared.Enums;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,6 +19,7 @@ namespace Shared.Entities
         public bool IsDeleted { get; set; }
         public DateTime? LastModificationTime { get; set; }
         public DateTime? LastLoginDate { get; set; }
+        public UserType UserType { get; set; }
 
         [NotMapped]
         public string FullName

@@ -17,6 +17,7 @@ namespace Shared.DataAccess.EfCore.Context
         //public DbSet<FileUpload> FileUploads { get; set; }
 
         //public DbSet<Email> Emails { get; set; }
+        public DbSet<PublishedMessage> PublishedMessage { get; set; }
 
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {

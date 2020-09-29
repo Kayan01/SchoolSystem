@@ -12,6 +12,13 @@ namespace Shared.PubSub
         public int BusMessageType { get; set; }
         [ProtoMember(2)]
         public string Data { get; set; }
+        public BusMessage() { }
+
+        public BusMessage(int busMessageType, string data)
+        {
+            BusMessageType = busMessageType;
+            Data = data;
+        }
 
     }
 }

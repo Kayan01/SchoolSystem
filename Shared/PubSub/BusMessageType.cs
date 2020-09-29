@@ -10,6 +10,10 @@ namespace Shared.PubSub
         NEW_USER,
         EDIT_USER,
         EMAIL,
-        NOTICE
+        NOTICE,
+        TEACHER,
+        STAFF,
+        STUDENT,
+        CLASS
     }
 }
