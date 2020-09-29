@@ -3,17 +3,17 @@ using Shared.DataAccess.Repository;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Auth.Core.Models;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Staff;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using Auth.Core.Models.Users;
 using Shared.Utils;
 using Auth.Core.Context;
 using Auth.Core.ViewModels;
+using Shared.Enums;
+using Shared.PubSub;
 
 namespace Auth.Core.Services
 {
@@ -23,14 +23,21 @@ namespace Auth.Core.Services
         private readonly IRepository<TeachingStaff, long> _teachingStaffRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAuthUserManagement _authUserManagement;
+        private readonly IPublishService _publishService;
         private readonly AppDbContext _appDbContext;
 
-        public StaffService(IRepository<Staff, long> staffRepo, IUnitOfWork unitOfWork, IAuthUserManagement authUserManagement, IRepository<TeachingStaff, long> teachingStaffRepo, AppDbContext appDbContext)
+        public StaffService(IRepository<Staff, long> staffRepo,
+            IUnitOfWork unitOfWork,
+            IAuthUserManagement authUserManagement,
+            IRepository<TeachingStaff, long> teachingStaffRepo,
+            IPublishService publishService,
+            AppDbContext appDbContext)
         {
             _staffRepo = staffRepo;
             _unitOfWork = unitOfWork;
             _authUserManagement = authUserManagement;
             _teachingStaffRepo = teachingStaffRepo;
+            _publishService = publishService;
             _appDbContext = appDbContext;
         }
 
@@ -82,8 +89,11 @@ namespace Auth.Core.Services
                 LastName = model.LastName,
                 Email = model.Email,
                 Password = model.Password,
-                PhoneNumber = model.PhoneNumber
+                PhoneNumber = model.PhoneNumber,
+                UserType = UserType.Staff
             };
+
+            _unitOfWork.BeginTransaction();
 
             var authResult = await _authUserManagement.AddUserAsync(userModel);
 
@@ -93,7 +103,12 @@ namespace Auth.Core.Services
                 return result;
             }
 
-            var staffType = model.IsTeacher ? Enumerations.StaffType.TeachingStaff : Enumerations.StaffType.NonTeachingStaff;
+            if (!Enum.TryParse(typeof(StaffType), model.StaffType, out var staffTypeObj))
+            {
+                result.AddError("Invalid staff type");
+                return result;
+            }
+            var staffType = (StaffType)staffTypeObj;
 
             var staff = _staffRepo.Insert(new Staff
             {
@@ -104,15 +119,40 @@ namespace Auth.Core.Services
             await _unitOfWork.SaveChangesAsync();
 
             //check if staff is teacher and adds to teachers table
-            if (model.IsTeacher)
+            if (staffType == StaffType.Teacher)
             {
                 _teachingStaffRepo.Insert(new TeachingStaff { Id = staff.Id });
             }
 
             await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.Commit();
 
             model.Id = staff.Id;
             result.Data = model;
+
+            //TODO Refactor, and Move teachers logic to TeachersService
+
+            //Publish Message
+            if (staffType == StaffType.Teacher)
+            {
+                await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
+                {
+                    IsActive = true,
+                    StaffType = StaffType.Teacher,
+                    TenantId = staff.TenantId,
+                    UserId = staff.UserId,
+                });
+            }
+            else
+            {
+                await _publishService.PublishMessage(Topics.Staff, BusMessageTypes.STAFF, new StaffSharedModel
+                {
+                    IsActive = true,
+                    StaffType = staffType,
+                    TenantId = staff.TenantId,
+                    UserId = staff.UserId,
+                });
+            }
             return result;
         }
 
@@ -121,9 +161,9 @@ namespace Auth.Core.Services
             var result = new ResultModel<bool> { Data = false };
 
             //check if the staff exists
-            var std = await _staffRepo.FirstOrDefaultAsync(Id);
+            var staff = await _staffRepo.FirstOrDefaultAsync(Id);
 
-            if (std == null)
+            if (staff == null)
             {
                 result.AddError("Staff does not exist");
                 return result;
@@ -141,6 +181,16 @@ namespace Auth.Core.Services
             await _staffRepo.DeleteAsync(Id);
             await _unitOfWork.SaveChangesAsync();
             result.Data = true;
+
+            //Publish Message
+            await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
+            {
+                IsActive = false,
+                IsDeleted = true,
+                StaffType = staff.StaffType,
+                TenantId = staff.TenantId,
+                UserId = staff.UserId,
+            });
 
             return result;
         }
@@ -177,6 +227,17 @@ namespace Auth.Core.Services
             await _staffRepo.UpdateAsync(staff);
             await _unitOfWork.SaveChangesAsync();
             result.Data = model;
+
+            //Publish Message
+            await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
+            {
+                IsActive = false,
+                IsDeleted = true,
+                StaffType = staff.StaffType,
+                TenantId = staff.TenantId,
+                UserId = staff.UserId,
+            });
+
             return result;
         }
     }

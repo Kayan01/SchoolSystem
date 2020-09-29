@@ -104,6 +104,7 @@ namespace Auth.API
             services.AddScoped<ISchoolClassService, SchoolClassService>();
             services.AddScoped<IAuthUserManagement, AuthUserManagementService>();
             services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<IPublishService, PublishService>();
             services.AddTransient<AuthHandler>();
         }
     }

@@ -66,14 +66,9 @@ namespace LearningSvc.API
                 {
                     switch (message.BusMessageType)
                     {
-                        case (int)BusMessageTypes.NOTICE:
+                        case (int)BusMessageTypes.STUDENT:
                             {
-                                handler.HandleTest(message);
-                                break;
-                            }
-                        case (int)BusMessageTypes.EDIT_USER:
-                            {
-                                handler.HandleTest(message);
+                                handler.HandleAddOrUpdateStudent(message);
                                 break;
                             }
                     }

@@ -5,13 +5,12 @@ using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Auth.Core.Models;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.SchoolClass;
-using Auth.Core.ViewModels;
 using Auth.Core.Models.Users;
+using Shared.PubSub;
 
 namespace Auth.Core.Services
 {
@@ -22,11 +21,13 @@ namespace Auth.Core.Services
         private readonly IRepository<SchoolSection, long> _schoolSectionsRepo;
         private readonly IRepository<TeachingStaff, long> _teachingStaffRepo;
         private readonly IRepository<Student, long> _studentRepo;
+        private readonly IPublishService _publishService;
         private readonly IUnitOfWork _unitOfWork;
 
         public SchoolClassService(IUnitOfWork unitOfWork, IRepository<SchoolClass, long> classRepo,
             IRepository<Student, long> studentRepo, IRepository<ClassArm, long> classGroupRepo,
             IRepository<SchoolSection, long> sectionsRepo,
+            IPublishService publishService,
             IRepository<TeachingStaff, long> teachingStaffRepo)
         {
             _unitOfWork = unitOfWork;
@@ -35,6 +36,7 @@ namespace Auth.Core.Services
             _classArmRepo = classGroupRepo;
             _schoolSectionsRepo = sectionsRepo;
             _teachingStaffRepo = teachingStaffRepo;
+            _publishService = publishService;
         }
 
         public async Task<ResultModel<ClassVM>> AddClass(ClassVM model)
@@ -70,6 +72,15 @@ namespace Auth.Core.Services
             await _unitOfWork.SaveChangesAsync();
             model.Id = id;
             result.Data = model;
+
+            //PublishMessage
+            await _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS, new ClassSharedModel
+            {
+                TenantId = cls.TenantId,
+                Name = cls.Name,
+                ClassArm = cls.ClassArm
+            });
+
             return result;
         }
 
