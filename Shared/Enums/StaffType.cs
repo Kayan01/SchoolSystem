@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Auth.Core.Enumerations
+namespace Shared.Enums
 {
     public enum StaffType
     {
-        TeachingStaff, NonTeachingStaff
+        Teacher = 1,
+        Accountant,
+        Driver,
+        Doctor,
+        Nurse
     }
 }

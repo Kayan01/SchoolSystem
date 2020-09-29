@@ -30,7 +30,36 @@ namespace Shared.Tenancy
         /// <returns></returns>
         public long GetTenantIdentifier()
         {
-            _httpContextAccessor.HttpContext.Request.Headers.TryGetValue("tenantId", out tenantIds);
+            try
+            {
+                _httpContextAccessor.HttpContext.Request.Headers.TryGetValue("tenantId", out tenantIds);
+
+                var firstTenant = tenantIds.FirstOrDefault();
+
+
+                if (tenantIds.Count < 1 || firstTenant == null)
+                {
+                    throw new Exception("No tenant Id provided");
+                }
+
+                long tId;
+                try
+                {
+                    tId = long.Parse(firstTenant);
+                }
+                catch (Exception)
+                {
+
+                    throw new Exception("Tenant Id provided is not in proper format");
+                }
+
+                return tId;
+            }
+            catch(Exception e)
+            {
+                return 0;
+            }
+            /*_httpContextAccessor.HttpContext.Request.Headers.TryGetValue("tenantId", out tenantIds);
 
             var firstTenant = tenantIds.FirstOrDefault();
 
@@ -51,7 +80,7 @@ namespace Shared.Tenancy
                 throw new Exception("Tenant Id provided is not in proper format");
             }
             
-            return tId;
+            return tId;*/
         }
     }
 }
