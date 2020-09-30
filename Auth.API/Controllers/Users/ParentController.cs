@@ -1,0 +1,180 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Auth.Core.Interfaces.Users;
+using Auth.Core.ViewModels.Parent;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Shared.AspNetCore;
+using Shared.ViewModels;
+using Shared.ViewModels.Enums;
+
+namespace Auth.API.Controllers.Users
+{
+    public class ParentController : BaseController
+    {
+        private readonly IParentService _parentService;
+        public ParentController(IParentService parentService)
+        {
+            _parentService = parentService;
+        }
+
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetAllParents(PagingVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+
+            try
+            {
+                var result = await _parentService.GetAllParents(model);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetParentsForStudent([FromQuery]long studId)
+        {
+            if (studId < 1)
+            {
+                return ApiResponse<string>(errors: "Invalid Id provided", codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+            try
+            {
+                var result = await _parentService.GetParentsForStudent(studId);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+
+
+
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetParentById(long Id)
+        {
+            if (Id < 1)
+            {
+                return ApiResponse<string>(errors: "Invalid Id provided", codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+            try
+            {
+                var result = await _parentService.GetParentById(Id);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+
+
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> AddNewParent(AddParentVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+
+            try
+            {
+                var result = await _parentService.AddNewParent(model);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> UpdateParent([FromQuery]long Id, UpdateParentVM vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+
+            try
+            {
+                var result = await _parentService.UpdateParent(Id, vm);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpDelete]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> DeleteParent(long Id)
+        {
+            if (Id < 1)
+            {
+                return ApiResponse<string>(errors: "Invalid Id provided", codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+            try
+            {
+                var result = await _parentService.DeleteParent(Id);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        //[HttpPost]
+        //[ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        //public async Task<IActionResult> AddStaff(StaffVM model)
+        //{
+
+        //}
+
+    }
+}
