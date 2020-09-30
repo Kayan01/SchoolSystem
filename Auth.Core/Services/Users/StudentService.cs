@@ -101,7 +101,7 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<StudentVM>>> GetAllStudentsInSchool(int pageNumber, int pageSize)
+        public async Task<ResultModel<PaginatedList<StudentVM>>> GetAllStudentsInSchool(int pageNumber, int pageSize)
         {
             //use appdbcontext directly so that we can do a join with the auth users table
             var query = _appDbContext.Students.Join(
@@ -116,7 +116,7 @@ namespace Auth.Core.Services
 
             var pagedData = await PaginatedList<StudentVM>.CreateAsync(query, pageNumber, pageSize);
 
-            var result = new ResultModel<List<StudentVM>>
+            var result = new ResultModel<PaginatedList<StudentVM>>
             {
                 Data = pagedData
             };
