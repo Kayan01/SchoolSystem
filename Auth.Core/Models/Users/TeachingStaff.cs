@@ -15,6 +15,8 @@ namespace Auth.Core.Models.Users
         public SchoolClass Class { get; set; }
         public long TenantId { get; set; }
 
+        public Staff Staff { get; set; }
+
 
     }
 }
