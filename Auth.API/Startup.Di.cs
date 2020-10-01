@@ -23,6 +23,8 @@ using Auth.Core.EventHandlers;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.Services;
 using Shared.Net.WorkerService;
+using Auth.Core.Services.Users;
+using Auth.Core.Interfaces.Users;
 
 namespace Auth.API
 {
@@ -105,6 +107,7 @@ namespace Auth.API
             services.AddScoped<IAuthUserManagement, AuthUserManagementService>();
             services.AddScoped<IDocumentService, DocumentService>();
             services.AddScoped<IPublishService, PublishService>();
+            services.AddScoped<ITeacherService, TeacherService>();
             services.AddTransient<AuthHandler>();
         }
     }

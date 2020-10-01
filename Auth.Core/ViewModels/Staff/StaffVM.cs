@@ -13,7 +13,6 @@ namespace Auth.Core.ViewModels.Staff
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string Password { get; set; }
-        [Required]
         public string StaffType { get; set; }
 
         public static implicit operator StaffVM(Models.Staff model)
@@ -23,5 +22,17 @@ namespace Auth.Core.ViewModels.Staff
                 Id = model.Id,
             };
         }
+    }
+
+    public class AddStaffVM
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public long Id { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Password { get; set; }
+        [Required]
+        public string StaffType { get; set; }
     }
 }

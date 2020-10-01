@@ -6,6 +6,6 @@ namespace Shared.ViewModels
 {
     public class TeacherSharedModel : StaffSharedModel
     {
-        public long ClassId { get; set; }
+        public long? ClassId { get; set; }
     }
 }
