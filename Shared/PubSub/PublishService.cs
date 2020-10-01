@@ -51,7 +51,7 @@ namespace Shared.PubSub
             });
             _unitOfWork.SaveChanges();
 
-            await Task.Run(() => Publish(pubMessage)); 
+            Task.Run(() => Publish(pubMessage)); 
             //var BGPublish = new BackgroundPublishService(_serviceScopeFactory, _producerClient);
             //Task.Run(() => BGPublish.Publish(pubMessage));
         }

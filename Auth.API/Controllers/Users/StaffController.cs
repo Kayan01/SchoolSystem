@@ -27,7 +27,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddStaff(AddStaffVM model)
+        public async Task<IActionResult> AddStaff(StaffVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");

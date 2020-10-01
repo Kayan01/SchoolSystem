@@ -78,7 +78,7 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StaffVM>> AddStaff(AddStaffVM model)
+        public async Task<ResultModel<StaffVM>> AddStaff(StaffVM model)
         {
             var result = new ResultModel<StaffVM>();
 
