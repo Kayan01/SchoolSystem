@@ -44,7 +44,6 @@ namespace Auth.Core.Services
         public async Task<ResultModel<List<StaffVM>>> GetAllStaff(int pageNumber, int pageSize)
         {
             //use appdbcontext directly so that we can do a join with the auth users table
-            var tea = _teachingStaffRepo.GetAllIncluding(x => x.Staff.User).ToList();
             var query = _appDbContext.Staffs.Join(
                _appDbContext.Users, student => student.UserId, authUser => authUser.Id,
                (student, authUser) => new StaffVM
@@ -129,7 +128,7 @@ namespace Auth.Core.Services
             _unitOfWork.Commit();
 
             model.Id = staff.Id;
-            //result.Data = model;
+            result.Data = model;
 
             //TODO Refactor, and Move teachers logic to TeachersService
 
