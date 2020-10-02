@@ -9,7 +9,6 @@ namespace Auth.Core.Models
 {
     public class Student : Person
     {
-        public int UserId { get; set; }
         public long? ClassId { get; set; }
         public SchoolClass Class { get; set; }
     }

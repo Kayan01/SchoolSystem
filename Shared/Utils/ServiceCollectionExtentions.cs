@@ -44,6 +44,7 @@ namespace Shared.Utils
 
             //registers tenant identifier service
             self.AddTransient<ITenantResolutionStrategy, TenantHeaderResolutionStrategy>();
+            
         }
     }
 }

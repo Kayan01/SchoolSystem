@@ -4,34 +4,59 @@ using LearningSvc.Core.Services.Interfaces;
 using LearningSvc.Core.ViewModels;
 using Shared.PubSub;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using Shared.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using LearningSvc.Core.Models;
+using Shared.DataAccess.Repository;
+using Shared.DataAccess.EfCore.UnitOfWork;
 
 namespace LearningSvc.Core.EventHandlers
 {
     public class LearningHandler
     {
-        private readonly INotificationService _notificationService;
         private readonly ILogger<LearningHandler> _logger;
+        private readonly IRepository<Student, long> _studentRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public LearningHandler(INotificationService noticeService, ILogger<LearningHandler> logger)
+        public LearningHandler(ILogger<LearningHandler> logger, 
+            IRepository<Student, long> studentRepo,
+            IUnitOfWork unitOfWork,
+            IServiceScopeFactory serviceScopeFactory)
         {
-            _notificationService = noticeService;
             _logger = logger;
+            _unitOfWork = unitOfWork;
+            _studentRepo = studentRepo;
+            /*using var scope = serviceScopeFactory.CreateScope();
+            _unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            _studentRepo = scope.ServiceProvider.GetRequiredService<IRepository<Student, long>>();*/
         }
 
-        public void HandleTest(BusMessage message)
+        public void HandleAddOrUpdateStudent(BusMessage message)
         {
             try
             {
-                var notice = JsonConvert.DeserializeObject<NoticeVM>(message.Data);
+                var data = JsonConvert.DeserializeObject<StudentSharedModel>(message.Data);
 
-                var result = _notificationService.AddNotification(notice).Result;
-                if (result.HasError)
+                var student = _studentRepo.FirstOrDefault(x => x.Id == data.Id && x.TenantId == data.TenantId);
+                if(student == null)
                 {
-                    //throw new Exception(string.Join(",", result.Select(x => x.ErrorMessage)));
-                    _logger.LogError(string.Join(", ", result.ErrorMessages));
+                    student = _studentRepo.Insert(new Student
+                    {
+                        Id = data.Id
+                    });
                 }
+
+                student.TenantId = data.TenantId;
+                student.ClassId = data.ClassId;
+                student.FirstName = data.FirstName;
+                student.LastName = data.LastName;
+                student.Email = data.Email;
+                student.Phone = data.Phone;
+                student.UserId = data.UserId;
+                student.IsActive = data.IsActive;
+                student.IsDeleted = data.IsDeleted;
+
+                _unitOfWork.SaveChanges();
             }
             catch (Exception e)
             {
