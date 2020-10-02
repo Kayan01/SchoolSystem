@@ -1,4 +1,5 @@
-﻿using Shared.Entities.Auditing;
+﻿using Shared.Entities;
+using Shared.Entities.Auditing;
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;
@@ -12,5 +13,7 @@ namespace Auth.Core
         public long UserId { get; set; }
 
         public DateTime DateOfBirth { get; set; }
+
+        public User User { get; set; } //Test this out
     }
 }

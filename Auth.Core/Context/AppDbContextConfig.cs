@@ -57,7 +57,7 @@ namespace Auth.Core.Context
 
             builder.Entity<SchoolSection>().HasData(secs);
             builder.Entity<SchoolClass>().HasData(cls);
-            builder.Entity<Student>().HasData(studts);
+            //builder.Entity<Student>().HasData(studts);
 
 
         }
