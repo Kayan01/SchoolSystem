@@ -23,23 +23,21 @@ namespace Auth.Core.Services.Users
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
-        private readonly AppDbContext _appDbContext;
 
         public TeacherService(UserManager<User> userManager,
             IRepository<TeachingStaff, long> teacherRepo,
             IUnitOfWork unitOfWork,
-            IPublishService publishService,
-            AppDbContext appDbContext)
+            IPublishService publishService)
         {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
-            _appDbContext = appDbContext;
             _teacherRepo = teacherRepo;
             _publishService = publishService;
         }
 
         public async Task<ResultModel<PaginatedModel<TeacherVM>>> GetTeachers(QueryModel model)
         {
+            var result = new ResultModel<PaginatedModel<TeacherVM>>();
             var query = _teacherRepo.GetAll()
                           .Include(x => x.Class)
                           .Include(x => x.Staff.User);
@@ -47,9 +45,9 @@ namespace Auth.Core.Services.Users
             var totalCount = query.Count();
             var pagedData = await PaginatedList<TeachingStaff>.CreateAsync(query, model.PageIndex, model.PageSize);
 
-            return new ResultModel<PaginatedModel<TeacherVM>>(
-                new PaginatedModel<TeacherVM>(pagedData.Select(x => (TeacherVM)x), model.PageIndex, model.PageSize, totalCount));
-            
+            result.Data = new PaginatedModel<TeacherVM>(pagedData.Select(x => (TeacherVM)x), model.PageIndex, model.PageSize, totalCount);
+
+            return result;            
         }
 
         public async Task<ResultModel<TeacherVM>> GetTeacherByUserId(long userId)
@@ -60,7 +58,8 @@ namespace Auth.Core.Services.Users
                             .Include(x => x.Class)
                             .FirstOrDefault(x => x.Staff.UserId == userId);
 
-            return new ResultModel<TeacherVM>(query);
+            result.Data = query;
+            return result ;
         }
 
         public async Task<ResultModel<TeacherVM>> AddTeacher(AddTeacherVM model)
@@ -113,7 +112,7 @@ namespace Auth.Core.Services.Users
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Phone = user.PhoneNumber,
-                ClassId = teacher.ClassId
+                ClassId = teacher.ClassId.Value
             });
 
             result.Data = new TeacherVM
