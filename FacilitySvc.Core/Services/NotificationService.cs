@@ -50,7 +50,7 @@ namespace FacilitySvc.Core.Services
             var data = new Notice { Description = title };
             await _producerClient.Produce("new_user", new BusMessage
             {
-                BusMessageType = (int)BusMessageTypes.NEW_USER,
+                BusMessageType = (int)BusMessageTypes.TEACHER,
                 Data = JsonConvert.SerializeObject(data)
             });
             result.Data = "Okay";
