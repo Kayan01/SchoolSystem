@@ -9,7 +9,7 @@ namespace Auth.Core.ViewModels.School
 {
     public class CreateSchoolVM
     {
-        public long Id { get; internal set; }
+        public long Id { get; set; }
         [Required]
         public string Name { get; set; }
         [Required]

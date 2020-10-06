@@ -14,7 +14,7 @@ using Shared.ViewModels.Enums;
 
 namespace UserManagement.API.Controllers
 {
-    [Route("api/v1/[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     [AllowAnonymous]
     public class SchoolController : BaseController
@@ -52,14 +52,14 @@ namespace UserManagement.API.Controllers
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetSchools([FromQuery] PagingVM vM)
+        public async Task<IActionResult> GetSchools([FromQuery] QueryModel vM)
         {
             try
             {
                 var result = await _schoolService.GetAllSchools(vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {

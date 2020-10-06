@@ -20,52 +20,69 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Auth.Core.Models.Contacts;
 using Microsoft.AspNetCore.Mvc;
 using IPagedList;
+using Shared.Pagination;
+using Microsoft.AspNetCore.Identity;
+using Shared.Enums;
 
 namespace Auth.Core.Services
 {
     public class SchoolService : ISchoolService
     {
+        private readonly IDocumentService _documentService;
         private readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IDocumentService _documentService;
-
-        public SchoolService(IRepository<School, long> schoolRepo, IUnitOfWork unitOfWork, IDocumentService documentService)
+        private readonly UserManager<User> _userManager;
+        public SchoolService(
+            IRepository<School, long> schoolRepo, 
+            IUnitOfWork unitOfWork,
+            IDocumentService documentService,
+            UserManager<User> userManager)
         {
             _unitOfWork = unitOfWork;
             _schoolRepo = schoolRepo;
             _documentService = documentService;
+            _userManager = userManager;
         }
 
-        public async Task<ResultModel<PaginatedList<SchoolVM>>> GetAllSchools(PagingVM model)
+        public async Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model)
         {
-            var query = _schoolRepo.GetAll()
-                .Select(x => new SchoolVM
-                {
-                    Id = x.Id,
-                    Name = x.Name
-                });
-
-            var pagedData = await PaginatedList<SchoolVM>.CreateAsync(query, model.PageNumber, model.PageSize);
-         
-            var result = new ResultModel<PaginatedList<SchoolVM>>
+            var result = new ResultModel<SchoolVM>();
+          
+            
+            _unitOfWork.BeginTransaction();
+            var files = new List<FileUpload>();
+            //save filles
+            if (model.Documents != null && model.Documents.Any())
             {
-                Data = pagedData
+                 files = _documentService.TryUploadSupportingDocuments(model.Documents);
+
+                if (files.Count() != model.Documents.Count())
+                {
+                    result.AddError("Some files could not be uploaded");
+
+                    return result;
+                }
+            }
+         
+
+          
+
+            //add schoool admin
+            var user = new User
+            {
+                FirstName = model.ContactFirstName,
+                LastName = model.ContactLastName,
+                Email = model.ContactEmail,
+                UserName = model.ContactEmail,
+                PhoneNumber = model.ContactPhoneNo,
+                UserType = UserType.Admin,
             };
 
-            return result;
-        }
+            var authResult = await _userManager.CreateAsync(user);
 
-        public async Task<ResultModel<CreateSchoolVM>> AddSchool(CreateSchoolVM model)
-        {
-            var result = new ResultModel<CreateSchoolVM>();
-
-            //save logo
-            var files = _documentService.TryUploadSupportingDocuments(model.Documents);
-
-            if (files.Count() != model.Documents.Count())
+            if (!authResult.Succeeded)
             {
-                result.AddError("Some files could not be uploaded");
-
+                result.AddError(string.Join(';', authResult.Errors.Select(x => x.Description)));
                 return result;
             }
 
@@ -77,7 +94,6 @@ namespace Auth.Core.Services
                 LastName = model.ContactLastName,
                 PhoneNo = model.ContactPhoneNo
             };
-
             var school = _schoolRepo.Insert(
                 new School
                 {
@@ -93,10 +109,52 @@ namespace Auth.Core.Services
 
             await _unitOfWork.SaveChangesAsync();
             model.Id = school.Id;
-            result.Data = model;
+            result.Data = new SchoolVM { 
+             Name = model.Name,
+              State = model.State,
+  
+            
+            };
             return result;
         }
 
+        public async Task<ResultModel<bool>> DeleteSchool(long Id)
+        {
+            var result = new ResultModel<bool>();
+
+            var sch = await _schoolRepo.FirstOrDefaultAsync(Id);
+            if (sch == null)
+            {
+                result.AddError("School does not exist");
+                result.Data = false;
+                return result;
+            }
+            await _schoolRepo.DeleteAsync(Id);
+            await _unitOfWork.SaveChangesAsync();
+            result.Data = true;
+
+            return result;
+        }
+
+        public async Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model)
+        {
+            var query = _schoolRepo.GetAll()
+                .Select(x => new SchoolVM
+                {
+                    Id = x.Id,
+                    Name = x.Name
+                });
+
+            var pagedData = await PaginatedList<SchoolVM>.CreateAsync(query, model.PageIndex, model.PageSize);
+
+            var data = new PaginatedModel<SchoolVM>(pagedData, model.PageIndex, model.PageSize, pagedData.Count);
+            var result = new ResultModel<PaginatedModel<SchoolVM>>
+            {
+                Data = data
+            };
+
+            return result;
+        }
         public async Task<ResultModel<SchoolVM>> GetSchoolById(long Id)
         {
             var result = new ResultModel<SchoolVM>();
@@ -128,24 +186,6 @@ namespace Auth.Core.Services
             await _schoolRepo.UpdateAsync(sch);
             await _unitOfWork.SaveChangesAsync();
             result.Data = model;
-            return result;
-        }
-
-        public async Task<ResultModel<bool>> DeleteSchool(long Id)
-        {
-            var result = new ResultModel<bool>();
-
-            var sch = await _schoolRepo.FirstOrDefaultAsync(Id);
-            if (sch == null)
-            {
-                result.AddError("School does not exist");
-                result.Data = false;
-                return result;
-            }
-            await _schoolRepo.DeleteAsync(Id);
-            await _unitOfWork.SaveChangesAsync();
-            result.Data = true;
-
             return result;
         }
     }
