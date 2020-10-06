@@ -6,7 +6,6 @@ namespace Auth.Core.Models.Users
 {
     public class Parent : Person
     {
-        public long StudentId { get; set; }
-        public Student Student { get; set; }
+        public List<Student> Students { get; set; }
     }
 }
