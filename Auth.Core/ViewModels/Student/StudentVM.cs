@@ -12,13 +12,16 @@ namespace Auth.Core.ViewModels.Student
         public string LastName { get;  set; }
         public string Email { get;  set; }
         public string PhoneNumber { get; set; }
-        public string Password { internal get; set; }
 
         public static implicit operator StudentVM(Models.Student model)
         {
             return model == null ? null : new StudentVM
             {
-                Id = model.Id
+                Id = model.Id,
+                FirstName = model.User.FirstName,
+                LastName = model.User.LastName,
+                Email = model.User.Email,
+                PhoneNumber = model.User.PhoneNumber
             };
         }
     }

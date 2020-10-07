@@ -32,7 +32,7 @@ namespace Auth.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddStudent(AddStudentVM model)
+        public async Task<IActionResult> AddStudent(CreateStudentVM model)
         {
 
             if (model == null)
