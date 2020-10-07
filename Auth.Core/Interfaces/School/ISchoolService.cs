@@ -12,14 +12,13 @@ namespace Auth.Core.Services.Interfaces
 {
     public interface ISchoolService
     {
-        Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model);
-
         Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model);
 
+        Task<ResultModel<bool>> DeleteSchool(long Id);
+
+        Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model);
         Task<ResultModel<SchoolVM>> GetSchoolById(long Id);
 
-        Task<ResultModel<SchoolUpdateVM>> UpdateSchool(SchoolUpdateVM model);
-
-        Task<ResultModel<bool>> DeleteSchool(long Id);
+        Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model);
     }
 }

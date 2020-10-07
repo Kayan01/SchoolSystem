@@ -169,10 +169,10 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<SchoolUpdateVM>> UpdateSchool(SchoolUpdateVM model)
+        public async Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model)
         {
             var sch = await _schoolRepo.FirstOrDefaultAsync(model.Id);
-            var result = new ResultModel<SchoolUpdateVM>();
+            var result = new ResultModel<SchoolVM>();
 
             if (sch == null)
             {
@@ -185,7 +185,7 @@ namespace Auth.Core.Services
 
             await _schoolRepo.UpdateAsync(sch);
             await _unitOfWork.SaveChangesAsync();
-            result.Data = model;
+            result.Data = new SchoolVM { Id = model.Id, Name = model.Name, State = sch.State  };
             return result;
         }
     }

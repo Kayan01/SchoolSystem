@@ -93,7 +93,7 @@ namespace UserManagement.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSchool([FromForm] SchoolUpdateVM vM)
+        public async Task<IActionResult> UpdateSchool([FromForm] UpdateSchoolVM vM)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
