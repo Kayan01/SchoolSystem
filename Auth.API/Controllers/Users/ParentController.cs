@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Interfaces.Users;
 using Auth.Core.ViewModels.Parent;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -12,6 +13,8 @@ using Shared.ViewModels.Enums;
 
 namespace Auth.API.Controllers.Users
 {
+    [Route("api/[controller]/[action]")]
+    [AllowAnonymous]
     public class ParentController : BaseController
     {
         private readonly IParentService _parentService;

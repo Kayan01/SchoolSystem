@@ -1,4 +1,5 @@
 ﻿using Auth.Core.Interfaces.Users;
+using Auth.Core.Models;
 using Auth.Core.Models.Users;
 using Auth.Core.ViewModels.Parent;
 using IPagedList;
@@ -20,26 +21,31 @@ namespace Auth.Core.Services.Users
     public class ParentService : IParentService
     {
         private readonly IRepository<Parent, long> _parentRepo;
+        private readonly IRepository<Student, long> _studentRepo;
         private readonly IUnitOfWork _unitOfWork;
-        public ParentService(IRepository<Parent, long> parentRepo, IUnitOfWork unitOfWork)
+        public ParentService(
+            IRepository<Parent, long> parentRepo,
+            IUnitOfWork unitOfWork,
+            IRepository<Student, long> studentRepo)
         {
             _parentRepo = parentRepo;
             _unitOfWork = unitOfWork;
+            _studentRepo = studentRepo;
         }
-        public async Task<ResultModel<string>> AddNewParent(AddParentVM vm)
+        public async Task<ResultModel<ParentVM>> AddNewParent(AddParentVM vm)
         {
-            var resultModel = new ResultModel<string>();
+            var resultModel = new ResultModel<ParentVM>();
 
             var parent = new Parent
             {
-                StudentId = vm.StudentId,
+                //StudentId = vm.StudentId,
             };
 
             await   _parentRepo.InsertAsync(parent);
 
             await  _unitOfWork.SaveChangesAsync();
 
-            resultModel.Data = "Success";
+            resultModel.Data = (ParentVM)parent;
             return resultModel;
         }
 
@@ -97,10 +103,16 @@ namespace Auth.Core.Services.Users
         {
             var resultModel = new ResultModel<List<ParentVM>>();
 
-            var parents = await _parentRepo.GetAll()
-                .Where(x => x.StudentId == studId)
-                .Select(x => (ParentVM)x)
+            var parents = await _studentRepo.GetAll()
+                .Include(x => x.Parent)
+                .Where(x => x.UserId == studId)
+                .Select(x => new ParentVM
+                {
+                      Name = x.Parent.Name,
+                       Address = x.Parent.Address
+                })
                 .ToListAsync();
+
 
             if (parents.Count < 1)
             {
@@ -113,9 +125,9 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<string>> UpdateParent(long Id, UpdateParentVM vm)
+        public async Task<ResultModel<ParentVM>> UpdateParent(long Id, UpdateParentVM vm)
         {
-            var resultModel = new ResultModel<string>();
+            var resultModel = new ResultModel<ParentVM>();
 
             var parents = await _parentRepo.FirstOrDefaultAsync(Id);
 
@@ -131,7 +143,7 @@ namespace Auth.Core.Services.Users
 
             await _unitOfWork.SaveChangesAsync();
 
-            resultModel.Data = "Updated";
+            resultModel.Data = (ParentVM)parents;
 
             return resultModel;
         }

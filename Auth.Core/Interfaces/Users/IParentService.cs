@@ -14,8 +14,8 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<List<ParentVM>>> GetParentsForStudent(long studId);
         Task<ResultModel<ParentVM>> GetParentById(long Id);
 
-        Task<ResultModel<string>> AddNewParent(AddParentVM vm);
-        Task<ResultModel<string>> UpdateParent(long Id,UpdateParentVM vm);
+        Task<ResultModel<ParentVM>> AddNewParent(AddParentVM vm);
+        Task<ResultModel<ParentVM>> UpdateParent(long Id,UpdateParentVM vm);
         Task<ResultModel<string>> DeleteParent(long Id);
 
 

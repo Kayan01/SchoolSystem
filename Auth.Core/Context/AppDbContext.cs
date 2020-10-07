@@ -27,5 +27,6 @@ namespace Auth.Core.Context
         public DbSet<SchoolClass> Classes { get; set; }
         public DbSet<ClassArm> ClassGroups { get; set; }
         public DbSet<SchoolSection> SchoolSections { get; set; }
+        public DbSet<Parent> Parents { get; set; }
     }
 }
