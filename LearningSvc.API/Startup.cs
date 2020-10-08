@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using LearningSvc.Core.Context;
 using Shared.Utils;
+using Shared.Tenancy;
 
 namespace LearningSvc.API
 {
@@ -45,6 +46,8 @@ namespace LearningSvc.API
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            //app.UseMiddleware<TenantInfoMiddleware>();
 
             app.UseRouting();
             app.UseAuthentication();

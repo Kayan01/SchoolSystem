@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Shared.Entities.Auditing;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Shared.ViewModels
+namespace LearningSvc.Core.Models
 {
-    public class PersonSharedModel
+    public abstract class Person : AuditedEntity<long>
     {
         public long UserId { get; set; }
         public bool IsDeleted { get; set; }
