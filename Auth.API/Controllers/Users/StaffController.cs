@@ -13,7 +13,7 @@ using Shared.ViewModels.Enums;
 
 namespace UserManagement.API.Controllers
 {
-    [Route("api/v1/[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     [AllowAnonymous]
     public class StaffController : BaseController
