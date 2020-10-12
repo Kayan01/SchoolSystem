@@ -12,7 +12,7 @@ using Shared.ViewModels.Enums;
 
 namespace Auth.API.Controllers
 {
-    [Route("api/v1/[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class ClassArmController : BaseController
     {
