@@ -14,7 +14,7 @@ namespace Shared.PubSub
 {
     public interface IBackgoundPublishService
     {
-        void Publish(PublishedMessage message);
+        Task RetryPublish();
     }
     public class BackgroundPublishService : IBackgoundPublishService
     {
@@ -22,43 +22,90 @@ namespace Shared.PubSub
         private IRepository<PublishedMessage, Guid> _pubMessageRepository;
         private IUnitOfWork _unitOfWork;
         private ILogger<BackgroundPublishService> _logger;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
-        private bool retryServiceIsRunning;
 
-        public BackgroundPublishService(IServiceScopeFactory serviceScopeFactory,
-            IProducerClient<BusMessage> producerClient)
+        public BackgroundPublishService(IServiceScopeFactory serviceScopeFactory)
         {
-            using var scope = serviceScopeFactory.CreateScope();
+            var scope = serviceScopeFactory.CreateScope();
+            _producerClient = scope.ServiceProvider.GetRequiredService<IProducerClient<BusMessage>>();
             _unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            _unitOfWork = scope.ServiceProvider.CreateScope().ServiceProvider.GetRequiredService<IUnitOfWork>();
-            _pubMessageRepository = scope.ServiceProvider.CreateScope().ServiceProvider.GetRequiredService<IRepository<PublishedMessage, Guid>>();
+            _pubMessageRepository = scope.ServiceProvider.GetRequiredService<IRepository<PublishedMessage, Guid>>();
             _logger = scope.ServiceProvider.GetRequiredService<ILogger<BackgroundPublishService>>();
         }
 
-        public void Publish(PublishedMessage message)
+        public async Task RetryPublish()
         {
-            var pubMessage = _pubMessageRepository.FirstOrDefault(x => x.Id == message.Id);
+            //Reset Message Stuck on Sending
+            await ResetMessageStuckInSending();
+            //Get all Messages to be sent
+            var pubMessages = _pubMessageRepository.GetAll().AsNoTracking().Where(x => x.Status == Enums.MessageStatus.Pending).AsNoTracking().Take(100).ToList();
+            if (pubMessages.Any())
+            {
+                foreach (var pubMessage in pubMessages)
+                {
+                    //Try to publish
+                    var pubMessageResult = TryPublishMessage(pubMessage);
+                    if (pubMessageResult.Status != Enums.MessageStatus.Completed)
+                        break;
+                }
+            }
+            Console.WriteLine($"Delaying for 30 mins. . . ");
+            Thread.Sleep(60000 * 30);// delay for 30 mins 60000 * 30
+        }
+
+        private async Task ResetMessageStuckInSending()
+        {
+            Console.WriteLine($"Reseting ...");
+            //Reset all message stuck in sending for over 20 mins
+            var twentyMinsAgo = DateTime.Now.AddMinutes(20);
+            var stuckMessages = _pubMessageRepository.GetAll().Where(x => x.Status == Enums.MessageStatus.Sending && x.LastModificationTime <= twentyMinsAgo ||
+                x.Status == Enums.MessageStatus.Sending && x.CreationTime <= twentyMinsAgo && x.LastModificationTime == null).ToList();
+
+            stuckMessages.ForEach(x => x.Status = Enums.MessageStatus.Pending);
+            Console.WriteLine($"Reseting ...{stuckMessages.Count()}");
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        private PublishedMessage TryPublishMessage(PublishedMessage pubMessage)
+        {
+            Console.WriteLine($"Attempting To Publishing...");
+            var busMessage = new BusMessage
+            {
+                Data = pubMessage.Message,
+                BusMessageType = (int)pubMessage.MessageType,
+            };
+            pubMessage = _pubMessageRepository.FirstOrDefault(x => x.Id == pubMessage.Id);
+
+            if (pubMessage.Status != Enums.MessageStatus.Pending)
+                return pubMessage;
+
+            pubMessage.Status = Enums.MessageStatus.Sending;
+            _pubMessageRepository.Update(pubMessage);
+            _unitOfWork.SaveChanges();
 
             try
             {
-                var deliveryResult = _producerClient.Produce(message.Topic,
-                        new BusMessage((int)message.MessageType, message.Message)).Result;
-
+                var deliveryResult = _producerClient.Produce(pubMessage.Topic, busMessage).Result;
                 if (deliveryResult.Status != Confluent.Kafka.PersistenceStatus.NotPersisted)
+                {
                     pubMessage.Status = Enums.MessageStatus.Completed;
+                    _pubMessageRepository.Update(pubMessage);
+                    _unitOfWork.SaveChanges();
+                }
+                else
+                {
+                    pubMessage.Status = Enums.MessageStatus.Pending;
+                    _pubMessageRepository.Update(pubMessage);
+                    _unitOfWork.SaveChanges();
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to broadcast Message: {ex.Message}");
                 pubMessage.Status = Enums.MessageStatus.Pending;
-            }
-            finally
-            {
                 _unitOfWork.SaveChanges();
-
-                /*if (!retryServiceIsRunning)
-                    RetryPendingMessages();*///begin retry protocol
             }
+
+            return pubMessage;
         }
     }
 }

@@ -6,10 +6,12 @@ using System.Text;
 
 namespace LearningSvc.Core.Models
 {
-    public class Teacher : AuditedEntity<long>, ITenantModelType
+    public class Teacher : Person, ITenantModelType
     {
         public long TenantId { get; set; }
-        public string Name { get; set; }
+        public long? ClassId { get; set; }
+
+        public virtual SchoolClass Class { get; set; }
 
     }
 }

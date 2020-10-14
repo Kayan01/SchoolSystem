@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Shared.DataAccess.EfCore.Context;
 using Auth.Core.Context;
 using Shared.Utils;
+using Shared.Tenancy;
 
 namespace Auth.API
 {
@@ -47,6 +48,8 @@ namespace Auth.API
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            //app.UseMiddleware<TenantInfoMiddleware>();
 
             app.UseRouting();
             app.UseAuthentication();

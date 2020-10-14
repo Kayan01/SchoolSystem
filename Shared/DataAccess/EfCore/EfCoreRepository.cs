@@ -304,7 +304,8 @@ namespace Shared.DataAccess.EfCore
             if (typeof(ITenantModelType).IsAssignableFrom(typeof(TEntity)))
             {
                 var tenantId = _tenantProvider.GetTenantIdentifier();
-                query = Table.Cast<ITenantModelType>().Where(x => x.TenantId == tenantId).Cast<TEntity>();
+                if(tenantId != 0)
+                    query = Table.Cast<ITenantModelType>().Where(x => x.TenantId == tenantId).Cast<TEntity>();
             }
 
             return query;
