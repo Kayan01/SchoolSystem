@@ -18,15 +18,13 @@ namespace LearningSvc.Core.Models
         public DateTime DueDate { get; set; }
         public string Title { get; set; }
         public string Body { get; set; }
+        public int TotalScore { get; set; }
 
-        [ForeignKey(nameof(FileUpload))]
-        public Guid? AttachmentId { get; set; }
-
-        public FileUpload Attachment { get; set; }
         public Teacher Teacher { get; set; }
         public Subject Subject { get; set; }
         public SchoolClass SchoolClass { get; set; }
 
+        public ICollection<FileUpload> Attachments { get; set; }
         public ICollection<AssignmentAnswer> AssignmentAnswers { get; set; }
     }
 }
