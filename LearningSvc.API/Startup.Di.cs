@@ -98,10 +98,12 @@ namespace LearningSvc.API
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
 
+            services.AddTransient<LearningHandler>();
+
             services.AddScoped<IFileStorageService, FileStorageService>();
             //services.AddTransient<IFileUploadService, FileUploadService>();     
             services.AddScoped<INotificationService, NotificationService>();
-            services.AddTransient<LearningHandler>();
+            services.AddScoped<ITimeTableService, TimeTableService>();
         }
     }
 }
