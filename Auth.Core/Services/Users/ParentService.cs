@@ -67,7 +67,7 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<IPagedList<ParentVM>>> GetAllParents(PagingVM vm)
+        public async Task<ResultModel<IPagedList<ParentVM>>> GetAllParents(QueryModel vm)
         {
 
             var resultModel = new ResultModel<IPagedList<ParentVM>>();
@@ -75,7 +75,7 @@ namespace Auth.Core.Services.Users
             var data = await _parentRepo.GetAll().Select(p => new ParentVM
             {
 
-            }).ToPagedListAsync(vm.PageNumber, vm.PageSize);
+            }).ToPagedListAsync(vm.PageIndex, vm.PageSize);
 
             resultModel.Data = data;
 

@@ -26,7 +26,7 @@ namespace Auth.API.Controllers.Users
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllParents(PagingVM model)
+        public async Task<IActionResult> GetAllParents(QueryModel model)
         {
             if (!ModelState.IsValid)
             {

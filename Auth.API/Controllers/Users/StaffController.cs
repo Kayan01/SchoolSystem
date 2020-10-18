@@ -54,12 +54,12 @@ namespace UserManagement.API.Controllers
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllStaffInSchool([FromQuery] PagingVM vM)
+        public async Task<IActionResult> GetAllStaffInSchool([FromQuery] QueryModel vM)
         {
 
             try
             {
-                var result = await _staffService.GetAllStaff(vM.PageNumber, vM.PageSize);
+                var result = await _staffService.GetAllStaff(vM.PageIndex, vM.PageSize);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
