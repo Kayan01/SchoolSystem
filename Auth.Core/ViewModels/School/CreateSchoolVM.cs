@@ -13,6 +13,8 @@ namespace Auth.Core.ViewModels.School
         [Required]
         public string Name { get; set; }
         [Required]
+        public string DomainName { get; set; }
+        [Required]
         public string WebsiteAddress { get; set; }
         [Required]
         public string Address { get; set; }

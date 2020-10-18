@@ -17,12 +17,16 @@ using Shared.Entities;
 using Shared.FileStorage;
 using Microsoft.OpenApi.Extensions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Auth.Core.Models.Contacts;
 using Microsoft.AspNetCore.Mvc;
 using IPagedList;
 using Shared.Pagination;
 using Microsoft.AspNetCore.Identity;
 using Shared.Enums;
+using Microsoft.AspNetCore.Http;
+using ExcelManager;
+using Microsoft.AspNetCore.Identity;
+using Shared.Enums;
+using Auth.Core.Models.Users;
 
 namespace Auth.Core.Services
 {
@@ -56,6 +60,12 @@ namespace Auth.Core.Services
             {
                  files = _documentService.TryUploadSupportingDocuments(model.Documents);
 
+            return result;
+        }
+
+        public async Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model)
+        {
+            var result = new ResultModel<SchoolVM>();
                 if (files.Count() != model.Documents.Count())
                 {
                     result.AddError("Some files could not be uploaded");
@@ -65,10 +75,11 @@ namespace Auth.Core.Services
             }
          
 
-          
+            _unitOfWork.BeginTransaction();
+            //save logo
+            var files = _documentService.TryUploadSupportingDocuments(model.Documents);
 
-            //add schoool admin
-            var user = new User
+            if (files.Count() != model.Documents.Count())
             {
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
@@ -86,53 +97,57 @@ namespace Auth.Core.Services
                 return result;
             }
 
+            //add auth user
+            var user = new User
+            {
+                FirstName = model.ContactFirstName,
+                LastName = model.ContactLastName,
+                Email = model.ContactEmail,
+                UserName = model.ContactEmail,
+                PhoneNumber = model.ContactPhoneNo,
+                UserType = UserType.Admin,
+            };
+            var userResult = await _userManager.CreateAsync(user, model.ContactPhoneNo);
+
+            if (!userResult.Succeeded)
+            {
+                result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                return result;
+            }
+
+
             //todo: add more props
-            var contactDetails = new SchoolContactDetails
+            var contactDetails = new Admin
             {
                 Email = model.ContactEmail,
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
-                PhoneNo = model.ContactPhoneNo
+                PhoneNo = model.ContactPhoneNo,
+                IsPrimaryContact = true
             };
-            var school = _schoolRepo.Insert(
+            var school =
                 new School
                 {
                     Name = model.Name,
+                    DomainName = model.DomainName,
                     Address = model.Address,
-                    City = model.City,
-                    ContactDetails = contactDetails,
+                    City = model.City,                    
                     Country = model.Country,
                     State = model.State,
                     WebsiteAddress = model.WebsiteAddress,
                     FileUploads = files
-                });
+                };
 
-            await _unitOfWork.SaveChangesAsync();
-            model.Id = school.Id;
-            result.Data = new SchoolVM { 
-             Name = model.Name,
-              State = model.State,
-  
-            
-            };
-            return result;
-        }
+            school.Admins.Add(contactDetails);
 
-        public async Task<ResultModel<bool>> DeleteSchool(long Id)
-        {
-            var result = new ResultModel<bool>();
+            _schoolRepo.Insert(school);
 
-            var sch = await _schoolRepo.FirstOrDefaultAsync(Id);
-            if (sch == null)
-            {
-                result.AddError("School does not exist");
-                result.Data = false;
-                return result;
-            }
-            await _schoolRepo.DeleteAsync(Id);
-            await _unitOfWork.SaveChangesAsync();
-            result.Data = true;
+           await _unitOfWork.SaveChangesAsync();
 
+            _unitOfWork.Commit();
+
+
+            result.Data = school;
             return result;
         }
 
@@ -185,8 +200,103 @@ namespace Auth.Core.Services
 
             await _schoolRepo.UpdateAsync(sch);
             await _unitOfWork.SaveChangesAsync();
-            result.Data = new SchoolVM { Id = model.Id, Name = model.Name, State = sch.State  };
+            result.Data = model;
             return result;
         }
+
+        public async Task<ResultModel<bool>> DeleteSchool(long Id)
+        {
+            var result = new ResultModel<bool>();
+
+            var sch = await _schoolRepo.FirstOrDefaultAsync(Id);
+            if (sch == null)
+            {
+                result.AddError("School does not exist");
+                result.Data = false;
+                return result;
+            }
+            await _schoolRepo.DeleteAsync(Id);
+            await _unitOfWork.SaveChangesAsync();
+            result.Data = true;
+
+            return result;
+        }
+
+        public async Task<ResultModel<List<SchoolVM>>> AddBulkSchool(IFormFile excelfile)
+        {
+            var result = new ResultModel<List<SchoolVM>>();
+            var stream = excelfile.OpenReadStream();
+            var excelReader = new ExcelReader(stream);
+
+            var importedData = excelReader.ReadAllSheets<CreateSchoolVM>(false);
+
+            //check if imported data contains any data
+            if (importedData.Count < 0)
+            {
+                result.AddError("No data was imported");
+
+                return result;
+            }
+
+            foreach (var model in importedData)
+            {
+                //add auth user
+                var user = new User
+                {
+                    FirstName = model.ContactFirstName,
+                    LastName = model.ContactLastName,
+                    Email = model.ContactEmail,
+                    UserName = model.ContactEmail,
+                    PhoneNumber = model.ContactPhoneNo,
+                    UserType = UserType.Admin,
+                };
+                var userResult = await _userManager.CreateAsync(user, model.ContactPhoneNo);
+
+                if (!userResult.Succeeded)
+                {
+                    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                    return result;
+                }
+
+
+                //todo: add more props
+                var contactDetails = new Admin
+                {
+                    Email = model.ContactEmail,
+                    FirstName = model.ContactFirstName,
+                    LastName = model.ContactLastName,
+                    PhoneNo = model.ContactPhoneNo,
+                    IsPrimaryContact = true
+                };
+                var school =
+                    new School
+                    {
+                        Name = model.Name,
+                        DomainName = model.DomainName,
+                        Address = model.Address,
+                        City = model.City,
+                        Country = model.Country,
+                        State = model.State,
+                        WebsiteAddress = model.WebsiteAddress
+                    };
+
+                school.Admins.Add(contactDetails);
+
+                _schoolRepo.Insert(school);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                _unitOfWork.Commit();
+            }
+
+            throw new NotImplementedException();
+        }
+
+        //private async School GetSchoolFromVM(CreateSchoolVM vm)
+        //{
+
+        //}
     }
+
+
 }
