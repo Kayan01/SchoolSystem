@@ -58,14 +58,7 @@ namespace Auth.Core.Services
             //save filles
             if (model.Documents != null && model.Documents.Any())
             {
-                 files = _documentService.TryUploadSupportingDocuments(model.Documents);
-
-            return result;
-        }
-
-        public async Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model)
-        {
-            var result = new ResultModel<SchoolVM>();
+                files = _documentService.TryUploadSupportingDocuments(model.Documents);
                 if (files.Count() != model.Documents.Count())
                 {
                     result.AddError("Some files could not be uploaded");
@@ -73,30 +66,6 @@ namespace Auth.Core.Services
                     return result;
                 }
             }
-         
-
-            _unitOfWork.BeginTransaction();
-            //save logo
-            var files = _documentService.TryUploadSupportingDocuments(model.Documents);
-
-            if (files.Count() != model.Documents.Count())
-            {
-                FirstName = model.ContactFirstName,
-                LastName = model.ContactLastName,
-                Email = model.ContactEmail,
-                UserName = model.ContactEmail,
-                PhoneNumber = model.ContactPhoneNo,
-                UserType = UserType.Admin,
-            };
-
-            var authResult = await _userManager.CreateAsync(user);
-
-            if (!authResult.Succeeded)
-            {
-                result.AddError(string.Join(';', authResult.Errors.Select(x => x.Description)));
-                return result;
-            }
-
             //add auth user
             var user = new User
             {
@@ -115,7 +84,6 @@ namespace Auth.Core.Services
                 return result;
             }
 
-
             //todo: add more props
             var contactDetails = new Admin
             {
@@ -131,7 +99,7 @@ namespace Auth.Core.Services
                     Name = model.Name,
                     DomainName = model.DomainName,
                     Address = model.Address,
-                    City = model.City,                    
+                    City = model.City,
                     Country = model.Country,
                     State = model.State,
                     WebsiteAddress = model.WebsiteAddress,
@@ -142,8 +110,7 @@ namespace Auth.Core.Services
 
             _schoolRepo.Insert(school);
 
-           await _unitOfWork.SaveChangesAsync();
-
+            await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Commit();
 
 
@@ -222,9 +189,9 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<SchoolVM>>> AddBulkSchool(IFormFile excelfile)
+        public async Task<ResultModel<bool>> AddBulkSchool(IFormFile excelfile)
         {
-            var result = new ResultModel<List<SchoolVM>>();
+            var result = new ResultModel<bool>();
             var stream = excelfile.OpenReadStream();
             var excelReader = new ExcelReader(stream);
 
@@ -281,21 +248,19 @@ namespace Auth.Core.Services
                     };
 
                 school.Admins.Add(contactDetails);
-
+                
                 _schoolRepo.Insert(school);
-
-                await _unitOfWork.SaveChangesAsync();
-
-                _unitOfWork.Commit();
             }
 
-            throw new NotImplementedException();
+            await _unitOfWork.SaveChangesAsync();
+
+            _unitOfWork.Commit();
+
+            result.Data = true;
+
+            return result;
         }
 
-        //private async School GetSchoolFromVM(CreateSchoolVM vm)
-        //{
-
-        //}
     }
 
 
