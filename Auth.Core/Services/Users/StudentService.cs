@@ -114,7 +114,6 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInSchool(QueryModel model)
         {
-            //use appdbcontext directly so that we can do a join with the auth users table
 
             var result = new ResultModel<PaginatedModel<StudentVM>>();
 
@@ -189,17 +188,17 @@ namespace Auth.Core.Services
             await _unitOfWork.SaveChangesAsync();
 
             ////PublishMessage
-            //await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
-            //{
-            //    IsActive = true,
-            //    ClassId = stud.ClassId,
-            //    TenantId = stud.TenantId,
-            //    UserId = stud.UserId,
-            //    FirstName = userModel.FirstName,
-            //    LastName = userModel.LastName,
-            //    Email = userModel.Email,
-            //    Phone = userModel.PhoneNumber
-            //});
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
+            {
+                IsActive = true,
+                ClassId = stud.ClassId,
+                TenantId = stud.TenantId,
+                UserId = stud.UserId,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Phone = user.PhoneNumber
+            });
 
             result.Data = stud;
             return result;
