@@ -13,8 +13,6 @@ using Auth.API.Svc;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Auth.Core.Context;
 using Shared.PubSub;
 using Microsoft.AspNetCore.Hosting;
@@ -25,6 +23,7 @@ using Auth.Core.Services;
 using Shared.Net.WorkerService;
 using Auth.Core.Services.Users;
 using Auth.Core.Interfaces.Users;
+using Shared.Tenancy;
 
 namespace Auth.API
 {
@@ -32,6 +31,8 @@ namespace Auth.API
     {
         public void ConfigureDIService(IServiceCollection services)
         {
+            //services.AddScoped<TenantInfo>();
+
             services.AddTransient<DbContext, AppDbContext>();
 
             services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
@@ -68,12 +69,12 @@ namespace Auth.API
                 {
                     switch (message.BusMessageType)
                     {
-                        case (int)BusMessageTypes.NEW_USER:
+                        case (int)BusMessageTypes.TEACHER:
                             {
                                 handler.HandleTest(message);
                                 break;
                             }
-                        case (int)BusMessageTypes.EDIT_USER:
+                        case (int)BusMessageTypes.TEACHER_UPDATE:
                             {
                                 handler.HandleTest(message);
                                 break;
@@ -86,6 +87,7 @@ namespace Auth.API
             services.AddSingleton<BoundedMessageChannel<BusMessage>>();
             services.AddHostedService<EventHubProcessorService>();
             services.AddHostedService<EventHubReaderService>();
+            services.AddHostedService<PublishMessageBackgroundService>();
 
             //Permission not needed here
             //services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();

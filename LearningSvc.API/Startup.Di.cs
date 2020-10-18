@@ -23,6 +23,7 @@ using Shared.PubSub.KafkaImpl;
 using LearningSvc.Core.Services.Interfaces;
 using LearningSvc.Core.Services;
 using Shared.Net.WorkerService;
+using Shared.Tenancy;
 
 namespace LearningSvc.API
 {
@@ -30,6 +31,8 @@ namespace LearningSvc.API
     {
         public void ConfigureDIService(IServiceCollection services)
         {
+           //services.AddTransient<TenantInfo>();
+
             services.AddTransient<DbContext, AppDbContext>();
 
             services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
@@ -67,8 +70,17 @@ namespace LearningSvc.API
                     switch (message.BusMessageType)
                     {
                         case (int)BusMessageTypes.STUDENT:
+                        case (int)BusMessageTypes.STUDENT_UPDATE:
+                        case (int)BusMessageTypes.STUDENT_DELETE:
                             {
                                 handler.HandleAddOrUpdateStudent(message);
+                                break;
+                            }
+                        case (int)BusMessageTypes.TEACHER:
+                        case (int)BusMessageTypes.TEACHER_UPDATE:
+                        case (int)BusMessageTypes.TEACHER_DELETE:
+                            {
+                                handler.HandleAddOrUpdateTeacher(message);
                                 break;
                             }
                     }
@@ -86,10 +98,12 @@ namespace LearningSvc.API
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
 
+            services.AddTransient<LearningHandler>();
+
             services.AddScoped<IFileStorageService, FileStorageService>();
             //services.AddTransient<IFileUploadService, FileUploadService>();     
             services.AddScoped<INotificationService, NotificationService>();
-            services.AddTransient<LearningHandler>();
+            services.AddScoped<ITimeTableService, TimeTableService>();
         }
     }
 }

@@ -71,7 +71,7 @@ namespace FacilitySvc.API
                                 handler.HandleTest(message);
                                 break;
                             }
-                        case (int)BusMessageTypes.EDIT_USER:
+                        case (int)BusMessageTypes.TEACHER:
                             {
                                 handler.HandleTest(message);
                                 break;

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using LearningSvc.Core.Models.TimeTable;
 
 namespace LearningSvc.Core.Context
 {
@@ -37,13 +38,15 @@ namespace LearningSvc.Core.Context
 
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<AssignmentAnswer> AssignmentAnswers { get; set; }
-        public DbSet<Attendance> Attendances { get; set; }
-        public DbSet<ClassSession> ClassSessions { get; set; }
-        public DbSet<Exercise> Exercises { get; set; }
-        public DbSet<ExerciseAnswer> ExerciseAnswers { get; set; }
+        //public DbSet<Attendance> Attendances { get; set; }
+        //public DbSet<VirtualClassSession> VirtualClassSessions { get; set; }
+        //public DbSet<Exercise> Exercises { get; set; }
+        //public DbSet<ExerciseAnswer> ExerciseAnswers { get; set; }
         public DbSet<SchoolClass> SchoolClasses { get; set; }
         public DbSet<Student> Students { get; set; }
+        public DbSet<Subject> Subjects { get; set; }
         public DbSet<Teacher> Teachers { get; set; }
-        public DbSet<TimeTable> TimeTables { get; set; }
+        public DbSet<Period> Periods { get; set; }
+        public DbSet<TimeTableCell> TimeTableCells { get; set; }
     }
 }

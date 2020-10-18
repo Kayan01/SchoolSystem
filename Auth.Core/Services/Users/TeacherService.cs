@@ -104,6 +104,7 @@ namespace Auth.Core.Services.Users
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
+                Id = teacher.Id,
                 IsActive = true,
                 StaffType = StaffType.Teacher,
                 TenantId = teacher.TenantId,
@@ -160,6 +161,20 @@ namespace Auth.Core.Services.Users
             _unitOfWork.SaveChanges();
             _unitOfWork.Commit();
 
+            await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER_UPDATE, new TeacherSharedModel
+            {
+                Id = teacher.Id,
+                IsActive = true,
+                StaffType = StaffType.Teacher,
+                TenantId = teacher.TenantId,
+                UserId = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Phone = user.PhoneNumber,
+                ClassId = teacher.ClassId
+            });
+
             result.Data = teacher;
             return result;
         }
@@ -169,7 +184,7 @@ namespace Auth.Core.Services.Users
             //TODO add IS active Status to Staff or Teacher
             var result = new ResultModel<bool>();
 
-            var teacher = await _teacherRepo.FirstOrDefaultAsync(x => x.Staff.UserId == userId);
+            var teacher = await _teacherRepo.GetAllIncluding(x => x.Staff.User).FirstOrDefaultAsync(x => x.Staff.UserId == userId);
 
             if (teacher == null)
             {
@@ -179,6 +194,20 @@ namespace Auth.Core.Services.Users
             //TODO disable teacher
             
             _unitOfWork.SaveChanges();
+            await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER_DELETE, new TeacherSharedModel
+            {
+                Id = teacher.Id,
+                IsActive = false,
+                StaffType = StaffType.Teacher,
+                TenantId = teacher.TenantId,
+                UserId = teacher.Staff.UserId,
+                Email = teacher.Staff.User.Email,
+                FirstName = teacher.Staff.User.FirstName,
+                LastName = teacher.Staff.User.LastName,
+                Phone = teacher.Staff.User.PhoneNumber,
+                ClassId = teacher.ClassId
+            });
+
             result.Data = true;
             return result;
         }
