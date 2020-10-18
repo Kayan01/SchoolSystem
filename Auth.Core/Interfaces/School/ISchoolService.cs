@@ -21,5 +21,7 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<SchoolVM>> GetSchoolById(long Id);
 
         Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model);
+
+        Task<ResultModel<bool>> DeleteSchool(long Id);
     }
 }
