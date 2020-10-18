@@ -105,10 +105,11 @@ namespace Auth.Core.Services.Users
 
             var parents = await _studentRepo.GetAll()
                 .Include(x => x.Parent)
+                .ThenInclude(x => x.User)
                 .Where(x => x.UserId == studId)
                 .Select(x => new ParentVM
                 {
-                      Name = x.Parent.Name,
+                      Name = x.Parent.User.FullName,
                        Address = x.Parent.Address
                 })
                 .ToListAsync();
