@@ -11,10 +11,10 @@ namespace Auth.Core.Models.Map
     {
         public void Configure(EntityTypeBuilder<Staff> builder)
         {
-            builder.HasOne(a => a.TeachingStaff)
-                .WithOne(b => b.Staff)
-                .HasForeignKey<TeachingStaff>(b => b.Id)
-                .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(a => a.TeachingStaff)
+            //    .WithOne(b => b.Staff)
+            //    .HasForeignKey<TeachingStaff>(b => b.Id)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
            
         }
