@@ -175,13 +175,24 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<bool>();
 
-            var sch = await _schoolRepo.FirstOrDefaultAsync(Id);
+            var sch = await _schoolRepo.GetAll()
+                .Include(x => x.SchoolSections)
+                .Include(x=> x.Staffs)
+                .Include(x => x.Students)
+                .Include(x => x.TeachingStaffs)
+                .Where(x => x.Id == Id)
+                .FirstOrDefaultAsync();
+
+
             if (sch == null)
             {
                 result.AddError("School does not exist");
                 result.Data = false;
                 return result;
             }
+
+           
+
             await _schoolRepo.DeleteAsync(Id);
             await _unitOfWork.SaveChangesAsync();
             result.Data = true;
