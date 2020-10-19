@@ -345,3 +345,5 @@ healthchecksdb
 */FileStore/*
 */Log/*
 /UserManagement/UserManagement.Core/Migrations
+/Auth.Tests
+/Auth.Test
