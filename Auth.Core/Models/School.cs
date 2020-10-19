@@ -18,5 +18,10 @@ namespace Auth.Core.Models
         public string Country { get; set; }
         public List<Admin> Admins { get; set; }
         public List<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
+
+        public List<Student> Students { get; set; }
+        public List<Staff> Staffs { get; set; }
+        public List<TeachingStaff> TeachingStaffs { get; set; }
+        public List<SchoolSection> SchoolSections { get; set; }
     }
 }
