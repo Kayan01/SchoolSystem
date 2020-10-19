@@ -6,15 +6,15 @@ using Auth.Core.Models;
 
 namespace Auth.Core.ViewModels
 {
-   public class SchoolUpdateVM
+   public class UpdateSchoolVM
     {   
         [Required]
         public long Id { get; set; }
         public string Name { get; set; }
 
-        public static implicit operator SchoolUpdateVM(Models.School model)
+        public static implicit operator UpdateSchoolVM(Models.School model)
         {
-            return model == null ? null : new SchoolUpdateVM
+            return model == null ? null : new UpdateSchoolVM
             {
                 Id = model.Id,
                 Name = model.Name

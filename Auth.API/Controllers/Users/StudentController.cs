@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
+using Auth.Core.ViewModels.Staff;
 using Auth.Core.ViewModels.Student;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -31,7 +32,7 @@ namespace Auth.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddStudent(StudentVM model)
+        public async Task<IActionResult> AddStudent(CreateStudentVM model)
         {
 
             if (model == null)
@@ -59,11 +60,11 @@ namespace Auth.API.Controllers
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllStudent([FromQuery] PagingVM vM)
+        public async Task<IActionResult> GetAllStudent([FromQuery] QueryModel vM)
         { 
             try
             {
-                var result = await _studentService.GetAllStudentsInSchool(vM.PageNumber, vM.PageSize);
+                var result = await _studentService.GetAllStudentsInSchool(vM);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
