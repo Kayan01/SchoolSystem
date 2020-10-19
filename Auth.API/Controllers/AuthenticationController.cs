@@ -24,7 +24,7 @@ using Auth.API.ViewModel;
 
 namespace Auth.API.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/v1/[controller]/[action]")]
     public class AuthenticationController : BaseController
     {
         private readonly IOptions<IdentityOptions> _identityOptions;

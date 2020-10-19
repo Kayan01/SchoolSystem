@@ -13,7 +13,7 @@ using Shared.ViewModels.Enums;
 
 namespace Auth.API.Controllers.Users
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/v1/[controller]/[action]")]
     [AllowAnonymous]
     public class ParentController : BaseController
     {

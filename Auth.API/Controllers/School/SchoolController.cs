@@ -14,7 +14,7 @@ using Shared.ViewModels.Enums;
 
 namespace UserManagement.API.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/v1/[controller]/[action]")]
     [ApiController]
     [AllowAnonymous]
     public class SchoolController : BaseController
