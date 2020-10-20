@@ -27,7 +27,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddStaff(StaffVM model)
+        public async Task<IActionResult> AddStaff(AddStaffVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -59,7 +59,7 @@ namespace UserManagement.API.Controllers
 
             try
             {
-                var result = await _staffService.GetAllStaff(vM.PageIndex, vM.PageSize);
+                var result = await _staffService.GetAllStaff(vM);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
