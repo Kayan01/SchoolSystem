@@ -18,10 +18,10 @@ namespace Auth.Core.ViewModels
             return model == null ? null : new AdminVM
             {
                 Id = model.Id,
-                Email = model.Email,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                PhoneNumber = model.PhoneNumber,
+                Email = model.User?.Email,
+                FirstName = model.User?.FirstName,
+                LastName = model.User?.LastName,
+                PhoneNumber = model.User?.PhoneNumber,
               
             };
         }
