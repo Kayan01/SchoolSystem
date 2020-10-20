@@ -36,7 +36,7 @@ namespace LearningSvc.Core.ViewModels.TimeTable
                 SubjectId = model.SubjectId,
                 SubjectName = model.Subject?.Name,
                 SchoolClassId = model.SchoolClassId,
-                ClassName = model.SchoolClass.Name,
+                ClassName = model.SchoolClass?.Name,
                 NoOfPeriod = model.NoOfPeriod,
                 HasVirtual = model.HasVirtual,
                 ZoomId = model.ZoomId,
