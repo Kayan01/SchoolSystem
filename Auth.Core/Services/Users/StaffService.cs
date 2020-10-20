@@ -14,6 +14,10 @@ using Auth.Core.Context;
 using Auth.Core.ViewModels;
 using Shared.Enums;
 using Shared.PubSub;
+using Microsoft.EntityFrameworkCore;
+using Shared.Pagination;
+using Microsoft.AspNetCore.Identity;
+using Shared.Entities;
 
 namespace Auth.Core.Services
 {
@@ -22,44 +26,44 @@ namespace Auth.Core.Services
         private readonly IRepository<Staff, long> _staffRepo;
         private readonly IRepository<TeachingStaff, long> _teachingStaffRepo;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IAuthUserManagement _authUserManagement;
+        private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
         private readonly AppDbContext _appDbContext;
 
         public StaffService(IRepository<Staff, long> staffRepo,
             IUnitOfWork unitOfWork,
-            IAuthUserManagement authUserManagement,
+            UserManager<User> userManagement,
             IRepository<TeachingStaff, long> teachingStaffRepo,
             IPublishService publishService,
             AppDbContext appDbContext)
         {
             _staffRepo = staffRepo;
             _unitOfWork = unitOfWork;
-            _authUserManagement = authUserManagement;
+            _userManager = userManagement;
             _teachingStaffRepo = teachingStaffRepo;
             _publishService = publishService;
             _appDbContext = appDbContext;
         }
 
-        public async Task<ResultModel<List<StaffVM>>> GetAllStaff(int pageNumber, int pageSize)
+        public async Task<ResultModel<PaginatedModel<StaffVM>>> GetAllStaff(QueryModel model)
         {
+            var result = new ResultModel<PaginatedModel<StaffVM>>();
             //use appdbcontext directly so that we can do a join with the auth users table
-            var query = _appDbContext.Staffs.Join(
-               _appDbContext.Users, student => student.UserId, authUser => authUser.Id,
-               (student, authUser) => new StaffVM
-               {
-                   FirstName = authUser.FirstName,
-                   LastName = authUser.LastName,
-                   Email = authUser.Email,
-                   PhoneNumber = authUser.PhoneNumber
-               });
+            var query = _staffRepo.GetAll()
+                .Include(x => x.User).Select( x=> new StaffVM
+                {
+                    FirstName = x.User.FirstName,
+                    LastName = x.User.LastName,
+                    Email = x.User.Email,
+                    PhoneNumber = x.User.PhoneNumber
+                });
 
-            var pagedData = await PaginatedList<StaffVM>.CreateAsync(query, pageNumber, pageSize);
 
-            var result = new ResultModel<List<StaffVM>>
-            {
-                Data = pagedData
-            };
+
+            var totalCount = query.Count();
+            var pagedData = await PaginatedList<StaffVM>.CreateAsync(query, model.PageIndex, model.PageSize);
+
+            result.Data = new PaginatedModel<StaffVM>(pagedData.Select(x => x), model.PageIndex, model.PageSize, totalCount);
 
             return result;
         }
@@ -67,92 +71,70 @@ namespace Auth.Core.Services
         public async Task<ResultModel<StaffVM>> GetStaffById(long Id)
         {
             var result = new ResultModel<StaffVM>();
-            var staff = await _staffRepo.FirstOrDefaultAsync(x => x.Id == Id);
+            var staff = await _staffRepo.GetAll()
+                            .Include(x => x.User)
+                            .FirstOrDefaultAsync(x => x.UserId == Id);
 
-            if (staff == null)
-            {
-                return result;
-            }
 
             result.Data = staff;
             return result;
         }
 
-        public async Task<ResultModel<StaffVM>> AddStaff(StaffVM model)
+        public async Task<ResultModel<StaffVM>> AddStaff(AddStaffVM model)
         {
             var result = new ResultModel<StaffVM>();
 
             //create auth user
-            var userModel = new AuthUserModel
+            var user = new User
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 Email = model.Email,
-                Password = model.Password,
+                UserName = model.Email,
                 PhoneNumber = model.PhoneNumber,
-                UserType = UserType.Staff
+                UserType = UserType.Staff,
             };
+            var userResult = await _userManager.CreateAsync(user, model.Password);
 
-            _unitOfWork.BeginTransaction();
-
-            var authResult = await _authUserManagement.AddUserAsync(userModel);
-
-            if (authResult == null)
+            if (!userResult.Succeeded)
             {
-                result.AddError("Failed to add authentication for staff");
+                result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
                 return result;
             }
 
-            if (!Enum.TryParse(typeof(StaffType), model.StaffType, out var staffTypeObj))
-            {
-                result.AddError("Invalid staff type");
-                return result;
-            }
-            var staffType = (StaffType)staffTypeObj;
 
             var staff = _staffRepo.Insert(new Staff
             {
-                UserId = authResult.Value,
-                StaffType = staffType
+                UserId = user.Id,
+                StaffType = StaffType.Teacher,
+                //TenantId TODO for some reason Tenant Id is not set for this item
+
             });
-
-            await _unitOfWork.SaveChangesAsync();
-
-            //check if staff is teacher and adds to teachers table
-            if (staffType == StaffType.Teacher)
-            {
-                _teachingStaffRepo.Insert(new TeachingStaff { Id = staff.Id });
-            }
 
             await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Commit();
 
             model.Id = staff.Id;
-            result.Data = model;
+
+            result.Data = new StaffVM
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber
+            }; ;
 
             //TODO Refactor, and Move teachers logic to TeachersService
 
             //Publish Message
-            if (staffType == StaffType.Teacher)
-            {
-                await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
+            await _publishService.PublishMessage(Topics.Staff, BusMessageTypes.STAFF, new StaffSharedModel
                 {
                     IsActive = true,
-                    StaffType = StaffType.Teacher,
+                    StaffType = staff.StaffType,
                     TenantId = staff.TenantId,
                     UserId = staff.UserId,
                 });
-            }
-            else
-            {
-                await _publishService.PublishMessage(Topics.Staff, BusMessageTypes.STAFF, new StaffSharedModel
-                {
-                    IsActive = true,
-                    StaffType = staffType,
-                    TenantId = staff.TenantId,
-                    UserId = staff.UserId,
-                });
-            }
+            
             return result;
         }
 
@@ -160,26 +142,19 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<bool> { Data = false };
 
-            //check if the staff exists
-            var staff = await _staffRepo.FirstOrDefaultAsync(Id);
+            var staff = await _staffRepo.GetAllIncluding(x => x.User)
+                .FirstOrDefaultAsync(x => x.UserId == Id);
 
             if (staff == null)
             {
-                result.AddError("Staff does not exist");
+                result.AddError($"Staff not found");
                 return result;
             }
-
-            //delete auth user
-            var authResult = await _authUserManagement.DeleteUserAsync((int)Id);
-
-            if (authResult == false)
-            {
-                result.AddError("Failed to delete authentication for staff");
-                return result;
-            }
+            //TODO disable teacher
 
             await _staffRepo.DeleteAsync(Id);
             await _unitOfWork.SaveChangesAsync();
+
             result.Data = true;
 
             //Publish Message
@@ -195,49 +170,47 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StaffUpdateVM>> UpdateStaff(StaffUpdateVM model)
+        public async Task<ResultModel<StaffVM>> UpdateStaff(StaffUpdateVM model)
         {
-            var result = new ResultModel<StaffUpdateVM>();
+            var result = new ResultModel<StaffVM>();
 
-            var staff = await _staffRepo.FirstOrDefaultAsync(model.Id);
+            var staff = await _staffRepo.GetAll()
+                            .Include(x => x.User)
+                            .FirstOrDefaultAsync(x => x.UserId == model.Id);
 
             if (staff == null)
             {
-                result.AddError("Staff not found");
+                result.AddError($"Staff not found");
                 return result;
             }
 
-            //update auth user
-            var userModel = new AuthUserModel
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName
-            };
+            _unitOfWork.BeginTransaction();
 
-            var authResult = await _authUserManagement.UpdateUserAsync((int)model.Id, userModel);
-
-            if (authResult == false)
+            var user = await _userManager.FindByIdAsync(model.Id.ToString());
+            if (user == null)
             {
-                result.AddError("Failed to update authentication model for staff");
+                result.AddError("User not found");
                 return result;
             }
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
 
-            //TODO: add more props
+            await _userManager.UpdateAsync(user);
+            _unitOfWork.SaveChanges();
+            _unitOfWork.Commit();
 
-            await _staffRepo.UpdateAsync(staff);
-            await _unitOfWork.SaveChangesAsync();
-            result.Data = model;
 
             //Publish Message
-            await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
+            await _publishService.PublishMessage(Topics.Staff, BusMessageTypes.STAFF_UPDATE, new TeacherSharedModel
             {
-                IsActive = false,
-                IsDeleted = true,
+                IsActive = true,
+                IsDeleted = false,
                 StaffType = staff.StaffType,
                 TenantId = staff.TenantId,
                 UserId = staff.UserId,
             });
 
+            result.Data = staff;
             return result;
         }
     }
