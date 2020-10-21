@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace LearningSvc.Core.ViewModels.Assignment
@@ -15,7 +16,7 @@ namespace LearningSvc.Core.ViewModels.Assignment
         public double Score { get; set; }
         public string Comment { get; set; }
         public DateTime Date { get; set; }
-        public string FileURL { get; set; }
+        public string[] FileURL { get; set; }
 
 
         public static implicit operator AssignmentSubmissionVM(Models.AssignmentAnswer model)
@@ -29,7 +30,7 @@ namespace LearningSvc.Core.ViewModels.Assignment
                 Comment = model.Comment,
                 Score = model.Score,
                 Date = model.DateSubmitted,
-                FileURL = model.AnsweFile?.Path,
+                FileURL = model.Attachments.Select(m=>m.Path).ToArray(),
             };
         }
     }

@@ -92,7 +92,7 @@ namespace LearningSvc.Core.Services
             var result = new ResultModel<AssignmentSubmissionVM>
             {
                 Data = await _submissionRepo.GetAll().Where(m => m.Id == submissionId)
-                    .Include(m => m.Assignment).Include(m => m.Student).Include(m => m.AnsweFile)
+                    .Include(m => m.Assignment).Include(m => m.Student).Include(m => m.Attachments)
                     .Select(x => (AssignmentSubmissionVM)x).FirstOrDefaultAsync()
             };
             return result;
