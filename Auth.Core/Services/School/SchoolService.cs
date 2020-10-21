@@ -80,7 +80,7 @@ namespace Auth.Core.Services
                 Email = model.ContactEmail,
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
-                PhoneNo = model.ContactPhoneNo,
+                PhoneNumber = model.ContactPhoneNo,
                 IsPrimaryContact = true
             };
             var school =
@@ -233,7 +233,7 @@ namespace Auth.Core.Services
                     Email = model.ContactEmail,
                     FirstName = model.ContactFirstName,
                     LastName = model.ContactLastName,
-                    PhoneNo = model.ContactPhoneNo,
+                    PhoneNumber = model.ContactPhoneNo,
                     IsPrimaryContact = true
                 };
                 var school =
