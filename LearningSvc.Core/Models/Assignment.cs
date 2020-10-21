@@ -17,7 +17,6 @@ namespace LearningSvc.Core.Models
 
         public DateTime DueDate { get; set; }
         public string Title { get; set; }
-        public string Body { get; set; }
         public int TotalScore { get; set; }
 
         public Teacher Teacher { get; set; }
