@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Shared.FileStorage
 {
@@ -16,7 +17,7 @@ namespace Shared.FileStorage
         {
             _fileStorageService = fileStorageService;
         }
-        public List<FileUpload> TryUploadSupportingDocuments(List<DocumentVM> formFiles)
+        public async Task<List<FileUpload>> TryUploadSupportingDocuments(List<DocumentVM> formFiles)
         {
 
             var fileUploads = new List<FileUpload>();

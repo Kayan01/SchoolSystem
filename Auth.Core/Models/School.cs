@@ -1,4 +1,5 @@
-﻿using Auth.Core.Models.Users;
+﻿using Auth.Core.Models.Contact;
+using Auth.Core.Models.Users;
 using Shared.Entities;
 using Shared.Entities.Auditing;
 using System;
@@ -16,7 +17,7 @@ namespace Auth.Core.Models
         public string City { get; set; }
         public string State { get; set; }
         public string Country { get; set; }
-        public List<Admin> Admins { get; set; }
+        public List<SchoolContactDetails> SchoolContactDetails { get; set; }
         public List<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
 
         public List<Student> Students { get; set; }
