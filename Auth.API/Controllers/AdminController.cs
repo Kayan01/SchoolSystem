@@ -26,7 +26,7 @@ namespace Auth.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSchoolTrackAdmin([FromForm] AddAdminVM model)
+        public async Task<IActionResult> AddSchoolTrackAdmin( AddAdminVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -91,7 +91,7 @@ namespace Auth.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateAdmin([FromForm] UpdateAdminVM vM)
+        public async Task<IActionResult> UpdateAdmin(UpdateAdminVM vM)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
