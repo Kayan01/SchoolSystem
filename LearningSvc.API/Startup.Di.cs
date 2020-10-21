@@ -101,9 +101,11 @@ namespace LearningSvc.API
             services.AddTransient<LearningHandler>();
 
             services.AddScoped<IFileStorageService, FileStorageService>();
-            //services.AddTransient<IFileUploadService, FileUploadService>();     
+            //services.AddTransient<IFileUploadService, FileUploadService>(); 
+            services.AddScoped<IDocumentService, DocumentService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<ITimeTableService, TimeTableService>();
+            services.AddScoped<IAssignmentService, AssignmentService>();
         }
     }
 }
