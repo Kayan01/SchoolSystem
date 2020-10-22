@@ -4,7 +4,7 @@ using System.Text;
 
 namespace LearningSvc.Core.Enumerations
 {
-    public enum DayOfTheWeek
+    public enum WeekDays
     {
         Monday, Tuesday, Wednesday, Thursday, Friday
     }
