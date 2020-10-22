@@ -14,6 +14,7 @@ namespace LearningSvc.Core.Models
         public long SchoolClassId { get; set; }
         public long SubjectId { get; set; }
         public long TeacherId { get; set; }
+        public Guid? FileUploadId { get; set; }
 
         public DateTime DueDate { get; set; }
         public string Title { get; set; }
@@ -23,7 +24,7 @@ namespace LearningSvc.Core.Models
         public Subject Subject { get; set; }
         public SchoolClass SchoolClass { get; set; }
 
-        public ICollection<FileUpload> Attachments { get; set; }
+        public FileUpload Attachment { get; set; }
         public ICollection<AssignmentAnswer> AssignmentAnswers { get; set; }
     }
 }
