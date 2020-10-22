@@ -34,6 +34,7 @@ namespace LearningSvc.Core.Context
         }
 
         public DbSet<FileUpload> FileUploads { get; set; }
+        public DbSet<LearningFile> LearningFiles { get; set; }
         public DbSet<Notice> Notices { get; set; }
 
         public DbSet<Assignment> Assignments { get; set; }
