@@ -1,4 +1,5 @@
-﻿using LearningSvc.Core.Models;
+﻿using LearningSvc.Core.Enumerations;
+using LearningSvc.Core.Models;
 using LearningSvc.Core.Services.Interfaces;
 using LearningSvc.Core.ViewModels.LearningFiles;
 using Microsoft.EntityFrameworkCore;
@@ -80,6 +81,34 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<List<LearningFileListVM>>> GetAllFileByClass(long classId, LearningFileType fileType)
+        {
+            var files = new List<LearningFileListVM>();
+
+            if (fileType == LearningFileType.Assignment)
+            {
+                files.AddRange(
+                    await _assignmentRepo.GetAll().Where(m => m.SchoolClassId == classId)
+                        .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.Attachment)
+                        .Select(x => (LearningFileListVM)x).ToListAsync()
+                    );
+            }
+            else
+            {
+                files.AddRange(
+                    await _fileRepo.GetAll().Where(m => m.SchoolClassId == classId && m.FileType == fileType)
+                        .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.File)
+                        .Select(x => (LearningFileListVM)x).ToListAsync()
+                    );
+            }
+
+            var result = new ResultModel<List<LearningFileListVM>>
+            {
+                Data = files.OrderByDescending(m => m.CreationDate).ToList()
+            };
+            return result;
+        }
+
         public async Task<ResultModel<List<LearningFileListVM>>> GetAllFileByTeacher(long teacherId)
         {
             var files = await _fileRepo.GetAll().Where(m => m.TeacherId == teacherId)
@@ -91,6 +120,34 @@ namespace LearningSvc.Core.Services
                     .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.Attachment)
                     .Select(x => (LearningFileListVM)x).ToListAsync()
                 );
+
+            var result = new ResultModel<List<LearningFileListVM>>
+            {
+                Data = files.OrderByDescending(m => m.CreationDate).ToList()
+            };
+            return result;
+        }
+
+        public async Task<ResultModel<List<LearningFileListVM>>> GetAllFileByTeacher(long teacherId, LearningFileType fileType)
+        {
+            var files = new List<LearningFileListVM>();
+
+            if (fileType == LearningFileType.Assignment)
+            {
+                files.AddRange(
+                    await _assignmentRepo.GetAll().Where(m => m.TeacherId == teacherId)
+                        .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.Attachment)
+                        .Select(x => (LearningFileListVM)x).ToListAsync()
+                    );
+            }
+            else
+            {
+                files.AddRange(
+                    await _fileRepo.GetAll().Where(m => m.TeacherId == teacherId && m.FileType == fileType)
+                        .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.File)
+                        .Select(x => (LearningFileListVM)x).ToListAsync()
+                    );
+            }
 
             var result = new ResultModel<List<LearningFileListVM>>
             {
