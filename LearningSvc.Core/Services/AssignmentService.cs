@@ -18,21 +18,49 @@ namespace LearningSvc.Core.Services
     {
         private readonly IRepository<Assignment, long> _assignmentRepo;
         private readonly IRepository<AssignmentAnswer, long> _submissionRepo;
+        private readonly IRepository<SchoolClass, long> _cRepo;
+        private readonly IRepository<Subject, long> _sRepo;
+        private readonly IRepository<Teacher, long> _tRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDocumentService _documentService;
 
         public AssignmentService(IUnitOfWork unitOfWork, IRepository<Assignment, long> aRepo, 
-            IRepository<AssignmentAnswer, long> aaRepo, IDocumentService documentService)
+            IRepository<AssignmentAnswer, long> aaRepo, IDocumentService documentService,
+            IRepository<SchoolClass, long> cRepo, IRepository<Subject, long> sRepo, IRepository<Teacher, long> tRepo)
         {
             _unitOfWork = unitOfWork;
             _assignmentRepo = aRepo;
             _submissionRepo = aaRepo;
+            _cRepo = cRepo;
+            _sRepo = sRepo;
+            _tRepo = tRepo;
             _documentService = documentService;
         }
 
         public async Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment)
         {
             var result = new ResultModel<string>();
+
+            var c = await _cRepo.GetAsync(assignment.ClassId);
+            if (c == null)
+            {
+                result.AddError("Class not found");
+                return result;
+            }
+
+            var s = await _sRepo.GetAsync(assignment.SubjectId);
+            if (s == null)
+            {
+                result.AddError("Subject not found");
+                return result;
+            }
+
+            var t = await _tRepo.GetAsync(assignment.TeacherId);
+            if (t == null)
+            {
+                result.AddError("Teacher not found");
+                return result;
+            }
 
             //save logo
             var files = _documentService.TryUploadSupportingDocuments(assignment.Documents);
