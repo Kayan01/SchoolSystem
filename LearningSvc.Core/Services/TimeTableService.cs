@@ -1,4 +1,5 @@
-﻿using LearningSvc.Core.Models.TimeTable;
+﻿using LearningSvc.Core.Enumerations;
+using LearningSvc.Core.Models.TimeTable;
 using LearningSvc.Core.Services.Interfaces;
 using LearningSvc.Core.ViewModels.TimeTable;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,7 @@ namespace LearningSvc.Core.Services
             _periodRepo = periodRepo;
         }
 
-        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForTeacherToday(long teacherId, DayOfWeek day)
+        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForTeacherToday(long teacherId, WeekDays day)
         {
             var result = new ResultModel<List<ClassSessionOutputVM>>
             {
@@ -46,7 +47,7 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetClassesForTeacherToday(long teacherId, DayOfWeek day, int Count)
+        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetClassesForTeacherToday(long teacherId, WeekDays day, int Count)
         {
             var result = new ResultModel<List<ClassSessionOutputVM>>
             {

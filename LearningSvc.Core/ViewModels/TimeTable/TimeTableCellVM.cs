@@ -1,4 +1,5 @@
-﻿using LearningSvc.Core.Models.TimeTable;
+﻿using LearningSvc.Core.Enumerations;
+using LearningSvc.Core.Models.TimeTable;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +11,7 @@ namespace LearningSvc.Core.ViewModels.TimeTable
         public long Id { get; set; }
 
         public long PeriodId { get; set; }
-        public DayOfWeek Day { get; set; }
+        public WeekDays Day { get; set; }
 
         public long TeacherId { get; set; }
         public string TeacherName { get; set; }
