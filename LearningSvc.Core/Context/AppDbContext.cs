@@ -35,6 +35,15 @@ namespace LearningSvc.Core.Context
             //configure one to one between learningFile and FileUpload
             modelBuilder.Entity<LearningFile>().HasOne(f => f.File)
                 .WithOne().HasForeignKey<LearningFile>(m=>m.FileUploadId);
+
+            //configure one to one between Assignment and FileUpload
+            modelBuilder.Entity<Assignment>().HasOne(a=>a.Attachment)
+                .WithOne().HasForeignKey<Assignment>(m => m.FileUploadId);
+
+            //configure one to one between AssignmentAnswer and FileUpload
+            modelBuilder.Entity<AssignmentAnswer>().HasOne(a => a.Attachment)
+                .WithOne().HasForeignKey<AssignmentAnswer>(m => m.FileUploadId);
+
         }
 
         public DbSet<FileUpload> FileUploads { get; set; }
