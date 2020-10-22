@@ -16,7 +16,7 @@ namespace LearningSvc.Core.ViewModels.Assignment
 
         public DateTime DueDate { get; set; }
         public int TotalScore { get; set; }
-        public List<DocumentVM> Documents { get; set; }
+        public DocumentVM Document { get; set; }
 
     }
 }

@@ -37,11 +37,11 @@ namespace LearningSvc.Core.ViewModels.LearningFiles
             return model == null ? null : new LearningFileListVM
             {
                 Id = model.Id,
-                Name = model.Attachments?.FirstOrDefault().Name,
+                Name = model.Attachment?.Name,
                 ClassName = model.SchoolClass?.Name,
                 CreationDate = model.CreationTime,
                 FileType = LearningFileType.Assignment,
-                FileURL = model.Attachments?.FirstOrDefault().Path,
+                FileURL = model.Attachment?.Path,
                 SubjectName = model.Subject?.Name,
                 TeacherName = $"{model.Teacher?.FirstName} {model.Teacher?.LastName}",
             };

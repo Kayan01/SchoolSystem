@@ -63,9 +63,9 @@ namespace LearningSvc.Core.Services
             }
 
             //save logo
-            var files = _documentService.TryUploadSupportingDocuments(assignment.Documents);
+            var files = _documentService.TryUploadSupportingDocuments(new List<DocumentVM> { assignment.Document });
 
-            if (files.Count() != assignment.Documents.Count())
+            if (files.Count() != 1)
             {
                 result.AddError("Some files could not be uploaded");
 
@@ -80,7 +80,7 @@ namespace LearningSvc.Core.Services
                 TotalScore = assignment.TotalScore,
                 TeacherId = assignment.TeacherId,
                 Title = assignment.Title,
-                Attachments= files
+                Attachment = files[0]
 
             };
             _assignmentRepo.Insert(a);
@@ -120,7 +120,7 @@ namespace LearningSvc.Core.Services
             var result = new ResultModel<AssignmentSubmissionVM>
             {
                 Data = await _submissionRepo.GetAll().Where(m => m.Id == submissionId)
-                    .Include(m => m.Assignment).Include(m => m.Student).Include(m => m.Attachments)
+                    .Include(m => m.Assignment).Include(m => m.Student).Include(m => m.Attachment)
                     .Select(x => (AssignmentSubmissionVM)x).FirstOrDefaultAsync()
             };
             return result;

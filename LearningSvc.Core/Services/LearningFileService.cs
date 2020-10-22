@@ -69,7 +69,7 @@ namespace LearningSvc.Core.Services
 
             files.AddRange(
                 await _assignmentRepo.GetAll().Where(m => m.TeacherId == classId)
-                    .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.Attachments)
+                    .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.Attachment)
                     .Select(x => (LearningFileListVM)x).ToListAsync()
                 );
 
@@ -88,7 +88,7 @@ namespace LearningSvc.Core.Services
 
             files.AddRange(
                 await _assignmentRepo.GetAll().Where(m => m.TeacherId == teacherId)
-                    .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.Attachments)
+                    .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.Attachment)
                     .Select(x => (LearningFileListVM)x).ToListAsync()
                 );
 
