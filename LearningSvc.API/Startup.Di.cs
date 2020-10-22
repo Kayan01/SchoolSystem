@@ -106,6 +106,7 @@ namespace LearningSvc.API
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<ITimeTableService, TimeTableService>();
             services.AddScoped<IAssignmentService, AssignmentService>();
+            services.AddScoped<ILearningFileService, LearningFileService>();
         }
     }
 }
