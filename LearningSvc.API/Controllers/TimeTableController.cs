@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LearningSvc.Core.Enumerations;
 using LearningSvc.Core.Services.Interfaces;
 using LearningSvc.Core.ViewModels.TimeTable;
 using Microsoft.AspNetCore.Http;
@@ -130,7 +131,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllClassesForTeacherByDay(long teacherId, DayOfWeek day)
+        public async Task<IActionResult> GetAllClassesForTeacherByDay(long teacherId, WeekDays day)
         {
             try
             {
@@ -148,7 +149,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetThreeClassesForTeacherByDay(long teacherId, DayOfWeek day)
+        public async Task<IActionResult> GetThreeClassesForTeacherByDay(long teacherId, WeekDays day)
         {
             try
             {
