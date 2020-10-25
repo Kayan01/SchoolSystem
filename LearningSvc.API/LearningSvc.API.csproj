@@ -31,5 +31,11 @@
     <ProjectReference Include="..\LearningSvc.Core\LearningSvc.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="FileStore\TempFile.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 
 </Project>
