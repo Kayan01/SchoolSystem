@@ -20,7 +20,7 @@ namespace Shared.DataAccess.EfCore.Context
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                .AddJsonFile("appsettings.Development.json", optional: true)
-               .AddJsonFile($"appsettings.Development.{config["ASPNETCORE_SUBENVIRONMENT"]}.json", optional: true)
+               .AddJsonFile($"appsettings.{config["ASPNETCORE_ENVIRONMENT"]}.json", optional: true)
                .Build();
 
             var builder = new DbContextOptionsBuilder<T>();
