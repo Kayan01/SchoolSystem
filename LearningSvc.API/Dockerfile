@@ -1,4 +1,4 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+# Multistage Dockerfile for Schooltrack-learning-service linux-based image.
 
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
 WORKDIR /app
@@ -7,7 +7,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["LearningSvc.API/LearningSvc.API.csproj", "LearningSvc.API/"]
-RUN mkdir LearningSvc.API/FileStore && touch LearningSvc.API/FileStore/TempFile.txt
+RUN mkdir {error-logs, errors} && mkdir LearningSvc.API/FileStore && touch LearningSvc.API/FileStore/TempFile.txt 
 COPY ["LearningSvc.Core/LearningSvc.Core.csproj", "LearningSvc.Core/"]
 COPY ["Shared/Shared.csproj", "Shared/"]
 RUN dotnet restore "LearningSvc.API/LearningSvc.API.csproj"
