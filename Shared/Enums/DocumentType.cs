@@ -6,6 +6,6 @@ namespace Shared.Enums
 {
     public enum DocumentType
     {
-        Logo, Icon
+        Logo, Icon, ProfilePhoto
     }
 }
