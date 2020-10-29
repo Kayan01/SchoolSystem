@@ -49,6 +49,11 @@ namespace Auth.Core.Services
             //save filles
             if (model.Files != null && model.Files.Any())
             {
+                if (model.Files.Count != model.DocumentTypes.Count)
+                {
+                    result.AddError("Some document types are missing");
+                    return result;
+                }
                 files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
                 if (files.Count() != model.Files.Count())
                 {
