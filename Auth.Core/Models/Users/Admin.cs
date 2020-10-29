@@ -14,5 +14,7 @@ namespace Auth.Core.Models.Users
 
         public long UserId { get; set; }
         public User User { get; set; }
+
+        public List<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
     }
 }
