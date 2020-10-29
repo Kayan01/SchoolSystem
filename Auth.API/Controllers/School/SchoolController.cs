@@ -28,7 +28,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSchool(CreateSchoolVM model)
+        public async Task<IActionResult> AddSchool([FromForm]CreateSchoolVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -51,7 +51,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> BulkAddSchool(CreateSchoolVM model)
+        public async Task<IActionResult> BulkAddSchool([FromForm]CreateSchoolVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
