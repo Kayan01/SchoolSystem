@@ -11,6 +11,7 @@ namespace Auth.Core.ViewModels
         public string Email { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string UserName { get; set; }
         public string PhoneNumber { get; set; }
 
         public static implicit operator AdminVM(Admin model)
@@ -22,6 +23,7 @@ namespace Auth.Core.ViewModels
                 FirstName = model.User?.FirstName,
                 LastName = model.User?.LastName,
                 PhoneNumber = model.User?.PhoneNumber,
+                UserName = model.User?.UserName
               
             };
         }
@@ -29,11 +31,11 @@ namespace Auth.Core.ViewModels
 
     public class AddAdminVM
     {
+        public string Email { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string Email { get; set; }
+        public string UserName { get; set; }
         public string PhoneNumber { get; set; }
-        public string Password { get; set; }
     }
 
     public class UpdateAdminVM
@@ -41,6 +43,7 @@ namespace Auth.Core.ViewModels
         public long UserId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string UserName { get; set; }
         public string PhoneNumber { get; set; }
     }
 }
