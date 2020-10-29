@@ -49,6 +49,29 @@ namespace UserManagement.API.Controllers
             }
         }
 
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> BulkAddSchool(CreateSchoolVM model)
+        {
+            if (model == null)
+                return ApiResponse<string>(errors: "Empty payload");
+
+            if (!ModelState.IsValid)
+                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _schoolService.AddSchool(model);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Shared.Enums;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,8 @@ namespace Auth.Core.ViewModels.School
         [Required]
         public string ContactEmail { get; set; }
 
-        public List<DocumentVM> Documents { get; set; }
+        public List<DocumentType> DocumentTypes { get; set; }
+        public List<IFormFile> Files { get; set; }
 
     }
 }

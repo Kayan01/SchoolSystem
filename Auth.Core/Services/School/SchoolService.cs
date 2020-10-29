@@ -47,10 +47,10 @@ namespace Auth.Core.Services
             _unitOfWork.BeginTransaction();
             var files = new List<FileUpload>();
             //save filles
-            if (model.Documents != null && model.Documents.Any())
+            if (model.Files != null && model.Files.Any())
             {
-                files = await _documentService.TryUploadSupportingDocuments(model.Documents);
-                if (files.Count() != model.Documents.Count())
+                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                if (files.Count() != model.Files.Count())
                 {
                     result.AddError("Some files could not be uploaded");
 
