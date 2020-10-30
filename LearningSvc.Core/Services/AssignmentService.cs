@@ -18,23 +18,23 @@ namespace LearningSvc.Core.Services
     public class AssignmentService : IAssignmentService
     {
         private readonly IRepository<Assignment, long> _assignmentRepo;
-        private readonly IRepository<AssignmentAnswer, long> _submissionRepo;
-        private readonly IRepository<SchoolClass, long> _cRepo;
-        private readonly IRepository<Subject, long> _sRepo;
-        private readonly IRepository<Teacher, long> _tRepo;
+        private readonly IRepository<AssignmentAnswer, long> _assignmentanswerRepo;
+        private readonly IRepository<SchoolClass, long> _schoolclassRepo;
+        private readonly IRepository<Subject, long> _subjectRepo;
+        private readonly IRepository<Teacher, long> _teacherRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDocumentService _documentService;
 
-        public AssignmentService(IUnitOfWork unitOfWork, IRepository<Assignment, long> aRepo, 
-            IRepository<AssignmentAnswer, long> aaRepo, IDocumentService documentService,
-            IRepository<SchoolClass, long> cRepo, IRepository<Subject, long> sRepo, IRepository<Teacher, long> tRepo)
+        public AssignmentService(IUnitOfWork unitOfWork, IRepository<Assignment, long> assignmentRepo, 
+            IRepository<AssignmentAnswer, long> assignmentanswerRepo, IDocumentService documentService,
+            IRepository<SchoolClass, long> schoolclassRepo, IRepository<Subject, long> subjectRepo, IRepository<Teacher, long> teacherRepo)
         {
             _unitOfWork = unitOfWork;
-            _assignmentRepo = aRepo;
-            _submissionRepo = aaRepo;
-            _cRepo = cRepo;
-            _sRepo = sRepo;
-            _tRepo = tRepo;
+            _assignmentRepo = assignmentRepo;
+            _assignmentanswerRepo = assignmentanswerRepo;
+            _schoolclassRepo = schoolclassRepo;
+            _subjectRepo = subjectRepo;
+            _teacherRepo = teacherRepo;
             _documentService = documentService;
         }
 
@@ -42,22 +42,22 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var c = await _cRepo.GetAsync(assignment.ClassId);
-            if (c == null)
+            var schoolClass = await _schoolclassRepo.GetAsync(assignment.ClassId);
+            if (schoolClass == null)
             {
                 result.AddError("Class not found");
                 return result;
             }
 
-            var s = await _sRepo.GetAsync(assignment.SubjectId);
-            if (s == null)
+            var subject = await _subjectRepo.GetAsync(assignment.SubjectId);
+            if (subject == null)
             {
                 result.AddError("Subject not found");
                 return result;
             }
 
-            var t = await _tRepo.GetAsync(assignment.TeacherId);
-            if (t == null)
+            var teacher = await _teacherRepo.GetAsync(assignment.TeacherId);
+            if (teacher == null)
             {
                 result.AddError("Teacher not found");
                 return result;
@@ -73,7 +73,7 @@ namespace LearningSvc.Core.Services
                 return result;
             }
 
-            var a = new Assignment
+            var newassignment = new Assignment
             {
                 DueDate = assignment.DueDate,
                 SchoolClassId = assignment.ClassId,
@@ -84,7 +84,7 @@ namespace LearningSvc.Core.Services
                 Attachment = files[0]
 
             };
-            _assignmentRepo.Insert(a);
+            _assignmentRepo.Insert(newassignment);
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -137,7 +137,7 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<AssignmentSubmissionVM>
             {
-                Data = await _submissionRepo.GetAll().Where(m => m.Id == submissionId)
+                Data = await _assignmentanswerRepo.GetAll().Where(m => m.Id == submissionId)
                     .Include(m => m.Assignment).Include(m => m.Student).Include(m => m.Attachment)
                     .Select(x => (AssignmentSubmissionVM)x).FirstOrDefaultAsync()
             };
@@ -148,7 +148,7 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var answer = await _submissionRepo.FirstOrDefaultAsync(model.AssignmentSubmissionId);
+            var answer = await _assignmentanswerRepo.FirstOrDefaultAsync(model.AssignmentSubmissionId);
 
             if (answer == null)
             {
@@ -158,7 +158,7 @@ namespace LearningSvc.Core.Services
             }
             answer.Comment += "/n/n" + model.Comment;
 
-            await _submissionRepo.UpdateAsync(answer);
+            await _assignmentanswerRepo.UpdateAsync(answer);
             await _unitOfWork.SaveChangesAsync();
 
             result.Data = "Saved successfully";
@@ -169,7 +169,7 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var answer = await _submissionRepo.FirstOrDefaultAsync(model.AssignmentSubmissionId);
+            var answer = await _assignmentanswerRepo.FirstOrDefaultAsync(model.AssignmentSubmissionId);
 
             if (answer == null)
             {
@@ -179,7 +179,7 @@ namespace LearningSvc.Core.Services
             }
             answer.Score = model.Score;
 
-            await _submissionRepo.UpdateAsync(answer);
+            await _assignmentanswerRepo.UpdateAsync(answer);
             await _unitOfWork.SaveChangesAsync();
 
             result.Data = "Saved successfully";

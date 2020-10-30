@@ -92,7 +92,7 @@ namespace LearningSvc.API.Controllers
 
             try
             {
-                var result = await _classworkService.DeleteLearningFile(id);
+                var result = await _classworkService.DeleteClassNote(id);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

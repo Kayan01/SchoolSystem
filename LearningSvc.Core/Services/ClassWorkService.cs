@@ -70,22 +70,22 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var c = await _schoolclassRepo.GetAsync(model.ClassId);
-            if (c == null)
+            var schoolClass = await _schoolclassRepo.GetAsync(model.ClassId);
+            if (schoolClass == null)
             {
                 result.AddError("Class not found");
                 return result;
             }
 
-            var s = await _subjectRepo.GetAsync(model.SubjectId);
-            if (s == null)
+            var subject = await _subjectRepo.GetAsync(model.SubjectId);
+            if (subject == null)
             {
                 result.AddError("Subject not found");
                 return result;
             }
 
-            var t = await _teacherRepo.GetAsync(model.TeacherId);
-            if (t == null)
+            var teacher = await _teacherRepo.GetAsync(model.TeacherId);
+            if (teacher == null)
             {
                 result.AddError("Teacher not found");
                 return result;
@@ -102,7 +102,7 @@ namespace LearningSvc.Core.Services
                 return result;
             }
 
-            var f = new Classwork
+            var classwork = new Classwork
             {
                 File = files[0],
                 SchoolClassId = model.ClassId,
@@ -110,7 +110,7 @@ namespace LearningSvc.Core.Services
                 TeacherId = model.TeacherId,
             };
 
-            await _classworkRepo.InsertAsync(f);
+            await _classworkRepo.InsertAsync(classwork);
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -118,11 +118,11 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<string>> DeleteLearningFile(long fileId)
+        public async Task<ResultModel<string>> DeleteClassNote(long id)
         {
             var result = new ResultModel<string>();
 
-            var file = await _classworkRepo.GetAsync(fileId);
+            var file = await _classworkRepo.GetAsync(id);
 
             if (file == null)
             {

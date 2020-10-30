@@ -70,22 +70,22 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var c = await _schoolclassRepo.GetAsync(model.ClassId);
-            if (c == null)
+            var schoolClass = await _schoolclassRepo.GetAsync(model.ClassId);
+            if (schoolClass == null)
             {
                 result.AddError("Class not found");
                 return result;
             }
 
-            var s = await _subjectRepo.GetAsync(model.SubjectId);
-            if (s == null)
+            var subject = await _subjectRepo.GetAsync(model.SubjectId);
+            if (subject == null)
             {
                 result.AddError("Subject not found");
                 return result;
             }
 
-            var t = await _teacherRepo.GetAsync(model.TeacherId);
-            if (t == null)
+            var teacher = await _teacherRepo.GetAsync(model.TeacherId);
+            if (teacher == null)
             {
                 result.AddError("Teacher not found");
                 return result;
@@ -102,7 +102,7 @@ namespace LearningSvc.Core.Services
                 return result;
             }
 
-            var f = new LessonNote
+            var lessonNote = new LessonNote
             {
                 File = files[0],
                 SchoolClassId = model.ClassId,
@@ -110,7 +110,7 @@ namespace LearningSvc.Core.Services
                 TeacherId = model.TeacherId,
             };
 
-            await _lessonnoteRepo.InsertAsync(f);
+            await _lessonnoteRepo.InsertAsync(lessonNote);
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -118,19 +118,19 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<string>> DeleteLearningFile(long fileId)
+        public async Task<ResultModel<string>> DeleteLessonNote(long id)
         {
             var result = new ResultModel<string>();
 
-            var file = await _lessonnoteRepo.GetAsync(fileId);
+            var lessonNote = await _lessonnoteRepo.GetAsync(id);
 
-            if (file == null)
+            if (lessonNote == null)
             {
                 result.AddError("File does not exist.");
                 return result;
             }
 
-            await _lessonnoteRepo.DeleteAsync(file);
+            await _lessonnoteRepo.DeleteAsync(lessonNote);
             await _unitOfWork.SaveChangesAsync();
 
             result.Data = "Deleted successfully";

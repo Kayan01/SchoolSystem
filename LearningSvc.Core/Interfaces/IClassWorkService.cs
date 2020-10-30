@@ -14,6 +14,6 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<PaginatedList<ClassWorkListVM>>> GetAllFileByTeacher(long teacherId, int pagenumber, int pagesize);
         Task<ResultModel<PaginatedList<ClassWorkListVM>>> GetAllFileByClass(long classId, int pagenumber, int pagesize);
         Task<ResultModel<string>> UploadLearningFile(ClassWorkUploadVM model);
-        Task<ResultModel<string>> DeleteLearningFile(long fileId);
+        Task<ResultModel<string>> DeleteClassNote(long id);
     }
 }

@@ -92,7 +92,7 @@ namespace LearningSvc.API.Controllers
 
             try
             {
-                var result = await _mediaService.DeleteLearningFile(id);
+                var result = await _mediaService.DeleteMedia(id);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
