@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LearningSvc.Core.Enumerations;
-using LearningSvc.Core.Services.Interfaces;
+using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.TimeTable;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
