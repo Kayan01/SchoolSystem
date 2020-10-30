@@ -1,4 +1,4 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+# Multistage Dockerfile for Schooltrack-auth-service linux-based image.
 
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
 WORKDIR /app
@@ -7,9 +7,11 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["Auth.API/Auth.API.csproj", "Auth.API/"]
+RUN mkdir Auth.API/FileStore && touch Auth.API/FileStore/TempFile.txt
 COPY ["Auth.Core/Auth.Core.csproj", "Auth.Core/"]
 COPY ["Shared/Shared.csproj", "Shared/"]
 RUN dotnet restore "Auth.API/Auth.API.csproj"
+
 COPY . .
 WORKDIR "/src/Auth.API"
 RUN dotnet build "Auth.API.csproj" -c Release -o /app/build

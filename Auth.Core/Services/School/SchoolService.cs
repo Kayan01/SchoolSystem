@@ -1,10 +1,7 @@
-﻿using ProtoBuf.Meta;
-using Shared.DataAccess.EfCore.UnitOfWork;
+﻿using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.ViewModels;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Auth.Core.Models;
 using Auth.Core.Services.Interfaces;
@@ -15,18 +12,12 @@ using Shared.Utils;
 using Auth.Core.ViewModels.School;
 using Shared.Entities;
 using Shared.FileStorage;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc;
-using IPagedList;
 using Shared.Pagination;
 using Microsoft.AspNetCore.Identity;
 using Shared.Enums;
 using Microsoft.AspNetCore.Http;
 using ExcelManager;
-using Microsoft.AspNetCore.Identity;
-using Shared.Enums;
-using Auth.Core.Models.Users;
+using Auth.Core.Models.Contact;
 
 namespace Auth.Core.Services
 {
@@ -56,10 +47,15 @@ namespace Auth.Core.Services
             _unitOfWork.BeginTransaction();
             var files = new List<FileUpload>();
             //save filles
-            if (model.Documents != null && model.Documents.Any())
+            if (model.Files != null && model.Files.Any())
             {
-                files = _documentService.TryUploadSupportingDocuments(model.Documents);
-                if (files.Count() != model.Documents.Count())
+                if (model.Files.Count != model.DocumentTypes.Count)
+                {
+                    result.AddError("Some document types are missing");
+                    return result;
+                }
+                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                if (files.Count() != model.Files.Count())
                 {
                     result.AddError("Some files could not be uploaded");
 
@@ -85,12 +81,11 @@ namespace Auth.Core.Services
             }
 
             //todo: add more props
-            var contactDetails = new Admin
-            {
+            var contactDetails = new SchoolContactDetails  {
                 Email = model.ContactEmail,
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
-                PhoneNo = model.ContactPhoneNo,
+                PhoneNumber = model.ContactPhoneNo,
                 IsPrimaryContact = true
             };
             var school =
@@ -106,7 +101,7 @@ namespace Auth.Core.Services
                     FileUploads = files
                 };
 
-            school.Admins.Add(contactDetails);
+            school.SchoolContactDetails.Add(contactDetails);
 
             _schoolRepo.Insert(school);
 
@@ -218,7 +213,7 @@ namespace Auth.Core.Services
 
             foreach (var model in importedData)
             {
-                //add auth user
+                //add admin for school user
                 var user = new User
                 {
                     FirstName = model.ContactFirstName,
@@ -238,12 +233,12 @@ namespace Auth.Core.Services
 
 
                 //todo: add more props
-                var contactDetails = new Admin
+                var contactDetails = new SchoolContactDetails
                 {
                     Email = model.ContactEmail,
                     FirstName = model.ContactFirstName,
                     LastName = model.ContactLastName,
-                    PhoneNo = model.ContactPhoneNo,
+                    PhoneNumber = model.ContactPhoneNo,
                     IsPrimaryContact = true
                 };
                 var school =
@@ -258,7 +253,7 @@ namespace Auth.Core.Services
                         WebsiteAddress = model.WebsiteAddress
                     };
 
-                school.Admins.Add(contactDetails);
+                school.SchoolContactDetails.Add(contactDetails);
                 
                 _schoolRepo.Insert(school);
             }

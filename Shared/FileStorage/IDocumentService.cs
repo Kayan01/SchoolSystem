@@ -1,14 +1,16 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Shared.Entities;
+using Shared.Enums;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Shared.FileStorage
 {
    public interface IDocumentService
     {
-        List<FileUpload> TryUploadSupportingDocuments(List<DocumentVM> formFiles);
+       Task< List<FileUpload>> TryUploadSupportingDocuments(List<IFormFile> formFiles, List<DocumentType> DocTypess);
     }
 }

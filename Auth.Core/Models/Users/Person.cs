@@ -20,5 +20,7 @@ namespace Auth.Core
         public User User { get; set; } //Test this out
 
         public School School { get; set; }
+
+        public List<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
     }
 }
