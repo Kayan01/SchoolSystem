@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using LearningSvc.Core.Models.TimeTable;
+using LearningSvc.Core.Models.Files;
 
 namespace LearningSvc.Core.Context
 {
@@ -47,7 +48,9 @@ namespace LearningSvc.Core.Context
         }
 
         public DbSet<FileUpload> FileUploads { get; set; }
-        public DbSet<LearningFile> LearningFiles { get; set; }
+        public DbSet<Media> Medias { get; set; }
+        public DbSet<LessonNote> LessonNotes { get; set; }
+        public DbSet<Classwork> Classworks { get; set; }
         public DbSet<Notice> Notices { get; set; }
 
         public DbSet<Assignment> Assignments { get; set; }
