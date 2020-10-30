@@ -9,8 +9,12 @@ namespace Auth.Core.Models.Users
 {
     public class Admin : AuditedEntity<long>
     {
-        public long UserId { get; set; }
+
         public UserType UserType { get; set; } = UserType.Admin;
+
+        public long UserId { get; set; }
         public User User { get; set; }
+
+        public List<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
     }
 }

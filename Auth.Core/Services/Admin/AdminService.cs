@@ -3,10 +3,12 @@ using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NPOI.OpenXmlFormats.Wordprocessing;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
 using Shared.Enums;
+using Shared.FileStorage;
 using Shared.Pagination;
 using Shared.PubSub;
 using Shared.Utils;
@@ -25,22 +27,43 @@ namespace Auth.Core.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
+        private readonly IDocumentService _documentService;
         public AdminService(
             IRepository<Admin, long> adminRepo,
              IUnitOfWork unitOfWork,
              UserManager<User> userManager,
-              IPublishService publishService
+              IPublishService publishService,
+              IDocumentService documentService
             )
         {
             _adminRepo = adminRepo;
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _publishService = publishService;
+            _documentService = documentService;
         }
 
         public async Task<ResultModel<AdminVM>> AddAdmin(AddAdminVM model)
         {
             var result = new ResultModel<AdminVM>();
+
+            var files = new List<FileUpload>();
+            //save filles
+            if (model.Files != null && model.Files.Any())
+            {
+                if (model.Files.Count != model.DocumentTypes.Count)
+                {
+                    result.AddError("Some document types are missing");
+                    return result;
+                }
+                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                if (files.Count() != model.Files.Count())
+                {
+                    result.AddError("Some files could not be uploaded");
+
+                    return result;
+                }
+            }
 
             _unitOfWork.BeginTransaction();
 
@@ -63,13 +86,13 @@ namespace Auth.Core.Services
 
             var admin = _adminRepo.Insert(new Admin
             {
-                UserId = user.Id
-                
+                UserId = user.Id,
+                FileUploads = files
+
             });
 
             await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Commit();
-
             await _publishService.PublishMessage(Topics.Admin, BusMessageTypes.ADMIN, new AdminSharedModel
             {
                 Id = admin.Id,

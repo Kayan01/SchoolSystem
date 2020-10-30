@@ -26,7 +26,7 @@ namespace Auth.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSchoolTrackAdmin( AddAdminVM model)
+        public async Task<IActionResult> AddSchoolTrackAdmin([FromForm] AddAdminVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
