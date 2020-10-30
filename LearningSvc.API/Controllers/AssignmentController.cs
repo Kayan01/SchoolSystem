@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LearningSvc.Core.Services.Interfaces;
+using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.Assignment;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,11 +24,28 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllAssignmentsByTeacher(long teacherId)
+        public async Task<IActionResult> GetAssignmentsByTeacher([FromQuery] long teacherId, [FromQuery] int pagenumber, [FromQuery] int pagesize)
         {
             try
             {
-                var result = await _aService.GetAssignmentsForTeacher(teacherId);
+                var result = await _aService.GetAssignmentsForTeacher(teacherId, pagenumber, pagesize);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetAssignmentsByClass([FromQuery] long classId, [FromQuery] int pagenumber, [FromQuery] int pagesize)
+        {
+            try
+            {
+                var result = await _aService.GetAssignmentsForClass(classId, pagenumber, pagesize);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
