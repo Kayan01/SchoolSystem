@@ -19,17 +19,17 @@ namespace LearningSvc.Core.Services
     public class LessonNoteService: ILessonNoteService
     {
         private readonly IRepository<LessonNote, long> _lessonnoteRepo;
-        private readonly IRepository<SchoolClass, long> _schoolclassRepo;
+        private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly IRepository<Subject, long> _subjectRepo;
         private readonly IRepository<Teacher, long> _teacherRepo;
         private readonly IDocumentService _documentService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public LessonNoteService(IUnitOfWork unitOfWork, IRepository<LessonNote, long> lessonnoteRepo, IDocumentService documentService, IRepository<SchoolClass, long> schoolclassRepo,
+        public LessonNoteService(IUnitOfWork unitOfWork, IRepository<LessonNote, long> lessonnoteRepo, IDocumentService documentService, IRepository<SchoolClass, long> schoolClassRepo,
             IRepository<Subject, long> subjectRepo, IRepository<Teacher, long> teacherRepo)
         {
             _lessonnoteRepo = lessonnoteRepo;
-            _schoolclassRepo = schoolclassRepo;
+            _schoolClassRepo = schoolClassRepo;
             _subjectRepo = subjectRepo;
             _teacherRepo = teacherRepo;
             _documentService = documentService;
@@ -70,7 +70,7 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var schoolClass = await _schoolclassRepo.GetAsync(model.ClassId);
+            var schoolClass = await _schoolClassRepo.GetAsync(model.ClassId);
             if (schoolClass == null)
             {
                 result.AddError("Class not found");

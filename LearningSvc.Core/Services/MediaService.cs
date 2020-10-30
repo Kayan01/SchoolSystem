@@ -19,17 +19,17 @@ namespace LearningSvc.Core.Services
     public class MediaService : IMediaService
     {
         private readonly IRepository<Media, long> _mediaRepo;
-        private readonly IRepository<SchoolClass, long> _schoolclassRepo;
+        private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly IRepository<Subject, long> _subjectRepo;
         private readonly IRepository<Teacher, long> _teacherRepo;
         private readonly IDocumentService _documentService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public MediaService(IUnitOfWork unitOfWork, IRepository<Media, long> mediaRepo, IDocumentService documentService, IRepository<SchoolClass, long> schoolclassRepo,
+        public MediaService(IUnitOfWork unitOfWork, IRepository<Media, long> mediaRepo, IDocumentService documentService, IRepository<SchoolClass, long> schoolClassRepo,
             IRepository<Subject, long> subjectRepo, IRepository<Teacher, long> teacherRepo)
         {
             _mediaRepo = mediaRepo;
-            _schoolclassRepo = schoolclassRepo;
+            _schoolClassRepo = schoolClassRepo;
             _subjectRepo = subjectRepo;
             _teacherRepo = teacherRepo;
             _documentService = documentService;
@@ -70,7 +70,7 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var schoolClass = await _schoolclassRepo.GetAsync(model.ClassId);
+            var schoolClass = await _schoolClassRepo.GetAsync(model.ClassId);
             if (schoolClass == null)
             {
                 result.AddError("Class not found");
