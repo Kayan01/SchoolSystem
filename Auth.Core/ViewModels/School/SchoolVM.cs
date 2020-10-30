@@ -22,7 +22,12 @@ namespace Auth.Core.ViewModels
             return model == null ? null : new SchoolVM
             {
                 Id = model.Id,
-                Name = model.Name
+                Name = model.Name,
+                 DateCreated = model.CreationTime,
+                  State = model.State,
+                    UsersCount = (model.Staffs?.Count + model.Students?.Count + model.TeachingStaffs?.Count).Value,
+                     ClientCode = model.ClientCode
+                    
             };
         }
 
