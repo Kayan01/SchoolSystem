@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Auth.Core.Services.Interfaces;
-using Auth.Core.ViewModels;
-using Auth.Core.ViewModels.School;
+using Auth.Core.Interfaces.Users;
+using Auth.Core.ViewModels.Parent;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,33 +11,33 @@ using Shared.AspNetCore;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 
-namespace UserManagement.API.Controllers
+namespace Auth.API.Controllers.Users
 {
     [Route("api/v1/[controller]/[action]")]
-    [ApiController]
     [AllowAnonymous]
-    public class SchoolController : BaseController
+    public class ParentController : BaseController
     {
-        private readonly ISchoolService _schoolService;
-
-        public SchoolController(ISchoolService schoolService)
+        private readonly IParentService _parentService;
+        public ParentController(IParentService parentService)
         {
-            _schoolService = schoolService;
+            _parentService = parentService;
         }
 
-        [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSchool([FromForm] CreateSchoolVM model)
-        {
-            if (model == null)
-                return ApiResponse<string>(errors: "Empty payload");
 
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetAllParents(QueryModel model)
+        {
             if (!ModelState.IsValid)
+            {
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
 
             try
             {
-                var result = await _schoolService.AddSchool(model);
+                var result = await _parentService.GetAllParents(model);
+
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -47,39 +46,48 @@ namespace UserManagement.API.Controllers
             {
                 return HandleError(ex);
             }
+
         }
 
         [HttpGet]
-        //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetSchools([FromQuery] QueryModel vM)
+        public async Task<IActionResult> GetParentsForStudent([FromQuery]long studId)
         {
+            if (studId < 1)
+            {
+                return ApiResponse<string>(errors: "Invalid Id provided", codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
             try
             {
-                var result = await _schoolService.GetAllSchools(vM);
+                var result = await _parentService.GetParentsForStudent(studId);
+
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
                 return HandleError(ex);
             }
+
+
+
         }
 
-        [HttpGet("{id}")]
-        //[Authorize]
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetSchool(long id)
+        public async Task<IActionResult> GetParentById(long Id)
         {
-            if (id <= 0)
+            if (Id < 1)
             {
-                return ApiResponse<string>(errors: "Please provide valid school Id");
+                return ApiResponse<string>(errors: "Invalid Id provided", codes: ApiResponseCodes.INVALID_REQUEST);
             }
 
             try
             {
-                var result = await _schoolService.GetSchoolById(id);
+                var result = await _parentService.GetParentById(Id);
+
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -90,17 +98,22 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpPut]
-        //[Authorize]
+
+
+        [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSchool([FromForm] UpdateSchoolVM vM)
+        public async Task<IActionResult> AddNewParent(AddParentVM model)
         {
             if (!ModelState.IsValid)
+            {
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
 
             try
             {
-                var result = await _schoolService.UpdateSchool(vM);
+                var result = await _parentService.AddNewParent(model);
+
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -111,17 +124,21 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        //[Authorize]
+
+        [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> DeleteSchool(long id)
+        public async Task<IActionResult> UpdateParent([FromQuery]long Id, UpdateParentVM vm)
         {
-            if (id < 1)
-                return ApiResponse<string>(errors: "Invalid school Id");
+            if (!ModelState.IsValid)
+            {
+                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
 
             try
             {
-                var result = await _schoolService.DeleteSchool(id);
+                var result = await _parentService.UpdateParent(Id, vm);
+
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -131,5 +148,36 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
+
+        [HttpDelete]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> DeleteParent(long Id)
+        {
+            if (Id < 1)
+            {
+                return ApiResponse<string>(errors: "Invalid Id provided", codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+            try
+            {
+                var result = await _parentService.DeleteParent(Id);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        //[HttpPost]
+        //[ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        //public async Task<IActionResult> AddStaff(StaffVM model)
+        //{
+
+        //}
+
     }
 }

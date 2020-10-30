@@ -26,5 +26,9 @@ namespace Auth.Core.ViewModels
             };
         }
 
+        public static implicit operator SchoolVM(UpdateSchoolVM v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
