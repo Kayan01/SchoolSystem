@@ -1,10 +1,11 @@
 ﻿using LearningSvc.Core.Models;
-using LearningSvc.Core.Services.Interfaces;
+using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.Assignment;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.FileStorage;
+using Shared.Utils;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -104,14 +105,31 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<AssignmentGetVM>>> GetAssignmentsForTeacher(long teacherId)
+        public async Task<ResultModel<PaginatedList<AssignmentGetVM>>> GetAssignmentsForClass(long classId, int pagenumber, int pagesize)
         {
-            var result = new ResultModel<List<AssignmentGetVM>>
-            {
-                Data = await _assignmentRepo.GetAll().Where(m => m.TeacherId == teacherId)
+            var query = _assignmentRepo.GetAll().Where(m => m.SchoolClassId == classId)
                     .Include(m => m.AssignmentAnswers).Include(m => m.Subject).Include(m => m.SchoolClass).ThenInclude(n => n.Students)
-                    .Select(x => (AssignmentGetVM)x).ToListAsync()
+                    .Select(x => (AssignmentGetVM)x);
+
+            var result = new ResultModel<PaginatedList<AssignmentGetVM>>
+            {
+                Data = await PaginatedList<AssignmentGetVM>.CreateAsync(query, pagenumber, pagesize)
             };
+
+            return result;
+        }
+
+        public async Task<ResultModel<PaginatedList<AssignmentGetVM>>> GetAssignmentsForTeacher(long teacherId, int pagenumber, int pagesize)
+        {
+            var query = _assignmentRepo.GetAll().Where(m => m.TeacherId == teacherId)
+                    .Include(m => m.AssignmentAnswers).Include(m => m.Subject).Include(m => m.SchoolClass).ThenInclude(n => n.Students)
+                    .Select(x => (AssignmentGetVM)x);
+
+            var result = new ResultModel<PaginatedList<AssignmentGetVM>>
+            {
+                Data = await PaginatedList<AssignmentGetVM>.CreateAsync(query, pagenumber, pagesize)
+            };
+
             return result;
         }
 
