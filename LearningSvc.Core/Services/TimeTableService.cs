@@ -1,6 +1,6 @@
 ﻿using LearningSvc.Core.Enumerations;
 using LearningSvc.Core.Models.TimeTable;
-using LearningSvc.Core.Services.Interfaces;
+using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.TimeTable;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
