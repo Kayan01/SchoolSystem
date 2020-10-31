@@ -1,4 +1,5 @@
-﻿using Shared.ViewModels;
+﻿using Microsoft.AspNetCore.Http;
+using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,7 +17,7 @@ namespace LearningSvc.Core.ViewModels.Assignment
 
         public DateTime DueDate { get; set; }
         public int TotalScore { get; set; }
-        public DocumentVM Document { get; set; }
+        public IFormFile Document { get; set; }
 
     }
 }

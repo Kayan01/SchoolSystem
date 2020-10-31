@@ -1,4 +1,5 @@
-﻿using Shared.ViewModels;
+﻿using Microsoft.AspNetCore.Http;
+using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,6 +12,6 @@ namespace LearningSvc.Core.ViewModels.ClassWork
         public long ClassId { get; set; }
         public long TeacherId { get; set; }
         public long SubjectId { get; set; }
-        public DocumentVM FileObj { get; set; }
+        public IFormFile FileObj { get; set; }
     }
 }
