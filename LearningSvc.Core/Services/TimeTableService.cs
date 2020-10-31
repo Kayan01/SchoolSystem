@@ -47,11 +47,11 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetClassesForTeacherToday(long teacherId, WeekDays day, int Count)
+        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetNextClassesForTeacherToday(long teacherId, WeekDays day, int curPeriod, int Count)
         {
             var result = new ResultModel<List<ClassSessionOutputVM>>
             {
-                Data = await _timeTableRepo.GetAll().Where(m => m.TeacherId == teacherId && m.Day == day)
+                Data = await _timeTableRepo.GetAll().Where(m => m.TeacherId == teacherId && m.Day == day && m.Period.Step > curPeriod)
                     .Include(m => m.Period).Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).ThenInclude(n => n.Students)
                     .Select(x => (ClassSessionOutputVM)x).Take(Count)
                     .ToListAsync()
