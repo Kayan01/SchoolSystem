@@ -92,19 +92,19 @@ namespace LearningSvc.Core.Services
             }
 
 
-            //save logo
-            var files = _documentService.TryUploadSupportingDocuments(new List<DocumentVM> { model.FileObj });
+            //save file
+            var file = await _documentService.TryUploadSupportingDocument(model.FileObj, Shared.Enums.DocumentType.Assignment);
 
-            if (files.Count() != 1)
+            if (file != null)
             {
-                result.AddError("Some files could not be uploaded");
+                result.AddError("File could not be uploaded");
 
                 return result;
             }
 
             var classwork = new Classwork
             {
-                File = files[0],
+                File = file,
                 SchoolClassId = model.ClassId,
                 SubjectId = model.SubjectId,
                 TeacherId = model.TeacherId,

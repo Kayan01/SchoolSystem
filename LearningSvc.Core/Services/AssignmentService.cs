@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LearningSvc.Core.Services
 {
@@ -63,15 +64,15 @@ namespace LearningSvc.Core.Services
                 return result;
             }
 
-            //save logo
-            var files = _documentService.TryUploadSupportingDocuments(new List<DocumentVM> { assignment.Document });
+            //save file
+            var file = await _documentService.TryUploadSupportingDocument(assignment.Document, Shared.Enums.DocumentType.Assignment );
 
-            if (files.Count() != 1)
-            {
-                result.AddError("Some files could not be uploaded");
+                if (file != null)
+                {
+                    result.AddError("File could not be uploaded");
 
-                return result;
-            }
+                    return result;
+                }
 
             var newAssignment = new Assignment
             {
@@ -81,7 +82,7 @@ namespace LearningSvc.Core.Services
                 TotalScore = assignment.TotalScore,
                 TeacherId = assignment.TeacherId,
                 Title = assignment.Title,
-                Attachment = files[0]
+                Attachment = file
 
             };
             _assignmentRepo.Insert(newAssignment);
