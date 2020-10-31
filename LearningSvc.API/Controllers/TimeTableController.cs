@@ -7,6 +7,7 @@ using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.TimeTable;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NPOI.SS.Formula.Functions;
 using Shared.AspNetCore;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
@@ -149,11 +150,11 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetThreeClassesForTeacherByDay(long teacherId, WeekDays day)
+        public async Task<IActionResult> GetNextClassesForTeacherByDay(long teacherId, WeekDays day, int curPeriod, int count)
         {
             try
             {
-                var result = await _tService.GetClassesForTeacherToday(teacherId, day, 3);
+                var result = await _tService.GetNextClassesForTeacherToday(teacherId, day, curPeriod, count);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
