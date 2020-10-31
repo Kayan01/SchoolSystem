@@ -16,6 +16,6 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForTeacher(long teacherId);
         Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForClass(long classId);
         Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForTeacherToday(long teacherId, WeekDays day);
-        Task<ResultModel<List<ClassSessionOutputVM>>> GetClassesForTeacherToday(long teacherId, WeekDays day, int Count);
+        Task<ResultModel<List<ClassSessionOutputVM>>> GetNextClassesForTeacherToday(long teacherId, WeekDays day, int curPeriod, int Count);
     }
 }
