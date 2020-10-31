@@ -12,5 +12,6 @@ namespace Shared.FileStorage
    public interface IDocumentService
     {
        Task< List<FileUpload>> TryUploadSupportingDocuments(List<IFormFile> formFiles, List<DocumentType> DocTypess);
+       Task<FileUpload> TryUploadSupportingDocument(IFormFile formFile, DocumentType DocType);
     }
 }
