@@ -58,7 +58,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UploadFile(ClassWorkUploadVM model)
+        public async Task<IActionResult> UploadFile([FromForm] ClassWorkUploadVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
