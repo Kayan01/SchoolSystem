@@ -24,11 +24,11 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllFileByTeacher([FromQuery] long teacherId, [FromQuery] int pagenumber, [FromQuery] int pagesize)
+        public async Task<IActionResult> GetAllFileByTeacher([FromQuery] long teacherId, [FromQuery] QueryModel vM)
         {
             try
             {
-                var result = await _mediaService.GetAllFileByTeacher(teacherId, pagenumber, pagesize);
+                var result = await _mediaService.GetAllFileByTeacher(teacherId, vM.PageIndex, vM.PageSize);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -41,11 +41,11 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllFileByClass([FromQuery] long classId, [FromQuery] int pagenumber, [FromQuery] int pagesize)
+        public async Task<IActionResult> GetAllFileByClass([FromQuery] long classId, [FromQuery] QueryModel vM)
         {
             try
             {
-                var result = await _mediaService.GetAllFileByClass(classId, pagenumber, pagesize);
+                var result = await _mediaService.GetAllFileByClass(classId, vM.PageIndex, vM.PageSize);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
