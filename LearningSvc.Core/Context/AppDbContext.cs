@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using LearningSvc.Core.Models.TimeTable;
+using LearningSvc.Core.Models.Files;
 
 namespace LearningSvc.Core.Context
 {
@@ -31,9 +32,25 @@ namespace LearningSvc.Core.Context
             modelBuilder.Ignore(typeof(UserLogin));
             modelBuilder.Ignore(typeof(RoleClaim));
             modelBuilder.Ignore(typeof(UserToken));
+
+            //configure one to one between learningFile and FileUpload
+            modelBuilder.Entity<LearningFile>().HasOne(f => f.File)
+                .WithOne().HasForeignKey<LearningFile>(m=>m.FileUploadId);
+
+            //configure one to one between Assignment and FileUpload
+            modelBuilder.Entity<Assignment>().HasOne(a=>a.Attachment)
+                .WithOne().HasForeignKey<Assignment>(m => m.FileUploadId);
+
+            //configure one to one between AssignmentAnswer and FileUpload
+            modelBuilder.Entity<AssignmentAnswer>().HasOne(a => a.Attachment)
+                .WithOne().HasForeignKey<AssignmentAnswer>(m => m.FileUploadId);
+
         }
 
         public DbSet<FileUpload> FileUploads { get; set; }
+        public DbSet<Media> Medias { get; set; }
+        public DbSet<LessonNote> LessonNotes { get; set; }
+        public DbSet<Classwork> Classworks { get; set; }
         public DbSet<Notice> Notices { get; set; }
 
         public DbSet<Assignment> Assignments { get; set; }

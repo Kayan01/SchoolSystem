@@ -1,5 +1,6 @@
-﻿using LearningSvc.Core.Models.TimeTable;
-using LearningSvc.Core.Services.Interfaces;
+﻿using LearningSvc.Core.Enumerations;
+using LearningSvc.Core.Models.TimeTable;
+using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.TimeTable;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
@@ -26,7 +27,7 @@ namespace LearningSvc.Core.Services
             _periodRepo = periodRepo;
         }
 
-        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForTeacherToday(long teacherId, DayOfWeek day)
+        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForTeacherToday(long teacherId, WeekDays day)
         {
             var result = new ResultModel<List<ClassSessionOutputVM>>
             {
@@ -46,11 +47,11 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetClassesForTeacherToday(long teacherId, DayOfWeek day, int Count)
+        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetNextClassesForTeacherToday(long teacherId, WeekDays day, int curPeriod, int Count)
         {
             var result = new ResultModel<List<ClassSessionOutputVM>>
             {
-                Data = await _timeTableRepo.GetAll().Where(m => m.TeacherId == teacherId && m.Day == day)
+                Data = await _timeTableRepo.GetAll().Where(m => m.TeacherId == teacherId && m.Day == day && m.Period.Step > curPeriod)
                     .Include(m => m.Period).Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).ThenInclude(n => n.Students)
                     .Select(x => (ClassSessionOutputVM)x).Take(Count)
                     .ToListAsync()

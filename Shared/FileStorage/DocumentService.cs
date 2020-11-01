@@ -19,6 +19,19 @@ namespace Shared.FileStorage
         {
             _fileStorageService = fileStorageService;
         }
+
+        public async Task<FileUpload> TryUploadSupportingDocument(IFormFile formFile, DocumentType docType)
+        {
+                var fileName = CommonHelper.GenerateTimeStampedFileName(formFile.FileName);
+                var uploaded = await _fileStorageService.TrySaveStreamAsync(fileName,
+                  formFile.OpenReadStream());
+                
+            if (uploaded)
+                return new FileUpload { ContentType = formFile.ContentType, Name = docType.GetDisplayName(), Path = fileName };
+
+            return null;
+        }
+
         public async Task<List<FileUpload>> TryUploadSupportingDocuments(List<IFormFile> formFiles, List<DocumentType> DocTypes)
         {
 
@@ -28,7 +41,7 @@ namespace Shared.FileStorage
             {
                 var index = formFiles.IndexOf(file);
                 var fileName = CommonHelper.GenerateTimeStampedFileName(file.FileName);
-                uploaded = _fileStorageService.TrySaveStream(fileName,
+                uploaded = await _fileStorageService.TrySaveStreamAsync(fileName,
                   file.OpenReadStream());
                 if (uploaded)
                     fileUploads.Add(new FileUpload { ContentType = file.ContentType, Name = DocTypes[index].GetDisplayName(), Path = fileName });

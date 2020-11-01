@@ -1,4 +1,5 @@
-﻿using Shared.Entities.Auditing;
+﻿using LearningSvc.Core.Enumerations;
+using Shared.Entities.Auditing;
 using Shared.Tenancy;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,7 +12,7 @@ namespace LearningSvc.Core.Models.TimeTable
         public long TenantId { get; set; }
 
         public long PeriodId { get; set; }
-        public DayOfWeek Day { get; set; }
+        public WeekDays Day { get; set; }
 
         public long TeacherId { get; set; }
         public long SubjectId { get; set; }

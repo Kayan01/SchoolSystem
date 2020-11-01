@@ -20,7 +20,7 @@ using LearningSvc.Core.Context;
 using Shared.PubSub;
 using Microsoft.AspNetCore.Hosting;
 using Shared.PubSub.KafkaImpl;
-using LearningSvc.Core.Services.Interfaces;
+using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Shared.Tenancy;
@@ -101,9 +101,14 @@ namespace LearningSvc.API
             services.AddTransient<LearningHandler>();
 
             services.AddScoped<IFileStorageService, FileStorageService>();
-            //services.AddTransient<IFileUploadService, FileUploadService>();     
+            //services.AddTransient<IFileUploadService, FileUploadService>(); 
+            services.AddScoped<IDocumentService, DocumentService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<ITimeTableService, TimeTableService>();
+            services.AddScoped<IAssignmentService, AssignmentService>();
+            services.AddScoped<IMediaService, MediaService>();
+            services.AddScoped<IClassWorkService, ClassWorkService>();
+            services.AddScoped<ILessonNoteService, LessonNoteService>();
         }
     }
 }
