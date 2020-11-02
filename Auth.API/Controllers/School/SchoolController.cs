@@ -51,17 +51,17 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> BulkAddSchool([FromForm]CreateSchoolVM model)
+        public async Task<IActionResult> BulkAddSchool(IFormFile formFile)
         {
-            if (model == null)
-                return ApiResponse<string>(errors: "Empty payload");
+            if (formFile == null)
+                return ApiResponse<string>(errors: "No file uploaded");
 
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
-                var result = await _schoolService.AddSchool(model);
+                var result = await _schoolService.AddBulkSchool(formFile);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
