@@ -24,6 +24,7 @@ using Shared.Net.WorkerService;
 using Auth.Core.Services.Users;
 using Auth.Core.Interfaces.Users;
 using Shared.Tenancy;
+using Auth.Core.Interfaces;
 
 namespace Auth.API
 {
@@ -111,6 +112,7 @@ namespace Auth.API
             services.AddScoped<IPublishService, PublishService>();
             services.AddScoped<ITeacherService, TeacherService>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IFileStore, FileStore>();
             services.AddTransient<AuthHandler>();
         }
     }
