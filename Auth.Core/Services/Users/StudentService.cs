@@ -1,6 +1,7 @@
 ﻿using Auth.Core.Models;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Student;
+using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
@@ -122,14 +123,9 @@ namespace Auth.Core.Services
                           .Include(x => x.User)
                           .Select(x => (StudentVM)x);
 
-            var totalCount = query.Count();
-            var pagedData = await PaginatedList<StudentVM>.CreateAsync(query, model.PageIndex, model.PageSize);
+            var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
-            result.Data = new PaginatedModel<StudentVM>(
-                pagedData,
-                model.PageIndex, 
-                model.PageSize, totalCount
-                ); 
+            result.Data = new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
         }

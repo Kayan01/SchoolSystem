@@ -1,6 +1,7 @@
 ﻿using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
+using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NPOI.OpenXmlFormats.Wordprocessing;
@@ -162,12 +163,14 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<PaginatedModel<AdminVM>>();
             var query = _adminRepo.GetAll()
-                          .Include(x => x.User);
+                          .Include(x => x.User)
+                          .Select(x => (AdminVM)x);
 
-            var totalCount = query.Count();
-            var pagedData = await PaginatedList<Admin>.CreateAsync(query, model.PageIndex, model.PageSize);
 
-            result.Data = new PaginatedModel<AdminVM>(pagedData.Select(x => (AdminVM)x), model.PageIndex, model.PageSize, totalCount);
+           var admins = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+           
+
+            result.Data = new PaginatedModel<AdminVM>(admins, model.PageIndex, model.PageSize, admins.TotalItemCount);
 
             return result;
         }
