@@ -11,7 +11,7 @@ using Shared.Utils;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 using LearningSvc.API.ViewModel;
-using LearningSvc.Core.Services.Interfaces;
+using LearningSvc.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using LearningSvc.Core.ViewModels;
 

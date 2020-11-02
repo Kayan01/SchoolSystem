@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.FileProviders;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Shared.FileStorage
 {
@@ -24,7 +25,11 @@ namespace Shared.FileStorage
 
         bool TrySaveStream(string path, Stream inputStream);
 
+        Task<bool> TrySaveStreamAsync(string path, Stream inputStream);
+
         void SaveStream(string path, Stream inputStream);
+
+        Task SaveStreamAsync(string path, Stream inputStream);
 
         void SaveBytes(string path, byte[] raw);
 

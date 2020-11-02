@@ -1,6 +1,7 @@
 ﻿using Shared.Entities;
 using Shared.Entities.Auditing;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LearningSvc.Core.Models
@@ -13,11 +14,9 @@ namespace LearningSvc.Core.Models
         public string Comment { get; set; }
         public double Score { get; set; }
         public DateTime DateSubmitted { get; set; }
+        public Guid FileUploadId { get; set; }
 
-        [ForeignKey(nameof(FileUpload))]
-        public Guid? AnsweFileId { get; set; }
-
-        public FileUpload AnsweFile { get; set; }
+        public FileUpload Attachment { get; set; }
         public Student Student { get; set; }
         public Assignment Assignment { get; set; }
 

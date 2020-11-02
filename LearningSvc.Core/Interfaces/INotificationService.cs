@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LearningSvc.Core.Services.Interfaces
+namespace LearningSvc.Core.Interfaces
 {
     public interface INotificationService
     {

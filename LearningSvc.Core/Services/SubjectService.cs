@@ -1,5 +1,5 @@
 ﻿using LearningSvc.Core.Models;
-using LearningSvc.Core.Services.Interfaces;
+using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.Subject;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;

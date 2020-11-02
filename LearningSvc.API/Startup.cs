@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using LearningSvc.Core.Context;
 using Shared.Utils;
 using Shared.Tenancy;
+using Shared.Collections;
 
 namespace LearningSvc.API
 {
@@ -48,6 +49,16 @@ namespace LearningSvc.API
             }
 
             //app.UseMiddleware<TenantInfoMiddleware>();
+
+            app.UseCors(x =>
+            {
+                x.WithOrigins(Configuration["AllowedCorsOrigin"]
+                  .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                  .Select(o => o.RemovePostFix("/"))
+                  .ToArray())
+             .AllowAnyMethod()
+             .AllowAnyHeader();
+            });
 
             app.UseRouting();
             app.UseAuthentication();

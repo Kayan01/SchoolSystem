@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NotificationSvc.Core.Context;
+using Shared.Collections;
 using Shared.Utils;
 
 namespace NotificationSvc.API
@@ -45,6 +46,16 @@ namespace NotificationSvc.API
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseCors(x =>
+            {
+                x.WithOrigins(Configuration["AllowedCorsOrigin"]
+                  .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                  .Select(o => o.RemovePostFix("/"))
+                  .ToArray())
+             .AllowAnyMethod()
+             .AllowAnyHeader();
+            });
 
             app.UseRouting();
             app.UseAuthentication();
