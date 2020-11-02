@@ -13,7 +13,7 @@ namespace Auth.Core.ViewModels
         public long Id { get; internal set; }
         public string Name { get; set; }
         public string ClientCode { get; set; }
-        public long? UsersCount { get; set; }
+        public long UsersCount { get; set; }
         public string State { get; set; }
         public bool Status { get; set; }
         public DateTime DateCreated { get; set; }
