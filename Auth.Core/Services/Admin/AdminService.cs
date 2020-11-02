@@ -164,13 +164,13 @@ namespace Auth.Core.Services
             var result = new ResultModel<PaginatedModel<AdminVM>>();
             var query = _adminRepo.GetAll()
                           .Include(x => x.User)
-                          .Select(x => (AdminVM)x);
+                          .Include(x => x.FileUploads);
+                          
 
 
-           var admins = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+          var admins = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
            
-
-            result.Data = new PaginatedModel<AdminVM>(admins, model.PageIndex, model.PageSize, admins.TotalItemCount);
+            result.Data = new PaginatedModel<AdminVM>(admins.Select(x => (AdminVM)x), model.PageIndex, model.PageSize, admins.TotalItemCount);
 
             return result;
         }

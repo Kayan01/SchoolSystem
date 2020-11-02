@@ -73,9 +73,9 @@ namespace Auth.Core.Services.Users
 
             var resultModel = new ResultModel<PaginatedModel<ParentVM>>();
 
-            var data = await _parentRepo.GetAll().Select(p => (ParentVM)p).ToPagedListAsync(vm.PageIndex, vm.PageSize);
+            var data = await _parentRepo.GetAll().ToPagedListAsync(vm.PageIndex, vm.PageSize);
 
-            resultModel.Data = new PaginatedModel<ParentVM>(data, vm.PageIndex, vm.PageSize, data.TotalItemCount);
+            resultModel.Data = new PaginatedModel<ParentVM>(data.Select(p => (ParentVM)p), vm.PageIndex, vm.PageSize, data.TotalItemCount);
 
             return resultModel;
         }

@@ -120,12 +120,11 @@ namespace Auth.Core.Services
 
             var query = _studentRepo.GetAll()
                           .Include(x => x.Class)
-                          .Include(x => x.User)
-                          .Select(x => (StudentVM)x);
+                          .Include(x => x.User);
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
-            result.Data = new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount);
+            result.Data = new PaginatedModel<StudentVM>(pagedData.Select(x => (StudentVM)x), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
         }

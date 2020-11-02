@@ -59,13 +59,12 @@ namespace Auth.Core.Services.Class
 
         public async Task<ResultModel<PaginatedModel<ClassSectionVM>>> GetAllSections(QueryModel vm)
         {
-            var data = await _schoolSectionRepository.GetAll()
-                .Select(x => (ClassSectionVM)x)
+            var data = await _schoolSectionRepository.GetAll()                
                 .ToPagedListAsync(vm.PageIndex, vm.PageSize);
 
             var result = new ResultModel<PaginatedModel<ClassSectionVM>>
             {
-                Data = new PaginatedModel<ClassSectionVM>(data, vm.PageIndex, vm.PageSize, data.TotalItemCount)
+                Data = new PaginatedModel<ClassSectionVM>(data.Select(x => (ClassSectionVM)x), vm.PageIndex, vm.PageSize, data.TotalItemCount)
             };
             return result;
         }
