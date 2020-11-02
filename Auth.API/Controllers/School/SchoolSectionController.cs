@@ -76,11 +76,11 @@ namespace Auth.API.Controllers.School
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllSections()
+        public async Task<IActionResult> GetAllSections(QueryModel vm)
         {
             try
             {
-                var result = await _sectionService.GetAllSections();
+                var result = await _sectionService.GetAllSections(vm);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
