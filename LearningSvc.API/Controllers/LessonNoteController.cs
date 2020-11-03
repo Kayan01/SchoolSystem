@@ -28,7 +28,7 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
-                var result = await _lessonnoteService.GetAllFileByTeacher(teacherId, vM.PageIndex, vM.PageSize);
+                var result = await _lessonnoteService.GetAllFileByTeacher(teacherId, vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -45,7 +45,7 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
-                var result = await _lessonnoteService.GetAllFileByClass(classId, vM.PageIndex, vM.PageSize);
+                var result = await _lessonnoteService.GetAllFileByClass(classId, vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
