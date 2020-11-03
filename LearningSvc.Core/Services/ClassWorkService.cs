@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Shared.Pagination;
+using IPagedList;
 
 namespace LearningSvc.Core.Services
 {
@@ -36,32 +38,28 @@ namespace LearningSvc.Core.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ResultModel<PaginatedList<ClassWorkListVM>>> GetAllFileByClass(long classId, int pagenumber, int pagesize)
+        public async Task<ResultModel<PaginatedModel<ClassWorkListVM>>> GetAllFileByClass(long classId, QueryModel queryModel)
         {
-            var query = _classWorkRepo.GetAll().Where(m => m.SchoolClassId == classId)
+            var query = await _classWorkRepo.GetAll().Where(m => m.SchoolClassId == classId)
                     .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.File)
-                    .Select(x => (ClassWorkListVM)x);
+                    .Select(x => (ClassWorkListVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
-            var files = await PaginatedList<ClassWorkListVM>.CreateAsync(query, pagenumber, pagesize);
-
-            var result = new ResultModel<PaginatedList<ClassWorkListVM>>
+            var result = new ResultModel<PaginatedModel<ClassWorkListVM>>
             {
-                Data = files
+                Data = new PaginatedModel<ClassWorkListVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
             };
             return result;
         }
 
-        public async Task<ResultModel<PaginatedList<ClassWorkListVM>>> GetAllFileByTeacher(long teacherId, int pagenumber, int pagesize)
+        public async Task<ResultModel<PaginatedModel<ClassWorkListVM>>> GetAllFileByTeacher(long teacherId, QueryModel queryModel)
         {
-            var query = _classWorkRepo.GetAll().Where(m => m.TeacherId == teacherId)
+            var query = await _classWorkRepo.GetAll().Where(m => m.TeacherId == teacherId)
                     .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.File)
-                    .Select(x => (ClassWorkListVM)x);
+                    .Select(x => (ClassWorkListVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
-            var files = await PaginatedList<ClassWorkListVM>.CreateAsync(query, pagenumber, pagesize);
-
-            var result = new ResultModel<PaginatedList<ClassWorkListVM>>
+            var result = new ResultModel<PaginatedModel<ClassWorkListVM>>
             {
-                Data = files
+                Data = new PaginatedModel<ClassWorkListVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
             };
             return result;
         }
