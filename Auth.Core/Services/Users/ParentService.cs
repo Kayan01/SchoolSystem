@@ -8,6 +8,7 @@ using NPOI.Util;
 using Org.BouncyCastle.Math.EC.Rfc7748;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.Pagination;
 using Shared.Utils;
 using Shared.ViewModels;
 using System;
@@ -67,17 +68,14 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<IPagedList<ParentVM>>> GetAllParents(QueryModel vm)
+        public async Task<ResultModel<PaginatedModel<ParentVM>>> GetAllParents(QueryModel vm)
         {
 
-            var resultModel = new ResultModel<IPagedList<ParentVM>>();
+            var resultModel = new ResultModel<PaginatedModel<ParentVM>>();
 
-            var data = await _parentRepo.GetAll().Select(p => new ParentVM
-            {
+            var data = await _parentRepo.GetAll().ToPagedListAsync(vm.PageIndex, vm.PageSize);
 
-            }).ToPagedListAsync(vm.PageIndex, vm.PageSize);
-
-            resultModel.Data = data;
+            resultModel.Data = new PaginatedModel<ParentVM>(data.Select(p => (ParentVM)p), vm.PageIndex, vm.PageSize, data.TotalItemCount);
 
             return resultModel;
         }
@@ -107,12 +105,9 @@ namespace Auth.Core.Services.Users
                 .Include(x => x.Parent)
                 .ThenInclude(x => x.User)
                 .Where(x => x.UserId == studId)
-                .Select(x => new ParentVM
-                {
-                      Name = x.Parent.User.FullName,
-                       Address = x.Parent.Address
-                })
+                .Select(x => (ParentVM)x.Parent)
                 .ToListAsync();
+
 
 
             if (parents.Count < 1)

@@ -18,6 +18,7 @@ using Shared.Enums;
 using Microsoft.AspNetCore.Http;
 using ExcelManager;
 using Auth.Core.Models.Contact;
+using IPagedList;
 
 namespace Auth.Core.Services
 {
@@ -116,15 +117,13 @@ namespace Auth.Core.Services
         public async Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model)
         {
             var query = _schoolRepo.GetAll()
-                .Select(x => new SchoolVM
-                {
-                    Id = x.Id,
-                    Name = x.Name
-                });
+                .Include(x=> x.Staffs)
+                .Include(x => x.Students)
+                .Include(x => x.TeachingStaffs);
 
-            var pagedData = await PaginatedList<SchoolVM>.CreateAsync(query, model.PageIndex, model.PageSize);
+            var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
-            var data = new PaginatedModel<SchoolVM>(pagedData, model.PageIndex, model.PageSize, pagedData.Count);
+            var data = new PaginatedModel<SchoolVM>(pagedData.Select(x => (SchoolVM)x), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
             var result = new ResultModel<PaginatedModel<SchoolVM>>
             {
                 Data = data
