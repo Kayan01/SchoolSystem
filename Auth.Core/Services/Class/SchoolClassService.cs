@@ -76,6 +76,7 @@ namespace Auth.Core.Services
             //PublishMessage
             await _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS, new ClassSharedModel
             {
+                Id = cls.Id,
                 TenantId = cls.TenantId,
                 Name = cls.Name,
                 ClassArm = cls.ClassArm
