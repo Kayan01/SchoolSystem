@@ -1,5 +1,6 @@
 ﻿using LearningSvc.Core.Enumerations;
 using LearningSvc.Core.ViewModels.LessonNote;
+using Shared.Pagination;
 using Shared.Utils;
 using Shared.ViewModels;
 using System;
@@ -11,8 +12,8 @@ namespace LearningSvc.Core.Interfaces
 {
     public interface ILessonNoteService
     {
-        Task<ResultModel<PaginatedList<LessonNoteListVM>>> GetAllFileByTeacher(long teacherId, int pagenumber, int pagesize);
-        Task<ResultModel<PaginatedList<LessonNoteListVM>>> GetAllFileByClass(long classId, int pagenumber, int pagesize);
+        Task<ResultModel<PaginatedModel<LessonNoteListVM>>> GetAllFileByTeacher(long teacherId, QueryModel queryModel);
+        Task<ResultModel<PaginatedModel<LessonNoteListVM>>> GetAllFileByClass(long classId, QueryModel queryModel);
         Task<ResultModel<string>> UploadLearningFile(LessonNoteUploadVM model);
         Task<ResultModel<string>> DeleteLessonNote(long id);
     }
