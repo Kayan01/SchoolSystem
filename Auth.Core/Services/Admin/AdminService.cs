@@ -175,9 +175,33 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public Task<ResultModel<AdminVM>> UpdateAdmin(UpdateAdminVM model)
+        public async Task<ResultModel<AdminVM>> UpdateAdmin(UpdateAdminVM model)
         {
-            throw new NotImplementedException();
+            var result = new ResultModel<AdminVM>();
+            var admin = await _adminRepo.GetAll()
+                          .Include(x => x.User)
+                          .Include(x => x.FileUploads)
+                          .FirstOrDefaultAsync(x => x.UserId == model.UserId);
+
+            if (admin == null)
+            {
+                result.AddError("No admin found");
+
+                return result;
+            }
+
+            admin.User.Email = model.Email;
+            admin.User.FirstName = model.FirstName;
+            admin.User.LastName = model.LastName;
+            admin.User.PhoneNumber = model.PhoneNumber;
+            admin.User.UserName = model.UserName;
+
+           await _adminRepo.UpdateAsync(admin);
+
+            result.Data = admin;
+
+            return result;
+
         }
     }
 }
