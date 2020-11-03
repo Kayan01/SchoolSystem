@@ -65,24 +65,32 @@ namespace LearningSvc.API
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<LearningHandler>();
-                handlers.Add((message) =>
+                handlers.Add(async (message) =>
                 {
                     switch (message.BusMessageType)
                     {
                         case (int)BusMessageTypes.STUDENT:
+                            {
+                                await handler.HandleAddOrUpdateStudentAsync(message);
+                                break;
+                            }
                         case (int)BusMessageTypes.STUDENT_UPDATE:
                         case (int)BusMessageTypes.STUDENT_DELETE:
+                        case (int)BusMessageTypes.TEACHER:
                             {
-                                handler.HandleAddOrUpdateStudent(message);
+                                await handler.HandleAddOrUpdateTeacherAsync(message);
                                 break;
                             }
-                        case (int)BusMessageTypes.TEACHER:
                         case (int)BusMessageTypes.TEACHER_UPDATE:
                         case (int)BusMessageTypes.TEACHER_DELETE:
+                        case (int)BusMessageTypes.CLASS:
                             {
-                                handler.HandleAddOrUpdateTeacher(message);
+                                await handler.HandleAddOrUpdateClassAsync(message);
                                 break;
                             }
+                        case (int)BusMessageTypes.CLASS_UPDATE:
+                        case (int)BusMessageTypes.CLASS_DELETE:
+                            break;
                     }
                 });
                 return handlers;
