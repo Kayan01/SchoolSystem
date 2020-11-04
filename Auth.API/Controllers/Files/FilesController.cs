@@ -12,7 +12,7 @@ using Shared.ViewModels.Enums;
 
 namespace Auth.API.Controllers.Files
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]/[action]")]
     [ApiController]
     public class FilesController : BaseController
     {
