@@ -1,18 +1,49 @@
 ﻿using Shared.Utils;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Shared.Permissions
 {
     public enum Permission
     {
-        USER_MENU = 101,
-        USER_LIST = 102,
-        USER_ADD = 103,
-        USER_DELETE = 104,
-        USER_UPDATE = 105,
+        [Description("USER CREATE")]
+        USER_CREATE = 1001,
+        [Description("USER READ")]
+        USER_READ = 1002,
+        [Description("USER UPDATE")]
+        USER_UPDATE = 1003,
+        [Description("USER DELETE")]
+        USER_DELETE = 1004,
+
+        [Description("TEACHER CREATE")]
+        TEACHER_CREATE = 1011,
+        [Description("TEACHER READ")]
+        TEACHER_READ = 1012,
+        [Description("TEACHER UPDATE")]
+        TEACHER_UPDATE = 1013,
+        [Description("TEACHER DELETE")]
+        TEACHER_DELETE = 1014,
+
+        [Description("STUDENT CREATE")]
+        STUDENT_CREATE = 1021,
+        [Description("STUDENT READ")]
+        STUDENT_READ = 1022,
+        [Description("STUDENT UPDATE")]
+        STUDENT_UPDATE = 1023,
+        [Description("STUDENT DELETE")]
+        STUDENT_DELETE = 1024,
+
+        [Description("ROLE CREATE")]
+        ROLE_CREATE = 1031,
+        [Description("ROLE READ")]
+        ROLE_READ = 1032,
+        [Description("ROLE UPDATE")]
+        ROLE_UPDATE = 1033,
+        [Description("ROLE DELETE")]
+        ROLE_DELETE = 1034,
     }
 
-    public static class PermisionProvider
+    /*public static class PermisionProvider
     {
         public static Dictionary<string, IEnumerable<Permission>> GetSystemDefaultRoles()
         {
@@ -29,5 +60,5 @@ namespace Shared.Permissions
 
 
         }
-    }
+    }*/
 }
