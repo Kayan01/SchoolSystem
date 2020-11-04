@@ -18,12 +18,11 @@ namespace LearningSvc.API.Controllers
     [Route("api/v1/[controller]/[action]")]
     public class TimeTableController : BaseController
     {
-        private readonly ITimeTableService _tService;
+        private readonly ITimeTableService _timeTableService;
         public TimeTableController(ITimeTableService tService)
         {
-            _tService = tService;
+            _timeTableService = tService;
         }
-
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
@@ -31,7 +30,7 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
-                var result = await _tService.GetAllPeriodForSchool();
+                var result = await _timeTableService.GetAllPeriodForSchool();
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -54,7 +53,7 @@ namespace LearningSvc.API.Controllers
 
             try
             {
-                var result = await _tService.SetupSchoolPeriods(model);
+                var result = await _timeTableService.SetupSchoolPeriods(model);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -72,7 +71,7 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
-                var result = await _tService.GetTimeTableCellsForTeacher(teacherId);
+                var result = await _timeTableService.GetTimeTableCellsForTeacher(teacherId);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -89,7 +88,7 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
-                var result = await _tService.GetTimeTableCellsForClass(classId);
+                var result = await _timeTableService.GetTimeTableCellsForClass(classId);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -102,7 +101,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UploadNewTimetableForClass(List<TimeTableCellVM> model, [FromRoute] long classId)
+        public async Task<IActionResult> UploadNewTimetableForClass(List<TimeTableCellVM> model, [FromRoute]long classId)
         {
             if (model == null || model.Count < 0)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -118,7 +117,7 @@ namespace LearningSvc.API.Controllers
 
             try
             {
-                var result = await _tService.SetupTimeTableCellsByClass(model, classId);
+                var result = await _timeTableService.SetupTimeTableCellsByClass(model, classId);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -136,7 +135,7 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
-                var result = await _tService.GetAllClassesForTeacherToday(teacherId, day);
+                var result = await _timeTableService.GetAllClassesForTeacherToday(teacherId, day);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -150,11 +149,11 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetNextClassesForTeacherByDay(long teacherId, WeekDays day, int curPeriod, int count)
+        public async Task<IActionResult> GetNextClassesForTeacherByDay(long teacherId, WeekDays day, int currentPeriod, int count)
         {
             try
             {
-                var result = await _tService.GetNextClassesForTeacherToday(teacherId, day, curPeriod, count);
+                var result = await _timeTableService.GetNextClassesForTeacherToday(teacherId, day, currentPeriod, count);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
