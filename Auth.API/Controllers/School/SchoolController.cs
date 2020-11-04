@@ -51,7 +51,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> BulkAddSchool(IFormFile formFile)
+        public async Task<IActionResult> BulkAddSchool(IFormFile file)
         {
             if (formFile == null)
                 return ApiResponse<string>(errors: "No file uploaded");
@@ -61,7 +61,7 @@ namespace UserManagement.API.Controllers
 
             try
             {
-                var result = await _schoolService.AddBulkSchool(formFile);
+                var result = await _schoolService.AddBulkSchool(file);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
