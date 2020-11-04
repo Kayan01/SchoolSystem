@@ -135,7 +135,10 @@ namespace Auth.Core.Services
         public async Task<ResultModel<SchoolVM>> GetSchoolById(long Id)
         {
             var result = new ResultModel<SchoolVM>();
-            var school = await _schoolRepo.FirstOrDefaultAsync(x => x.Id == Id);
+            var school = await _schoolRepo.GetAll()
+                .Include(x => x.SchoolContactDetails)
+                .Include(x => x.FileUploads)
+                .FirstOrDefaultAsync(x => x.Id == Id);
 
             if (school == null)
             {
