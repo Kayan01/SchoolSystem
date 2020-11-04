@@ -21,7 +21,7 @@ namespace Auth.API.Controllers.Files
         {
             _fileStore = fileStore;
         }
-        [HttpGet]
+        [HttpGet("{Id}")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetFile(Guid Id)
