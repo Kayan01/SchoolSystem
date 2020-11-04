@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Pagination;
 using Microsoft.AspNetCore.Identity;
 using Shared.Entities;
+using IPagedList;
 
 namespace Auth.Core.Services
 {
@@ -60,10 +61,10 @@ namespace Auth.Core.Services
 
 
 
-            var totalCount = query.Count();
-            var pagedData = await PaginatedList<StaffVM>.CreateAsync(query, model.PageIndex, model.PageSize);
+            
+            var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
-            result.Data = new PaginatedModel<StaffVM>(pagedData.Select(x => x), model.PageIndex, model.PageSize, totalCount);
+            result.Data = new PaginatedModel<StaffVM>(pagedData.Select(x => x), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
         }

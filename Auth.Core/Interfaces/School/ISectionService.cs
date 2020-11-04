@@ -1,4 +1,5 @@
 ﻿using Auth.Core.ViewModels.SchoolClass;
+using Shared.Pagination;
 using Shared.ViewModels;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace Auth.Core.Services.Interfaces.Class
 
         Task<ResultModel<bool>> DeleteSection(long Id);
 
-        Task<ResultModel<List<ClassSectionVM>>> GetAllSections();
+        Task<ResultModel<PaginatedModel<ClassSectionVM>>> GetAllSections(QueryModel vm);
 
         Task<ResultModel<ClassSectionUpdateVM>> UpdateSection(ClassSectionUpdateVM model);
     }

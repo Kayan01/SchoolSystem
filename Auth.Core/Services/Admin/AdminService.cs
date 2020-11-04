@@ -1,6 +1,7 @@
 ﻿using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
+using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NPOI.OpenXmlFormats.Wordprocessing;
@@ -162,19 +163,45 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<PaginatedModel<AdminVM>>();
             var query = _adminRepo.GetAll()
-                          .Include(x => x.User);
+                          .Include(x => x.User)
+                          .Include(x => x.FileUploads);
+                          
 
-            var totalCount = query.Count();
-            var pagedData = await PaginatedList<Admin>.CreateAsync(query, model.PageIndex, model.PageSize);
 
-            result.Data = new PaginatedModel<AdminVM>(pagedData.Select(x => (AdminVM)x), model.PageIndex, model.PageSize, totalCount);
+          var admins = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+           
+            result.Data = new PaginatedModel<AdminVM>(admins.Select(x => (AdminVM)x), model.PageIndex, model.PageSize, admins.TotalItemCount);
 
             return result;
         }
 
-        public Task<ResultModel<AdminVM>> UpdateAdmin(UpdateAdminVM model)
+        public async Task<ResultModel<AdminVM>> UpdateAdmin(UpdateAdminVM model)
         {
-            throw new NotImplementedException();
+            var result = new ResultModel<AdminVM>();
+            var admin = await _adminRepo.GetAll()
+                          .Include(x => x.User)
+                          .Include(x => x.FileUploads)
+                          .FirstOrDefaultAsync(x => x.UserId == model.UserId);
+
+            if (admin == null)
+            {
+                result.AddError("No admin found");
+
+                return result;
+            }
+
+            admin.User.Email = model.Email;
+            admin.User.FirstName = model.FirstName;
+            admin.User.LastName = model.LastName;
+            admin.User.PhoneNumber = model.PhoneNumber;
+            admin.User.UserName = model.UserName;
+
+           await _adminRepo.UpdateAsync(admin);
+
+            result.Data = admin;
+
+            return result;
+
         }
     }
 }

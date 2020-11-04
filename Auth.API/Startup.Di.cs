@@ -115,6 +115,7 @@ namespace Auth.API
             services.AddScoped<IPublishService, PublishService>();
             services.AddScoped<ITeacherService, TeacherService>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IFileStore, FileStore>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddTransient<AuthHandler>();
         }
