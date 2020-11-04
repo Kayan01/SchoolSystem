@@ -16,6 +16,7 @@ namespace Auth.Core.ViewModels
         public string Name { get; set; }
         public string ClientCode { get; set; }
         public string DomainName { get; set; }
+        public string WebsiteAddress { get; set; }
         public string Address { get; set; }
         public string City { get; set; }
         public string Country { get; set; }
@@ -47,6 +48,7 @@ namespace Auth.Core.ViewModels
                 Name = model.Name,
                 DateCreated = model.CreationTime,
                 DomainName = model.DomainName,
+                WebsiteAddress = model.WebsiteAddress,
                 State = model.State,
                 Country = model.Country,
                 Address = model.Address,
