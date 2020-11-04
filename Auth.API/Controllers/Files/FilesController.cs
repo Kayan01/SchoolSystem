@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -21,12 +22,13 @@ namespace Auth.API.Controllers.Files
             _fileStore = fileStore;
         }
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetFile(Guid Id)
         {
-            if (!ModelState.IsValid)
+            if (Id == null)
             {
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: "No Id provided", codes: ApiResponseCodes.INVALID_REQUEST);
             }
 
 
