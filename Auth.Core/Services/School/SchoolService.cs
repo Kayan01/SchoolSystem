@@ -118,6 +118,7 @@ namespace Auth.Core.Services
         {
             var query = _schoolRepo.GetAll()
                 .Include(x=> x.Staffs)
+                .Include(x => x.FileUploads)
                 .Include(x => x.Students)
                 .Include(x => x.TeachingStaffs);
 
@@ -266,6 +267,19 @@ namespace Auth.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<int>> GetTotalSchoolsCount()
+        {
+
+            var result = new ResultModel<int>();
+
+
+            var schoolsCount = await _schoolRepo.CountAsync();
+
+            result.Data = schoolsCount;
+
+            return result;
+
+        }
     }
 
 

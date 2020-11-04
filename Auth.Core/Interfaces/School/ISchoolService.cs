@@ -14,6 +14,7 @@ namespace Auth.Core.Services.Interfaces
     public interface ISchoolService
     {
 
+        Task<ResultModel<int>> GetTotalSchoolsCount();
         Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model);
         Task<ResultModel<bool>> AddBulkSchool(IFormFile model);
 
