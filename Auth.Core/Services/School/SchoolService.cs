@@ -213,7 +213,7 @@ namespace Auth.Core.Services
 
                 return result;
             }
-
+            _unitOfWork.BeginTransaction();
             foreach (var model in importedData)
             {
                 //add admin for school user
