@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Extensions;
 using Shared.Enums;
+using Shared.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +19,7 @@ namespace Auth.Core.ViewModels
         public string LastName { get; set; }
         public string UserName { get; set; }
         public string PhoneNumber { get; set; }
-        public Guid? ImageId { get; set; }
+        public byte[] Image { get; set; }
 
         public static implicit operator AdminVM(Admin model)
         {
@@ -30,7 +31,7 @@ namespace Auth.Core.ViewModels
                 LastName = model.User.LastName,
                 PhoneNumber = model.User?.PhoneNumber,
                 UserName = model.User?.UserName,
-                ImageId = model.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())?.Id
+                Image = model.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())?.Path.GetBase64StringFromImage()
             };
         }
 
