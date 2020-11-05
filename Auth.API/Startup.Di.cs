@@ -25,6 +25,8 @@ using Auth.Core.Services.Users;
 using Auth.Core.Interfaces.Users;
 using Shared.Tenancy;
 using Auth.Core.Interfaces;
+using Shared.Permissions;
+using Microsoft.AspNetCore.Authorization;
 using Auth.Core.Services.Interfaces.Class;
 using Auth.Core.Services.Class;
 
@@ -100,6 +102,7 @@ namespace Auth.API
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
+            services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
             services.AddScoped<IFileStorageService, FileStorageService>();
             //services.AddTransient<IFileUploadService, FileUploadService>();        }
@@ -116,6 +119,7 @@ namespace Auth.API
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IClassArmService, ClassArmService>();
             services.AddScoped<IFileStore, FileStore>();
+            services.AddScoped<IRoleService, RoleService>();
             services.AddTransient<AuthHandler>();
         }
     }
