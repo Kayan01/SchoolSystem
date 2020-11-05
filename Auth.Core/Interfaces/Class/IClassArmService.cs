@@ -7,12 +7,12 @@ namespace Auth.Core.Services.Interfaces.Class
 {
     public interface IClassArmService
     {
-        Task<ResultModel<ClassArmVM>> AddClassArm(ClassArmVM model);
+        Task<ResultModel<ClassArmVM>> AddClassArm(AddClassArm model);
 
         Task<ResultModel<bool>> DeleteClassArm(long Id);
 
         Task<ResultModel<List<ClassArmVM>>> GetAllClassArms();
 
-        Task<ResultModel<ClassArmVM>> UpdateClassArm(ClassArmVM model);
+        Task<ResultModel<ClassArmVM>> UpdateClassArm(UpdateClassArmVM model);
     }
 }
