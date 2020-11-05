@@ -25,6 +25,8 @@ using Auth.Core.Services.Users;
 using Auth.Core.Interfaces.Users;
 using Shared.Tenancy;
 using Auth.Core.Interfaces;
+using Auth.Core.Services.Interfaces.Class;
+using Auth.Core.Services.Class;
 
 namespace Auth.API
 {
@@ -112,6 +114,7 @@ namespace Auth.API
             services.AddScoped<IPublishService, PublishService>();
             services.AddScoped<ITeacherService, TeacherService>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IClassArmService, ClassArmService>();
             services.AddScoped<IFileStore, FileStore>();
             services.AddTransient<AuthHandler>();
         }
