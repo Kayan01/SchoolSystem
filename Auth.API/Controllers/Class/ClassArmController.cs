@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces.Class;
 using Auth.Core.ViewModels.SchoolClass;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -14,6 +15,7 @@ namespace Auth.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
+    [AllowAnonymous]
     public class ClassArmController : BaseController
     {
         private readonly IClassArmService _classArmService;
