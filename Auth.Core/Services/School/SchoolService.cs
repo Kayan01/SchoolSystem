@@ -29,7 +29,7 @@ namespace Auth.Core.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         public SchoolService(
-            IRepository<School, long> schoolRepo, 
+        IRepository<School, long> schoolRepo, 
             IUnitOfWork unitOfWork,
             IDocumentService documentService,
             UserManager<User> userManager)
@@ -132,13 +132,16 @@ namespace Auth.Core.Services
 
             return result;
         }
-        public async Task<ResultModel<SchoolVM>> GetSchoolById(long Id)
+        public async Task<ResultModel<SchoolDetailVM>> GetSchoolById(long Id)
         {
-            var result = new ResultModel<SchoolVM>();
-            var school = await _schoolRepo.GetAll()
-                .Include(x => x.SchoolContactDetails)
-                .Include(x => x.FileUploads)
-                .FirstOrDefaultAsync(x => x.Id == Id);
+            var result = new ResultModel<SchoolDetailVM>();
+            var school = await  _schoolRepo
+                .GetAll()
+                .Where(y => y.Id == Id)
+                .Include(h => h.SchoolContactDetails)
+                .Include(h => h.FileUploads)
+                .Select(x => (SchoolDetailVM)x)                
+                .FirstOrDefaultAsync();
 
             if (school == null)
             {
@@ -213,7 +216,10 @@ namespace Auth.Core.Services
 
                 return result;
             }
+
+
             _unitOfWork.BeginTransaction();
+
             foreach (var model in importedData)
             {
                 //add admin for school user

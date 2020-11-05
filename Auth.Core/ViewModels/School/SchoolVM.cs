@@ -67,8 +67,8 @@ namespace Auth.Core.ViewModels
                 StudentsCount = studentCount,
                 StaffCount = staffCount,
                 TeachersCount = teachersCount,
-                Logo = logoId.Path.GetBase64StringFromImage(),
-                Icon = iconId.Path.GetBase64StringFromImage()
+                Logo = logoId?.Path?.GetBase64StringFromImage(),
+                Icon = iconId?.Path?.GetBase64StringFromImage()
 
             };
         }
