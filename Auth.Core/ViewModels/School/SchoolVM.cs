@@ -29,8 +29,8 @@ namespace Auth.Core.ViewModels
         public string ContactEmail { get; set; }
         public bool Status { get; set; }
         public DateTime DateCreated { get; set; }
-        public Guid? IconId { get; set; }
-        public Guid? LogoId { get; set; }
+        public byte[] Icon { get; set; }
+        public byte[] Logo { get; set; }
 
         public long? TotalUsersCount { get; set; }
         public long? StaffCount { get; set; }
@@ -67,8 +67,8 @@ namespace Auth.Core.ViewModels
                 StudentsCount = studentCount,
                 StaffCount = staffCount,
                 TeachersCount = teachersCount,
-                LogoId = logoId.Id,
-                IconId = iconId.Id
+                Logo = logoId.Path.GetBase64StringFromImage(),
+                Icon = iconId.Path.GetBase64StringFromImage()
 
             };
         }
