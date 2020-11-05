@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -11,7 +12,7 @@ using Shared.ViewModels.Enums;
 
 namespace Auth.API.Controllers.Files
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]/[action]")]
     [ApiController]
     public class FilesController : BaseController
     {
@@ -20,13 +21,14 @@ namespace Auth.API.Controllers.Files
         {
             _fileStore = fileStore;
         }
-        [HttpGet]
+        [HttpGet("{Id}")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetFile(Guid Id)
         {
-            if (!ModelState.IsValid)
+            if (Id == null)
             {
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: "No Id provided", codes: ApiResponseCodes.INVALID_REQUEST);
             }
 
 
