@@ -97,6 +97,19 @@ namespace Shared.Utils
         }
 
 
+        public static byte[] GetBase64StringFromImage(this string str)
+        {
 
+            if (string.IsNullOrEmpty(str))
+                return null;
+
+            var filepath = Path.Combine("Filestore", str.ToString());
+
+            if (File.Exists(filepath))
+                 return File.ReadAllBytes(filepath);
+
+            return null;
+
+        }
     }
 }
