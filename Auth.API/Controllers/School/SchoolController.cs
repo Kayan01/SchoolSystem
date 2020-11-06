@@ -51,7 +51,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> BulkAddSchool(IFormFile file)
+        public async Task<IActionResult> BulkAddSchool([FromForm]IFormFile file)
         {
             if (file == null)
                 return ApiResponse<string>(errors: "No file uploaded");
@@ -116,7 +116,7 @@ namespace UserManagement.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSchool(UpdateSchoolVM vM)
+        public async Task<IActionResult> UpdateSchool([FromForm]UpdateSchoolVM vM)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);

@@ -181,6 +181,7 @@ namespace Auth.Core.Services
                 .Include(x=> x.Staffs)
                 .Include(x => x.Students)
                 .Include(x => x.TeachingStaffs)
+                .Include(x => x.FileUploads)
                 .Where(x => x.Id == Id)
                 .FirstOrDefaultAsync();
 
