@@ -6,15 +6,17 @@ using System.Threading.Tasks;
 using Auth.Core.ViewModels.Staff;
 using Shared.Pagination;
 using Auth.Core.ViewModels;
+using Microsoft.AspNetCore.Http;
 
 namespace Auth.Core.Services.Interfaces
 {
    public interface IAdminService
     {
-        Task<ResultModel<AdminVM>> AddAdmin(AddAdminVM model);
-        Task<ResultModel<PaginatedModel<AdminVM>>> GetAllAdmin(QueryModel model);
-        Task<ResultModel<AdminVM>> GetAdminById(long Id);
-        Task<ResultModel<AdminVM>> UpdateAdmin(UpdateAdminVM model );
+        Task<ResultModel<AdminListVM>> AddAdmin(AddAdminVM model);
+        Task<ResultModel<bool>> BulkAddAdmin(IFormFile model);
+        Task<ResultModel<PaginatedModel<AdminListVM>>> GetAllAdmin(QueryModel model);
+        Task<ResultModel<AdminListVM>> GetAdminById(long Id);
+        Task<ResultModel<AdminListVM>> UpdateAdmin(UpdateAdminVM model );
         Task<ResultModel<bool>> DeleteAdmin(long Id);
     }
 }

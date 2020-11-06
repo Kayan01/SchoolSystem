@@ -1,7 +1,9 @@
 ﻿using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
+using ExcelManager;
 using IPagedList;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NPOI.OpenXmlFormats.Wordprocessing;
@@ -22,7 +24,7 @@ using System.Threading.Tasks;
 
 namespace Auth.Core.Services
 {
-   public class AdminService :IAdminService
+    public class AdminService : IAdminService
     {
         private readonly IRepository<Admin, long> _adminRepo;
         private readonly IUnitOfWork _unitOfWork;
@@ -44,9 +46,9 @@ namespace Auth.Core.Services
             _documentService = documentService;
         }
 
-        public async Task<ResultModel<AdminVM>> AddAdmin(AddAdminVM model)
+        public async Task<ResultModel<AdminListVM>> AddAdmin(AddAdminVM model)
         {
-            var result = new ResultModel<AdminVM>();
+            var result = new ResultModel<AdminListVM>();
 
             var files = new List<FileUpload>();
             //save filles
@@ -77,7 +79,7 @@ namespace Auth.Core.Services
                 PhoneNumber = model.PhoneNumber,
                 UserType = UserType.Admin,
             };
-            var userResult = await _userManager.CreateAsync(user, model.Password);
+            var userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
 
             if (!userResult.Succeeded)
             {
@@ -105,14 +107,75 @@ namespace Auth.Core.Services
                 Phone = user.PhoneNumber,
             });
 
-            result.Data = new AdminVM
+            result.Data = new AdminListVM
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
                 Id = admin.Id
             };
+
+            return result;
+        }
+
+        public async Task<ResultModel<bool>> BulkAddAdmin(IFormFile file)
+        {
+            var result = new ResultModel<bool>();
+            var stream = file.OpenReadStream();
+            var excelReader = new ExcelReader(stream);
+
+            var importedData = excelReader.ReadAllSheets<AddAdminVM>(false);
+
+            //check if imported data contains any data
+            if (importedData.Count < 1)
+            {
+                result.AddError("No data was imported");
+
+                return result;
+            }
+
+
+            _unitOfWork.BeginTransaction();
+
+            foreach (var model in importedData)
+            {
+                //add admin for school user
+                var user = new User
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    UserName = model.UserName,
+                    PhoneNumber = model.PhoneNumber,
+                    UserType = UserType.Admin,
+                };
+
+                var userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
+
+                if (!userResult.Succeeded)
+                {
+                    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                    return result;
+                }
+
+
+                //todo: add more props
+
+                var admin = new Admin
+                {
+                    UserId = user.Id,
+                    UserType = UserType.Admin
+                };
+
+            
+                _adminRepo.Insert(admin);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            _unitOfWork.Commit();
+
+            result.Data = true;
 
             return result;
         }
@@ -148,9 +211,9 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<AdminVM>> GetAdminById(long Id)
+        public async Task<ResultModel<AdminListVM>> GetAdminById(long Id)
         {
-            var result = new ResultModel<AdminVM>();
+            var result = new ResultModel<AdminListVM>();
             var query = _adminRepo.GetAll()
                             .Include(x => x.User)
                             .FirstOrDefault(x => x.UserId == Id);
@@ -159,25 +222,25 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<PaginatedModel<AdminVM>>> GetAllAdmin(QueryModel model)
+        public async Task<ResultModel<PaginatedModel<AdminListVM>>> GetAllAdmin(QueryModel model)
         {
-            var result = new ResultModel<PaginatedModel<AdminVM>>();
+            var result = new ResultModel<PaginatedModel<AdminListVM>>();
             var query = _adminRepo.GetAll()
                           .Include(x => x.User)
                           .Include(x => x.FileUploads);
-                          
 
 
-          var admins = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
-           
-            result.Data = new PaginatedModel<AdminVM>(admins.Select(x => (AdminVM)x), model.PageIndex, model.PageSize, admins.TotalItemCount);
+
+            var admins = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+
+            result.Data = new PaginatedModel<AdminListVM>(admins.Select(x => (AdminListVM)x), model.PageIndex, model.PageSize, admins.TotalItemCount);
 
             return result;
         }
 
-        public async Task<ResultModel<AdminVM>> UpdateAdmin(UpdateAdminVM model)
+        public async Task<ResultModel<AdminListVM>> UpdateAdmin(UpdateAdminVM model)
         {
-            var result = new ResultModel<AdminVM>();
+            var result = new ResultModel<AdminListVM>();
             var admin = await _adminRepo.GetAll()
                           .Include(x => x.User)
                           .Include(x => x.FileUploads)
@@ -196,7 +259,7 @@ namespace Auth.Core.Services
             admin.User.PhoneNumber = model.PhoneNumber;
             admin.User.UserName = model.UserName;
 
-           await _adminRepo.UpdateAsync(admin);
+            await _adminRepo.UpdateAsync(admin);
 
             result.Data = admin;
 
