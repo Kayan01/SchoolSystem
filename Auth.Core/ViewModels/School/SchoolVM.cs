@@ -77,6 +77,7 @@ namespace Auth.Core.ViewModels
     {
         public long Id { get; internal set; }
         public string Name { get; set; }
+        public string State { get; set; }
         public string ClientCode { get; set; }
         public bool Status { get; set; }
         public DateTime DateCreated { get; set; }
@@ -97,6 +98,7 @@ namespace Auth.Core.ViewModels
                 Name = model.Name,
                 DateCreated = model.CreationTime,
                 Status = true, //TODO    
+                State = model.State,
                 UsersCount = studentCount + teachersCount + staffCount,
                 ClientCode = model.ClientCode,
                 Logo = fileId.GetBase64StringFromImage(),
