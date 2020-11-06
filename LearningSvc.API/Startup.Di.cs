@@ -70,27 +70,26 @@ namespace LearningSvc.API
                     switch (message.BusMessageType)
                     {
                         case (int)BusMessageTypes.STUDENT:
+                        case (int)BusMessageTypes.STUDENT_UPDATE:
+                        case (int)BusMessageTypes.STUDENT_DELETE:
                             {
                                 await handler.HandleAddOrUpdateStudentAsync(message);
                                 break;
                             }
-                        case (int)BusMessageTypes.STUDENT_UPDATE:
-                        case (int)BusMessageTypes.STUDENT_DELETE:
                         case (int)BusMessageTypes.TEACHER:
+                        case (int)BusMessageTypes.TEACHER_UPDATE:
+                        case (int)BusMessageTypes.TEACHER_DELETE:
                             {
                                 await handler.HandleAddOrUpdateTeacherAsync(message);
                                 break;
                             }
-                        case (int)BusMessageTypes.TEACHER_UPDATE:
-                        case (int)BusMessageTypes.TEACHER_DELETE:
                         case (int)BusMessageTypes.CLASS:
+                        case (int)BusMessageTypes.CLASS_UPDATE:
+                        case (int)BusMessageTypes.CLASS_DELETE:
                             {
                                 await handler.HandleAddOrUpdateClassAsync(message);
                                 break;
                             }
-                        case (int)BusMessageTypes.CLASS_UPDATE:
-                        case (int)BusMessageTypes.CLASS_DELETE:
-                            break;
                     }
                 });
                 return handlers;
