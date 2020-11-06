@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Auth.Core
 {
-    public abstract class Person : AuditedEntity<long>, ITenantModelType
+    public abstract class Person : FullAuditedEntity<long>, ITenantModelType
     {
         [ForeignKey(nameof(School))]
         public long TenantId { get; set; }

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Auth.Core.Models.Users
 {
-    public class TeachingStaff : AuditedEntity<long>, ITenantModelType
+    public class TeachingStaff : FullAuditedEntity<long>, ITenantModelType
     {
         [Key, ForeignKey(nameof(Staff))]
         public override long Id { get; set; }
