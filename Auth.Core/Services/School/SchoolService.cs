@@ -211,7 +211,7 @@ namespace Auth.Core.Services
             var importedData = excelReader.ReadAllSheets<CreateSchoolVM>(false);
 
             //check if imported data contains any data
-            if (importedData.Count < 0)
+            if (importedData.Count < 1)
             {
                 result.AddError("No data was imported");
 
