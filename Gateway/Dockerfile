@@ -8,7 +8,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["Gateway/Gateway.csproj", "Gateway/"]
-RUN mkdir Gateway/FileStore && touch Gateway/FileStore/TempFile.txt
+RUN mkdir Gateway/Filestore && touch Gateway/Filestore/TempFile.txt
 COPY ["Shared/Shared.csproj", "Shared/"]
 RUN dotnet restore "Gateway/Gateway.csproj"
 COPY . .

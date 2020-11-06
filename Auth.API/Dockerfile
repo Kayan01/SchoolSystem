@@ -7,7 +7,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["Auth.API/Auth.API.csproj", "Auth.API/"]
-RUN mkdir Auth.API/FileStore && touch Auth.API/FileStore/TempFile.txt
+RUN mkdir Auth.API/Filestore && touch Auth.API/Filestore/TempFile.txt
 COPY ["Auth.Core/Auth.Core.csproj", "Auth.Core/"]
 COPY ["Shared/Shared.csproj", "Shared/"]
 RUN dotnet restore "Auth.API/Auth.API.csproj"
