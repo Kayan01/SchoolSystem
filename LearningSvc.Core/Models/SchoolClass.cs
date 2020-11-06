@@ -10,6 +10,7 @@ namespace LearningSvc.Core.Models
     {
         public long TenantId { get; set; }
         public string Name { get; set; }
+        public string ClassArm { get; set; }
 
         public ICollection<Student> Students { get; set; }
     }

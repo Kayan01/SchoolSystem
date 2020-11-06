@@ -65,7 +65,7 @@ namespace LearningSvc.API
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<LearningHandler>();
-                handlers.Add((message) =>
+                handlers.Add(async (message) =>
                 {
                     switch (message.BusMessageType)
                     {
@@ -73,14 +73,21 @@ namespace LearningSvc.API
                         case (int)BusMessageTypes.STUDENT_UPDATE:
                         case (int)BusMessageTypes.STUDENT_DELETE:
                             {
-                                handler.HandleAddOrUpdateStudent(message);
+                                await handler.HandleAddOrUpdateStudentAsync(message);
                                 break;
                             }
                         case (int)BusMessageTypes.TEACHER:
                         case (int)BusMessageTypes.TEACHER_UPDATE:
                         case (int)BusMessageTypes.TEACHER_DELETE:
                             {
-                                handler.HandleAddOrUpdateTeacher(message);
+                                await handler.HandleAddOrUpdateTeacherAsync(message);
+                                break;
+                            }
+                        case (int)BusMessageTypes.CLASS:
+                        case (int)BusMessageTypes.CLASS_UPDATE:
+                        case (int)BusMessageTypes.CLASS_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateClassAsync(message);
                                 break;
                             }
                     }

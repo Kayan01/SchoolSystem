@@ -45,6 +45,29 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
+        public async Task AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model)
+        {
+            var teacher = await _teacherRepo.FirstOrDefaultAsync(x => x.Id == model.Id && x.TenantId == model.TenantId);
+            if (teacher == null)
+            {
+                teacher = _teacherRepo.Insert(new Teacher
+                {
+                    Id = model.Id
+                });
+            }
+
+            teacher.TenantId = model.TenantId;
+            teacher.ClassId = model.ClassId;
+            teacher.FirstName = model.FirstName;
+            teacher.LastName = model.LastName;
+            teacher.Email = model.Email;
+            teacher.Phone = model.Phone;
+            teacher.UserId = model.UserId;
+            teacher.IsActive = model.IsActive;
+            teacher.IsDeleted = model.IsDeleted;
+
+            await _unitOfWork.SaveChangesAsync();
+        }
         public async Task<ResultModel<List<TeacherVM>>> GetAllTeacher()
         {
             var result = new ResultModel<List<TeacherVM>>

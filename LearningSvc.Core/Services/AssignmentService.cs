@@ -13,6 +13,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Pagination;
+using IPagedList;
 
 namespace LearningSvc.Core.Services
 {
@@ -106,31 +108,29 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<PaginatedList<AssignmentGetVM>>> GetAssignmentsForClass(long classId, int pagenumber, int pagesize)
+        public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForClass(long classId, QueryModel queryModel)
         {
-            var query = _assignmentRepo.GetAll().Where(m => m.SchoolClassId == classId)
+            var query = await _assignmentRepo.GetAll().Where(m => m.SchoolClassId == classId)
                     .Include(m => m.AssignmentAnswers).Include(m => m.Subject).Include(m => m.SchoolClass).ThenInclude(n => n.Students)
-                    .Select(x => (AssignmentGetVM)x);
+                    .Select(x => (AssignmentGetVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
-            var result = new ResultModel<PaginatedList<AssignmentGetVM>>
+            var result = new ResultModel<PaginatedModel<AssignmentGetVM>>
             {
-                Data = await PaginatedList<AssignmentGetVM>.CreateAsync(query, pagenumber, pagesize)
+                Data = new PaginatedModel<AssignmentGetVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
             };
-
             return result;
         }
 
-        public async Task<ResultModel<PaginatedList<AssignmentGetVM>>> GetAssignmentsForTeacher(long teacherId, int pagenumber, int pagesize)
+        public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForTeacher(long teacherId, QueryModel queryModel)
         {
-            var query = _assignmentRepo.GetAll().Where(m => m.TeacherId == teacherId)
+            var query = await _assignmentRepo.GetAll().Where(m => m.TeacherId == teacherId)
                     .Include(m => m.AssignmentAnswers).Include(m => m.Subject).Include(m => m.SchoolClass).ThenInclude(n => n.Students)
-                    .Select(x => (AssignmentGetVM)x);
+                    .Select(x => (AssignmentGetVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
-            var result = new ResultModel<PaginatedList<AssignmentGetVM>>
+            var result = new ResultModel<PaginatedModel<AssignmentGetVM>>
             {
-                Data = await PaginatedList<AssignmentGetVM>.CreateAsync(query, pagenumber, pagesize)
+                Data = new PaginatedModel<AssignmentGetVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
             };
-
             return result;
         }
 

@@ -1,4 +1,5 @@
 ﻿using LearningSvc.Core.ViewModels.Assignment;
+using Shared.Pagination;
 using Shared.Utils;
 using Shared.ViewModels;
 using System;
@@ -10,8 +11,8 @@ namespace LearningSvc.Core.Interfaces
 {
     public interface IAssignmentService
     {
-        Task<ResultModel<PaginatedList<AssignmentGetVM>>> GetAssignmentsForTeacher(long teacherId, int pagenumber, int pagesize);
-        Task<ResultModel<PaginatedList<AssignmentGetVM>>> GetAssignmentsForClass(long classId, int pagenumber, int pagesize);
+        Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForTeacher(long teacherId, QueryModel queryModel);
+        Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForClass(long classId, QueryModel queryModel);
         Task<ResultModel<List<AssignmentSubmissionListVM>>> GetAllSubmission(long assignmentId);
         Task<ResultModel<AssignmentSubmissionVM>> GetAssignmentSubmission(long submissionId);
         Task<ResultModel<string>> UpdateScore(AssignmentSubmissionUpdateScoreVM model);
