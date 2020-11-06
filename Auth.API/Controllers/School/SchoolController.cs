@@ -51,7 +51,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> BulkAddSchool(IFormFile file)
+        public async Task<IActionResult> BulkAddSchool([FromForm]IFormFile file)
         {
             if (file == null)
                 return ApiResponse<string>(errors: "No file uploaded");
