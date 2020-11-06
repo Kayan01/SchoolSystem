@@ -278,7 +278,7 @@ namespace Auth.API.Controllers
         [HttpPost()]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         [AllowAnonymous]
-        public async Task<IActionResult> RequestPasswordReset([FromBody]string email)
+        public async Task<IActionResult> RequestPasswordReset([FromForm]string email)
         {
             try
             {
