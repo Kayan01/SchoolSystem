@@ -9,7 +9,7 @@ namespace Auth.Core.Models
     /// <summary>
     /// Defines a class in a school
     /// </summary>
-    public class SchoolClass : AuditedEntity<long>, ITenantModelType
+    public class SchoolClass : FullAuditedEntity<long>, ITenantModelType
     {
         public long TenantId { get; set; }
         public string Name { get; set; }

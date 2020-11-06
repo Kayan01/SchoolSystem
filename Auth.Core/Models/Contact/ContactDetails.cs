@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Auth.Core.Models.Contact
 {
-    public class ContactDetails : AuditedEntity<long>
+    public class ContactDetails : FullAuditedEntity<long>
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }

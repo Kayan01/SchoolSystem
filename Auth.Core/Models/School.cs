@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Auth.Core.Models
 {
-    public class School : AuditedEntity<long>
+    public class School : FullAuditedEntity<long>
     {
         public string Name { get; set; }
         public string DomainName { get; set; }

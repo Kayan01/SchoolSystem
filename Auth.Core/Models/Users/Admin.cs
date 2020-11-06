@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Auth.Core.Models.Users
 {
-    public class Admin : AuditedEntity<long>
+    public class Admin : FullAuditedEntity<long>
     {
 
         public UserType UserType { get; set; } = UserType.Admin;
