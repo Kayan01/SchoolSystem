@@ -116,6 +116,12 @@ namespace LearningSvc.API
             services.AddScoped<IMediaService, MediaService>();
             services.AddScoped<IClassWorkService, ClassWorkService>();
             services.AddScoped<ILessonNoteService, LessonNoteService>();
+            services.AddScoped<ITeacherClassSubjectService, TeacherClassSubjectService>();
+            services.AddScoped<IClassSubjectService, ClassSubjectService>();
+            services.AddScoped<ISchoolClassService, SchoolClassService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<ISubjectService, SubjectService>();
+            services.AddScoped<ITeacherService, TeacherService>();
         }
     }
 }
