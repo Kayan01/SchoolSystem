@@ -47,6 +47,17 @@ namespace Auth.Core.Services.Class
             return result;
         }
 
+        public async Task<ResultModel<ClassArmVM>> GetAllClassArmById(long Id)
+        {
+            var result = new ResultModel<ClassArmVM>();
+
+           var classArm = await _classArmRepo.FirstOrDefaultAsync(Id);
+
+            result.Data = (ClassArmVM)classArm;
+
+            return result;
+        }
+
         public async Task<ResultModel<List<ClassArmVM>>> GetAllClassArms()
         {
             var result = new ResultModel<List<ClassArmVM>>

@@ -12,6 +12,7 @@ namespace Auth.Core.Services.Interfaces.Class
         Task<ResultModel<bool>> DeleteClassArm(long Id);
 
         Task<ResultModel<List<ClassArmVM>>> GetAllClassArms();
+        Task<ResultModel<ClassArmVM>> GetAllClassArmById(long Id);
 
         Task<ResultModel<ClassArmVM>> UpdateClassArm(UpdateClassArmVM model);
     }
