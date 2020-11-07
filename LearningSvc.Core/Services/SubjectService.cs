@@ -30,7 +30,7 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<SubjectVM>();
 
-            var check = await _subjectRepo.GetAll().FirstOrDefaultAsync(m => m.Name == model.Name.ToLower());
+            var check = await _subjectRepo.GetAll().Where(m => m.Name.ToLower() == model.Name.ToLower()).FirstOrDefaultAsync();
             if (check != null)
             {
                 result.AddError("Subject already Exists.");

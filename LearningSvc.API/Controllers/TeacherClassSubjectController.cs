@@ -12,7 +12,7 @@ using Shared.ViewModels.Enums;
 
 namespace LearningSvc.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]/[action]")]
     [ApiController]
     public class TeacherClassSubjectController : BaseController
     {
