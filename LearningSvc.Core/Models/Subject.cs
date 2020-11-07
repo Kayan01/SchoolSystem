@@ -12,5 +12,6 @@ namespace LearningSvc.Core.Models
         public string Name { get; set; }
 
         public ICollection<Assignment> Assignments { get; set; }
+        public ICollection<SchoolClassSubject> SchoolClassSubjects { get; set; }
     }
 }

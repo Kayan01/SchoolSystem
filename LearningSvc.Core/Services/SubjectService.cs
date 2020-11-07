@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Shared.Pagination;
+using IPagedList;
 
 namespace LearningSvc.Core.Services
 {
@@ -24,21 +26,39 @@ namespace LearningSvc.Core.Services
             _subjectRepo = subjectRepo;
         }
 
-        public async Task<ResultModel<SubjectVM>> AddSubject(SubjectVM model)
+        public async Task<ResultModel<SubjectVM>> AddSubject(SubjectInsertVM model)
         {
             var result = new ResultModel<SubjectVM>();
+
+            var check = await _subjectRepo.GetAll().FirstOrDefaultAsync(m => m.Name == model.Name.ToLower());
+            if (check != null)
+            {
+                result.AddError("Subject already Exists.");
+                return result;
+            }
 
             //create class session
             var cls = new Subject
             {
                 //Todo : Add more fields
-                Name = model.Name,
+                Name = model.Name.ToLower(),
             };
 
             var id = _subjectRepo.InsertAndGetId(cls);
             await _unitOfWork.SaveChangesAsync();
-            model.Id = id;
-            result.Data = model;
+
+            result.Data = new SubjectVM() { Id = id, Name = model.Name.ToLower()};
+            return result;
+        }
+
+        public async Task<ResultModel<PaginatedModel<SubjectVM>>> GetAllSubjects(QueryModel queryModel)
+        {
+            var query = await _subjectRepo.GetAll().Select(x => (SubjectVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
+
+            var result = new ResultModel<PaginatedModel<SubjectVM>>
+            {
+                Data = new PaginatedModel<SubjectVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
+            };
             return result;
         }
 
