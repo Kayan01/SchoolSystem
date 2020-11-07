@@ -95,6 +95,26 @@ namespace Auth.API.Controllers
             }
         }
 
+        [HttpGet]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetClassArmById(long Id)
+        {
+            try
+            {
+                var result = await _classArmService.GetAllClassArmById(Id);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
