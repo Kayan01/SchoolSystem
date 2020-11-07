@@ -15,7 +15,7 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<AdminListVM>> AddAdmin(AddAdminVM model);
         Task<ResultModel<bool>> BulkAddAdmin(IFormFile model);
         Task<ResultModel<PaginatedModel<AdminListVM>>> GetAllAdmin(QueryModel model);
-        Task<ResultModel<AdminListVM>> GetAdminById(long Id);
+        Task<ResultModel<AdminDetailVM>> GetAdminById(long Id);
         Task<ResultModel<AdminListVM>> UpdateAdmin(UpdateAdminVM model );
         Task<ResultModel<bool>> DeleteAdmin(long Id);
     }

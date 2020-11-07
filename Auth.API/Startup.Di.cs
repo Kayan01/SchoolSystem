@@ -109,6 +109,7 @@ namespace Auth.API
             services.AddScoped<ITestService, TestService>();
 
             services.AddScoped<ISchoolService, SchoolService>();
+            services.AddScoped<IParentService, ParentService>();
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IStaffService, StaffService>();
             services.AddScoped<ISchoolClassService, SchoolClassService>();

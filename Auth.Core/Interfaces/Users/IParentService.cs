@@ -11,12 +11,12 @@ namespace Auth.Core.Interfaces.Users
 {
     public interface IParentService
     {
-        Task<ResultModel<PaginatedModel<ParentVM>>> GetAllParents(QueryModel vm);
-        Task<ResultModel<List<ParentVM>>> GetParentsForStudent(long studId);
-        Task<ResultModel<ParentVM>> GetParentById(long Id);
+        Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParents(QueryModel vm);
+        Task<ResultModel<ParentDetailVM>> GetParentsForStudent(long studId);
+        Task<ResultModel<ParentDetailVM>> GetParentById(long Id);
 
-        Task<ResultModel<ParentVM>> AddNewParent(AddParentVM vm);
-        Task<ResultModel<ParentVM>> UpdateParent(long Id,UpdateParentVM vm);
+        Task<ResultModel<ParentDetailVM>> AddNewParent(AddParentVM vm);
+        Task<ResultModel<ParentDetailVM>> UpdateParent(long Id,UpdateParentVM vm);
         Task<ResultModel<string>> DeleteParent(long Id);
 
 
