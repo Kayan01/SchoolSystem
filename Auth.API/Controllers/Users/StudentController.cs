@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces;
-using Auth.Core.ViewModels;
-using Auth.Core.ViewModels.Staff;
 using Auth.Core.ViewModels.Student;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
+using Shared.AspNetCore.Policy;
+using Shared.Permissions;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 
@@ -18,7 +14,6 @@ namespace Auth.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
-    [AllowAnonymous]
     public class StudentController : BaseController
     {
 
@@ -31,6 +26,7 @@ namespace Auth.API.Controllers
 
 
         [HttpPost]
+        [RequiresPermission(Permission.STUDENT_CREATE)]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> AddStudent(CreateStudentVM model)
         {
@@ -58,7 +54,7 @@ namespace Auth.API.Controllers
 
 
         [HttpGet]
-        //[Authorize]
+        [RequiresPermission(Permission.STUDENT_READ)]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetAllStudent([FromQuery] QueryModel vM)
         { 
@@ -77,7 +73,7 @@ namespace Auth.API.Controllers
         }
 
         [HttpGet("{id}")]
-        //[Authorize]
+        [RequiresPermission(Permission.STUDENT_READ)]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetStudentById(long id)
         {
@@ -98,7 +94,7 @@ namespace Auth.API.Controllers
         }
 
         [HttpPut]
-        //[Authorize]
+        [RequiresPermission(Permission.STUDENT_UPDATE)]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> UpdateStudent(StudentUpdateVM vM)
         {
@@ -120,7 +116,7 @@ namespace Auth.API.Controllers
 
 
         [HttpDelete("{id}")]
-        //[Authorize]
+        [RequiresPermission(Permission.STUDENT_DELETE)]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> DeleteStudent(long id)
         {

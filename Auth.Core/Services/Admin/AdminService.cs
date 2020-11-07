@@ -1,8 +1,12 @@
 ﻿using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
+using ExcelManager;
+using IPagedList;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Extensions;
 using NPOI.OpenXmlFormats.Wordprocessing;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
@@ -21,7 +25,7 @@ using System.Threading.Tasks;
 
 namespace Auth.Core.Services
 {
-   public class AdminService :IAdminService
+    public class AdminService : IAdminService
     {
         private readonly IRepository<Admin, long> _adminRepo;
         private readonly IUnitOfWork _unitOfWork;
@@ -43,75 +47,157 @@ namespace Auth.Core.Services
             _documentService = documentService;
         }
 
-        public async Task<ResultModel<AdminVM>> AddAdmin(AddAdminVM model)
+        public async Task<ResultModel<AdminListVM>> AddAdmin(AddAdminVM model)
         {
-            var result = new ResultModel<AdminVM>();
+            var result = new ResultModel<AdminListVM>();
 
-            var files = new List<FileUpload>();
-            //save filles
-            if (model.Files != null && model.Files.Any())
+
+            try
             {
-                if (model.Files.Count != model.DocumentTypes.Count)
+                var files = new List<FileUpload>();
+                //save filles
+                if (model.Files != null && model.Files.Any())
                 {
-                    result.AddError("Some document types are missing");
-                    return result;
-                }
-                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
-                if (files.Count() != model.Files.Count())
-                {
-                    result.AddError("Some files could not be uploaded");
 
+                    if (model.DocumentTypes == null)
+                    {
+                        result.AddError("Please send document types for files uploaded");
+                        return result;
+
+                    }
+
+                    if (model.Files.Count != model.DocumentTypes.Count)
+                    {
+                        result.AddError("Some document types are missing");
+                        return result;
+                    }
+                    files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                    if (files.Count() != model.Files.Count())
+                    {
+                        result.AddError("Some files could not be uploaded");
+
+                        return result;
+                    }
+                }
+
+                _unitOfWork.BeginTransaction();
+
+                var user = new User
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    UserName = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    UserType = UserType.Admin,
+                };
+                var userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
+
+                if (!userResult.Succeeded)
+                {
+                    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
                     return result;
                 }
+
+                var admin = _adminRepo.Insert(new Admin
+                {
+                    UserId = user.Id,
+                    FileUploads = files
+
+                });
+
+
+                await _unitOfWork.SaveChangesAsync();
+                await _publishService.PublishMessage(Topics.Admin, BusMessageTypes.ADMIN, new AdminSharedModel
+                {
+                    Id = admin.Id,
+                    IsActive = true,
+                    UserId = user.Id,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Phone = user.PhoneNumber,
+                });
+
+                result.Data = new AdminListVM
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Id = admin.Id,
+                    Image = files.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())?.Path.GetBase64StringFromImage()
+                };
+
+            }
+            catch (Exception)
+            {
+                
+                _unitOfWork.Rollback();
+                throw;
             }
 
-            _unitOfWork.BeginTransaction();
+            _unitOfWork.Commit();
+            return result;
+        }
 
-            var user = new User
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                UserName = model.Email,
-                PhoneNumber = model.PhoneNumber,
-                UserType = UserType.Admin,
-            };
-            var userResult = await _userManager.CreateAsync(user, model.Password);
+        public async Task<ResultModel<bool>> BulkAddAdmin(IFormFile file)
+        {
+            var result = new ResultModel<bool>();
+            var stream = file.OpenReadStream();
+            var excelReader = new ExcelReader(stream);
 
-            if (!userResult.Succeeded)
+            var importedData = excelReader.ReadAllSheets<AddAdminVM>(false);
+
+            //check if imported data contains any data
+            if (importedData.Count < 1)
             {
-                result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                result.AddError("No data was imported");
+
                 return result;
             }
 
-            var admin = _adminRepo.Insert(new Admin
-            {
-                UserId = user.Id,
-                FileUploads = files
 
-            });
+            _unitOfWork.BeginTransaction();
+
+            foreach (var model in importedData)
+            {
+                //add admin for school user
+                var user = new User
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    UserName = model.UserName,
+                    PhoneNumber = model.PhoneNumber,
+                    UserType = UserType.Admin,
+                };
+
+                var userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
+
+                if (!userResult.Succeeded)
+                {
+                    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                    return result;
+                }
+
+
+                //todo: add more props
+
+                var admin = new Admin
+                {
+                    UserId = user.Id,
+                    UserType = UserType.Admin
+                };
+
+            
+                _adminRepo.Insert(admin);
+            }
 
             await _unitOfWork.SaveChangesAsync();
-            _unitOfWork.Commit();
-            await _publishService.PublishMessage(Topics.Admin, BusMessageTypes.ADMIN, new AdminSharedModel
-            {
-                Id = admin.Id,
-                IsActive = true,
-                UserId = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Phone = user.PhoneNumber,
-            });
 
-            result.Data = new AdminVM
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                Id = admin.Id
-            };
+            _unitOfWork.Commit();
+
+            result.Data = true;
 
             return result;
         }
@@ -147,34 +233,62 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<AdminVM>> GetAdminById(long Id)
+        public async Task<ResultModel<AdminDetailVM>> GetAdminById(long Id)
         {
-            var result = new ResultModel<AdminVM>();
+            var result = new ResultModel<AdminDetailVM>();
             var query = _adminRepo.GetAll()
                             .Include(x => x.User)
-                            .FirstOrDefault(x => x.UserId == Id);
+                            .Where(x => x.Id == Id)
+                            .Include(x=> x.FileUploads)
+                            .FirstOrDefault();
 
             result.Data = query;
             return result;
         }
 
-        public async Task<ResultModel<PaginatedModel<AdminVM>>> GetAllAdmin(QueryModel model)
+        public async Task<ResultModel<PaginatedModel<AdminListVM>>> GetAllAdmin(QueryModel model)
         {
-            var result = new ResultModel<PaginatedModel<AdminVM>>();
+            var result = new ResultModel<PaginatedModel<AdminListVM>>();
             var query = _adminRepo.GetAll()
-                          .Include(x => x.User);
+                          .Include(x => x.User)
+                          .Include(x => x.FileUploads);
 
-            var totalCount = query.Count();
-            var pagedData = await PaginatedList<Admin>.CreateAsync(query, model.PageIndex, model.PageSize);
 
-            result.Data = new PaginatedModel<AdminVM>(pagedData.Select(x => (AdminVM)x), model.PageIndex, model.PageSize, totalCount);
+
+            var admins = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+
+            result.Data = new PaginatedModel<AdminListVM>(admins.Select(x => (AdminListVM)x), model.PageIndex, model.PageSize, admins.TotalItemCount);
 
             return result;
         }
 
-        public Task<ResultModel<AdminVM>> UpdateAdmin(UpdateAdminVM model)
+        public async Task<ResultModel<AdminListVM>> UpdateAdmin(UpdateAdminVM model)
         {
-            throw new NotImplementedException();
+            var result = new ResultModel<AdminListVM>();
+            var admin = await _adminRepo.GetAll()
+                          .Include(x => x.User)
+                          .Include(x => x.FileUploads)
+                          .FirstOrDefaultAsync(x => x.UserId == model.UserId);
+
+            if (admin == null)
+            {
+                result.AddError("No admin found");
+
+                return result;
+            }
+
+            admin.User.Email = model.Email;
+            admin.User.FirstName = model.FirstName;
+            admin.User.LastName = model.LastName;
+            admin.User.PhoneNumber = model.PhoneNumber;
+            admin.User.UserName = model.UserName;
+
+            await _adminRepo.UpdateAsync(admin);
+
+            result.Data = admin;
+
+            return result;
+
         }
     }
 }

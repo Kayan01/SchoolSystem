@@ -18,6 +18,7 @@ using Shared.Enums;
 using Microsoft.AspNetCore.Http;
 using ExcelManager;
 using Auth.Core.Models.Contact;
+using IPagedList;
 
 namespace Auth.Core.Services
 {
@@ -28,7 +29,7 @@ namespace Auth.Core.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         public SchoolService(
-            IRepository<School, long> schoolRepo, 
+        IRepository<School, long> schoolRepo, 
             IUnitOfWork unitOfWork,
             IDocumentService documentService,
             UserManager<User> userManager)
@@ -116,15 +117,14 @@ namespace Auth.Core.Services
         public async Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model)
         {
             var query = _schoolRepo.GetAll()
-                .Select(x => new SchoolVM
-                {
-                    Id = x.Id,
-                    Name = x.Name
-                });
+                .Include(x=> x.Staffs)
+                .Include(x => x.FileUploads)
+                .Include(x => x.Students)
+                .Include(x => x.TeachingStaffs);
 
-            var pagedData = await PaginatedList<SchoolVM>.CreateAsync(query, model.PageIndex, model.PageSize);
+            var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
-            var data = new PaginatedModel<SchoolVM>(pagedData, model.PageIndex, model.PageSize, pagedData.Count);
+            var data = new PaginatedModel<SchoolVM>(pagedData.Select(x => (SchoolVM)x), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
             var result = new ResultModel<PaginatedModel<SchoolVM>>
             {
                 Data = data
@@ -132,10 +132,16 @@ namespace Auth.Core.Services
 
             return result;
         }
-        public async Task<ResultModel<SchoolVM>> GetSchoolById(long Id)
+        public async Task<ResultModel<SchoolDetailVM>> GetSchoolById(long Id)
         {
-            var result = new ResultModel<SchoolVM>();
-            var school = await _schoolRepo.FirstOrDefaultAsync(x => x.Id == Id);
+            var result = new ResultModel<SchoolDetailVM>();
+            var school = await  _schoolRepo
+                .GetAll()
+                .Where(y => y.Id == Id)
+                .Include(h => h.SchoolContactDetails)
+                .Include(h => h.FileUploads)
+                .Select(x => (SchoolDetailVM)x)                
+                .FirstOrDefaultAsync();
 
             if (school == null)
             {
@@ -175,6 +181,7 @@ namespace Auth.Core.Services
                 .Include(x=> x.Staffs)
                 .Include(x => x.Students)
                 .Include(x => x.TeachingStaffs)
+                .Include(x => x.FileUploads)
                 .Where(x => x.Id == Id)
                 .FirstOrDefaultAsync();
 
@@ -204,12 +211,15 @@ namespace Auth.Core.Services
             var importedData = excelReader.ReadAllSheets<CreateSchoolVM>(false);
 
             //check if imported data contains any data
-            if (importedData.Count < 0)
+            if (importedData.Count < 1)
             {
                 result.AddError("No data was imported");
 
                 return result;
             }
+
+
+            _unitOfWork.BeginTransaction();
 
             foreach (var model in importedData)
             {
@@ -267,6 +277,19 @@ namespace Auth.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<int>> GetTotalSchoolsCount()
+        {
+
+            var result = new ResultModel<int>();
+
+
+            var schoolsCount = await _schoolRepo.CountAsync();
+
+            result.Data = schoolsCount;
+
+            return result;
+
+        }
     }
 
 

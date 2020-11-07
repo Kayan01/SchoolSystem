@@ -101,6 +101,8 @@ namespace LearningSvc.API
             //Permission not needed here
             //services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
+           Directory.CreateDirectory(Path.Combine(HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath")));
+
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();

@@ -1,13 +1,19 @@
 ﻿using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
 using Auth.Core.Models.Users;
+using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Parent;
 using IPagedList;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NPOI.Util;
 using Org.BouncyCastle.Math.EC.Rfc7748;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.Entities;
+using Shared.Enums;
+using Shared.FileStorage;
+using Shared.Pagination;
 using Shared.Utils;
 using Shared.ViewModels;
 using System;
@@ -23,29 +29,90 @@ namespace Auth.Core.Services.Users
         private readonly IRepository<Parent, long> _parentRepo;
         private readonly IRepository<Student, long> _studentRepo;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly UserManager<User> _userManager;
+        private readonly IDocumentService _documentService;
         public ParentService(
             IRepository<Parent, long> parentRepo,
             IUnitOfWork unitOfWork,
-            IRepository<Student, long> studentRepo)
+            IRepository<Student, long> studentRepo,
+            UserManager<User> userManager,
+            IDocumentService documentService)
         {
             _parentRepo = parentRepo;
             _unitOfWork = unitOfWork;
             _studentRepo = studentRepo;
+            _userManager = userManager;
+            _documentService = documentService;
         }
-        public async Task<ResultModel<ParentVM>> AddNewParent(AddParentVM vm)
+        public async Task<ResultModel<ParentDetailVM>> AddNewParent(AddParentVM vm)
         {
-            var resultModel = new ResultModel<ParentVM>();
+            var resultModel = new ResultModel<ParentDetailVM>();
+
+            var file = new FileUpload();
+            //save filles
+            if (vm.File != null)
+            {
+
+                if (vm.DocumentType != DocumentType.ProfilePhoto)
+                {
+                    resultModel.AddError("Please send appropriate document tye for profile photo");
+                    return resultModel;
+
+                }
+
+               
+                file = await _documentService.TryUploadSupportingDocument(vm.File, vm.DocumentType);
+                if (file == null)
+                {
+                    resultModel.AddError("Some files could not be uploaded");
+
+                    return resultModel;
+                }
+            }
+            _unitOfWork.BeginTransaction();
+
+            var user = new User
+            {
+                FirstName = vm.FirstName,
+                LastName = vm.LastName,
+                Email = vm.EmailAddress,
+                UserName = vm.EmailAddress,
+                PhoneNumber = vm.PhoneNumber,
+                UserType = UserType.Parent,
+            };
+            var userResult = await _userManager.CreateAsync(user, vm.PhoneNumber);
+
+            if (!userResult.Succeeded)
+            {
+                resultModel.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                return resultModel;
+            }
+
 
             var parent = new Parent
             {
-                //StudentId = vm.StudentId,
+                HomeAddress = vm.HomeAddress,
+                IdentificationNumber = vm.IdentificationNumber,
+                IdentificationType = vm.IdentificationNumber,
+                Occupation = vm.Occupation,
+                OfficeAddress = vm.OfficeAddress,
+                SecondaryEmail = vm.SecondaryEmailAddress,
+                SecondaryPhoneNumber = vm.SecondaryPhoneNumber,
+                Sex = vm.Sex,
+                Status = vm.Status,
+                UserId = user.Id
+                , FileUploads = new List<FileUpload> { file }
             };
 
             await   _parentRepo.InsertAsync(parent);
 
             await  _unitOfWork.SaveChangesAsync();
 
-            resultModel.Data = (ParentVM)parent;
+            _unitOfWork.Commit();
+
+            parent.User = user;
+            var returnModel = (ParentDetailVM)parent;
+            resultModel.Data = returnModel;
             return resultModel;
         }
 
@@ -67,26 +134,33 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<IPagedList<ParentVM>>> GetAllParents(QueryModel vm)
+        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParents(QueryModel vm)
         {
 
-            var resultModel = new ResultModel<IPagedList<ParentVM>>();
+            var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
 
-            var data = await _parentRepo.GetAll().Select(p => new ParentVM
-            {
+            var query =  _parentRepo.GetAll()
+                .Include(x => x.User)
+                .Include(x => x.FileUploads);
 
-            }).ToPagedListAsync(vm.PageIndex, vm.PageSize);
+            var parents = await query.ToPagedListAsync(vm.PageIndex, vm.PageSize);
+
+            var data = new PaginatedModel<ParentListVM>(parents.Select(x=> (ParentListVM)x), vm.PageIndex, vm.PageSize, parents.TotalItemCount);
 
             resultModel.Data = data;
 
             return resultModel;
         }
 
-        public async Task<ResultModel<ParentVM>> GetParentById(long Id)
+        public async Task<ResultModel<ParentDetailVM>> GetParentById(long Id)
         {
-            var resultModel = new ResultModel<ParentVM>();
+            var resultModel = new ResultModel<ParentDetailVM>();
 
-            var parent = await _parentRepo.FirstOrDefaultAsync(Id);
+            var parent = await _parentRepo.GetAll()
+                .Include(x => x.User)
+                .Include(x => x.FileUploads)
+                .Where(x=> x.Id == Id)
+                .FirstOrDefaultAsync();
 
             if (parent == null)
             {
@@ -94,41 +168,37 @@ namespace Auth.Core.Services.Users
                 return resultModel;
             }
 
-            resultModel.Data = (ParentVM)parent;
+            resultModel.Data = parent;
 
             return resultModel;
         }
 
-        public async Task<ResultModel<List<ParentVM>>> GetParentsForStudent(long studId)
+        public async Task<ResultModel<ParentDetailVM>> GetParentsForStudent(long studId)
         {
-            var resultModel = new ResultModel<List<ParentVM>>();
+            var resultModel = new ResultModel<ParentDetailVM>();
 
-            var parents = await _studentRepo.GetAll()
+            var student = await _studentRepo.GetAll()
                 .Include(x => x.Parent)
-                .ThenInclude(x => x.User)
-                .Where(x => x.UserId == studId)
-                .Select(x => new ParentVM
-                {
-                      Name = x.Parent.User.FullName,
-                       Address = x.Parent.Address
-                })
-                .ToListAsync();
+                .ThenInclude(x => x.FileUploads)
+                .Include(x => x.Parent)
+                .ThenInclude(x=> x.User)
+                .Where(x => x.Id == studId)
+                .FirstOrDefaultAsync();
 
-
-            if (parents.Count < 1)
+            if (student == null)
             {
                 resultModel.AddError($"No parent for student id : {studId}");
                 return resultModel;
             }
 
-            resultModel.Data = parents;
+            resultModel.Data = student.Parent;
 
             return resultModel;
         }
 
-        public async Task<ResultModel<ParentVM>> UpdateParent(long Id, UpdateParentVM vm)
+        public async Task<ResultModel<ParentDetailVM>> UpdateParent(long Id, UpdateParentVM vm)
         {
-            var resultModel = new ResultModel<ParentVM>();
+            var resultModel = new ResultModel<ParentDetailVM>();
 
             var parents = await _parentRepo.FirstOrDefaultAsync(Id);
 
@@ -144,7 +214,7 @@ namespace Auth.Core.Services.Users
 
             await _unitOfWork.SaveChangesAsync();
 
-            resultModel.Data = (ParentVM)parents;
+            resultModel.Data = (ParentDetailVM)parents;
 
             return resultModel;
         }

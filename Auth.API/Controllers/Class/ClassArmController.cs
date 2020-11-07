@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces.Class;
 using Auth.Core.ViewModels.SchoolClass;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -14,6 +15,7 @@ namespace Auth.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
+    [AllowAnonymous]
     public class ClassArmController : BaseController
     {
         private readonly IClassArmService _classArmService;
@@ -26,7 +28,7 @@ namespace Auth.API.Controllers
         [HttpPost]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddClassArm(ClassArmVM model)
+        public async Task<IActionResult> AddClassArm([FromForm]AddClassArm model)
         {
             if (!ModelState.IsValid)
             {
@@ -93,10 +95,30 @@ namespace Auth.API.Controllers
             }
         }
 
+        [HttpGet]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetClassArmById(long Id)
+        {
+            try
+            {
+                var result = await _classArmService.GetAllClassArmById(Id);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateClassArm(ClassArmVM model)
+        public async Task<IActionResult> UpdateClassArm([FromForm]UpdateClassArmVM model)
         {
             if (!ModelState.IsValid)
             {

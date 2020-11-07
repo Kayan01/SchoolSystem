@@ -12,7 +12,7 @@ namespace Auth.Core.Models
     /// <summary>
     /// Defines the school sections such as Secondary, primary , nursery etc
     /// </summary>
-    public class SchoolSection : AuditedEntity<long>, ITenantModelType
+    public class SchoolSection : FullAuditedEntity<long>, ITenantModelType
     {
         [ForeignKey(nameof(School))]
         public long TenantId { get; set; }

@@ -51,17 +51,17 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> BulkAddSchool([FromForm]CreateSchoolVM model)
+        public async Task<IActionResult> BulkAddSchool([FromForm]IFormFile file)
         {
-            if (model == null)
-                return ApiResponse<string>(errors: "Empty payload");
+            if (file == null)
+                return ApiResponse<string>(errors: "No file uploaded");
 
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
-                var result = await _schoolService.AddSchool(model);
+                var result = await _schoolService.AddBulkSchool(file);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -116,7 +116,7 @@ namespace UserManagement.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSchool(UpdateSchoolVM vM)
+        public async Task<IActionResult> UpdateSchool([FromForm]UpdateSchoolVM vM)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);

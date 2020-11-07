@@ -35,7 +35,7 @@
     <None Update="auth.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="FileStore\TempFile.txt">
+    <None Update="Filestore\TempFile.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
