@@ -44,7 +44,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UploadPeriod(List<PeriodVM> model)
+        public async Task<IActionResult> UploadPeriod([FromBody] List<PeriodVM> model)
         {
             if (model == null || model.Count < 0)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -102,7 +102,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UploadNewTimetableForClass(List<TimeTableCellVM> model, [FromRoute] long classId)
+        public async Task<IActionResult> UploadNewTimetableForClass([FromBody]List<TimeTableCellVM> model, [FromRoute] long classId)
         {
             if (model == null || model.Count < 0)
                 return ApiResponse<string>(errors: "Empty payload");

@@ -116,7 +116,7 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> UpdateScore(AssignmentSubmissionUpdateScoreVM model)
         {
@@ -140,7 +140,7 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> UpdateComment(AssignmentSubmissionUpdateCommentVM model)
         {
