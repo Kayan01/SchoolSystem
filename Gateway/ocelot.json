@@ -43,6 +43,17 @@
         }
       ],
       "UpstreamPathTemplate": "/schtrack-learning/{catchAll}"
+    },
+    {
+      "DownstreamPathTemplate": "/{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 58105
+        }
+      ],
+      "UpstreamPathTemplate": "/schtrack-assessment/{catchAll}"
     }
   ],
   "GlobalConfiguration": {

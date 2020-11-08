@@ -46,3 +46,4 @@ These are the functionalities that have been implemented, this would be updated 
 - ### Notification Service port:58102
 - ### Facility Service port:58103
 - ### Learning Service port:58104
+- ### Assessment Service port:58105
