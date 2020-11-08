@@ -118,7 +118,7 @@ namespace Auth.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateClassArm([FromForm]UpdateClassArmVM model)
+        public async Task<IActionResult> UpdateClassArm([FromForm]UpdateClassArmVM model, [FromRoute] long id)
         {
             if (!ModelState.IsValid)
             {
@@ -127,7 +127,7 @@ namespace Auth.API.Controllers
 
             try
             {
-                var result = await _classArmService.UpdateClassArm(model);
+                var result = await _classArmService.UpdateClassArm(model, id);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

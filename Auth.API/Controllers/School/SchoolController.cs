@@ -116,14 +116,14 @@ namespace UserManagement.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSchool([FromForm]UpdateSchoolVM vM)
+        public async Task<IActionResult> UpdateSchool([FromForm]UpdateSchoolVM vM,[FromRoute] long id)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
-                var result = await _schoolService.UpdateSchool(vM);
+                var result = await _schoolService.UpdateSchool(vM, id);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

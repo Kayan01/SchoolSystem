@@ -28,7 +28,7 @@ namespace Auth.Core.ViewModels.SchoolClass
         [Required]
         public long SectionId { get; set; }
         [Required]
-        public long ClassGroupId { get; set; }
+        public long ClassArmId { get; set; }
     }
 
 

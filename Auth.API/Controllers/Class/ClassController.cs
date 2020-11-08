@@ -30,7 +30,7 @@ namespace UserManagement.API.Controllers
         [HttpPost]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddClass(ClassVM model)
+        public async Task<IActionResult> AddClass([FromForm]AddClassVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -53,7 +53,7 @@ namespace UserManagement.API.Controllers
         [HttpPost]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddStudentToClass(ClassStudentVM vm)
+        public async Task<IActionResult> AddStudentToClass([FromForm] ClassStudentVM vm)
         {
             if (!ModelState.IsValid)
             {
@@ -73,51 +73,29 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpPost]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AssignSubjectToClass(ClassSubjectVM vm)
-        {
-            if (!ModelState.IsValid)
-            {
-                return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
-            }
+      
+        //[HttpPost]
+        ////[Authorize]
+        //[ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        //public async Task<IActionResult> AssignTeacherToClass([FromForm] ClassTeacherVM vm)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+        //    }
 
-            try
-            {
-                var result = await _classService.AssignSubjectToClass(vm);
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-
-        [HttpPost]
-        //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AssignTeacherToClass(ClassTeacherVM vm)
-        {
-            if (!ModelState.IsValid)
-            {
-                return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
-            }
-
-            try
-            {
-                var result = await _classService.AssignTeacherToClass(vm);
-                if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
+        //    try
+        //    {
+        //        var result = await _classService.AssignTeacherToClass(vm);
+        //        if (result.HasError)
+        //            return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+        //        return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return HandleError(ex);
+        //    }
+        //}
 
         [HttpDelete("{id}")]
         //[Authorize]
@@ -208,8 +186,8 @@ namespace UserManagement.API.Controllers
 
         [HttpPut]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateClass(ClassUpdateVM model)
+        [ProducesResponseType(typeof(ApiResponse<ClassUpdateVM>), 200)]
+        public async Task<IActionResult> UpdateClass([FromForm] ClassUpdateVM model)
         {
             if (!ModelState.IsValid)
             {

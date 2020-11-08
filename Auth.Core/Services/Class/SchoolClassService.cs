@@ -39,7 +39,7 @@ namespace Auth.Core.Services
             _publishService = publishService;
         }
 
-        public async Task<ResultModel<ClassVM>> AddClass(ClassVM model)
+        public async Task<ResultModel<ClassVM>> AddClass(AddClassVM model)
         {
             var result = new ResultModel<ClassVM>();
 
@@ -52,7 +52,7 @@ namespace Auth.Core.Services
             }
 
             //check if class arm exist
-            var classArm = await _classArmRepo.FirstOrDefaultAsync(model.ClassGroupId);
+            var classArm = await _classArmRepo.FirstOrDefaultAsync(model.ClassArmId);
 
             if (classArm == null)
             {
@@ -71,7 +71,7 @@ namespace Auth.Core.Services
             var id = _classRepo.InsertAndGetId(cls);
             await _unitOfWork.SaveChangesAsync();
             model.Id = id;
-            result.Data = model;
+            result.Data = cls;
 
             //PublishMessage
             await _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS, new ClassSharedModel
