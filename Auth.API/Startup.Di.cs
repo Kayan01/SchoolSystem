@@ -99,6 +99,8 @@ namespace Auth.API
 
             services.AddScoped<IUserService, UserService>();
 
+            Directory.CreateDirectory(Path.Combine(HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath")));
+
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();

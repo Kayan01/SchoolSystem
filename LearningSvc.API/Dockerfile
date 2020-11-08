@@ -7,7 +7,6 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["LearningSvc.API/LearningSvc.API.csproj", "LearningSvc.API/"]
-RUN mkdir LearningSvc.API/Filestore && touch LearningSvc.API/Filestore/TempFile.txt
 COPY ["LearningSvc.Core/LearningSvc.Core.csproj", "LearningSvc.Core/"]
 COPY ["Shared/Shared.csproj", "Shared/"]
 RUN dotnet restore "LearningSvc.API/LearningSvc.API.csproj"
