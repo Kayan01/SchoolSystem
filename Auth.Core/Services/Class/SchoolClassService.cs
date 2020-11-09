@@ -187,7 +187,9 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<List<ListClassVM>>
             {
-                Data = await _classRepo.GetAll().Select(x => (ListClassVM)x).ToListAsync()
+                Data = await _classRepo.GetAll()
+                .Include(x => x.SchoolSection)
+                .Select(x => (ListClassVM)x).ToListAsync()
             };
             return result;
         }

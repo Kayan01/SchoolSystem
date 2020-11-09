@@ -76,7 +76,6 @@ namespace Auth.API.Controllers.School
         }
 
         [HttpGet]
-        //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetAllSections([FromQuery] QueryModel vm)
         {
