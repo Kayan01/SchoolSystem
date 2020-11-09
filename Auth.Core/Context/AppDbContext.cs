@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using Auth.Core.Models.Users;
+using Auth.Core.Models.Setup;
 
 namespace Auth.Core.Context
 {
@@ -30,5 +31,6 @@ namespace Auth.Core.Context
         public DbSet<Parent> Parents { get; set; }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<SchoolTrackRole> SchoolTrackRoles { get; set; }
+        public DbSet<Department> Departments { get; set; }
     }
 }

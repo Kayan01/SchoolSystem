@@ -14,7 +14,7 @@ namespace Auth.Core.ViewModels.SchoolClass
             return model == null ? null : new ClassVM
             {
                 Id = model.Id,
-                Name = model.Name,
+                Name = model.Name + model.ClassArm,
                 SectionId = model.SchoolSectionId,
             };
         }
