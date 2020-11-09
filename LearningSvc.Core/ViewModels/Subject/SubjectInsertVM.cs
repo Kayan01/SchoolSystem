@@ -7,5 +7,6 @@ namespace LearningSvc.Core.ViewModels.Subject
     public class SubjectInsertVM
     {
         public string Name { get; set; }
+        public long[] ClassIds { get; set; }
     }
 }
