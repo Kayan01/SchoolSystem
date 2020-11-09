@@ -18,12 +18,14 @@ namespace LearningSvc.Core.Services
     public class SubjectService : ISubjectService
     {
         private readonly IRepository<Subject, long> _subjectRepo;
+        private readonly IClassSubjectService _classSubjectService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public SubjectService(IUnitOfWork unitOfWork, IRepository<Subject, long> subjectRepo)
+        public SubjectService(IUnitOfWork unitOfWork, IRepository<Subject, long> subjectRepo, IClassSubjectService classSubjectService)
         {
             _unitOfWork = unitOfWork;
             _subjectRepo = subjectRepo;
+            _classSubjectService = classSubjectService;
         }
 
         public async Task<ResultModel<SubjectVM>> AddSubject(SubjectInsertVM model)
@@ -46,6 +48,15 @@ namespace LearningSvc.Core.Services
 
             var id = _subjectRepo.InsertAndGetId(cls);
             await _unitOfWork.SaveChangesAsync();
+
+            if (model.ClassIds.Length > 0)
+            {
+                await _classSubjectService.AddClassesToSubject(new ViewModels.ClassSubject.ClassesToSubjectInsertVM()
+                {
+                    SubjectId = id,
+                    ClassIds = model.ClassIds,
+                });
+            }
 
             result.Data = new SubjectVM() { Id = id, Name = model.Name.ToLower()};
             return result;
