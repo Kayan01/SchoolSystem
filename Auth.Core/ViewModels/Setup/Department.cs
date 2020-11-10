@@ -30,6 +30,7 @@ namespace Auth.Core.ViewModels.Setup
     {
         public long Id { get; set; }
         public string Name { get; set; }
+        public bool Status { get; set; }
 
         public static implicit operator DepartmentListVM(Department model)
         {
@@ -37,7 +38,9 @@ namespace Auth.Core.ViewModels.Setup
             {
                 Id = model.Id,
                 Name = model.Name,
+                Status = model.IsActive
             };
+
         }
     }
     public class UpdateDepartmentVM

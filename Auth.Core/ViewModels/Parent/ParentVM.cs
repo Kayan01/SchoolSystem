@@ -55,8 +55,9 @@ namespace Auth.Core.ViewModels.Parent
 
     public class ParentListVM
     {
+        public long Id { get; set; }
         public string FullName { get; set; }
-        public string ParentID { get; set; }
+        public string ParentCode { get; set; }
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
         public bool Status { get; set; }
@@ -68,7 +69,8 @@ namespace Auth.Core.ViewModels.Parent
             return model == null ? null : new ParentListVM
             {
                 FullName = model.User.FullName,
-                ParentID = $"PRT/{model.CreationTime.Year}/{model.Id}",
+                Id = model.Id,
+                ParentCode = $"PRT/{model.CreationTime.Year}/{model.Id}",
                 PhoneNumber = model.User.PhoneNumber,
                 Email = model.User.Email,
                 Status = model.Status,

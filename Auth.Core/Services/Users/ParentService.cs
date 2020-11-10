@@ -75,6 +75,7 @@ namespace Auth.Core.Services.Users
             {
                 FirstName = vm.FirstName,
                 LastName = vm.LastName,
+                MiddleName = vm.OtherName,
                 Email = vm.EmailAddress,
                 UserName = vm.EmailAddress,
                 PhoneNumber = vm.PhoneNumber,
@@ -93,15 +94,16 @@ namespace Auth.Core.Services.Users
             {
                 HomeAddress = vm.HomeAddress,
                 IdentificationNumber = vm.IdentificationNumber,
-                IdentificationType = vm.IdentificationNumber,
+                IdentificationType = vm.ModeOfIdentification,
                 Occupation = vm.Occupation,
                 OfficeAddress = vm.OfficeAddress,
                 SecondaryEmail = vm.SecondaryEmailAddress,
                 SecondaryPhoneNumber = vm.SecondaryPhoneNumber,
                 Sex = vm.Sex,
                 Status = vm.Status,
-                UserId = user.Id
-                , FileUploads = new List<FileUpload> { file }
+                UserId = user.Id,
+                Title= vm.Title,
+                FileUploads = new List<FileUpload> { file }
             };
 
             await   _parentRepo.InsertAsync(parent);

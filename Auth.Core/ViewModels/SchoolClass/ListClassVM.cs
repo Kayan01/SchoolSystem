@@ -11,8 +11,9 @@ namespace Auth.Core.ViewModels.SchoolClass
         public long Id { get; internal set; }
         public string ClassGroup { get; set; }
         public string ClassSection { get; set; }
+        public int Sequence { get; set; }
+        public bool Status { get; set; }
         public string Name { get; set; }
-        public IEnumerable<StudentVM> Students { get; set; }
 
         public static implicit operator ListClassVM(Models.SchoolClass model)
         {
@@ -22,7 +23,8 @@ namespace Auth.Core.ViewModels.SchoolClass
                 ClassSection = model.SchoolSection.Name,
                 ClassGroup = model.ClassArm,
                 Id = model.Id,
-                Students =  model.Students.Select(x => (StudentVM)x)
+                Status = model.IsActive,
+                 Sequence = model.Sequence
             };
         }
     }
