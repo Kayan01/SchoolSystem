@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Auth.Core.ViewModels.SchoolClass
 {
@@ -22,13 +23,16 @@ namespace Auth.Core.ViewModels.SchoolClass
 
     public class AddClassVM
     {
-        public long Id { get; internal set; }
         [Required]
         public string Name { get; set; }
         [Required]
         public long SectionId { get; set; }
         [Required]
-        public long ClassArmId { get; set; }
+        public int Sequence { get; set; }
+        [Required]
+        public bool Status { get; set; }
+        [Required]
+        public List<long> ClassArmIds { get; set; }
     }
 
 
