@@ -275,10 +275,10 @@ namespace Auth.API.Controllers
         }
 
 
-        [HttpGet("{email}")]
+        [HttpPost()]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         [AllowAnonymous]
-        public async Task<IActionResult> RequestPasswordReset(string email)
+        public async Task<IActionResult> RequestPasswordReset([FromForm]string email)
         {
             try
             {
@@ -300,7 +300,7 @@ namespace Auth.API.Controllers
             }
             catch (Exception e)
             {
-                throw;
+                return  HandleError(e);
             }
         }
 

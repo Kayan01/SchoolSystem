@@ -7,9 +7,21 @@ namespace Shared.PubSub
     public enum BusMessageTypes
     {
         UNKNOWN,
-        NEW_USER,
-        EDIT_USER,
         EMAIL,
-        NOTICE
+        NOTICE,
+        TEACHER,
+        TEACHER_UPDATE,
+        TEACHER_DELETE,
+        STAFF,
+        STAFF_UPDATE,
+        STAFF_DELETE,
+        STUDENT,
+        STUDENT_UPDATE,
+        STUDENT_DELETE,
+        CLASS,
+        CLASS_UPDATE,
+        CLASS_DELETE,
+        ADMIN,
+        ADMIN_DELETE,
     }
 }

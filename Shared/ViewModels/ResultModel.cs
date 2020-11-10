@@ -8,6 +8,15 @@ namespace Shared.ViewModels
 {
     public class ResultModel<T>
     {
+        public ResultModel() { }
+        public ResultModel(T data, string message="")
+        {
+            Data = data;
+        }
+        public ResultModel(string errorMessage)
+        {
+            AddError(errorMessage);
+        }
         public List<ValidationResult> ValidationErrors { get; set; } = new List<ValidationResult>();
 
         public List<string> ErrorMessages

@@ -10,8 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using FacilitySvc.API.Utils;
-using NotificationSvc.Core.Context;
+using FacilitySvc.Core.Context;
+using Shared.Utils;
+using Shared.Collections;
 
 namespace FacilitySvc.API
 {
@@ -45,6 +46,16 @@ namespace FacilitySvc.API
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseCors(x =>
+            {
+                x.WithOrigins(Configuration["AllowedCorsOrigin"]
+                  .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                  .Select(o => o.RemovePostFix("/"))
+                  .ToArray())
+             .AllowAnyMethod()
+             .AllowAnyHeader();
+            });
 
             app.UseRouting();
             app.UseAuthentication();

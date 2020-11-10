@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Shared.FileStorage
 {
@@ -96,6 +97,25 @@ namespace Shared.FileStorage
             return true;
         }
 
+        public async Task<bool> TrySaveStreamAsync(string path, Stream inputStream)
+        {
+            try
+            {
+                if (FileExists(path))
+                {
+                    return false;
+                }
+
+                await SaveStreamAsync(path, inputStream);
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public FileInfo CreateFile(string path)
         {
             FileInfo fileInfo = new FileInfo(MapStorage(path));
@@ -132,6 +152,27 @@ namespace Shared.FileStorage
                     if (length <= 0)
                         break;
                     outputStream.Write(buffer, 0, length);
+                }
+            }
+        }
+
+        public async System.Threading.Tasks.Task SaveStreamAsync(string path, Stream inputStream)
+        {
+            // Create the file.
+            // The CreateFile method will map the still relative path
+            var file = CreateFile(path);
+
+            inputStream.Seek(0, SeekOrigin.Begin);
+
+            using (var outputStream = file.OpenWrite())
+            {
+                var buffer = new byte[8192];
+                for (; ; )
+                {
+                    var length = inputStream.Read(buffer, 0, buffer.Length);
+                    if (length <= 0)
+                        break;
+                    await outputStream.WriteAsync(buffer, 0, length);
                 }
             }
         }

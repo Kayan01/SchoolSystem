@@ -11,9 +11,10 @@ using Shared.Utils;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 using FacilitySvc.API.ViewModel;
-using NotificationSvc.Core.Services.Interfaces;
+using FacilitySvc.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using NotificationSvc.Core.ViewModels;
+using FacilitySvc.Core.ViewModels;
+using FacilitySvc.Core.Services.Interfaces;
 
 namespace FacilitySvc.API.Controllers
 {

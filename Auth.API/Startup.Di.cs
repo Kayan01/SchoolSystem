@@ -13,8 +13,6 @@ using Auth.API.Svc;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Auth.Core.Context;
 using Shared.PubSub;
 using Microsoft.AspNetCore.Hosting;
@@ -23,6 +21,14 @@ using Auth.Core.EventHandlers;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.Services;
 using Shared.Net.WorkerService;
+using Auth.Core.Services.Users;
+using Auth.Core.Interfaces.Users;
+using Shared.Tenancy;
+using Auth.Core.Interfaces;
+using Shared.Permissions;
+using Microsoft.AspNetCore.Authorization;
+using Auth.Core.Services.Interfaces.Class;
+using Auth.Core.Services.Class;
 
 namespace Auth.API
 {
@@ -30,6 +36,8 @@ namespace Auth.API
     {
         public void ConfigureDIService(IServiceCollection services)
         {
+            //services.AddScoped<TenantInfo>();
+
             services.AddTransient<DbContext, AppDbContext>();
 
             services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
@@ -66,12 +74,12 @@ namespace Auth.API
                 {
                     switch (message.BusMessageType)
                     {
-                        case (int)BusMessageTypes.NEW_USER:
+                        case (int)BusMessageTypes.TEACHER:
                             {
                                 handler.HandleTest(message);
                                 break;
                             }
-                        case (int)BusMessageTypes.EDIT_USER:
+                        case (int)BusMessageTypes.TEACHER_UPDATE:
                             {
                                 handler.HandleTest(message);
                                 break;
@@ -84,19 +92,37 @@ namespace Auth.API
             services.AddSingleton<BoundedMessageChannel<BusMessage>>();
             services.AddHostedService<EventHubProcessorService>();
             services.AddHostedService<EventHubReaderService>();
+            services.AddHostedService<PublishMessageBackgroundService>();
 
             //Permission not needed here
             //services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
             services.AddScoped<IUserService, UserService>();
 
+            Directory.CreateDirectory(Path.Combine(HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath")));
+
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
+            services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
             services.AddScoped<IFileStorageService, FileStorageService>();
             //services.AddTransient<IFileUploadService, FileUploadService>();        }
             services.AddScoped<ITestService, TestService>();
+
+            services.AddScoped<ISchoolService, SchoolService>();
+            services.AddScoped<IParentService, ParentService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IStaffService, StaffService>();
+            services.AddScoped<ISchoolClassService, SchoolClassService>();
+            services.AddScoped<IAuthUserManagement, AuthUserManagementService>();
+            services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<IPublishService, PublishService>();
+            services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IClassArmService, ClassArmService>();
+            services.AddScoped<IFileStore, FileStore>();
+            services.AddScoped<IRoleService, RoleService>();
             services.AddTransient<AuthHandler>();
         }
     }

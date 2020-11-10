@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Shared.Entities
 {
-    public class Role : IdentityRole<int>
+    public class Role : IdentityRole<long>
     {
         public bool IsActive { get; set; }
         public DateTime? CreationTime { get; set; }
