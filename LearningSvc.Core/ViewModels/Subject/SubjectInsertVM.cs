@@ -8,5 +8,6 @@ namespace LearningSvc.Core.ViewModels.Subject
     {
         public string Name { get; set; }
         public long[] ClassIds { get; set; }
+        public bool IsActive { get; set; }
     }
 }
