@@ -42,6 +42,24 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
+        public async Task AddOrUpdateClassFromBroadcast(ClassSharedModel model)
+        {
+            var schoolClass = await _schoolClassRepo.FirstOrDefaultAsync(x => x.Id == model.Id && x.TenantId == model.TenantId);
+            if (schoolClass == null)
+            {
+                schoolClass = _schoolClassRepo.Insert(new SchoolClass
+                {
+                    Id = model.Id
+                });
+            }
+
+            schoolClass.TenantId = model.TenantId;
+            schoolClass.Name = model.Name;
+            schoolClass.ClassArm = model.ClassArm;
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         public async Task<ResultModel<List<SchoolClassVM>>> GetAllSchoolClass()
         {
             var result = new ResultModel<List<SchoolClassVM>>

@@ -12,5 +12,6 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<List<TeacherVM>>> GetAllTeacher();
         Task<ResultModel<TeacherVM>> AddTeacher(TeacherVM model);
         Task<ResultModel<TeacherVM>> GetTeacherSummaryById(long id);
+        Task AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model);
     }
 }

@@ -45,6 +45,10 @@ namespace LearningSvc.Core.Context
             modelBuilder.Entity<AssignmentAnswer>().HasOne(a => a.Attachment)
                 .WithOne().HasForeignKey<AssignmentAnswer>(m => m.FileUploadId);
 
+            //configure composite primary key in the joining table
+            //modelBuilder.Entity<SchoolClassSubject>().HasKey(sc => new { sc.SchoolClassId, sc.SubjectId });
+            //modelBuilder.Entity<TeacherSubject>().HasKey(sc => new { sc.TeacherId, sc.SubjectId });
+
         }
 
         public DbSet<FileUpload> FileUploads { get; set; }
@@ -62,6 +66,8 @@ namespace LearningSvc.Core.Context
         public DbSet<SchoolClass> SchoolClasses { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Subject> Subjects { get; set; }
+        public DbSet<TeacherClassSubject> TeacherClassSubjects { get; set; }
+        public DbSet<SchoolClassSubject> SchoolClassSubjects { get; set; }
         public DbSet<Teacher> Teachers { get; set; }
         public DbSet<Period> Periods { get; set; }
         public DbSet<TimeTableCell> TimeTableCells { get; set; }

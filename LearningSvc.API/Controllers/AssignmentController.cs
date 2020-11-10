@@ -28,7 +28,7 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
-                var result = await _assignmentService.GetAssignmentsForTeacher(teacherId, vM.PageIndex, vM.PageSize);
+                var result = await _assignmentService.GetAssignmentsForTeacher(teacherId, vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -45,7 +45,7 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
-                var result = await _assignmentService.GetAssignmentsForClass(classId, vM.PageIndex, vM.PageSize);
+                var result = await _assignmentService.GetAssignmentsForClass(classId, vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -116,7 +116,7 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> UpdateScore(AssignmentSubmissionUpdateScoreVM model)
         {
@@ -140,7 +140,7 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> UpdateComment(AssignmentSubmissionUpdateCommentVM model)
         {
