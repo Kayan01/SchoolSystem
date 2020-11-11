@@ -67,7 +67,7 @@ namespace Auth.API.Controllers.Users
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddTeacher(AddTeacherVM model)
+        public async Task<IActionResult> AddTeacher([FromForm]AddTeacherVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -91,7 +91,7 @@ namespace Auth.API.Controllers.Users
 
         [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateTeacher(UpdateTeacherVM model)
+        public async Task<IActionResult> UpdateTeacher([FromForm]UpdateTeacherVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");

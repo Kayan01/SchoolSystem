@@ -16,6 +16,7 @@ namespace Auth.Core
         public long UserId { get; set; }
 
         public DateTime DateOfBirth { get; set; }
+        public string Sex { get; set; }
 
         public User User { get; set; } //Test this out
 
