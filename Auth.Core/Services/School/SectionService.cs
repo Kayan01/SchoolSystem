@@ -69,6 +69,24 @@ namespace Auth.Core.Services.Class
             return result;
         }
 
+        public async Task<ResultModel<ClassSectionVM>> GetSectionById(long Id)
+        {
+            var result = new ResultModel<ClassSectionVM>();
+            var sec = await _schoolSectionRepository.FirstOrDefaultAsync(Id);
+
+            if (sec == null)
+            {
+                result.AddError("Section could not be found");
+
+                return result;
+
+            }
+
+            result.Data = (ClassSectionVM)sec;
+            return result;
+            
+        }
+
         public async Task<ResultModel<ClassSectionUpdateVM>> UpdateSection(ClassSectionUpdateVM model)
         {
             var sec = await _schoolSectionRepository.FirstOrDefaultAsync(model.Id);
