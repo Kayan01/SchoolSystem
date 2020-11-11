@@ -58,7 +58,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSubjectsToClass([FromForm] TeacherClassSubjectInsertVM model)
+        public async Task<IActionResult> AddClassSubjectsToTeacher([FromForm] TeacherClassSubjectInsertVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
