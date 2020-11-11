@@ -77,12 +77,18 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StaffVM>> GetStaffById(long Id)
+        public async Task<ResultModel<StaffDetailVM>> GetStaffById(long Id)
         {
-            var result = new ResultModel<StaffVM>();
+            var result = new ResultModel<StaffDetailVM>();
             var staff = await _staffRepo.GetAll()
                             .Include(x => x.User)
-                            .FirstOrDefaultAsync(x => x.UserId == Id);
+                            .Include(x=> x.FileUploads)
+                            .Include(x=> x.WorkExperiences)
+                            .Include(x=> x.EducationExperiences)
+                            .Include(x=> x.NextOfKin)
+                            .Include(x=> x.Department)
+                            .Where(x=> x.Id == Id)
+                            .FirstOrDefaultAsync();
 
 
             result.Data = staff;
@@ -204,6 +210,12 @@ namespace Auth.Core.Services
                 PayGrade = model.EmploymentDetails.PayGrade,
                 HighestQualification = model.EmploymentDetails.HighestQualification,
                 JobTitle = model.EmploymentDetails.JobTitle,
+                Town = model.ContactDetails.Town,
+                State = model.ContactDetails.State,
+                Address = model.ContactDetails.Address,
+                AltEmailAddress = model.ContactDetails.AltEmailAddress,
+                AltPhoneNumber = model.ContactDetails.AltPhoneNumber,
+                Country = model.ContactDetails.Country,
                 NextOfKin = nextOfKin,
                 WorkExperiences = workExperiences,
                 EducationExperiences = eduExperiences,

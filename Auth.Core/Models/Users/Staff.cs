@@ -23,6 +23,12 @@ namespace Auth.Core.Models
         public DateTime ResumptionDate { get; set; }
         public bool IsActive { get; set; }
         public StaffType StaffType { get; set; }
+        public string Country { get; set; }
+        public string Address { get; set; }
+        public string State { get; set; }
+        public string Town { get; set; }
+        public string AltPhoneNumber { get; set; }
+        public string AltEmailAddress { get; set; }
 
         public int DepartmentId { get; set; }
         public Department  Department { get; set; }

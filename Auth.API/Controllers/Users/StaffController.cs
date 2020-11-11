@@ -71,7 +71,7 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{staffId}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetStaffById(long staffId)
