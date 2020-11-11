@@ -21,17 +21,21 @@ namespace LearningSvc.Core.Services
         private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly IUnitOfWork _unitOfWork;
 
-        public ClassSubjectService(IUnitOfWork unitOfWork, IRepository<SchoolClassSubject, long> classSubjectRepo, IRepository<SchoolClass, long> schoolClassRepo)
+        public ClassSubjectService(IUnitOfWork unitOfWork, 
+            IRepository<SchoolClassSubject, long> classSubjectRepo, 
+            IRepository<SchoolClass, long> schoolClassRepo, 
+            IRepository<Subject, long> subjectRepo)
         {
             _unitOfWork = unitOfWork;
             _classSubjectRepo = classSubjectRepo;
             _schoolClassRepo = schoolClassRepo;
+            _subjectRepo = subjectRepo;
         }
 
         public async Task<ResultModel<string>> AddSubjectsForClass(SubjectsToClassInsertVM model)
         {
             var r = new ResultModel<string>();
-            var schoolClass = await _schoolClassRepo.FirstOrDefaultAsync(x => x.Id == model.ClassId);
+            var schoolClass = await _schoolClassRepo.GetAll().Where(x => x.Id == model.ClassId).FirstOrDefaultAsync();
             if (schoolClass == null)
             {
                 r.Data = "Class was not found";
@@ -59,7 +63,7 @@ namespace LearningSvc.Core.Services
         public async Task<ResultModel<string>> AddClassesToSubject(ClassesToSubjectInsertVM model)
         {
             var r = new ResultModel<string>();
-            var subject = await _subjectRepo.FirstOrDefaultAsync(x => x.Id == model.SubjectId);
+            var subject = await _subjectRepo.GetAll().Where(x => x.Id == model.SubjectId).FirstOrDefaultAsync();
             if (subject == null)
             {
                 r.Data = "Subject was not found";
