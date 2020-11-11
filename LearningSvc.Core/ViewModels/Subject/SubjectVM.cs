@@ -8,6 +8,7 @@ namespace LearningSvc.Core.ViewModels.Subject
     {
         public long Id { get; set; }
         public string Name { get; set; }
+        public bool IsActive { get; set; }
 
         public static implicit operator SubjectVM(Models.Subject model)
         {
@@ -15,7 +16,7 @@ namespace LearningSvc.Core.ViewModels.Subject
             {
                 Id = model.Id,
                 Name = model.Name,
-
+                IsActive = model.IsActive,
             };
         }
     }

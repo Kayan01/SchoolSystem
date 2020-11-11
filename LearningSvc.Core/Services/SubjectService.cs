@@ -18,12 +18,16 @@ namespace LearningSvc.Core.Services
     public class SubjectService : ISubjectService
     {
         private readonly IRepository<Subject, long> _subjectRepo;
+        private readonly IRepository<SchoolClass, long> _schoolClassRepo;
+        private readonly IClassSubjectService _classSubjectService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public SubjectService(IUnitOfWork unitOfWork, IRepository<Subject, long> subjectRepo)
+        public SubjectService(IUnitOfWork unitOfWork, IRepository<Subject, long> subjectRepo, IRepository<SchoolClass, long> schoolClassRepo, IClassSubjectService classSubjectService)
         {
             _unitOfWork = unitOfWork;
             _subjectRepo = subjectRepo;
+            _schoolClassRepo = schoolClassRepo;
+            _classSubjectService = classSubjectService;
         }
 
         public async Task<ResultModel<SubjectVM>> AddSubject(SubjectInsertVM model)
@@ -42,10 +46,25 @@ namespace LearningSvc.Core.Services
             {
                 //Todo : Add more fields
                 Name = model.Name.ToLower(),
+                IsActive = model.IsActive
             };
 
             var id = _subjectRepo.InsertAndGetId(cls);
             await _unitOfWork.SaveChangesAsync();
+
+            if (model.ClassIds.Length > 0)
+            {
+                var classes = await _schoolClassRepo.GetAll().Where(x => model.ClassIds.Contains(x.Id)).Select(m=>m.Id).ToListAsync();
+
+                if (classes.Count>0)
+                {
+                    await _classSubjectService.AddClassesToSubject(new ViewModels.ClassSubject.ClassesToSubjectInsertVM()
+                    {
+                        SubjectId = id,
+                        ClassIds = classes.ToArray(),
+                    });
+                }
+            }
 
             result.Data = new SubjectVM() { Id = id, Name = model.Name.ToLower()};
             return result;
