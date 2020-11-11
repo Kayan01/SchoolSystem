@@ -6,10 +6,7 @@ namespace Shared.Enums
 {
     public enum StaffType
     {
-        Teacher = 1,
-        Accountant,
-        Driver,
-        Doctor,
-        Nurse
+        TeachingStaff = 1,
+        NonTeachingStaff
     }
 }

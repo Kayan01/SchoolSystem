@@ -95,7 +95,7 @@ namespace Auth.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("{Id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetClassArmById(long Id)
@@ -115,10 +115,10 @@ namespace Auth.API.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut("{Id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateClassArm([FromForm]UpdateClassArmVM model, [FromRoute] long id)
+        public async Task<IActionResult> UpdateClassArm([FromForm]UpdateClassArmVM model, long Id)
         {
             if (!ModelState.IsValid)
             {
@@ -127,7 +127,7 @@ namespace Auth.API.Controllers
 
             try
             {
-                var result = await _classArmService.UpdateClassArm(model, id);
+                var result = await _classArmService.UpdateClassArm(model, Id);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

@@ -113,13 +113,18 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> UpdateSchool([FromForm]UpdateSchoolVM vM,[FromRoute] long id)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+
+            if (id < 1)
+            {
+                return ApiResponse<string>(errors: "Invalid school Id");
+            }
 
             try
             {
