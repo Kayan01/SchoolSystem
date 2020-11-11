@@ -38,8 +38,8 @@ namespace LearningSvc.Core.Services
             var schoolClass = await _schoolClassRepo.GetAll().Where(x => x.Id == model.ClassId).FirstOrDefaultAsync();
             if (schoolClass == null)
             {
-                r.Data = "Class was not found";
                 r.AddError("Class was not found");
+                return r;
             }
             var classSubjects = new List<SchoolClassSubject>();
 
