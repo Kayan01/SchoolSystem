@@ -66,5 +66,21 @@ namespace LearningSvc.Core.Services
             };
             return result;
         }
+
+        public async Task<ResultModel<List<TeacherClassSubjectListVM>>> GetTeachersForClassSubject(long classSubjectId)
+        {
+            var result = new ResultModel<List<TeacherClassSubjectListVM>>
+            {
+                Data = await _teacherClassSubjectRepo.GetAll().Where(x => x.SchoolClassSubjectId == classSubjectId)
+                .Select(x => new TeacherClassSubjectListVM()
+                {
+                    Id = x.Id,
+                    Class = x.SchoolClassSubject.SchoolClass.Name,
+                    Subject = x.SchoolClassSubject.Subject.Name,
+                    Teacher = x.Teacher.FirstName + " " + x.Teacher.LastName
+                }).ToListAsync()
+            };
+            return result;
+        }
     }
 }
