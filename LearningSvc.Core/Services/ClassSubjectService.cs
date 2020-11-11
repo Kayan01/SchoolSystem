@@ -41,18 +41,15 @@ namespace LearningSvc.Core.Services
                 r.AddError("Class was not found");
                 return r;
             }
-            var classSubjects = new List<SchoolClassSubject>();
 
             foreach (var id in model.SubjectIds)
             {
-                classSubjects.Add(new SchoolClassSubject()
+                _classSubjectRepo.Insert(new SchoolClassSubject()
                 {
                     SchoolClassId = model.ClassId,
                     SubjectId = id
                 });
             }
-
-            schoolClass.SchoolClassSubjects = classSubjects;
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -69,18 +66,15 @@ namespace LearningSvc.Core.Services
                 r.Data = "Subject was not found";
                 r.AddError("Subject was not found");
             }
-            var classSubjects = new List<SchoolClassSubject>();
 
             foreach (var id in model.ClassIds)
             {
-                classSubjects.Add(new SchoolClassSubject()
+                _classSubjectRepo.Insert(new SchoolClassSubject()
                 {
                     SchoolClassId = id,
                     SubjectId = model.SubjectId
                 });
             }
-
-            subject.SchoolClassSubjects = classSubjects;
 
             await _unitOfWork.SaveChangesAsync();
 
