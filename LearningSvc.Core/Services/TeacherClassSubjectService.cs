@@ -35,18 +35,15 @@ namespace LearningSvc.Core.Services
                 r.Data = "Teacher was not found";
                 r.AddError("Teacher was not found");
             }
-            var teacherClassSubjects = new List<TeacherClassSubject>();
 
             foreach (var id in model.ClassSubjectIds)
             {
-                teacherClassSubjects.Add(new TeacherClassSubject()
+                _teacherClassSubjectRepo.Insert(new TeacherClassSubject()
                 {
                     TeacherId = model.TeacherId,
                     SchoolClassSubjectId = id
                 });
             }
-
-            teacher.TeacherClassSubjects = teacherClassSubjects;
 
             await _unitOfWork.SaveChangesAsync();
 

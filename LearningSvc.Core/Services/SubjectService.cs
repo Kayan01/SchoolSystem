@@ -66,7 +66,7 @@ namespace LearningSvc.Core.Services
                 }
             }
 
-            result.Data = new SubjectVM() { Id = id, Name = model.Name.ToLower()};
+            result.Data = new SubjectVM() { Id = id, Name = model.Name.ToLower(), IsActive = model.IsActive};
             return result;
         }
 
