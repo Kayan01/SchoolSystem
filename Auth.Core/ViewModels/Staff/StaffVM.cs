@@ -131,8 +131,8 @@ namespace Auth.Core.ViewModels.Staff
         public ContactDetailsVM ContactDetails { get; set; }
 
         public EmploymentDetailsVM EmploymentDetails { get; set; }
-        public List<WorkExperienceVM> WorkExperienceVMs { get; set; }
-        public List<EducationExperienceVM> EducationExperienceVMs { get; set; }
+        public List<WorkExperienceVM> WorkExperienceVMs { get; set; } = new List<WorkExperienceVM>();
+        public List<EducationExperienceVM> EducationExperienceVMs { get; set; } = new List<EducationExperienceVM>();
         public List<DocumentType> DocumentTypes { get; set; }
         public List<IFormFile> Files { get; set; }
 

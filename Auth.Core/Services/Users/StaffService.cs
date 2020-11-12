@@ -23,6 +23,7 @@ using Auth.Core.Interfaces.Setup;
 using Auth.Core.Models.Setup;
 using Auth.Core.Models.UserDetails;
 using Shared.FileStorage;
+using Microsoft.OpenApi.Extensions;
 
 namespace Auth.Core.Services
 {
@@ -87,7 +88,7 @@ namespace Auth.Core.Services
                             .Include(x=> x.EducationExperiences)
                             .Include(x=> x.NextOfKin)
                             .Include(x=> x.Department)
-                            .Where(x=> x.Id == Id)
+                            .Where(x=> x.Id == Id && x.StaffType == StaffType.NonTeachingStaff)
                             .FirstOrDefaultAsync();
 
 
@@ -234,7 +235,8 @@ namespace Auth.Core.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                PhoneNumber = user.PhoneNumber
+                PhoneNumber = user.PhoneNumber, 
+                StaffType = staff.StaffType.GetDisplayName()
             };
 
             //TODO Refactor, and Move teachers logic to TeachersService
