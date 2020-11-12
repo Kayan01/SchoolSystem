@@ -19,6 +19,10 @@ using Shared.Pagination;
 using Microsoft.AspNetCore.Identity;
 using Shared.Entities;
 using IPagedList;
+using Auth.Core.Interfaces.Setup;
+using Auth.Core.Models.Setup;
+using Auth.Core.Models.UserDetails;
+using Shared.FileStorage;
 
 namespace Auth.Core.Services
 {
@@ -26,24 +30,28 @@ namespace Auth.Core.Services
     {
         private readonly IRepository<Staff, long> _staffRepo;
         private readonly IRepository<TeachingStaff, long> _teachingStaffRepo;
+        private readonly IRepository<Department, long> _departmentRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
-        private readonly AppDbContext _appDbContext;
+        private readonly IDocumentService _documentService;
 
-        public StaffService(IRepository<Staff, long> staffRepo,
+        public StaffService(
+            IRepository<Staff, long> staffRepo,
             IUnitOfWork unitOfWork,
             UserManager<User> userManagement,
             IRepository<TeachingStaff, long> teachingStaffRepo,
             IPublishService publishService,
-            AppDbContext appDbContext)
+            IRepository<Department,long> departmentRepo,
+            IDocumentService documentService)
         {
             _staffRepo = staffRepo;
             _unitOfWork = unitOfWork;
             _userManager = userManagement;
             _teachingStaffRepo = teachingStaffRepo;
+            _departmentRepo = departmentRepo;
             _publishService = publishService;
-            _appDbContext = appDbContext;
+            _documentService = documentService;
         }
 
         public async Task<ResultModel<PaginatedModel<StaffVM>>> GetAllStaff(QueryModel model)
@@ -69,12 +77,18 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StaffVM>> GetStaffById(long Id)
+        public async Task<ResultModel<StaffDetailVM>> GetStaffById(long Id)
         {
-            var result = new ResultModel<StaffVM>();
+            var result = new ResultModel<StaffDetailVM>();
             var staff = await _staffRepo.GetAll()
                             .Include(x => x.User)
-                            .FirstOrDefaultAsync(x => x.UserId == Id);
+                            .Include(x=> x.FileUploads)
+                            .Include(x=> x.WorkExperiences)
+                            .Include(x=> x.EducationExperiences)
+                            .Include(x=> x.NextOfKin)
+                            .Include(x=> x.Department)
+                            .Where(x=> x.Id == Id)
+                            .FirstOrDefaultAsync();
 
 
             result.Data = staff;
@@ -85,17 +99,48 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<StaffVM>();
 
+            _unitOfWork.BeginTransaction();
+            //check if department exist
+            var dept = await _departmentRepo.GetAll().Where(x => x.Id == model.EmploymentDetails.DepartmentId).FirstOrDefaultAsync();
+
+            if (dept == null)
+            {
+                result.AddError("Department does not exist");
+
+                return result;
+            }
+
+            //save filles
+            var files = new List<FileUpload>();
+            
+            if (model.Files != null && model.Files.Any())
+            {
+                if (model.Files.Count != model.DocumentTypes.Count)
+                {
+                    result.AddError("Some document types are missing");
+                    return result;
+                }
+                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                if (files.Count() != model.Files.Count())
+                {
+                    result.AddError("Some files could not be uploaded");
+
+                    return result;
+                }
+            }
+
             //create auth user
             var user = new User
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                Email = model.Email,
-                UserName = model.Email,
-                PhoneNumber = model.PhoneNumber,
+                Email = model.ContactDetails.EmailAddress,
+                UserName = model.ContactDetails.EmailAddress,
+                PhoneNumber = model.ContactDetails.PhoneNumber,
+                MiddleName = model.OtherNames,
                 UserType = UserType.Staff,
             };
-            var userResult = await _userManager.CreateAsync(user, model.Password);
+            var userResult = await _userManager.CreateAsync(user, model.ContactDetails.PhoneNumber);
 
             if (!userResult.Succeeded)
             {
@@ -103,19 +148,86 @@ namespace Auth.Core.Services
                 return result;
             }
 
+            //create next of kin
+            var nextOfKin = new NextOfKin
+            {
+                 Address = model.NextOfKin.NextKinAddress,
+                 Country = model.NextOfKin.NextKinCountry,
+                 FirstName = model.NextOfKin.NextKinFirstName,
+                 LastName = model.NextOfKin.NextKinLastName,
+                 Occupation = model.NextOfKin.NextKinOccupation,
+                 OtherName = model.NextOfKin.NextKinOtherName,
+                Phone = model.NextOfKin.NextKinPhone,
+                Relationship = model.NextOfKin.NextKinRelationship,
+                 State = model.NextOfKin.NextKinState,
+                Town = model.NextOfKin.NextKinTown
+            };
 
+            //get all workexperiences
+            var workExperiences = new List<WorkExperience>();
+            foreach (var wk in model.WorkExperienceVMs)
+            {
+                workExperiences.Add(new WorkExperience
+                {
+                    EndTime = wk.EndTime,
+                    StartTime = wk.StartTime,
+                    WorkCompanyName = wk.WorkCompanyName,
+                    WorkRole = wk.WorkRole
+                });
+            }
+
+            //get all education experience
+            var eduExperiences = new List<EducationExperience>();
+            foreach (var edu in model.EducationExperienceVMs)
+            {
+                eduExperiences.Add(new EducationExperience
+                {
+                    EducationSchoolName = edu.EducationSchoolName,
+                    EducationQualification = edu.EducationSchoolQualification,
+                    StartDate = edu.StartDate,
+                    EndDate = edu.EndDate
+                });
+            }
+
+            //create staff
             var staff = _staffRepo.Insert(new Staff
             {
                 UserId = user.Id,
-                StaffType = StaffType.Teacher,
-                //TenantId TODO for some reason Tenant Id is not set for this item
+                BloodGroup = model.BloodGroup,
+                DateOfBirth = model.DateOfBirth,
+                IsActive = model.IsActive,
+                LocalGovernment = model.LocalGovernment,
+                MaritalStatus = model.MaritalStatus,
+                Nationality = model.Nationality,
+                Religion = model.Religion,
+                StateOfOrigin = model.StateOfOrigin,
+                Sex = model.Sex,
+                StaffType = StaffType.NonTeachingStaff,
+                EmploymentDate = model.EmploymentDetails.EmploymentDate,
+                ResumptionDate = model.EmploymentDetails.ResumptionDate,
+                EmploymentStatus = model.EmploymentDetails.EmploymentStatus,
+                DepartmentId = model.EmploymentDetails.DepartmentId,
+                PayGrade = model.EmploymentDetails.PayGrade,
+                HighestQualification = model.EmploymentDetails.HighestQualification,
+                JobTitle = model.EmploymentDetails.JobTitle,
+                Town = model.ContactDetails.Town,
+                State = model.ContactDetails.State,
+                Address = model.ContactDetails.Address,
+                AltEmailAddress = model.ContactDetails.AltEmailAddress,
+                AltPhoneNumber = model.ContactDetails.AltPhoneNumber,
+                Country = model.ContactDetails.Country,
+                NextOfKin = nextOfKin,
+                WorkExperiences = workExperiences,
+                EducationExperiences = eduExperiences,
+                FileUploads = files
 
             });
+
+            _staffRepo.Insert(staff);
 
             await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Commit();
 
-            model.Id = staff.Id;
 
             result.Data = new StaffVM
             {
@@ -123,7 +235,7 @@ namespace Auth.Core.Services
                 LastName = user.LastName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber
-            }; ;
+            };
 
             //TODO Refactor, and Move teachers logic to TeachersService
 

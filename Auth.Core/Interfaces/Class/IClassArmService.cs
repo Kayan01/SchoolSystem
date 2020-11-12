@@ -14,6 +14,6 @@ namespace Auth.Core.Services.Interfaces.Class
         Task<ResultModel<List<ClassArmVM>>> GetAllClassArms();
         Task<ResultModel<ClassArmVM>> GetAllClassArmById(long Id);
 
-        Task<ResultModel<ClassArmVM>> UpdateClassArm(UpdateClassArmVM model);
+        Task<ResultModel<ClassArmVM>> UpdateClassArm(UpdateClassArmVM model, long id);
     }
 }

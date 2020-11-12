@@ -29,6 +29,8 @@ using Shared.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Auth.Core.Services.Interfaces.Class;
 using Auth.Core.Services.Class;
+using Auth.Core.Interfaces.Setup;
+using Auth.Core.Services.Setup;
 
 namespace Auth.API
 {
@@ -114,6 +116,7 @@ namespace Auth.API
             services.AddScoped<IParentService, ParentService>();
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IStaffService, StaffService>();
+            services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<ISchoolClassService, SchoolClassService>();
             services.AddScoped<IAuthUserManagement, AuthUserManagementService>();
             services.AddScoped<IDocumentService, DocumentService>();
@@ -121,6 +124,7 @@ namespace Auth.API
             services.AddScoped<ITeacherService, TeacherService>();
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IClassArmService, ClassArmService>();
+            services.AddScoped<ISectionService, SectionService>();
             services.AddScoped<IFileStore, FileStore>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddTransient<AuthHandler>();

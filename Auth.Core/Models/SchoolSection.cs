@@ -19,5 +19,6 @@ namespace Auth.Core.Models
         public string Name { get; set; }
 
         public School School { get; set; }
+        public List<SchoolClass> Classes { get; set; }
     }
 }

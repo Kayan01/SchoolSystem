@@ -12,7 +12,7 @@ namespace Auth.Core.Services.Interfaces
     {
         Task<ResultModel<StaffVM>> AddStaff(AddStaffVM model);
         Task<ResultModel<PaginatedModel<StaffVM>>> GetAllStaff(QueryModel model);
-        Task<ResultModel<StaffVM>> GetStaffById(long Id);
+        Task<ResultModel<StaffDetailVM>> GetStaffById(long Id);
         Task<ResultModel<StaffVM>> UpdateStaff(StaffUpdateVM model );
         Task<ResultModel<bool>> DeleteStaff(long Id);
     }

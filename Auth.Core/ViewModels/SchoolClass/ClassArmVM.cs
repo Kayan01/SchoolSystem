@@ -13,7 +13,6 @@ namespace Auth.Core.ViewModels.SchoolClass
     }
     public class UpdateClassArmVM
     {
-        public long Id { get; set; }
         public string Name { get; set; }
         public bool Status { get; set; }
     }
