@@ -87,13 +87,16 @@ namespace Auth.Core.Services
             result.Data = true;
 
             //PublishMessage for all classes
-            classList.Select(x => _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS, new ClassSharedModel
-            {
-                Id = x.Id,
-                TenantId = x.TenantId,
-                Name = x.Name,
-                ClassArm = x.ClassArm
-            }));
+            classList.Select(x => {
+                _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS, new ClassSharedModel
+                {
+                    Id = x.Id,
+                    TenantId = x.TenantId,
+                    Name = x.Name,
+                    ClassArm = x.ClassArm
+                });
+                return x;
+            });
            
 
             return result;
