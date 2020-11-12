@@ -56,6 +56,23 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpGet("{subjectId}")]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetClassesForSubject(long subjectId)
+        {
+            try
+            {
+                var result = await _classSubjectService.GetClassesForSubject(subjectId);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> AddSubjectsToClass([FromForm] SubjectsToClassInsertVM model)
