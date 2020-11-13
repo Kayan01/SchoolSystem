@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LearningSvc.Core.Enumerations;
 using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.TimeTable;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NPOI.SS.Formula.Functions;
@@ -16,6 +17,7 @@ namespace LearningSvc.API.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]/[action]")]
+    [AllowAnonymous]
     public class TimeTableController : BaseController
     {
         private readonly ITimeTableService _timeTableService;
@@ -43,7 +45,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UploadPeriod([FromBody] List<PeriodVM> model)
+        public async Task<IActionResult> UploadPeriod([FromBody] List<PeriodInsertVM> model)
         {
             if (model == null || model.Count < 0)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -101,7 +103,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddNewTimetableCell([FromBody]TimeTableCellInsertVM model)
+        public async Task<IActionResult> AddNewTimetableCell([FromForm]TimeTableCellInsertVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");

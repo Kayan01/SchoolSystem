@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace LearningSvc.Core.Services
 {
@@ -39,7 +40,7 @@ namespace LearningSvc.Core.Services
                     SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
                     TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
                     TimeFrom = x.Period.TimeFrom,
-                    DurationInMinutes = x.Period.DurationInMinutes,
+                    TimeTo = x.Period.TimeTo,
                     NoOfPeriods = x.NoOfPeriod,
                     PeriodName = x.Period.Name,
                     NoOfStudent = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Students.Count,
@@ -71,7 +72,7 @@ namespace LearningSvc.Core.Services
                         SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
                         TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
                         TimeFrom = x.Period.TimeFrom,
-                        DurationInMinutes = x.Period.DurationInMinutes,
+                        TimeTo = x.Period.TimeTo,
                         NoOfPeriods = x.NoOfPeriod,
                         PeriodName = x.Period.Name,
                         NoOfStudent = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Students.Count,
@@ -138,7 +139,7 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<PeriodVM>>> SetupSchoolPeriods(List<PeriodVM> model)
+        public async Task<ResultModel<List<PeriodVM>>> SetupSchoolPeriods(List<PeriodInsertVM> model)
         {
             var result = new ResultModel<List<PeriodVM>>();
 
@@ -153,23 +154,26 @@ namespace LearningSvc.Core.Services
                 await _periodRepo.DeleteAsync(m => m.TenantId == oldPeriod[0].TenantId);
             }
 
+            result.Data = new List<PeriodVM>();
+
             foreach (var item in model)
             {
                 var p = new Period
                 {
                     Name = item.Name,
                     Step = item.Step,
-                    TimeFrom = item.TimeFrom,
-                    TimeTo = item.TimeTo,
-                    
+                    TimeFrom = TimeSpan.ParseExact(item.TimeFrom, "h\\:mm", CultureInfo.CurrentCulture),
+                    TimeTo = TimeSpan.ParseExact(item.TimeTo, "h\\:mm", CultureInfo.CurrentCulture),
+                    IsBreak = item.isBreak
                 };
-                item.Id = await _periodRepo.InsertAndGetIdAsync(p);
 
+                await _periodRepo.InsertAsync(p);
+
+                result.Data.Add(p);
             }
 
             await _unitOfWork.SaveChangesAsync();
             
-            result.Data = model;
             return result;
         }
 
