@@ -10,7 +10,7 @@ namespace LearningSvc.Core.Interfaces
 {
     public interface ITimeTableService
     {
-        Task<ResultModel<List<PeriodVM>>> SetupSchoolPeriods(List<PeriodVM> model);
+        Task<ResultModel<List<PeriodVM>>> SetupSchoolPeriods(List<PeriodInsertVM> model);
         Task<ResultModel<List<PeriodVM>>> GetAllPeriodForSchool();
         Task<ResultModel<TimeTableCellVM>> AddTimeTableCell(TimeTableCellInsertVM model);
         Task<ResultModel<string>> DeleteTimeTableCell(long TimeTableCellId);
