@@ -21,18 +21,16 @@ namespace LearningSvc.Core.Services
     public class ClassWorkService : IClassWorkService
     {
         private readonly IRepository<Classwork, long> _classWorkRepo;
-        private readonly IRepository<SchoolClass, long> _schoolClassRepo;
-        private readonly IRepository<Subject, long> _subjectRepo;
+        private readonly IRepository<SchoolClassSubject, long> _schoolClassSubjectRepo;
         private readonly IRepository<Teacher, long> _teacherRepo;
         private readonly IDocumentService _documentService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public ClassWorkService(IUnitOfWork unitOfWork, IRepository<Classwork, long> classWorkRepo, IDocumentService documentService, IRepository<SchoolClass, long> schoolClassRepo, 
-            IRepository<Subject, long> subjectRepo, IRepository<Teacher, long> teacherRepo)
+        public ClassWorkService(IUnitOfWork unitOfWork, IRepository<Classwork, long> classWorkRepo, IDocumentService documentService,
+            IRepository<SchoolClassSubject, long> schoolClassSubjectRepo, IRepository<Teacher, long> teacherRepo)
         {
             _classWorkRepo = classWorkRepo;
-            _schoolClassRepo = schoolClassRepo;
-            _subjectRepo = subjectRepo;
+            _schoolClassSubjectRepo = schoolClassSubjectRepo;
             _teacherRepo = teacherRepo;
             _documentService = documentService;
             _unitOfWork = unitOfWork;
@@ -40,9 +38,17 @@ namespace LearningSvc.Core.Services
 
         public async Task<ResultModel<PaginatedModel<ClassWorkListVM>>> GetAllFileByClass(long classId, QueryModel queryModel)
         {
-            var query = await _classWorkRepo.GetAll().Where(m => m.SchoolClassId == classId)
-                    .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.File)
-                    .Select(x => (ClassWorkListVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
+            var query = await _classWorkRepo.GetAll().Where(m => m.SchoolClassSubject.SchoolClassId == classId)
+                    .Select(x => new ClassWorkListVM
+                    {
+                        Id = x.Id,
+                        Name = x.File.Name,
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
+                        CreationDate = x.CreationTime,
+                        FileId = x.FileUploadId,
+                        SubjectName = x.SchoolClassSubject.Subject.Name,
+                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                    }).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
             var result = new ResultModel<PaginatedModel<ClassWorkListVM>>
             {
@@ -54,8 +60,16 @@ namespace LearningSvc.Core.Services
         public async Task<ResultModel<PaginatedModel<ClassWorkListVM>>> GetAllFileByTeacher(long teacherId, QueryModel queryModel)
         {
             var query = await _classWorkRepo.GetAll().Where(m => m.TeacherId == teacherId)
-                    .Include(m => m.Teacher).Include(m => m.Subject).Include(m => m.SchoolClass).Include(m => m.File)
-                    .Select(x => (ClassWorkListVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
+                    .Select(x => new ClassWorkListVM
+                    {
+                        Id = x.Id,
+                        Name = x.File.Name,
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
+                        CreationDate = x.CreationTime,
+                        FileId = x.FileUploadId,
+                        SubjectName = x.SchoolClassSubject.Subject.Name,
+                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                    }).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
             var result = new ResultModel<PaginatedModel<ClassWorkListVM>>
             {
@@ -68,17 +82,10 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var schoolClass = await _schoolClassRepo.GetAsync(model.ClassId);
-            if (schoolClass == null)
+            var schoolClassSubject = await _schoolClassSubjectRepo.GetAsync(model.ClassSubjectId);
+            if (schoolClassSubject == null)
             {
-                result.AddError("Class not found");
-                return result;
-            }
-
-            var subject = await _subjectRepo.GetAsync(model.SubjectId);
-            if (subject == null)
-            {
-                result.AddError("Subject not found");
+                result.AddError("Class subject was not found");
                 return result;
             }
 
@@ -103,9 +110,9 @@ namespace LearningSvc.Core.Services
             var classwork = new Classwork
             {
                 File = file,
-                SchoolClassId = model.ClassId,
-                SubjectId = model.SubjectId,
+                SchoolClassSubjectId = model.ClassSubjectId,
                 TeacherId = model.TeacherId,
+                OptionalComment = model.Comment,
             };
 
             await _classWorkRepo.InsertAsync(classwork);

@@ -36,7 +36,7 @@ namespace LearningSvc.Core.Services
                 .Select(x => new ClassSessionOutputVM
                 {
                     TimeTableCellId = x.Id,
-                    ClassName = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name,
+                    ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
                     SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
                     TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
                     TimeFrom = x.Period.TimeFrom,
@@ -68,7 +68,7 @@ namespace LearningSvc.Core.Services
                     .Select(x => new ClassSessionOutputVM
                     {
                         TimeTableCellId = x.Id,
-                        ClassName = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name,
+                        ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
                         SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
                         TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
                         TimeFrom = x.Period.TimeFrom,
@@ -102,7 +102,7 @@ namespace LearningSvc.Core.Services
                         SubjectId = x.TeacherClassSubject.SchoolClassSubject.SubjectId,
                         SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
                         SchoolClassId = x.TeacherClassSubject.SchoolClassSubject.SchoolClassId,
-                        ClassName = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name,
+                        ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
                         NoOfPeriod = x.NoOfPeriod,
                         HasVirtual = x.HasVirtual,
                         ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
@@ -129,7 +129,7 @@ namespace LearningSvc.Core.Services
                         SubjectId = x.TeacherClassSubject.SchoolClassSubject.SubjectId,
                         SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
                         SchoolClassId = x.TeacherClassSubject.SchoolClassSubject.SchoolClassId,
-                        ClassName = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name,
+                        ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
                         NoOfPeriod = x.NoOfPeriod,
                         HasVirtual = x.HasVirtual,
                         ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
@@ -207,7 +207,7 @@ namespace LearningSvc.Core.Services
                     SubjectId = x.TeacherClassSubject.SchoolClassSubject.SubjectId,
                     SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
                     SchoolClassId = x.TeacherClassSubject.SchoolClassSubject.SchoolClassId,
-                    ClassName = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name,
+                    ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
                     NoOfPeriod = x.NoOfPeriod,
                     HasVirtual = x.HasVirtual,
                     ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
