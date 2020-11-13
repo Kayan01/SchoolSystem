@@ -114,6 +114,7 @@ namespace LearningSvc.Core.Services
                 File = file,
                 SchoolClassSubjectId = model.ClassSubjectId,
                 TeacherId = model.TeacherId,
+                OptionalComment = model.Comment
             };
 
             await _mediaRepo.InsertAsync(media);
