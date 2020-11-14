@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces.Class;
 using Auth.Core.ViewModels.SchoolClass;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -14,6 +15,7 @@ namespace Auth.API.Controllers.School
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
+    [AllowAnonymous]
     public class SchoolSectionController : BaseController
     {
         private readonly ISectionService _sectionService;
@@ -26,7 +28,7 @@ namespace Auth.API.Controllers.School
         [HttpPost]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSection(ClassSectionVM model)
+        public async Task<IActionResult> AddSection([FromForm]ClassSectionVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -74,13 +76,31 @@ namespace Auth.API.Controllers.School
         }
 
         [HttpGet]
-        //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllSections(QueryModel vm)
+        public async Task<IActionResult> GetAllSections([FromQuery] QueryModel vm)
         {
             try
             {
                 var result = await _sectionService.GetAllSections(vm);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet("{Id}")]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> GetSectionById(long Id)
+        {
+            try
+            {
+                var result = await _sectionService.GetSectionById(Id);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -93,10 +113,11 @@ namespace Auth.API.Controllers.School
             }
         }
 
+
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSection(ClassSectionUpdateVM model)
+        public async Task<IActionResult> UpdateSection([FromForm] ClassSectionUpdateVM model)
         {
             if (!ModelState.IsValid)
             {

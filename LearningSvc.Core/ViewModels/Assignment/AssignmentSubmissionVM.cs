@@ -16,22 +16,7 @@ namespace LearningSvc.Core.ViewModels.Assignment
         public double Score { get; set; }
         public string Comment { get; set; }
         public DateTime Date { get; set; }
-        public string FileURL { get; set; }
+        public Guid FileId { get; set; }
 
-
-        public static implicit operator AssignmentSubmissionVM(Models.AssignmentAnswer model)
-        {
-            return model == null ? null : new AssignmentSubmissionVM
-            {
-                Id = model.Id,
-                StudentName = $"{model.Student?.FirstName} {model.Student?.LastName}",
-                StudentNumber = model.Student?.UserId.ToString(),
-                AssignmentTitle = model.Assignment?.Title,
-                Comment = model.Comment,
-                Score = model.Score,
-                Date = model.DateSubmitted,
-                FileURL = model.Attachment?.Path
-            };
-        }
     }
 }

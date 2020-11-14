@@ -14,19 +14,14 @@ namespace LearningSvc.Core.Models.TimeTable
         public long PeriodId { get; set; }
         public WeekDays Day { get; set; }
 
-        public long TeacherId { get; set; }
-        public long SubjectId { get; set; }
-        public long SchoolClassId { get; set; }
+        public long TeacherClassSubjectId { get; set; }
 
         public int NoOfPeriod { get; set; } = 1;
         public bool HasVirtual { get; set; } = false;
-        public string ZoomId { get; set; }
 
         //Start period
         public Period Period { get; set; }
-        public Subject Subject { get; set; }
-        public Teacher Teacher { get; set; }
-        public SchoolClass SchoolClass { get; set; }
+        public TeacherClassSubject TeacherClassSubject { get; set; }
 
     }
 }

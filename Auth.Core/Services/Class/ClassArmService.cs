@@ -67,9 +67,9 @@ namespace Auth.Core.Services.Class
             return result;
         }
 
-        public async Task<ResultModel<ClassArmVM>> UpdateClassArm(UpdateClassArmVM model)
+        public async Task<ResultModel<ClassArmVM>> UpdateClassArm(UpdateClassArmVM model, long id   )
         {
-            var classArm = await _classArmRepo.FirstOrDefaultAsync(model.Id);
+            var classArm = await _classArmRepo.FirstOrDefaultAsync(id);
             var result = new ResultModel<ClassArmVM>();
 
             if (classArm == null)

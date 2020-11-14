@@ -14,7 +14,9 @@ namespace Auth.Core.Models
         public long TenantId { get; set; }
         public string Name { get; set; }
         public string ClassArm { get; set; }
+        public bool IsActive { get; set; }
         public long SchoolSectionId { get; set; }
+        public int Sequence { get; set; }
         public SchoolSection SchoolSection { get; set; }
 
         public ICollection<Student> Students { get; set; } = new List<Student>();

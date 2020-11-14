@@ -152,9 +152,9 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model)
+        public async Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model, long  id)
         {
-            var sch = await _schoolRepo.FirstOrDefaultAsync(model.Id);
+            var sch = await _schoolRepo.FirstOrDefaultAsync(id);
             var result = new ResultModel<SchoolVM>();
 
             if (sch == null)

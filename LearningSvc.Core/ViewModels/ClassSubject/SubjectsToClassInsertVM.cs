@@ -4,7 +4,7 @@ using System.Text;
 
 namespace LearningSvc.Core.ViewModels.ClassSubject
 {
-    public class ClassSubjectsInsertVM
+    public class SubjectsToClassInsertVM
     {
         public long ClassId { get; set; }
         public long[] SubjectIds { get; set; }

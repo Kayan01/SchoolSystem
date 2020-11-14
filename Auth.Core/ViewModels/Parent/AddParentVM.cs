@@ -24,7 +24,6 @@ namespace Auth.Core.ViewModels.Parent
         public string EmailAddress { get; set; }
         public string SecondaryPhoneNumber { get; set; }
         public string SecondaryEmailAddress { get; set; }
-        public string AlternativeEmail { get; set; }
         public string HomeAddress { get; set; }
         public string OfficeAddress { get; set; }
         public IFormFile File { get; set; }

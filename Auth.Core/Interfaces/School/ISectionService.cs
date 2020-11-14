@@ -9,6 +9,7 @@ namespace Auth.Core.Services.Interfaces.Class
     public interface ISectionService
     {
         Task<ResultModel<ClassSectionVM>> AddSection(ClassSectionVM model);
+        Task<ResultModel<ClassSectionVM>> GetSectionById(long Id);
 
         Task<ResultModel<bool>> DeleteSection(long Id);
 

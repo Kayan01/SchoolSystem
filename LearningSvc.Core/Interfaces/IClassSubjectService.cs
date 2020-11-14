@@ -10,7 +10,11 @@ namespace LearningSvc.Core.Interfaces
 {
     public interface IClassSubjectService
     {
-        Task<ResultModel<string>> AddSubjectsForClass(ClassSubjectsInsertVM model);
+        Task<ResultModel<string>> AddSubjectsForClass(SubjectsToClassInsertVM model);
+        Task<ResultModel<string>> AddClassesToSubject(ClassesToSubjectInsertVM model);
+
         Task<ResultModel<List<ClassSubjectListVM>>> GetAllClassSubjects();
+        Task<ResultModel<List<ClassSubjectListVM>>> GetSubjectsForClass(long classId);
+        Task<ResultModel<List<ClassSubjectListVM>>> GetClassesForSubject(long subjectId);
     }
 }

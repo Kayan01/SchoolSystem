@@ -30,7 +30,7 @@ namespace Auth.API.Controllers.Users
         {
             if (!ModelState.IsValid)
             {
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
             }
 
 
@@ -49,9 +49,9 @@ namespace Auth.API.Controllers.Users
 
         }
 
-        [HttpGet]
+        [HttpGet("{studId}")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetParentsForStudent([FromQuery]long studId)
+        public async Task<IActionResult> GetParentsForStudent(long studId)
         {
             if (studId < 1)
             {
@@ -75,7 +75,7 @@ namespace Auth.API.Controllers.Users
 
         }
 
-        [HttpGet]
+        [HttpGet("{Id}")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetParentById(long Id)
         {
@@ -102,7 +102,7 @@ namespace Auth.API.Controllers.Users
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddNewParent(AddParentVM model)
+        public async Task<IActionResult> AddNewParent([FromForm]AddParentVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -126,12 +126,12 @@ namespace Auth.API.Controllers.Users
 
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateParent([FromQuery]long Id, UpdateParentVM vm)
+        [ProducesResponseType(typeof(ApiResponse<ResultModel<ParentDetailVM>>), 200)]
+        public async Task<IActionResult> UpdateParent([FromQuery]long Id,[FromForm] UpdateParentVM vm)
         {
             if (!ModelState.IsValid)
             {
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
             }
 
 
@@ -150,7 +150,7 @@ namespace Auth.API.Controllers.Users
         }
 
         [HttpDelete]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ResultModel<string>>), 200)]
         public async Task<IActionResult> DeleteParent(long Id)
         {
             if (Id < 1)

@@ -59,6 +59,44 @@ namespace LearningSvc.Core.Services
 
             await _unitOfWork.SaveChangesAsync();
         }
+        public async Task AddOrUpdateClassRangeFromBroadcast(List<ClassSharedModel> model)
+        {
+            //list of broadcasted class ids
+            var ids = model.Select(x => x.Id).ToList();
+
+            //get all classes from db
+            var schoolClasses = await _schoolClassRepo.GetAll().Where(x => ids.Contains(x.Id)).ToListAsync();
+
+            foreach (var cls in model)
+            {
+               var schClass = schoolClasses.FirstOrDefault(x => x.Id == cls.Id);
+                if (schClass == null)
+                {
+                    schoolClasses.Add(new SchoolClass
+                    {
+
+                        Id = cls.Id,
+                        ClassArm = cls.ClassArm,
+                        TenantId = cls.TenantId,
+                        Name = cls.Name
+                    });
+                }
+                else
+                {
+                    schClass.TenantId = cls.TenantId;
+                    schClass.Name = cls.Name;
+                    schClass.ClassArm = cls.ClassArm;
+                }
+            }
+
+
+            foreach (var cls in schoolClasses)
+            {
+              await  _schoolClassRepo.UpdateAsync(cls);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }
 
         public async Task<ResultModel<List<SchoolClassVM>>> GetAllSchoolClass()
         {
