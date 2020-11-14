@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LearningSvc.Core.Enumerations;
 using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.TimeTable;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NPOI.SS.Formula.Functions;
@@ -16,6 +17,7 @@ namespace LearningSvc.API.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]/[action]")]
+    [AllowAnonymous]
     public class TimeTableController : BaseController
     {
         private readonly ITimeTableService _timeTableService;
@@ -43,7 +45,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UploadPeriod([FromBody] List<PeriodVM> model)
+        public async Task<IActionResult> UploadPeriod([FromBody] List<PeriodInsertVM> model)
         {
             if (model == null || model.Count < 0)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -65,7 +67,7 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("{teacherId}")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetTimetableForTeacher(long teacherId)
         {
@@ -82,7 +84,7 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("{classId}")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetTimetableForClass(long classId)
         {
@@ -99,25 +101,19 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpPost("{classId}")]
+        [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UploadNewTimetableForClass([FromBody]List<TimeTableCellVM> model, [FromRoute] long classId)
+        public async Task<IActionResult> AddNewTimetableCell([FromForm]TimeTableCellInsertVM model)
         {
-            if (model == null || model.Count < 0)
+            if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
-
-            if (classId <= 0)
-                return ApiResponse<string>(errors: "Class Id was not sent.");
 
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
 
-            if (classId <= 0 || model.Any(m=>m.SchoolClassId != classId) )
-                return ApiResponse<string>(errors: "Class Id discrepancies.");
-
             try
             {
-                var result = await _timeTableService.SetupTimeTableCellsByClass(model, classId);
+                var result = await _timeTableService.AddTimeTableCell(model);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -154,6 +150,23 @@ namespace LearningSvc.API.Controllers
             try
             {
                 var result = await _timeTableService.GetNextClassesForTeacherToday(teacherId, day, currentPeriod, count);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpDelete("{timeTableCellId}")]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> DeleteTimetableCell(long timeTableCellId)
+        {
+            try
+            {
+                var result = await _timeTableService.DeleteTimeTableCell(timeTableCellId);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
