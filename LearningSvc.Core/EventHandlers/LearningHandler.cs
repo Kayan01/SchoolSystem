@@ -28,6 +28,7 @@ namespace LearningSvc.Core.EventHandlers
             IStudentService studentService,
             ITeacherService teacherService)
         {
+            _logger = logger;
             _studentService = studentService;
             _teacherService = teacherService;
             _schoolClassService = schoolClassService;

@@ -9,9 +9,9 @@ namespace LearningSvc.Core.ViewModels.ClassWork
     public class ClassWorkUploadVM
     {
         public string Name { get; set; }
-        public long ClassId { get; set; }
+        public string Comment { get; set; }
+        public long ClassSubjectId { get; set; }
         public long TeacherId { get; set; }
-        public long SubjectId { get; set; }
         public IFormFile FileObj { get; set; }
     }
 }

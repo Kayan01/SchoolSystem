@@ -11,14 +11,13 @@ namespace LearningSvc.Core.Models
     public abstract class LearningFile : AuditedEntity<long>, ITenantModelType
     {
         public long TenantId { get; set; }
-        public long SchoolClassId { get; set; }
-        public long SubjectId { get; set; }
+        public long SchoolClassSubjectId { get; set; }
         public long TeacherId { get; set; }
         public Guid FileUploadId { get; set; }
+        public string OptionalComment { get; set; }
 
         public Teacher Teacher { get; set; }
-        public Subject Subject { get; set; }
-        public SchoolClass SchoolClass { get; set; }
+        public SchoolClassSubject SchoolClassSubject { get; set; }
         public FileUpload File { get; set; }
     }
 }

@@ -22,21 +22,19 @@ namespace LearningSvc.Core.Services
     {
         private readonly IRepository<Assignment, long> _assignmentRepo;
         private readonly IRepository<AssignmentAnswer, long> _assignmentAnswerRepo;
-        private readonly IRepository<SchoolClass, long> _schoolClassRepo;
-        private readonly IRepository<Subject, long> _subjectRepo;
+        private readonly IRepository<SchoolClassSubject, long> _schoolClassSubjectRepo;
         private readonly IRepository<Teacher, long> _teacherRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDocumentService _documentService;
 
         public AssignmentService(IUnitOfWork unitOfWork, IRepository<Assignment, long> assignmentRepo, 
             IRepository<AssignmentAnswer, long> assignmentAnswerRepo, IDocumentService documentService,
-            IRepository<SchoolClass, long> schoolClassRepo, IRepository<Subject, long> subjectRepo, IRepository<Teacher, long> teacherRepo)
+            IRepository<SchoolClassSubject, long> schoolClassSubjectRepo, IRepository<Teacher, long> teacherRepo)
         {
             _unitOfWork = unitOfWork;
             _assignmentRepo = assignmentRepo;
             _assignmentAnswerRepo = assignmentAnswerRepo;
-            _schoolClassRepo = schoolClassRepo;
-            _subjectRepo = subjectRepo;
+            _schoolClassSubjectRepo = schoolClassSubjectRepo;
             _teacherRepo = teacherRepo;
             _documentService = documentService;
         }
@@ -45,17 +43,10 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var schoolClass = await _schoolClassRepo.GetAsync(assignment.ClassId);
-            if (schoolClass == null)
+            var schoolClassSubject = await _schoolClassSubjectRepo.GetAsync(assignment.ClassSubjectId);
+            if (schoolClassSubject == null)
             {
-                result.AddError("Class not found");
-                return result;
-            }
-
-            var subject = await _subjectRepo.GetAsync(assignment.SubjectId);
-            if (subject == null)
-            {
-                result.AddError("Subject not found");
+                result.AddError("Class subject was not found");
                 return result;
             }
 
@@ -69,23 +60,22 @@ namespace LearningSvc.Core.Services
             //save file
             var file = await _documentService.TryUploadSupportingDocument(assignment.Document, Shared.Enums.DocumentType.Assignment );
 
-                if (file != null)
-                {
-                    result.AddError("File could not be uploaded");
+            if (file != null)
+            {
+                result.AddError("File could not be uploaded");
 
-                    return result;
-                }
+                return result;
+            }
 
             var newAssignment = new Assignment
             {
                 DueDate = assignment.DueDate,
-                SchoolClassId = assignment.ClassId,
-                SubjectId = assignment.SubjectId,
+                SchoolClassSubjectId = assignment.ClassSubjectId,
                 TotalScore = assignment.TotalScore,
                 TeacherId = assignment.TeacherId,
                 Title = assignment.Title,
-                Attachment = file
-
+                Attachment = file,
+                OptionalComment = assignment.Comment,
             };
             _assignmentRepo.Insert(newAssignment);
 
@@ -97,12 +87,19 @@ namespace LearningSvc.Core.Services
 
         public async Task<ResultModel<List<AssignmentSubmissionListVM>>> GetAllSubmission(long assignmentId)
         {
-            var assignment = await _assignmentRepo.GetAll().Include(m => m.SchoolClass).Include(m => m.AssignmentAnswers).ThenInclude(n => n.Student)
-                    .FirstOrDefaultAsync(m => m.Id == assignmentId);
+            var assignmentAnswer = await _assignmentAnswerRepo.GetAll()
+                .Where(m => m.AssignmentId == assignmentId).Select(x=> new AssignmentSubmissionListVM()
+                {
+                    ClassName = $"{x.Assignment.SchoolClassSubject.SchoolClass.Name} {x.Assignment.SchoolClassSubject.SchoolClass.Name}",
+                    Date = x.DateSubmitted,
+                    StudentNumber = x.Student.UserId.ToString(),
+                    StudentName = $"{x.Student.LastName} {x.Student.FirstName}",
+                })
+                .ToListAsync();
 
             var result = new ResultModel<List<AssignmentSubmissionListVM>>
             {
-                Data = assignment.AssignmentAnswers.Select(m => (AssignmentSubmissionListVM)m).ToList()
+                Data = assignmentAnswer
             };
 
             return result;
@@ -110,9 +107,23 @@ namespace LearningSvc.Core.Services
 
         public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForClass(long classId, QueryModel queryModel)
         {
-            var query = await _assignmentRepo.GetAll().Where(m => m.SchoolClassId == classId)
-                    .Include(m => m.AssignmentAnswers).Include(m => m.Subject).Include(m => m.SchoolClass).ThenInclude(n => n.Students)
-                    .Select(x => (AssignmentGetVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
+            var query = await _assignmentRepo.GetAll().Where(m => m.SchoolClassSubject.SchoolClassId == classId)
+                    .Select(x => new AssignmentGetVM
+                    {
+                        Id = x.Id,
+                        SubjectName = x.SchoolClassSubject.Subject.Name,
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.Name}",
+                        CreationDate = x.CreationTime,
+                        DueDate = x.DueDate,
+                        NumberOfStudentsSubmitted = x.AssignmentAnswers.Count(),
+                        TotalStudentsInClass = x.SchoolClassSubject.SchoolClass.Students.Count(),
+                        FileId = x.FileUploadId.Value,
+                        ClassSubjectId = x.SchoolClassSubjectId,
+                        Name = x.Title,
+                        OptionalComment = x.OptionalComment,
+                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                    })
+                    .ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
             var result = new ResultModel<PaginatedModel<AssignmentGetVM>>
             {
@@ -124,8 +135,22 @@ namespace LearningSvc.Core.Services
         public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForTeacher(long teacherId, QueryModel queryModel)
         {
             var query = await _assignmentRepo.GetAll().Where(m => m.TeacherId == teacherId)
-                    .Include(m => m.AssignmentAnswers).Include(m => m.Subject).Include(m => m.SchoolClass).ThenInclude(n => n.Students)
-                    .Select(x => (AssignmentGetVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
+                    .Select(x => new AssignmentGetVM
+                    {
+                        Id = x.Id,
+                        SubjectName = x.SchoolClassSubject.Subject.Name,
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.Name}",
+                        CreationDate = x.CreationTime,
+                        DueDate = x.DueDate,
+                        NumberOfStudentsSubmitted = x.AssignmentAnswers.Count(),
+                        TotalStudentsInClass = x.SchoolClassSubject.SchoolClass.Students.Count(),
+                        FileId = x.FileUploadId.Value,
+                        ClassSubjectId = x.SchoolClassSubjectId,
+                        Name = x.Title,
+                        OptionalComment = x.OptionalComment,
+                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                    })
+                    .ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
             var result = new ResultModel<PaginatedModel<AssignmentGetVM>>
             {
@@ -139,8 +164,17 @@ namespace LearningSvc.Core.Services
             var result = new ResultModel<AssignmentSubmissionVM>
             {
                 Data = await _assignmentAnswerRepo.GetAll().Where(m => m.Id == submissionId)
-                    .Include(m => m.Assignment).Include(m => m.Student).Include(m => m.Attachment)
-                    .Select(x => (AssignmentSubmissionVM)x).FirstOrDefaultAsync()
+                    .Select(x => new AssignmentSubmissionVM
+                    {
+                        Id = x.Id,
+                        StudentName = $"{x.Student.FirstName} {x.Student.LastName}",
+                        StudentNumber = x.Student.UserId.ToString(),
+                        AssignmentTitle = x.Assignment.Title,
+                        Comment = x.Comment,
+                        Score = x.Score,
+                        Date = x.DateSubmitted,
+                        FileId = x.FileUploadId
+                    }).FirstOrDefaultAsync()
             };
             return result;
         }

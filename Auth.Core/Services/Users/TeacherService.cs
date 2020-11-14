@@ -1,6 +1,5 @@
 ﻿using Auth.Core.Context;
 using Auth.Core.Interfaces.Users;
-using Auth.Core.Migrations;
 using Auth.Core.Models;
 using Auth.Core.Models.Setup;
 using Auth.Core.Models.UserDetails;

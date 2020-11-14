@@ -39,9 +39,26 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpGet("{classSubjectId}")]
+        [ProducesResponseType(typeof(ApiResponse<List<TeacherClassSubjectListVM>>), 200)]
+        public async Task<IActionResult> GetTeachersForClassSubject(long classSubjectId)
+        {
+            try
+            {
+                var result = await _teacherClassSubjectService.GetTeachersForClassSubject(classSubjectId);
+                if (result.HasError)
+                    return ApiResponse<List<TeacherClassSubjectListVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSubjectsToClass([FromForm] TeacherClassSubjectInsertVM model)
+        public async Task<IActionResult> AddClassSubjectsToTeacher([FromForm] TeacherClassSubjectInsertVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");

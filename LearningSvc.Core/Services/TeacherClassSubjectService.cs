@@ -35,18 +35,15 @@ namespace LearningSvc.Core.Services
                 r.Data = "Teacher was not found";
                 r.AddError("Teacher was not found");
             }
-            var teacherClassSubjects = new List<TeacherClassSubject>();
 
             foreach (var id in model.ClassSubjectIds)
             {
-                teacherClassSubjects.Add(new TeacherClassSubject()
+                _teacherClassSubjectRepo.Insert(new TeacherClassSubject()
                 {
                     TeacherId = model.TeacherId,
                     SchoolClassSubjectId = id
                 });
             }
-
-            teacher.TeacherClassSubjects = teacherClassSubjects;
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -59,6 +56,22 @@ namespace LearningSvc.Core.Services
             var result = new ResultModel<List<TeacherClassSubjectListVM>>
             {
                 Data = await _teacherClassSubjectRepo.GetAll().Where(x=>x.TeacherId == teacherId)
+                .Select(x => new TeacherClassSubjectListVM()
+                {
+                    Id = x.Id,
+                    Class = x.SchoolClassSubject.SchoolClass.Name,
+                    Subject = x.SchoolClassSubject.Subject.Name,
+                    Teacher = x.Teacher.FirstName + " " + x.Teacher.LastName
+                }).ToListAsync()
+            };
+            return result;
+        }
+
+        public async Task<ResultModel<List<TeacherClassSubjectListVM>>> GetTeachersForClassSubject(long classSubjectId)
+        {
+            var result = new ResultModel<List<TeacherClassSubjectListVM>>
+            {
+                Data = await _teacherClassSubjectRepo.GetAll().Where(x => x.SchoolClassSubjectId == classSubjectId)
                 .Select(x => new TeacherClassSubjectListVM()
                 {
                     Id = x.Id,

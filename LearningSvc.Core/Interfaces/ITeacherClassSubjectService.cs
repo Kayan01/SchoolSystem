@@ -12,5 +12,6 @@ namespace LearningSvc.Core.Interfaces
     {
         Task<ResultModel<string>> AddTeacherToClassSubjects(TeacherClassSubjectInsertVM model);
         Task<ResultModel<List<TeacherClassSubjectListVM>>> GetAllTeacherClassSubjects(long teacherId);
+        Task<ResultModel<List<TeacherClassSubjectListVM>>> GetTeachersForClassSubject(long classSubjectId);
     }
 }
