@@ -31,7 +31,7 @@ namespace AssessmentSvc.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
-            services.AddSwagger("Notification Service");
+            services.AddSwagger("Assessment Service");
             services.AddControllers();
 
             AddEntityFrameworkDbContext(services);
@@ -61,7 +61,7 @@ namespace AssessmentSvc.API
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseCustomSwaggerApi("Notification Service");
+            app.UseCustomSwaggerApi("Assessment Service");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers()

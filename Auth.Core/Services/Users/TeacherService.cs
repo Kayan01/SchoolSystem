@@ -128,7 +128,7 @@ namespace Auth.Core.Services.Users
             });
 
             //Email and Notifications
-            var notificationResult = await NewTeacherNotification(teacher);
+            var notificationResult = await NewTeacherNotification(teacher, user.Email);
 
             if (notificationResult.HasError)
                 _logger.LogError($"Failed to send notifications for: {teacher.Staff.User.FullName} - {teacher.Staff.User.Email}, Reason: {string.Join(';', notificationResult.ErrorMessages)}");
@@ -231,9 +231,9 @@ namespace Auth.Core.Services.Users
 
         #region notification
 
-        private async Task<ResultModel<bool>> NewTeacherNotification(TeachingStaff teacher)
+        private async Task<ResultModel<bool>> NewTeacherNotification(TeachingStaff teacher, string email)
         {
-            var result = await _authUserManagement.GetPasswordRestCode(teacher.Staff.User.Email);
+            var result = await _authUserManagement.GetPasswordRestCode(email);
 
             var admins = new long[] { 1 };//TODO Get all admin user Ids
 

@@ -24,7 +24,7 @@ namespace NotificationSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<NotificationVM>>), 200)]
-        public async Task<IActionResult> GetTeachers([FromQuery]PagedRequestModel model)
+        public async Task<IActionResult> GetNotifications([FromQuery]PagedRequestModel model)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace NotificationSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<List<NotificationVM>>), 200)]
-        public async Task<IActionResult> AddTeacher(long[] notificationIds)//FOR Testing notification
+        public async Task<IActionResult> ReadNotification(long[] notificationIds)//FOR Testing notification
         {
             if (notificationIds == null)
                 return ApiResponse<string>(errors: "NotificationIds is required");
@@ -67,7 +67,7 @@ namespace NotificationSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<List<NotificationVM>>), 200)]
-        public async Task<IActionResult> AddTeacher(CreateNotificationModel model)//FOR Testing notification
+        public async Task<IActionResult> CreateNotification(CreateNotificationModel model)//FOR Testing notification
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");

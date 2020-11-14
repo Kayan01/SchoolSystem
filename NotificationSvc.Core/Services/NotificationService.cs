@@ -8,12 +8,10 @@ using NotificationSvc.Core.ViewModels;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Pagination;
-using Shared.PubSub;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NotificationSvc.Core.Services

@@ -79,17 +79,16 @@ namespace NotificationSvc.API
             services.AddHostedService<EventHubProcessorService>();
             services.AddHostedService<EventHubReaderService>();
 
-            //Permission not needed here
-            //services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
-
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
 
-            services.AddScoped<IFileStorageService, FileStorageService>();
-            //services.AddTransient<IFileUploadService, FileUploadService>();     
-            services.AddScoped<INotificationService, NotificationService>();
             services.AddTransient<NotificationHandler>();
+
+            services.AddScoped<IFileStorageService, FileStorageService>();     
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IMailService, SmtpEmailService>();
         }
     }
 }

@@ -34,6 +34,7 @@ namespace NotificationSvc.Core.Context
         }
 
         public DbSet<Notification> Notification { get; set; }
+        public DbSet<Email> Emails { get; set; }
 
         public DbSet<TestModel> TestModels { get; set; }
 
