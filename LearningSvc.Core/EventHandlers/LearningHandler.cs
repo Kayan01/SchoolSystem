@@ -12,6 +12,7 @@ using Shared.DataAccess.EfCore.UnitOfWork;
 using System.Linq;
 using LearningSvc.Core.Services;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace LearningSvc.Core.EventHandlers
 {
@@ -74,6 +75,20 @@ namespace LearningSvc.Core.EventHandlers
                 throw;
             }
         }
+        public async Task HandleAddOrUpdateClassRangeAsync(BusMessage message)
+        {
+            try
+            {
+                var data = JsonConvert.DeserializeObject<List<ClassSharedModel>>(message.Data);
+                await _schoolClassService.AddOrUpdateClassRangeFromBroadcast(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+                throw;
+            }
+        }
+
 
     }
 }

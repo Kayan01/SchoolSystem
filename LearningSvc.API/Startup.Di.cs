@@ -90,6 +90,11 @@ namespace LearningSvc.API
                                 await handler.HandleAddOrUpdateClassAsync(message);
                                 break;
                             }
+                        case (int)BusMessageTypes.CLASS_LIST:
+                            {
+                                await handler.HandleAddOrUpdateClassAsync(message);
+                                break;
+                            }
                     }
                 });
                 return handlers;
