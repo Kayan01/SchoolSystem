@@ -61,19 +61,14 @@ namespace NotificationSvc.API
             {
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
-                var handler = scope.ServiceProvider.GetRequiredService<NoticeHandler>();
+                var handler = scope.ServiceProvider.GetRequiredService<NotificationHandler>();
                 handlers.Add((message) =>
                 {
                     switch (message.BusMessageType)
                     {
-                        case (int)BusMessageTypes.NOTICE:
+                        case (int)BusMessageTypes.NOTIFICATION:
                             {
-                                handler.HandleTest(message);
-                                break;
-                            }
-                        case (int)BusMessageTypes.TEACHER:
-                            {
-                                handler.HandleTest(message);
+                                handler.HandleAddNotification(message);
                                 break;
                             }
                     }
@@ -94,7 +89,7 @@ namespace NotificationSvc.API
             services.AddScoped<IFileStorageService, FileStorageService>();
             //services.AddTransient<IFileUploadService, FileUploadService>();     
             services.AddScoped<INotificationService, NotificationService>();
-            services.AddTransient<NoticeHandler>();
+            services.AddTransient<NotificationHandler>();
         }
     }
 }

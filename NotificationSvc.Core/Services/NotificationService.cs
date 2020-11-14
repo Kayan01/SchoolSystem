@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using IPagedList;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using NotificationSvc.Core.Context;
 using NotificationSvc.Core.Models;
@@ -6,6 +7,7 @@ using NotificationSvc.Core.Services.Interfaces;
 using NotificationSvc.Core.ViewModels;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.Pagination;
 using Shared.PubSub;
 using Shared.ViewModels;
 using System;
@@ -18,67 +20,70 @@ namespace NotificationSvc.Core.Services
 {
     public class NotificationService : INotificationService
     {
-        private readonly AppDbContext appDbContext;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IRepository<Notice, long> _noticeRepository;
-        private readonly IProducerClient<BusMessage> _producerClient;
-        private readonly IRepository<TestModel, long> _testRepository;
+        private readonly IRepository<Notification, long> _noticeRepository;
+        private readonly IEmailService _emailService;
 
-        public NotificationService(IProducerClient<BusMessage> producerClient, IUnitOfWork unitOfWork,
-            IRepository<Notice, long> noticeRepository, AppDbContext _appDbContext, IRepository<TestModel, long> testRepository)
+        public NotificationService(IUnitOfWork unitOfWork,
+            IEmailService emailService,
+            IRepository<Notification, long> noticeRepository)
         {
             _unitOfWork = unitOfWork;
             _noticeRepository = noticeRepository;
-            _producerClient = producerClient;
-            appDbContext = _appDbContext;
-            _testRepository = testRepository;
+            _emailService = emailService;
         }
 
-        public async Task<ResultModel<object>> GetNotifications()
+        public async Task<ResultModel<PaginatedModel<NotificationVM>>> GetNotifications(PagedRequestModel model, long userId)
         {
-            var result = new ResultModel<object>();
-            result.Data = _noticeRepository.GetAll();
-            return result;
+            var query = _noticeRepository.GetAllIncluding(x => x.UserNotifications)
+                                           .Where(x => x.UserNotifications.Any(x => x.UserId == userId));
+
+            var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+
+            return new ResultModel<PaginatedModel<NotificationVM>>(new PaginatedModel<NotificationVM>(pagedData.Select(x => (NotificationVM)x), model.PageIndex, model.PageSize, pagedData.TotalItemCount), "Success");
         }
 
-        public async Task<ResultModel<NoticeVM>> AddNotification(NoticeVM model)
+        public async Task<ResultModel<List<NotificationVM>>> CreateNotification(CreateNotificationModel model)
         {
-            var result = new ResultModel<NoticeVM>();
-            var test = _noticeRepository.Insert(new Notice { Description = model.Description });
-            _unitOfWork.SaveChanges();
-            model.Id = test.Id;
-            result.Data = model;
-            return result;
-        }
+            await SendEmailNotification(model.Emails);
 
-        public async Task<ResultModel<string>> TestBroadcast(string title)
-        {
-            var result = new ResultModel<string>();
-            var data = new Notice { Description = title };
-            await _producerClient.Produce("new_user", new BusMessage
+            var result = new List<Notification>();
+
+            foreach(var notificationMsg in model.Notifications)
             {
-                BusMessageType = (int)BusMessageTypes.TEACHER,
-                Data = JsonConvert.SerializeObject(data)
-            });
-            result.Data = "Successful";
-            return result;
+                var notification = new Notification
+                {
+                    Entity = notificationMsg.Entity,
+                    EntityId = notificationMsg.EntityId,
+                    Description = notificationMsg.Description
+                };
+                notification.UserNotifications = notificationMsg.UserIds.Select(x => new UserNotification { UserId = x}).ToList();
+
+                result.Add(_noticeRepository.Insert(notification));
+            }
+            _unitOfWork.SaveChanges();
+
+            return new ResultModel<List<NotificationVM>>(result.Select(x => (NotificationVM)x).ToList(), "Success");
         }
 
-        public async Task<ResultModel<object>> GetTestModelsWithTenants()
+        private async Task SendEmailNotification(List<CreateEmailModel> emailMessages)
         {
-            var result = new ResultModel<object>();
-            //   await appDbContext.AddSampleData();
+            foreach (var emailMessage in emailMessages)
+            {
+                emailMessage.ReplacementData.Add("FullName", emailMessage.User.FullName);
+                await _emailService.SendEmail(new[] { emailMessage.User.Email }, emailMessage.EmailTemplateType, emailMessage.ReplacementData);
+            }
+        }
 
+        public async Task<ResultModel<List<NotificationVM>>> ReadNotification(long[] notificationId, long userId)
+        {
+            var notifications = _noticeRepository.GetAll().Where(x => notificationId.Contains(x.Id) && x.UserNotifications.Any(x => x.UserId == userId));
 
-            //uncomment to add new entity to test tenancy
-          //  _testRepository.Insert(new TestModel { Name = "John Innocent" });
-          // await _unitOfWork.SaveChangesAsync();
-            var t = await _testRepository.GetAllListAsync();
+            notifications.ToList().ForEach(x => x.UserNotifications.ToList().ForEach(y => y.IsRead = true));
 
-            result.Data = t;
+            _unitOfWork.SaveChanges();
 
-            return result;
-        
+            return new ResultModel<List<NotificationVM>>(notifications.Select(x => (NotificationVM)x).ToList(), "Success");
         }
     }
 }

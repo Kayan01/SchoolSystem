@@ -8,7 +8,7 @@ namespace Shared.PubSub
     {
         UNKNOWN,
         EMAIL,
-        NOTICE,
+        NOTIFICATION,
         TEACHER,
         TEACHER_UPDATE,
         TEACHER_DELETE,

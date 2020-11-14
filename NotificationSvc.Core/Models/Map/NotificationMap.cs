@@ -6,24 +6,23 @@ using System.Text;
 
 namespace NotificationSvc.Core.Models.Map
 {
-    public class NoticeMap : IEntityTypeConfiguration<Notice>
+    public class NotificationMap : IEntityTypeConfiguration<Notification>
     {
-        public void Configure(EntityTypeBuilder<Notice> builder)
+        public void Configure(EntityTypeBuilder<Notification> builder)
         {
-            builder.ToTable("MyNotice");
             SetupData(builder);
         }
 
-        private void SetupData(EntityTypeBuilder<Notice> builder)
+        private void SetupData(EntityTypeBuilder<Notification> builder)
         {
-            List<Notice> dataList = new List<Notice>()
+            List<Notification> dataList = new List<Notification>()
             {
-                new Notice
+                new Notification
                 {
                     Id = 1,
                     Description = "Testing"
                 },
-                new Notice
+                new Notification
                 {
                     Id = 2,
                     Description = "Unit Test"

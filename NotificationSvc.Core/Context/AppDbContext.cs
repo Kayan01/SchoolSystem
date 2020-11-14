@@ -33,7 +33,7 @@ namespace NotificationSvc.Core.Context
             modelBuilder.Ignore(typeof(UserToken));
         }
 
-        public DbSet<Notice> Notices { get; set; }
+        public DbSet<Notification> Notification { get; set; }
 
         public DbSet<TestModel> TestModels { get; set; }
 

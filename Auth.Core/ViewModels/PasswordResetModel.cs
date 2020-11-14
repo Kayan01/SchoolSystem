@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Auth.API.ViewModel
+namespace Auth.Core.ViewModels
 {
     public class PasswordResetModel
     {
