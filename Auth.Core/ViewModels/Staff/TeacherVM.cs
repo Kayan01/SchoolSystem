@@ -63,4 +63,21 @@ namespace Auth.Core.ViewModels.Staff
         public string PhoneNumber { get; set; }
         public long? ClassId { get; set; }
     }
+
+    public class TeacherDetailVM : StaffDetailVM
+    {
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public static implicit operator TeacherDetailVM(TeachingStaff model)
+        {
+            return model == null ? null : new TeacherDetailVM
+            {
+                Id = model.Id,
+                Email = model.Staff?.User?.Email,
+                FirstName = model.Staff?.User?.FirstName,
+                LastName = model.Staff?.User?.LastName,
+                PhoneNumber = model.Staff?.User?.PhoneNumber,
+            };
+        }
+    }
 }

@@ -42,24 +42,7 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task AddOrUpdateClassFromBroadcast(ClassSharedModel model)
-        {
-            var schoolClass = await _schoolClassRepo.FirstOrDefaultAsync(x => x.Id == model.Id && x.TenantId == model.TenantId);
-            if (schoolClass == null)
-            {
-                schoolClass = _schoolClassRepo.Insert(new SchoolClass
-                {
-                    Id = model.Id
-                });
-            }
-
-            schoolClass.TenantId = model.TenantId;
-            schoolClass.Name = model.Name;
-            schoolClass.ClassArm = model.ClassArm;
-
-            await _unitOfWork.SaveChangesAsync();
-        }
-        public async Task AddOrUpdateClassRangeFromBroadcast(List<ClassSharedModel> model)
+        public async Task AddOrUpdateClassFromBroadcast(List<ClassSharedModel> model)
         {
             //list of broadcasted class ids
             var ids = model.Select(x => x.Id).ToList();
@@ -69,7 +52,7 @@ namespace LearningSvc.Core.Services
 
             foreach (var cls in model)
             {
-               var schClass = schoolClasses.FirstOrDefault(x => x.Id == cls.Id);
+                var schClass = schoolClasses.FirstOrDefault(x => x.Id == cls.Id);
                 if (schClass == null)
                 {
                     schoolClasses.Add(new SchoolClass
@@ -92,11 +75,12 @@ namespace LearningSvc.Core.Services
 
             foreach (var cls in schoolClasses)
             {
-              await  _schoolClassRepo.UpdateAsync(cls);
+                await _schoolClassRepo.UpdateAsync(cls);
             }
 
             await _unitOfWork.SaveChangesAsync();
         }
+      
 
         public async Task<ResultModel<List<SchoolClassVM>>> GetAllSchoolClass()
         {

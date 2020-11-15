@@ -66,7 +66,7 @@ namespace LearningSvc.Core.EventHandlers
         {
             try
             {
-                var data = JsonConvert.DeserializeObject<ClassSharedModel>(message.Data);
+                var data = JsonConvert.DeserializeObject<List<ClassSharedModel>>(message.Data);
                 await _schoolClassService.AddOrUpdateClassFromBroadcast(data);
             }
             catch (Exception e)
@@ -75,20 +75,7 @@ namespace LearningSvc.Core.EventHandlers
                 throw;
             }
         }
-        public async Task HandleAddOrUpdateClassRangeAsync(BusMessage message)
-        {
-            try
-            {
-                var data = JsonConvert.DeserializeObject<List<ClassSharedModel>>(message.Data);
-                await _schoolClassService.AddOrUpdateClassRangeFromBroadcast(data);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.Message, e);
-                throw;
-            }
-        }
-
+      
 
     }
 }

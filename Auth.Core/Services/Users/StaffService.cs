@@ -58,14 +58,16 @@ namespace Auth.Core.Services
         public async Task<ResultModel<PaginatedModel<StaffVM>>> GetAllStaff(QueryModel model)
         {
             var result = new ResultModel<PaginatedModel<StaffVM>>();
-            //use appdbcontext directly so that we can do a join with the auth users table
             var query = _staffRepo.GetAll()
-                .Include(x => x.User).Select( x=> new StaffVM
+                .Where(x => x.StaffType == StaffType.NonTeachingStaff)
+                .Select(x => new
                 {
-                    FirstName = x.User.FirstName,
-                    LastName = x.User.LastName,
-                    Email = x.User.Email,
-                    PhoneNumber = x.User.PhoneNumber
+                    x.User.FirstName,
+                    x.User.LastName,
+                    x.User.Email,
+                    x.Id,
+                    x.StaffType,
+                    x.User.PhoneNumber
                 });
 
 
@@ -73,7 +75,15 @@ namespace Auth.Core.Services
             
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
-            result.Data = new PaginatedModel<StaffVM>(pagedData.Select(x => x), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
+            result.Data = new PaginatedModel<StaffVM>(pagedData.Select(x => new StaffVM
+            {
+                StaffType = x.StaffType.GetDisplayName(),
+                Email = x.Email,
+                FirstName = x.FirstName,
+                Id = x.Id,
+                LastName = x.LastName,
+                PhoneNumber = x.PhoneNumber
+            }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
         }

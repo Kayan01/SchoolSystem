@@ -45,14 +45,14 @@ namespace Auth.API.Controllers.Users
             }
         }
 
-        [HttpGet("{userId}")]
+        [HttpGet("{Id}")]
         [ProducesResponseType(typeof(ApiResponse<TeacherVM>), 200)]
-        public async Task<IActionResult> GetTeachers(long userId)
+        public async Task<IActionResult> GetTeachers(long Id)
         {
 
             try
             {
-                var result = await _teacherService.GetTeacherByUserId(userId);
+                var result = await _teacherService.GetTeacherById(Id);
 
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());

@@ -29,7 +29,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> AddClass([FromBody]AddClassVM model)
         {
             if (!ModelState.IsValid)
@@ -52,7 +52,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> AddStudentToClass([FromForm] ClassStudentVM vm)
         {
             if (!ModelState.IsValid)
@@ -122,7 +122,7 @@ namespace UserManagement.API.Controllers
 
         [HttpGet]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<ListClassVM>>), 200)]
         public async Task<IActionResult> GetAllClasses([FromQuery]QueryModel vm)
         {
             try
@@ -140,7 +140,7 @@ namespace UserManagement.API.Controllers
 
         [HttpGet("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<ListClassVM>>), 200)]
         public async Task<IActionResult> GetClassBySection(long id)
         {
             try
@@ -159,7 +159,7 @@ namespace UserManagement.API.Controllers
 
         [HttpGet("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ClassVM>), 200)]
         public async Task<IActionResult> GetClassById(long id)
         {
             if (id < 1)
@@ -182,7 +182,7 @@ namespace UserManagement.API.Controllers
 
         [HttpGet("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ListClassVM>), 200)]
         public async Task<IActionResult> GetClassByIdWithStudents(long id)
         {
             if (id < 1)

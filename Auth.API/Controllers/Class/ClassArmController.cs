@@ -27,7 +27,7 @@ namespace Auth.API.Controllers
 
         [HttpPost]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ClassVM>), 200)]
         public async Task<IActionResult> AddClassArm([FromForm]AddClassArm model)
         {
             if (!ModelState.IsValid)
@@ -52,7 +52,7 @@ namespace Auth.API.Controllers
 
         [HttpDelete("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteClassArm(long id)
         {
             if (id < 1)
@@ -77,7 +77,7 @@ namespace Auth.API.Controllers
 
         [HttpGet]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<ClassArmVM>>), 200)]
         public async Task<IActionResult> GetAllClassArms()
         {
             try
@@ -97,7 +97,7 @@ namespace Auth.API.Controllers
 
         [HttpGet("{Id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ClassArmVM>), 200)]
         public async Task<IActionResult> GetClassArmById(long Id)
         {
             try
@@ -117,7 +117,7 @@ namespace Auth.API.Controllers
 
         [HttpPut("{Id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ClassArmVM>), 200)]
         public async Task<IActionResult> UpdateClassArm([FromForm]UpdateClassArmVM model, long Id)
         {
             if (!ModelState.IsValid)

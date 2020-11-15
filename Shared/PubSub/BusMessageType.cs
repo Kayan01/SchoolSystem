@@ -21,7 +21,6 @@ namespace Shared.PubSub
         CLASS,
         CLASS_UPDATE,
         CLASS_DELETE,
-        CLASS_LIST,
         ADMIN,
         ADMIN_DELETE,
     }
