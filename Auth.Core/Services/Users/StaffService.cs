@@ -58,7 +58,6 @@ namespace Auth.Core.Services
         public async Task<ResultModel<PaginatedModel<StaffVM>>> GetAllStaff(QueryModel model)
         {
             var result = new ResultModel<PaginatedModel<StaffVM>>();
-            //use appdbcontext directly so that we can do a join with the auth users table
             var query = _staffRepo.GetAll()
                 .Where(x => x.StaffType == StaffType.NonTeachingStaff)
                 .Select(x => new
