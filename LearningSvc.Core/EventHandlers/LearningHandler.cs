@@ -32,7 +32,6 @@ namespace LearningSvc.Core.EventHandlers
             _studentService = studentService;
             _teacherService = teacherService;
             _schoolClassService = schoolClassService;
-            _logger = logger;
         }
 
         public async Task HandleAddOrUpdateStudentAsync(BusMessage message)
