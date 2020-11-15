@@ -80,14 +80,13 @@ namespace Auth.Core.Services.Users
             return result;            
         }
 
-        public async Task<ResultModel<TeacherVM>> GetTeacherByUserId(long userId)
+        public async Task<ResultModel<TeacherVM>> GetTeacherById(long Id)
         {
             var result = new ResultModel<TeacherVM>();
             var query = _teacherRepo.GetAll()
-
                             .Include(x => x.Staff.User)
                             .Include(x => x.Class)
-                            .Where(x => x.Id == userId)
+                            .Where(x => x.Id == Id)
                             .FirstOrDefault();
 
             result.Data = query;
