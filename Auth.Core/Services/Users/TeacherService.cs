@@ -12,6 +12,7 @@ using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
 using Shared.Enums;
+using Shared.Extensions;
 using Shared.FileStorage;
 using Shared.Pagination;
 using Shared.PubSub;
@@ -51,14 +52,30 @@ namespace Auth.Core.Services.Users
         {
             var result = new ResultModel<PaginatedModel<TeacherVM>>();
             var query = _teacherRepo.GetAll()
-                          .Include(x => x.Class)
-                          .Include(x => x.Staff.User);
+                          .Select(x => new
+                          {
+                              x.Id,
+                              x.Staff.User.Email,
+                              x.Staff.User.LastName,
+                              x.Staff.User.PhoneNumber, 
+                              x.Staff.User.FirstName,
+                               x.Staff.StaffType
+                          }
+                          );
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
 
 
-            result.Data = new PaginatedModel<TeacherVM>(pagedData.Select(x => (TeacherVM)x), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
+            result.Data = new PaginatedModel<TeacherVM>(pagedData.Select(x => new TeacherVM
+            {
+                Email = x.Email,
+                PhoneNumber = x.PhoneNumber,
+                LastName = x.LastName,
+                Id = x.Id,
+                FirstName = x.FirstName,
+                StaffType = x.StaffType.GetDescription()
+            }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;            
         }
@@ -67,9 +84,11 @@ namespace Auth.Core.Services.Users
         {
             var result = new ResultModel<TeacherVM>();
             var query = _teacherRepo.GetAll()
+
                             .Include(x => x.Staff.User)
                             .Include(x => x.Class)
-                            .FirstOrDefault(x => x.Staff.UserId == userId);
+                            .Where(x => x.Id == userId)
+                            .FirstOrDefault();
 
             result.Data = query;
             return result ;
@@ -188,7 +207,7 @@ namespace Auth.Core.Services.Users
                     Religion = model.Religion,
                     StateOfOrigin = model.StateOfOrigin,
                     Sex = model.Sex,
-                    StaffType = StaffType.NonTeachingStaff,
+                    StaffType = StaffType.TeachingStaff,
                     EmploymentDate = model.EmploymentDetails.EmploymentDate,
                     ResumptionDate = model.EmploymentDetails.ResumptionDate,
                     EmploymentStatus = model.EmploymentDetails.EmploymentStatus,
