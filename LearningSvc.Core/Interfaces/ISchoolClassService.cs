@@ -11,7 +11,6 @@ namespace LearningSvc.Core.Interfaces
     {
         Task<ResultModel<List<SchoolClassVM>>> GetAllSchoolClass();
         Task<ResultModel<SchoolClassVM>> AddSchoolClass(SchoolClassVM model);
-        Task AddOrUpdateClassFromBroadcast(ClassSharedModel model);
-        Task AddOrUpdateClassRangeFromBroadcast(List<ClassSharedModel> model);
+        Task AddOrUpdateClassFromBroadcast(List<ClassSharedModel> model);
     }
 }

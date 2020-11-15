@@ -104,7 +104,7 @@ namespace Auth.Core.Services
             }).ToList();
 
 
-            await _publishService.PublishMessage(Topics.Class_List, BusMessageTypes.CLASS_LIST, listClassSharedModel);
+            await _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS, listClassSharedModel);
 
             return result;
         }
