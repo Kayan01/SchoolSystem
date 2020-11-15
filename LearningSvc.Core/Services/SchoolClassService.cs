@@ -55,27 +55,14 @@ namespace LearningSvc.Core.Services
                 var schClass = schoolClasses.FirstOrDefault(x => x.Id == cls.Id);
                 if (schClass == null)
                 {
-                    schoolClasses.Add(new SchoolClass
+                    schClass =_schoolClassRepo.Insert(new SchoolClass
                     {
-
                         Id = cls.Id,
-                        ClassArm = cls.ClassArm,
-                        TenantId = cls.TenantId,
-                        Name = cls.Name
                     });
                 }
-                else
-                {
-                    schClass.TenantId = cls.TenantId;
-                    schClass.Name = cls.Name;
-                    schClass.ClassArm = cls.ClassArm;
-                }
-            }
-
-
-            foreach (var cls in schoolClasses)
-            {
-                await _schoolClassRepo.UpdateAsync(cls);
+                schClass.TenantId = cls.TenantId;
+                schClass.Name = cls.Name;
+                schClass.ClassArm = cls.ClassArm;
             }
 
             await _unitOfWork.SaveChangesAsync();

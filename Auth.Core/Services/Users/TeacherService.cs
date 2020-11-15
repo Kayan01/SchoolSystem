@@ -4,10 +4,12 @@ using Auth.Core.Models;
 using Auth.Core.Models.Setup;
 using Auth.Core.Models.UserDetails;
 using Auth.Core.Models.Users;
+using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Staff;
 using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
@@ -19,8 +21,10 @@ using Shared.PubSub;
 using Shared.Utils;
 using Shared.ViewModels;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+using static Shared.Utils.CoreConstants;
 
 namespace Auth.Core.Services.Users
 {
@@ -32,18 +36,24 @@ namespace Auth.Core.Services.Users
         private readonly IDocumentService _documentService;
         private readonly IRepository<Department, long> _departmentRepo;
         private readonly IPublishService _publishService;
+        private readonly IAuthUserManagement _authUserManagement;
+        private readonly ILogger<TeacherService> _logger;
 
         public TeacherService(UserManager<User> userManager,
             IRepository<TeachingStaff, long> teacherRepo,
             IUnitOfWork unitOfWork,
             IDocumentService documentService,
             IRepository<Department, long> departmentRepo,
+            IAuthUserManagement authUserManagement,
+            ILogger<TeacherService> logger,
             IPublishService publishService)
         {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _teacherRepo = teacherRepo;
             _publishService = publishService;
+            _authUserManagement = authUserManagement;
+            _logger = logger;
             _departmentRepo = departmentRepo;
             _documentService = documentService;
         }
@@ -247,6 +257,12 @@ namespace Auth.Core.Services.Users
                 Phone = user.PhoneNumber
             });
 
+            //Email and Notifications
+            var notificationResult = await NewTeacherNotification(teacher, user.Email);
+
+            if (notificationResult.HasError)
+                _logger.LogError($"Failed to send notifications for: {teacher.Staff.User.FullName} - {teacher.Staff.User.Email}, Reason: {string.Join(';', notificationResult.ErrorMessages)}");
+
             result.Data = new TeacherVM
             {
                 FirstName = user.FirstName,
@@ -341,6 +357,36 @@ namespace Auth.Core.Services.Users
             result.Data = true;
             return result;
         }
+
+        #region notification
+
+        private async Task<ResultModel<bool>> NewTeacherNotification(TeachingStaff teacher, string email)
+        {
+            var result = await _authUserManagement.GetPasswordRestCode(email);
+
+            var admins = new long[] { 1 };//TODO Get all admin user Ids
+
+            if (result.HasError)
+                return new ResultModel<bool>(result.ErrorMessages);
+
+            await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
+            {
+                Emails = new List<CreateEmailModel>
+                {
+                    new CreateEmailModel(EmailTemplateType.NewUser, new StringDictionary{ { "Code", result.Data.code} }, result.Data.user),
+                    new CreateEmailModel(EmailTemplateType.NewTeacher, new StringDictionary{ }, result.Data.user)
+                },
+                Notifications = new List<InAppNotificationModel>
+                {
+                    new InAppNotificationModel("Welcome new teacher to Sch-Track", EntityType.Teacher, result.Data.user.Id, new[] { result.Data.user.Id }.ToList()),
+                    new InAppNotificationModel("A new teacher has been added", EntityType.Teacher, result.Data.user.Id, admins.ToList()),
+                }
+            });
+
+            return new ResultModel<bool>(true, "Success");
+        }
+
+        #endregion
 
     }
 }

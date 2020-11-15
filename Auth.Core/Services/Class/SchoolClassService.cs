@@ -291,8 +291,21 @@ namespace Auth.Core.Services
             //TODO: add more props
             @class.Name = model.Name;
 
-            await _classRepo.UpdateAsync(@class);
             await _unitOfWork.SaveChangesAsync();
+
+            var listClassSharedModel = new List<ClassSharedModel>
+            {
+                new ClassSharedModel
+                {
+                    ClassArm = @class.ClassArm,
+                    Id = @class.Id,
+                    Name = @class.Name,
+                    TenantId = @class.TenantId
+                }
+            };
+
+            await _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS_UPDATE, listClassSharedModel);
+
             result.Data = model;
             return result;
         }

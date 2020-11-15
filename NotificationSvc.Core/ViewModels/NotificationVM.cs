@@ -5,14 +5,14 @@ using System.Text;
 
 namespace NotificationSvc.Core.ViewModels
 {
-    public class NoticeVM
+    public class NotificationVM
     {
         public long Id { get; set; }
         public string Description { get; set; }
 
-        public static implicit operator NoticeVM(Notice model)
+        public static implicit operator NotificationVM(Notification model)
         {
-            return model == null ? null : new NoticeVM
+            return model == null ? null : new NotificationVM
             {
                 Id = model.Id,
                 Description = model.Description
