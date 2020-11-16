@@ -16,7 +16,6 @@ namespace LearningSvc.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
-    [AllowAnonymous]
     public class AssignmentController : BaseController
     {
         private readonly IAssignmentService _assignmentService;
