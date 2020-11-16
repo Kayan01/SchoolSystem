@@ -31,7 +31,7 @@ namespace LearningSvc.API.Controllers
                 var result = await _classworkService.GetAllFileByTeacher(CurrentUser.UserId, vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
@@ -48,7 +48,7 @@ namespace LearningSvc.API.Controllers
                 var result = await _classworkService.GetAllFileByClass(classId, vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
