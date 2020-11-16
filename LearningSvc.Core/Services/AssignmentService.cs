@@ -60,7 +60,7 @@ namespace LearningSvc.Core.Services
             //save file
             var file = await _documentService.TryUploadSupportingDocument(assignment.Document, Shared.Enums.DocumentType.Assignment );
 
-            if (file != null)
+            if (file == null)
             {
                 result.AddError("File could not be uploaded");
 

@@ -7,6 +7,7 @@ using LearningSvc.Core.ViewModels.Assignment;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
+using Shared.Pagination;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 
@@ -23,15 +24,15 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PaginatedModel<AssignmentGetVM>>), 200)]
         public async Task<IActionResult> GetAssignmentsByTeacher([FromQuery] long teacherId, [FromQuery] QueryModel vM)
         {
             try
             {
                 var result = await _assignmentService.GetAssignmentsForTeacher(teacherId, vM);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<PaginatedModel<AssignmentGetVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<PaginatedModel<AssignmentGetVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -40,15 +41,15 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PaginatedModel<AssignmentGetVM>>), 200)]
         public async Task<IActionResult> GetAssignmentsByClass([FromQuery] long classId, [FromQuery] QueryModel vM)
         {
             try
             {
                 var result = await _assignmentService.GetAssignmentsForClass(classId, vM);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<PaginatedModel<AssignmentGetVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<PaginatedModel<AssignmentGetVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -57,16 +58,16 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<AssignmentSubmissionListVM>>), 200)]
         public async Task<IActionResult> GetAllAssignmentAnswers(long assignmentId)
         {
             try
             {
                 var result = await _assignmentService.GetAllSubmission(assignmentId);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                    return ApiResponse<List<AssignmentSubmissionListVM>>(errors: result.ErrorMessages.ToArray());
 
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<List<AssignmentSubmissionListVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -75,16 +76,16 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<AssignmentSubmissionVM>), 200)]
         public async Task<IActionResult> GetAssignmentAnswer(long answerId)
         {
             try
             {
                 var result = await _assignmentService.GetAssignmentSubmission(answerId);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                    return ApiResponse<AssignmentSubmissionVM>(errors: result.ErrorMessages.ToArray());
 
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<AssignmentSubmissionVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -93,22 +94,22 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UploadAssignment([FromForm] AssignmentUploadVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
                 var result = await _assignmentService.AddAssignment(model);
 
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -117,22 +118,22 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpPut]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UpdateScore(AssignmentSubmissionUpdateScoreVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
                 var result = await _assignmentService.UpdateScore(model);
 
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -141,22 +142,22 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpPut]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UpdateComment(AssignmentSubmissionUpdateCommentVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
                 var result = await _assignmentService.UpdateComment(model);
 
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
