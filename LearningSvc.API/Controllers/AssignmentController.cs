@@ -25,11 +25,11 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<PaginatedModel<AssignmentGetVM>>), 200)]
-        public async Task<IActionResult> GetAssignmentsByTeacher([FromQuery] long teacherId, [FromQuery] QueryModel vM)
+        public async Task<IActionResult> GetAssignmentsByTeacher([FromQuery] QueryModel vM)
         {
             try
             {
-                var result = await _assignmentService.GetAssignmentsForTeacher(teacherId, vM);
+                var result = await _assignmentService.GetAssignmentsForTeacher(CurrentUser.UserId, vM);
                 if (result.HasError)
                     return ApiResponse<PaginatedModel<AssignmentGetVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<PaginatedModel<AssignmentGetVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
