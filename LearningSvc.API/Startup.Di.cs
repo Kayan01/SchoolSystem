@@ -125,6 +125,7 @@ namespace LearningSvc.API
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<IFileStore, FileStore>();
         }
     }
 }
