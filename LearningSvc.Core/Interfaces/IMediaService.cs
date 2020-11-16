@@ -14,7 +14,7 @@ namespace LearningSvc.Core.Interfaces
     {
         Task<ResultModel<PaginatedModel<MediaListVM>>> GetAllFileByTeacher(long teacherId, QueryModel queryModel);
         Task<ResultModel<PaginatedModel<MediaListVM>>> GetAllFileByClass(long classId, QueryModel queryModel);
-        Task<ResultModel<string>> UploadLearningFile(MediaUploadVM model);
+        Task<ResultModel<string>> UploadLearningFile(MediaUploadVM model, long currentUserId);
         Task<ResultModel<string>> DeleteMedia(long id);
     }
 }

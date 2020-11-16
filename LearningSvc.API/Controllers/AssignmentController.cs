@@ -105,7 +105,7 @@ namespace LearningSvc.API.Controllers
 
             try
             {
-                var result = await _assignmentService.AddAssignment(model);
+                var result = await _assignmentService.AddAssignment(model, CurrentUser.UserId);
 
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
