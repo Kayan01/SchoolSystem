@@ -39,7 +39,7 @@ namespace LearningSvc.Core.Services
             _documentService = documentService;
         }
 
-        public async Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment)
+        public async Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment, long currentUserId)
         {
             var result = new ResultModel<string>();
 
@@ -50,10 +50,10 @@ namespace LearningSvc.Core.Services
                 return result;
             }
 
-            var teacher = await _teacherRepo.GetAsync(assignment.TeacherId);
+            var teacher = await _teacherRepo.GetAll().Where(m=> m.UserId == currentUserId).FirstOrDefaultAsync();
             if (teacher == null)
             {
-                result.AddError("Teacher not found");
+                result.AddError("Current user is not a valid Teacher");
                 return result;
             }
 
@@ -72,7 +72,7 @@ namespace LearningSvc.Core.Services
                 DueDate = assignment.DueDate,
                 SchoolClassSubjectId = assignment.ClassSubjectId,
                 TotalScore = assignment.TotalScore,
-                TeacherId = assignment.TeacherId,
+                TeacherId = teacher.Id,
                 Title = assignment.Title,
                 Attachment = file,
                 OptionalComment = assignment.Comment,

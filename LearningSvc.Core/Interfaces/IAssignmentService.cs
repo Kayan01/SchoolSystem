@@ -17,6 +17,6 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<AssignmentSubmissionVM>> GetAssignmentSubmission(long submissionId);
         Task<ResultModel<string>> UpdateScore(AssignmentSubmissionUpdateScoreVM model);
         Task<ResultModel<string>> UpdateComment(AssignmentSubmissionUpdateCommentVM model);
-        Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment);
+        Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment, long currentUserId);
     }
 }

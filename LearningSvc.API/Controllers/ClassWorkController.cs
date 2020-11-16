@@ -68,7 +68,7 @@ namespace LearningSvc.API.Controllers
 
             try
             {
-                var result = await _classworkService.UploadLearningFile(model);
+                var result = await _classworkService.UploadLearningFile(model, CurrentUser.UserId);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

@@ -80,7 +80,7 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<string>> UploadLearningFile(MediaUploadVM model)
+        public async Task<ResultModel<string>> UploadLearningFile(MediaUploadVM model, long currentUserId)
         {
             var result = new ResultModel<string>();
 
@@ -91,13 +91,12 @@ namespace LearningSvc.Core.Services
                 return result;
             }
 
-            var teacher = await _teacherRepo.GetAsync(model.TeacherId);
+            var teacher = await _teacherRepo.GetAll().Where(m => m.UserId == currentUserId).FirstOrDefaultAsync();
             if (teacher == null)
             {
-                result.AddError("Teacher not found");
+                result.AddError("Current user is not a valid Teacher");
                 return result;
             }
-
 
             //save file
             var file = await _documentService.TryUploadSupportingDocument(model.FileObj, Shared.Enums.DocumentType.Assignment);
@@ -113,7 +112,7 @@ namespace LearningSvc.Core.Services
             {
                 File = file,
                 SchoolClassSubjectId = model.ClassSubjectId,
-                TeacherId = model.TeacherId,
+                TeacherId = teacher.Id,
                 OptionalComment = model.Comment
             };
 
