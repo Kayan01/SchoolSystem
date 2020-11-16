@@ -57,9 +57,17 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<PaginatedModel<ClassWorkListVM>>> GetAllFileByTeacher(long teacherId, QueryModel queryModel)
+        public async Task<ResultModel<PaginatedModel<ClassWorkListVM>>> GetAllFileByTeacher(long currentUserId, QueryModel queryModel)
         {
-            var query = await _classWorkRepo.GetAll().Where(m => m.TeacherId == teacherId)
+            var teacher = await _teacherRepo.GetAll().Where(m => m.UserId == currentUserId).FirstOrDefaultAsync();
+            if (teacher == null)
+            {
+                var r = new ResultModel<PaginatedModel<ClassWorkListVM>>();
+                r.AddError("Current user is not a valid Teacher");
+                return r;
+            }
+
+            var query = await _classWorkRepo.GetAll().Where(m => m.TeacherId == teacher.Id)
                     .Select(x => new ClassWorkListVM
                     {
                         Id = x.Id,

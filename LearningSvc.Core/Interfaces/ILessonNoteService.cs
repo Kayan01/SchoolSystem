@@ -12,7 +12,7 @@ namespace LearningSvc.Core.Interfaces
 {
     public interface ILessonNoteService
     {
-        Task<ResultModel<PaginatedModel<LessonNoteListVM>>> GetAllFileByTeacher(long teacherId, QueryModel queryModel);
+        Task<ResultModel<PaginatedModel<LessonNoteListVM>>> GetAllFileByTeacher(long currentUserId, QueryModel queryModel);
         Task<ResultModel<PaginatedModel<LessonNoteListVM>>> GetAllFileByClass(long classId, QueryModel queryModel);
         Task<ResultModel<string>> UploadLearningFile(LessonNoteUploadVM model, long currentUserId);
         Task<ResultModel<string>> DeleteLessonNote(long id);
