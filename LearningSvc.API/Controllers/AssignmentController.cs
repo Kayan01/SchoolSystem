@@ -30,7 +30,7 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
-                var result = await _assignmentService.GetAssignmentsForTeacher(1, vM);
+                var result = await _assignmentService.GetAssignmentsForTeacher(CurrentUser.UserId, vM);
                 if (result.HasError)
                     return ApiResponse<List<AssignmentGetVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
