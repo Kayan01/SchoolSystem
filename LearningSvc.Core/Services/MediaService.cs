@@ -15,6 +15,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Shared.Pagination;
 using IPagedList;
+using LearningSvc.Core.ViewModels.ClassWork;
+using System.IO;
 
 namespace LearningSvc.Core.Services
 {
@@ -72,7 +74,7 @@ namespace LearningSvc.Core.Services
                     .Select(x => new MediaListVM
                     {
                         Id = x.Id,
-                        Name = x.File.Name,
+                        Name = x.File.Path,
                         ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
                         CreationDate = x.CreationTime,
                         FileId = x.FileUploadId,
@@ -148,6 +150,39 @@ namespace LearningSvc.Core.Services
             await _unitOfWork.SaveChangesAsync();
 
             result.Data = "Deleted successfully";
+            return result;
+        }
+
+        public async Task<ResultModel<MediaVM>> MediaDetail(long id)
+        {
+            var result = new ResultModel<MediaVM>();
+
+            var query = await _mediaRepo.GetAll().Where(m => m.Id == id)
+                    .Select(x => new MediaVM
+                    {
+                        Id = x.Id,
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
+                        CreationDate = x.CreationTime,
+                        SubjectName = x.SchoolClassSubject.Subject.Name,
+                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                        FileType = x.File.ContentType,
+                        FileName = x.File.Path,
+                    }).FirstOrDefaultAsync();
+
+            if (query == null)
+            {
+                result.AddError("Not Found");
+            }
+
+            var filepath = Path.Combine("Filestore", query.FileName);
+
+            if (File.Exists(filepath))
+            {
+                query.File = File.ReadAllBytes(filepath);
+                query.FileSize = $"{(query.File.Length / 1000).ToString("0.00")}KB";
+            }
+
+            result.Data = query;
             return result;
         }
     }

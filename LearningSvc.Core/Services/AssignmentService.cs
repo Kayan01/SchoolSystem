@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Pagination;
 using IPagedList;
+using System.IO;
 
 namespace LearningSvc.Core.Services
 {
@@ -82,6 +83,39 @@ namespace LearningSvc.Core.Services
             await _unitOfWork.SaveChangesAsync();
 
             result.Data = "Saved successfully";
+            return result;
+        }
+
+        public async Task<ResultModel<AssignmentVM>> AssignmentDetail(long id)
+        {
+            var result = new ResultModel<AssignmentVM>();
+
+            var query = await _assignmentRepo.GetAll().Where(m => m.Id == id)
+                    .Select(x => new AssignmentVM
+                    {
+                        Id = x.Id,
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
+                        CreationDate = x.CreationTime,
+                        SubjectName = x.SchoolClassSubject.Subject.Name,
+                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                        FileType = x.Attachment.ContentType,
+                        FileName = x.Attachment.Path,
+                    }).FirstOrDefaultAsync();
+
+            if (query == null)
+            {
+                result.AddError("Not Found");
+            }
+
+            var filepath = Path.Combine("Filestore", query.FileName);
+
+            if (File.Exists(filepath))
+            {
+                query.File = File.ReadAllBytes(filepath);
+                query.FileSize = $"{(query.File.Length / 1000).ToString("0.00")}KB";
+            }
+
+            result.Data = query;
             return result;
         }
 

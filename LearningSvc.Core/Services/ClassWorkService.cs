@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Shared.Pagination;
 using IPagedList;
+using System.IO;
 
 namespace LearningSvc.Core.Services
 {
@@ -42,7 +43,7 @@ namespace LearningSvc.Core.Services
                     .Select(x => new ClassWorkListVM
                     {
                         Id = x.Id,
-                        Name = x.File.Name,
+                        Name = x.File.Path,
                         ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
                         CreationDate = x.CreationTime,
                         FileId = x.FileUploadId,
@@ -54,6 +55,39 @@ namespace LearningSvc.Core.Services
             {
                 Data = new PaginatedModel<ClassWorkListVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
             };
+            return result;
+        }
+
+        public async Task<ResultModel<ClassWorkVM>> ClassWorkDetail(long id)
+        {
+            var result = new ResultModel<ClassWorkVM>();
+
+            var query = await _classWorkRepo.GetAll().Where(m => m.Id == id)
+                    .Select(x => new ClassWorkVM
+                    {
+                        Id = x.Id,
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
+                        CreationDate = x.CreationTime,
+                        SubjectName = x.SchoolClassSubject.Subject.Name,
+                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                        FileType = x.File.ContentType,
+                        FileName = x.File.Path,
+                    }).FirstOrDefaultAsync();
+
+            if (query == null)
+            {
+                result.AddError("Not Found");
+            }
+
+            var filepath = Path.Combine("Filestore", query.FileName);
+
+            if (File.Exists(filepath))
+            {
+                query.File = File.ReadAllBytes(filepath);
+                query.FileSize = $"{(query.File.Length/1000).ToString("0.00")}KB";
+            }
+
+            result.Data = query;
             return result;
         }
 
