@@ -167,26 +167,30 @@ namespace Auth.Core.Services
             return new ResultModel<RoleVM>(schRole);
         }
 
-        public async Task<ResultModel<RoleVM>> AddUserToRole(AddUserToRoleVM model)
+        public async Task<ResultModel<List<RoleVM>>> AddUserToRoles(AddUserToRoleVM model)
         {
             var user = await _userManager.FindByIdAsync(model.UserId.ToString());
             if (user == null)
-                return new ResultModel<RoleVM> ("User not found");
+                return new ResultModel<List<RoleVM>> ("User not found");
 
-            var schRole = _schoolRoleRepo.FirstOrDefault(model.RoleId);
-            if (schRole == null)
-                return new ResultModel<RoleVM>("School Role not found");
+            var schRoles = _schoolRoleRepo.GetAll().Where(x=> model.RoleIds.Contains(x.Id)).ToList();
+
+            if (schRoles.Count < 1)
+                return new ResultModel<List<RoleVM>>("School Roles not found");
 
             //Remove existing role if any
             var tenantId = _tenantResolutionStrategy.GetTenantIdentifier().ToString();
             var userRoles = await _userManager.GetRolesAsync(user);
             var removeRoleResult = await _userManager.RemoveFromRolesAsync(user, userRoles);
 
-            var addRoleResult = await _userManager.AddToRoleAsync(user, schRole.RoleName);
-            if (!addRoleResult.Succeeded)
-                return new ResultModel<RoleVM>($"failed to add role, {string.Join("; ", addRoleResult.Errors.Select(x => x.Description))}");
 
-            return new ResultModel<RoleVM>(schRole, "Success");
+            var rolenames = schRoles.Select(x => x.RoleName).ToList();
+
+            var addRoleResult = await _userManager.AddToRolesAsync(user, rolenames);
+            if (!addRoleResult.Succeeded)
+                return new ResultModel<List<RoleVM>>($"failed to add role, {string.Join("; ", addRoleResult.Errors.Select(x => x.Description))}");
+
+            return new ResultModel<List<RoleVM>>(schRoles.Select(x=> (RoleVM)x).ToList(), "Success");
         }
 
         public async Task<ResultModel<RoleVM>> RemovePermissionsFromRole(RemovePermissionsFromRoleVM model)

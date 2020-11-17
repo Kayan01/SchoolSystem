@@ -7,7 +7,7 @@ namespace Auth.Core.ViewModels.RoleModels
     public class AddUserToRoleVM
     {
         public long UserId { get; set; }
-        public long RoleId { get; set; }
+        public List<long> RoleIds { get; set; }
     }
 
     public class RemoveUserFromRoleVM
