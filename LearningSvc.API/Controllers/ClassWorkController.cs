@@ -56,6 +56,24 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ClassWorkVM>), 200)]
+        public async Task<IActionResult> GetClassWorkDetail([FromQuery] long id)
+        {
+            try
+            {
+                var result = await _classworkService.ClassWorkDetail(id);
+                if (result.HasError)
+                    return ApiResponse<ClassWorkVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<ClassWorkVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> UploadFile([FromForm] ClassWorkUploadVM model)

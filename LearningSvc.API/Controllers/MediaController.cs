@@ -56,6 +56,23 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<MediaVM>), 200)]
+        public async Task<IActionResult> GetMediaDetail([FromQuery] long id)
+        {
+            try
+            {
+                var result = await _mediaService.MediaDetail(id);
+                if (result.HasError)
+                    return ApiResponse<MediaVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> UploadFile([FromForm] MediaUploadVM model)

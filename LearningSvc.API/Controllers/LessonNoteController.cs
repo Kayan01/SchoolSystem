@@ -56,6 +56,23 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<LessonNoteVM>), 200)]
+        public async Task<IActionResult> GetLessonNoteDetail([FromQuery] long id)
+        {
+            try
+            {
+                var result = await _lessonnoteService.LessonNoteDetail(id);
+                if (result.HasError)
+                    return ApiResponse<LessonNoteVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> UploadFile([FromForm] LessonNoteUploadVM model)
