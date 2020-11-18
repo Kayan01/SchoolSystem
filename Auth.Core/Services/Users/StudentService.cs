@@ -149,7 +149,6 @@ namespace Auth.Core.Services
                 ParentId = model.ParentId,
                 TransportRoute = model.TransportRoute,
                 Religion = model.Religion,
-                SectionId = @class.SchoolSectionId,
                 Sex = model.Sex,
                 State = model.ContactState,
                 StateOfOrigin = model.StateOfOrigin,
