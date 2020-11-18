@@ -167,7 +167,7 @@ namespace Auth.Core.Services
             return new ResultModel<RoleVM>(schRole);
         }
 
-        public async Task<ResultModel<List<RoleVM>>> AddUserToRoles(AddUserToRoleVM model)
+        public async Task<ResultModel<List<RoleVM>>> AddUserToRoles(AddUserToRolesVM model)
         {
             var user = await _userManager.FindByIdAsync(model.UserId.ToString());
             if (user == null)

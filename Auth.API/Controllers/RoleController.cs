@@ -184,7 +184,7 @@ namespace Auth.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<RoleVM>), 200)]
-        public async Task<IActionResult> AddUserToRole(AddUserToRoleVM model)
+        public async Task<IActionResult> AddUserToRole(AddUserToRolesVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -194,10 +194,10 @@ namespace Auth.API.Controllers
 
             try
             {
-                var result = await _roleService.AddUserToRole(model);
+                var result = await _roleService.AddUserToRoles(model);
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<RoleVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<List<RoleVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {

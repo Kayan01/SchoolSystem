@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Auth.Core.ViewModels.RoleModels
 {
-    public class AddUserToRoleVM
+    public class AddUserToRolesVM
     {
         public long UserId { get; set; }
         public List<long> RoleIds { get; set; }
