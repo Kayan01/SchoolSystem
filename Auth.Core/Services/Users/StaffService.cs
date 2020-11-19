@@ -67,7 +67,8 @@ namespace Auth.Core.Services
                     x.User.Email,
                     x.Id,
                     x.StaffType,
-                    x.User.PhoneNumber
+                    x.User.PhoneNumber,
+                    x.UserId
                 });
 
 
@@ -82,7 +83,8 @@ namespace Auth.Core.Services
                 FirstName = x.FirstName,
                 Id = x.Id,
                 LastName = x.LastName,
-                PhoneNumber = x.PhoneNumber
+                PhoneNumber = x.PhoneNumber,
+                UserId = x.UserId
             }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
