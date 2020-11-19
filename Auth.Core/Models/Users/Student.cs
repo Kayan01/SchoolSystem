@@ -28,10 +28,8 @@ namespace Auth.Core.Models
         public string State { get; set; }
         public long ParentId { get; set; }
         public long MedicalDetailID { get; set; }
-        public long SectionId { get; set; }
         public long? ClassId { get; set; }
         public SchoolClass Class { get; set; }
-        public SchoolSection Section { get; set; }
         public Parent Parent { get; set; }
         public MedicalDetail  MedicalDetail { get; set; }
     }

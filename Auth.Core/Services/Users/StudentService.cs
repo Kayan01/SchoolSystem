@@ -56,7 +56,7 @@ namespace Auth.Core.Services
             _unitOfWork.BeginTransaction();
 
             //check if parent exists
-            var parent = _parentRepo.Get(model.ParentId);
+            var parent = await _parentRepo.GetAll().Where(x => x.Id == model.ParentId).FirstOrDefaultAsync();
 
             if (parent == null)
             {
@@ -65,7 +65,7 @@ namespace Auth.Core.Services
             }
 
             //check if class exists
-            var @class = _classRepo.Get(model.ClassId);
+            var @class = await _classRepo.GetAll().Where(x => x.Id == model.ClassId).FirstOrDefaultAsync();
             if (@class == null)
             {
                 result.AddError("class exists");
@@ -129,7 +129,7 @@ namespace Auth.Core.Services
                 });
             }
 
-            medicalHistory.ImmunizationHistories.AddRange(immunizations);
+            medicalHistory.ImmunizationHistories = immunizations;
 
             var stud = _studentRepo.Insert(new Student
             {
@@ -149,7 +149,6 @@ namespace Auth.Core.Services
                 ParentId = model.ParentId,
                 TransportRoute = model.TransportRoute,
                 Religion = model.Religion,
-                SectionId = @class.SchoolSectionId,
                 Sex = model.Sex,
                 State = model.ContactState,
                 StateOfOrigin = model.StateOfOrigin,
