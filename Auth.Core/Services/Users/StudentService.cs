@@ -157,6 +157,7 @@ namespace Auth.Core.Services
             });
 
             await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.Commit();
 
             //PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
