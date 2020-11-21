@@ -194,7 +194,7 @@ namespace Auth.Core.Services
             var result = new ResultModel<bool> { Data = false };
 
             //check if the student exists
-            var std = await _studentRepo.FirstOrDefaultAsync(x => x.UserId == userId);
+            var std = await _studentRepo.FirstOrDefaultAsync(x => x.Id == userId);
 
             if (std == null)
             {
