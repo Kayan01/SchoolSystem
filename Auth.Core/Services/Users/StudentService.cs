@@ -6,6 +6,7 @@ using Auth.Core.ViewModels.Student;
 using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Extensions;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
@@ -17,6 +18,7 @@ using Shared.Utils;
 using Shared.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Auth.Core.Services
@@ -56,7 +58,9 @@ namespace Auth.Core.Services
             _unitOfWork.BeginTransaction();
 
             //check if parent exists
-            var parent = await _parentRepo.GetAll().Where(x => x.Id == model.ParentId).FirstOrDefaultAsync();
+            var parent = await _parentRepo.GetAll()
+                .Where(x => x.Id == model.ParentId)
+                .FirstOrDefaultAsync();
 
             if (parent == null)
             {
@@ -68,7 +72,7 @@ namespace Auth.Core.Services
             var @class = await _classRepo.GetAll().Where(x => x.Id == model.ClassId).FirstOrDefaultAsync();
             if (@class == null)
             {
-                result.AddError("class exists");
+                result.AddError("class does not exists");
                 return result;
             }
 
@@ -97,8 +101,8 @@ namespace Auth.Core.Services
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                Email = model.ContactEmail,
-                UserName = model.ContactEmail,
+                Email = model.ContactEmail.Trim(),
+                UserName = model.ContactEmail.Trim(),
                 PhoneNumber = model.ContactPhone,
                 UserType = UserType.Student,
             };
@@ -153,7 +157,8 @@ namespace Auth.Core.Services
                 State = model.ContactState,
                 StateOfOrigin = model.StateOfOrigin,
                 StudentType = model.StudentType,
-                Town = model.ContactTown
+                Town = model.ContactTown,
+                 IsActive = true
             });
 
             await _unitOfWork.SaveChangesAsync();
@@ -211,23 +216,63 @@ namespace Auth.Core.Services
             var result = new ResultModel<PaginatedModel<StudentVM>>();
 
             var query = _studentRepo.GetAll()
-                          .Include(x => x.Class)
-                          .Include(x => x.User);
+                .Select(x => new StudentVM
+                {
+                    Class = x.Class.FullName,
+                    DateOfBirth = x.DateOfBirth,
+                    FirstName = x.User.FirstName,
+                    LastName = x.User.LastName,
+                    StudentNumber = $"AMI/ST/2020/{x.Id}",
+                    Sex = x.Sex,
+                    Section = x.Class.SchoolSection.Name,
+                    IsActive = x.IsActive,
+                    ImagePath = x.FileUploads.Where(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
+                });
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+            
 
-            result.Data = new PaginatedModel<StudentVM>(pagedData.Select(x => (StudentVM)x), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
+            result.Data = new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
         }
 
-        public async Task<ResultModel<StudentVM>> GetStudentById(long Id)
+        public async Task<ResultModel<StudentDetailVM>> GetStudentById(long Id)
         {
-            var result = new ResultModel<StudentVM>();
-            var std = await _studentRepo.GetAll()
-                .Include(x => x.Class)
-                .Include(x => x.User)
-                .FirstOrDefaultAsync(x => x.Id == Id);
+            var result = new ResultModel<StudentDetailVM>();
+            var std = await _studentRepo.GetAll().Where(x => x.Id == Id)
+                        .Select(x => new
+                        {
+                            x.Id,
+                            x.User.FirstName,
+                            x.User.LastName,
+                            x.MothersMaidenName,
+                            x.Sex,
+                            x.DateOfBirth,
+                            ParentName =  x.Parent.User.FullName,
+                            x.Nationality,
+                            x.Religion,
+                            x.LocalGovernment,
+                            x.StateOfOrigin,
+                            x.EntryType,
+                            x.AdmissionDate,
+                            x.Level,
+                            ClassName = x.Class.FullName,
+                            SchoolSection =  x.Class.SchoolSection.Name,
+                            x.StudentType,
+                            x.MedicalDetail.BloodGroup,
+                            x.MedicalDetail.Genotype,
+                            x.MedicalDetail.Allergies,
+                            x.MedicalDetail.ConfidentialNotes,
+                            Immunization = x.MedicalDetail.ImmunizationHistories.Select(x => new { x.DateImmunized, x.Vaccine }),
+                            x.User.PhoneNumber,
+                            x.User.Email,
+                            x.Country,
+                            x.Address,
+                            x.Town,
+                            x.State,
+                            files = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
+                        }).FirstOrDefaultAsync();
 
             if (std == null)
             {
@@ -235,7 +280,42 @@ namespace Auth.Core.Services
                 return result;
             }
 
-            result.Data = std;
+            StringBuilder sb = new StringBuilder();
+            foreach (var item in std.Immunization)
+            {
+                sb.AppendLine($"{item.DateImmunized} {item.Vaccine}");
+            }
+            result.Data = new StudentDetailVM
+            {
+                StudentType = std.StudentType.GetDisplayName(),
+                StateOfOrigin = std.StateOfOrigin,
+                State = std.State,
+                Sex = std.Sex,
+                Section = std.SchoolSection,
+                AdmissionDate = std.AdmissionDate,
+                Allergies = std.Allergies,
+                BloodGroup = std.BloodGroup,
+                Class = std.ClassName,
+                City = std.Town,
+                ConfidentialNote = std.ConfidentialNotes,
+                DateOfBirth = std.DateOfBirth,
+                Country = std.Country,
+                EmailAddress = std.Email,
+                FirstName = std.FirstName,
+                Genotype = std.Genotype,
+                HomeAddress = std.Address,
+                Id = std.Id,
+                ImagePath = std.files?.Path,
+                Immunization = sb.ToString(),
+                LastName = std.LastName,
+                LocalGovernment = std.LocalGovernment,
+                MothersMaidenName = std.MothersMaidenName,
+                Nationality = std.Nationality,
+                ParentName = std.ParentName,
+                PhoneNumber = std.PhoneNumber,
+                Religion = std.Religion,
+
+            };
             return result;
         }
 
