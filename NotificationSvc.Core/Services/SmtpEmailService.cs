@@ -4,7 +4,7 @@ using NotificationSvc.Core.Services.Interfaces;
 using NotificationSvc.Core.ViewModels;
 using Shared.Configuration;
 using System;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -43,7 +43,7 @@ namespace NotificationSvc.Core.Services
             return client;
         }
 
-        private async Task<MailMessage> BuildMailMessage(MailBase mail, StringDictionary replacements = null)
+        private async Task<MailMessage> BuildMailMessage(MailBase mail, Dictionary<string, string> replacements = null)
         {
             ValidateMail(mail);
 
@@ -89,7 +89,7 @@ namespace NotificationSvc.Core.Services
             SendMail(mail, null);
         }
 
-        void IMailService.SendMail(MailBase mail, StringDictionary replacements)
+        void IMailService.SendMail(MailBase mail, Dictionary<string, string> replacements)
         {
             SendMail(mail, replacements);
         }
@@ -99,7 +99,7 @@ namespace NotificationSvc.Core.Services
             await SendMailAsync(mail, null);
         }
 
-        async Task IMailService.SendMailAsync(MailBase mail, StringDictionary replacements)
+        async Task IMailService.SendMailAsync(MailBase mail, Dictionary<string, string> replacements)
         {
             await SendMailAsync(mail, replacements);
         }
@@ -110,7 +110,7 @@ namespace NotificationSvc.Core.Services
         }
 
 
-        protected virtual void SendMail(MailBase mail, StringDictionary replacements)
+        protected virtual void SendMail(MailBase mail, Dictionary<string, string> replacements)
         {
             var message = BuildMailMessage(mail, replacements).Result;
             try
@@ -127,7 +127,7 @@ namespace NotificationSvc.Core.Services
             }
         }
 
-        protected virtual async Task SendMailAsync(MailBase mail, StringDictionary replacements)
+        protected virtual async Task SendMailAsync(MailBase mail, Dictionary<string, string> replacements)
         {
             var message = BuildMailMessage(mail, replacements).Result;
             try
@@ -206,7 +206,7 @@ namespace NotificationSvc.Core.Services
         /// <param name="tokens">The sequence of tokens to use</param>
         /// <param name="htmlEncode">The value indicating whether tokens should be HTML encoded</param>
         /// <returns>Text with all token keys replaces by token value</returns>
-        public string Replace(string template, StringDictionary tokens, bool htmlEncode)
+        public string Replace(string template, Dictionary<string, string> tokens, bool htmlEncode)
         {
             if (string.IsNullOrWhiteSpace(template))
                 throw new ArgumentNullException("template");

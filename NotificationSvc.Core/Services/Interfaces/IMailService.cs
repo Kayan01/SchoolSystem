@@ -10,9 +10,9 @@ namespace NotificationSvc.Core.Services.Interfaces
     public interface IMailService
     {
         Task SendMailAsync(MailBase mail);
-        Task SendMailAsync(MailBase mail, StringDictionary Replacements);
+        Task SendMailAsync(MailBase mail, Dictionary<string, string> Replacements);
         void SendMail(MailBase mail);
-        void SendMail(MailBase mail, StringDictionary Replacements);
+        void SendMail(MailBase mail, Dictionary<string, string> Replacements);
 
         Task SendMailb(MailBase mail, string subject, string body);
     }
