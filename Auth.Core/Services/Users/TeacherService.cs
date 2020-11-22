@@ -373,8 +373,8 @@ namespace Auth.Core.Services.Users
             {
                 Emails = new List<CreateEmailModel>
                 {
-                    new CreateEmailModel(EmailTemplateType.NewUser, new StringDictionary{ { "Code", result.Data.code} }, result.Data.user),
-                    new CreateEmailModel(EmailTemplateType.NewTeacher, new StringDictionary{ }, result.Data.user)
+                    new CreateEmailModel(EmailTemplateType.NewUser, new Dictionary<string, string>{ { "Code", result.Data.code} }, result.Data.user),
+                    new CreateEmailModel(EmailTemplateType.NewTeacher, new Dictionary<string, string>{ }, result.Data.user)
                 },
                 Notifications = new List<InAppNotificationModel>
                 {

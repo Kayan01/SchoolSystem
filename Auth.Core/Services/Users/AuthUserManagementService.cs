@@ -148,7 +148,7 @@ namespace Auth.Core.Services
             {
                 Emails = new List<CreateEmailModel>
                 {
-                    new CreateEmailModel(EmailTemplateType.PasswordReset, new StringDictionary{ { "Code", code} }, user)
+                    new CreateEmailModel(EmailTemplateType.PasswordReset, new Dictionary<string, string>{ { "Code", code} }, user)
                 },
                 Notifications = new List<InAppNotificationModel>
                 {
@@ -163,7 +163,7 @@ namespace Auth.Core.Services
             {
                 Emails = new List<CreateEmailModel>
                 {
-                    new CreateEmailModel(EmailTemplateType.SuccessPasswordReset, new StringDictionary{ }, user)
+                    new CreateEmailModel(EmailTemplateType.SuccessPasswordReset, new Dictionary<string, string>{ }, user)
                 },
                 Notifications = new List<InAppNotificationModel>
                 {

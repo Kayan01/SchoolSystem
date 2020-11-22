@@ -11,7 +11,7 @@ namespace Shared.ViewModels
         {
 
         }
-        public CreateEmailModel(string templateType, StringDictionary replacementDictionary, UserVM user)
+        public CreateEmailModel(string templateType, Dictionary<string, string> replacementDictionary, UserVM user)
         {
             EmailTemplateType = templateType;
             ReplacementData = replacementDictionary;
@@ -19,7 +19,7 @@ namespace Shared.ViewModels
         }
 
         public string EmailTemplateType { get; set; }
-        public StringDictionary ReplacementData { get; set; }
+        public Dictionary<string, string> ReplacementData { get; set; }
         public UserVM User { get; set; }
     }
 }
