@@ -24,14 +24,14 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllFileByTeacher([FromQuery] long teacherId,[FromQuery] QueryModel vM)
+        public async Task<IActionResult> GetAllFileByTeacher([FromQuery] QueryModel vM)
         {
             try
             {
-                var result = await _lessonnoteService.GetAllFileByTeacher(teacherId, vM);
+                var result = await _lessonnoteService.GetAllFileByTeacher(CurrentUser.UserId, vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
@@ -48,7 +48,24 @@ namespace LearningSvc.API.Controllers
                 var result = await _lessonnoteService.GetAllFileByClass(classId, vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<LessonNoteVM>), 200)]
+        public async Task<IActionResult> GetLessonNoteDetail([FromQuery] long id)
+        {
+            try
+            {
+                var result = await _lessonnoteService.LessonNoteDetail(id);
+                if (result.HasError)
+                    return ApiResponse<LessonNoteVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -68,7 +85,7 @@ namespace LearningSvc.API.Controllers
 
             try
             {
-                var result = await _lessonnoteService.UploadLearningFile(model);
+                var result = await _lessonnoteService.UploadLearningFile(model, CurrentUser.UserId);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

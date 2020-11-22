@@ -1,4 +1,5 @@
 ﻿using LearningSvc.Core.Enumerations;
+using LearningSvc.Core.ViewModels.ClassWork;
 using LearningSvc.Core.ViewModels.Media;
 using Shared.Pagination;
 using Shared.Utils;
@@ -12,9 +13,10 @@ namespace LearningSvc.Core.Interfaces
 {
     public interface IMediaService
     {
-        Task<ResultModel<PaginatedModel<MediaListVM>>> GetAllFileByTeacher(long teacherId, QueryModel queryModel);
+        Task<ResultModel<PaginatedModel<MediaListVM>>> GetAllFileByTeacher(long currentUserId, QueryModel queryModel);
         Task<ResultModel<PaginatedModel<MediaListVM>>> GetAllFileByClass(long classId, QueryModel queryModel);
-        Task<ResultModel<string>> UploadLearningFile(MediaUploadVM model);
+        Task<ResultModel<MediaVM>> MediaDetail(long id);
+        Task<ResultModel<string>> UploadLearningFile(MediaUploadVM model, long currentUserId);
         Task<ResultModel<string>> DeleteMedia(long id);
     }
 }

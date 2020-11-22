@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Pagination;
 using IPagedList;
+using System.IO;
 
 namespace LearningSvc.Core.Services
 {
@@ -39,7 +40,7 @@ namespace LearningSvc.Core.Services
             _documentService = documentService;
         }
 
-        public async Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment)
+        public async Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment, long currentUserId)
         {
             var result = new ResultModel<string>();
 
@@ -50,17 +51,17 @@ namespace LearningSvc.Core.Services
                 return result;
             }
 
-            var teacher = await _teacherRepo.GetAsync(assignment.TeacherId);
+            var teacher = await _teacherRepo.GetAll().Where(m=> m.UserId == currentUserId).FirstOrDefaultAsync();
             if (teacher == null)
             {
-                result.AddError("Teacher not found");
+                result.AddError("Current user is not a valid Teacher");
                 return result;
             }
 
             //save file
             var file = await _documentService.TryUploadSupportingDocument(assignment.Document, Shared.Enums.DocumentType.Assignment );
 
-            if (file != null)
+            if (file == null)
             {
                 result.AddError("File could not be uploaded");
 
@@ -72,7 +73,7 @@ namespace LearningSvc.Core.Services
                 DueDate = assignment.DueDate,
                 SchoolClassSubjectId = assignment.ClassSubjectId,
                 TotalScore = assignment.TotalScore,
-                TeacherId = assignment.TeacherId,
+                TeacherId = teacher.Id,
                 Title = assignment.Title,
                 Attachment = file,
                 OptionalComment = assignment.Comment,
@@ -82,6 +83,39 @@ namespace LearningSvc.Core.Services
             await _unitOfWork.SaveChangesAsync();
 
             result.Data = "Saved successfully";
+            return result;
+        }
+
+        public async Task<ResultModel<AssignmentVM>> AssignmentDetail(long id)
+        {
+            var result = new ResultModel<AssignmentVM>();
+
+            var query = await _assignmentRepo.GetAll().Where(m => m.Id == id)
+                    .Select(x => new AssignmentVM
+                    {
+                        Id = x.Id,
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
+                        CreationDate = x.CreationTime,
+                        SubjectName = x.SchoolClassSubject.Subject.Name,
+                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                        FileType = x.Attachment.ContentType,
+                        FileName = x.Attachment.Path,
+                    }).FirstOrDefaultAsync();
+
+            if (query == null)
+            {
+                result.AddError("Not Found");
+            }
+
+            var filepath = Path.Combine("Filestore", query.FileName);
+
+            if (File.Exists(filepath))
+            {
+                query.File = File.ReadAllBytes(filepath);
+                query.FileSize = $"{(query.File.Length / 1000).ToString("0.00")}KB";
+            }
+
+            result.Data = query;
             return result;
         }
 
@@ -132,9 +166,17 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForTeacher(long teacherId, QueryModel queryModel)
+        public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForTeacher(long currentUserId, QueryModel queryModel)
         {
-            var query = await _assignmentRepo.GetAll().Where(m => m.TeacherId == teacherId)
+            var teacher = await _teacherRepo.GetAll().Where(m => m.UserId == currentUserId).FirstOrDefaultAsync();
+            if (teacher == null)
+            {
+                var r = new ResultModel<PaginatedModel<AssignmentGetVM>>();
+                r.AddError("Current user is not a valid Teacher");
+                return r;
+            }
+
+            var query = await _assignmentRepo.GetAll().Where(m => m.TeacherId == teacher.Id)
                     .Select(x => new AssignmentGetVM
                     {
                         Id = x.Id,

@@ -9,12 +9,9 @@ namespace LearningSvc.Core.ViewModels.Assignment
 {
     public class AssignmentUploadVM
     {
-        public long Id { get; set; }
-
         public string Title { get; set; }
         public string Comment { get; set; }
         public long ClassSubjectId { get; set; }
-        public long TeacherId { get; set; }
 
         public DateTime DueDate { get; set; }
         public int TotalScore { get; set; }

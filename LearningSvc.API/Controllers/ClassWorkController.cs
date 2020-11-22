@@ -24,14 +24,14 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllFileByTeacher([FromQuery] long teacherId,[FromQuery] QueryModel vM)
+        public async Task<IActionResult> GetAllFileByTeacher([FromQuery] QueryModel vM)
         {
             try
             {
-                var result = await _classworkService.GetAllFileByTeacher(teacherId, vM);
+                var result = await _classworkService.GetAllFileByTeacher(CurrentUser.UserId, vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
@@ -48,13 +48,31 @@ namespace LearningSvc.API.Controllers
                 var result = await _classworkService.GetAllFileByClass(classId, vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
                 return HandleError(ex);
             }
         }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ClassWorkVM>), 200)]
+        public async Task<IActionResult> GetClassWorkDetail([FromQuery] long id)
+        {
+            try
+            {
+                var result = await _classworkService.ClassWorkDetail(id);
+                if (result.HasError)
+                    return ApiResponse<ClassWorkVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<ClassWorkVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
@@ -68,7 +86,7 @@ namespace LearningSvc.API.Controllers
 
             try
             {
-                var result = await _classworkService.UploadLearningFile(model);
+                var result = await _classworkService.UploadLearningFile(model, CurrentUser.UserId);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

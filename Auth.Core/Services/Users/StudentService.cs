@@ -1,4 +1,6 @@
 ﻿using Auth.Core.Models;
+using Auth.Core.Models.Medical;
+using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Student;
 using IPagedList;
@@ -8,10 +10,12 @@ using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
 using Shared.Enums;
+using Shared.FileStorage;
 using Shared.Pagination;
 using Shared.PubSub;
 using Shared.Utils;
 using Shared.ViewModels;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,16 +25,26 @@ namespace Auth.Core.Services
     {
         private readonly IPublishService _publishService;
         private readonly IRepository<Student, long> _studentRepo;
+        private readonly IRepository<Parent, long> _parentRepo;
+        private readonly IRepository<SchoolClass, long> _classRepo;
+        private readonly IDocumentService _documentService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
 
-        public StudentService(IRepository<Student, long> studentRepo,
+        public StudentService(
+            IRepository<Student, long> studentRepo,
+            IRepository<Parent, long> parentRepo,
+            IRepository<SchoolClass, long> classRepo,
+            IDocumentService documentService,
             IUnitOfWork unitOfWork,
             IPublishService publishService,
             UserManager<User> userManager)
         {
             _studentRepo = studentRepo;
+            _classRepo = classRepo;
+            _parentRepo = parentRepo;
             _unitOfWork = unitOfWork;
+            _documentService = documentService;
             _publishService = publishService;
             _userManager = userManager;
         }
@@ -41,31 +55,109 @@ namespace Auth.Core.Services
 
             _unitOfWork.BeginTransaction();
 
+            //check if parent exists
+            var parent = await _parentRepo.GetAll().Where(x => x.Id == model.ParentId).FirstOrDefaultAsync();
+
+            if (parent == null)
+            {
+                result.AddError("No parent exists");
+                return result;
+            }
+
+            //check if class exists
+            var @class = await _classRepo.GetAll().Where(x => x.Id == model.ClassId).FirstOrDefaultAsync();
+            if (@class == null)
+            {
+                result.AddError("class exists");
+                return result;
+            }
+
+            //save filles
+            var files = new List<FileUpload>();
+
+            if (model.Files != null && model.Files.Any())
+            {
+                if (model.Files.Count != model.DocumentTypes.Count)
+                {
+                    result.AddError("Some document types are missing");
+                    return result;
+                }
+                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                if (files.Count() != model.Files.Count())
+                {
+                    result.AddError("Some files could not be uploaded");
+
+                    return result;
+                }
+            }
+
+
             //create auth user
             var user = new User
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                Email = model.Email,
-                UserName = model.Email,
-                PhoneNumber = model.PhoneNumber,
+                Email = model.ContactEmail,
+                UserName = model.ContactEmail,
+                PhoneNumber = model.ContactPhone,
                 UserType = UserType.Student,
             };
 
-            var userResult = await _userManager.CreateAsync(user, model.Password);
+            var userResult = await _userManager.CreateAsync(user, model.ContactPhone);
 
             if (!userResult.Succeeded)
             {
                 result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
                 return result;
             }
+            var medicalHistory = new MedicalDetail {
+                Allergies = model.Allergies,
+                BloodGroup = model.BloodGroup,
+                ConfidentialNotes = model.ConfidentialNotes,
+                Disability = model.Disability,
+                Genotype = model.Genotype
+            };
+            var immunizations = new List<ImmunizationHistory>();
+
+            foreach (var im in model.ImmunizationVms)
+            {
+                immunizations.Add(new ImmunizationHistory
+                {
+                    Age = im.Age,
+                    DateImmunized = im.DateImmunized,
+                    Vaccine = im.Vaccine
+                });
+            }
+
+            medicalHistory.ImmunizationHistories = immunizations;
 
             var stud = _studentRepo.Insert(new Student
             {
-                UserId = user.Id
+                UserId = user.Id,
+                Address = model.ContactAddress,
+                AdmissionDate = model.AdmissionDate,
+                ClassId = model.ClassId,
+                Country = model.ContactCountry,
+                DateOfBirth = model.DateOfBirth,
+                EntryType = model.EntryType,
+                FileUploads = files,
+                Level = model.Level,
+                LocalGovernment = model.LocalGovt,
+                MedicalDetail = medicalHistory,
+                MothersMaidenName = model.MothersMaidenName,
+                Nationality = model.Nationality,
+                ParentId = model.ParentId,
+                TransportRoute = model.TransportRoute,
+                Religion = model.Religion,
+                Sex = model.Sex,
+                State = model.ContactState,
+                StateOfOrigin = model.StateOfOrigin,
+                StudentType = model.StudentType,
+                Town = model.ContactTown
             });
 
             await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.Commit();
 
             //PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
@@ -77,8 +169,8 @@ namespace Auth.Core.Services
                 UserId = stud.UserId,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                Email = model.Email,
-                Phone = model.PhoneNumber
+                Email = model.ContactEmail,
+                Phone = model.ContactPhone
             });
 
             result.Data = new StudentVM
