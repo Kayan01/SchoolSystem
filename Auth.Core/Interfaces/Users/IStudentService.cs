@@ -16,7 +16,7 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<bool>> DeleteStudent(long Id);
 
         Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInSchool(QueryModel model);
-        Task<ResultModel<StudentVM>> GetStudentById(long Id);
+        Task<ResultModel<StudentDetailVM>> GetStudentById(long Id);
         Task<ResultModel<StudentVM>> UpdateStudent(StudentUpdateVM model);
     }
 }
