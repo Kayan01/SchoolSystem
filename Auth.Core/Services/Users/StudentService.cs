@@ -227,7 +227,7 @@ namespace Auth.Core.Services
             var std = await _studentRepo.GetAll()
                 .Include(x => x.Class)
                 .Include(x => x.User)
-                .FirstOrDefaultAsync(x => x.UserId == Id);
+                .FirstOrDefaultAsync(x => x.Id == Id);
 
             if (std == null)
             {
@@ -246,7 +246,7 @@ namespace Auth.Core.Services
             var stud = await _studentRepo.GetAll()
                 .Include(x => x.User)
                 .Include(c => c.Class)
-                .FirstOrDefaultAsync(x => x.UserId == model.UserId);
+                .FirstOrDefaultAsync(x => x.Id == model.UserId);
 
             if (stud == null)
             {
