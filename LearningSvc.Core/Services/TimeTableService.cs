@@ -205,7 +205,7 @@ namespace LearningSvc.Core.Services
             {
                 Day = model.Day,
                 HasVirtual = model.HasVirtual,
-                NoOfPeriod = model.NoOfPeriod,
+                NoOfPeriod = 1,
                 PeriodId = model.PeriodId,
                 TeacherClassSubjectId = model.TeacherClassSubjectId,
             };
