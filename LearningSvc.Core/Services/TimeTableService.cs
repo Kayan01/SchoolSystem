@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
+using LearningSvc.Core.Models;
 
 namespace LearningSvc.Core.Services
 {
@@ -19,13 +20,18 @@ namespace LearningSvc.Core.Services
     {
         private readonly IRepository<TimeTableCell, long> _timeTableRepo;
         private readonly IRepository<Period, long> _periodRepo;
+        private readonly IRepository<TeacherClassSubject, long> _teacherClassSubjectRepo;
         private readonly IUnitOfWork _unitOfWork;
 
-        public TimeTableService(IUnitOfWork unitOfWork, IRepository<TimeTableCell, long> timeTableRepo, IRepository<Period, long> periodRepo)
+        public TimeTableService(IUnitOfWork unitOfWork, 
+            IRepository<TimeTableCell, long> timeTableRepo, 
+            IRepository<Period, long> periodRepo, 
+            IRepository<TeacherClassSubject, long> teacherClassSubjectRepo)
         {
             _unitOfWork = unitOfWork;
             _timeTableRepo = timeTableRepo;
             _periodRepo = periodRepo;
+            _teacherClassSubjectRepo = teacherClassSubjectRepo;
         }
 
         public async Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForTeacherToday(long teacherId, WeekDays day)
@@ -180,7 +186,21 @@ namespace LearningSvc.Core.Services
         public async Task<ResultModel<TimeTableCellVM>> AddTimeTableCell(TimeTableCellInsertVM model)
         {
             var result = new ResultModel<TimeTableCellVM>();
-            
+
+            var checkTeacherClassSubjectExists = await _teacherClassSubjectRepo.FirstOrDefaultAsync(model.TeacherClassSubjectId);
+            if (checkTeacherClassSubjectExists == null)
+            {
+                result.AddError("Invaild TeacherClassSubjectId.");
+                return result;
+            }
+
+            var checkPeriodExists = await _periodRepo.FirstOrDefaultAsync(model.PeriodId);
+            if (checkPeriodExists == null)
+            {
+                result.AddError("Invaild PeriodId.");
+                return result;
+            }
+
             var t = new TimeTableCell
             {
                 Day = model.Day,

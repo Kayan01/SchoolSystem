@@ -76,7 +76,8 @@ namespace LearningSvc.Core.Services
 
             if (query == null)
             {
-                result.AddError("Not Found");
+                result.Data = query;
+                return result;
             }
 
             var filepath = Path.Combine("Filestore", query.FileName);
