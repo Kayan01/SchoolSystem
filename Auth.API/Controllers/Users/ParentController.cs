@@ -25,7 +25,7 @@ namespace Auth.API.Controllers.Users
 
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<ParentListVM>>), 200)]
         public async Task<IActionResult> GetAllParents(QueryModel model)
         {
             if (!ModelState.IsValid)
@@ -50,7 +50,7 @@ namespace Auth.API.Controllers.Users
         }
 
         [HttpGet("{studId}")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ParentDetailVM>), 200)]
         public async Task<IActionResult> GetParentsForStudent(long studId)
         {
             if (studId < 1)
@@ -76,7 +76,7 @@ namespace Auth.API.Controllers.Users
         }
 
         [HttpGet("{Id}")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ParentDetailVM>), 200)]
         public async Task<IActionResult> GetParentById(long Id)
         {
             if (Id < 1)
@@ -101,8 +101,8 @@ namespace Auth.API.Controllers.Users
 
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddNewParent([FromForm]AddParentVM model)
+        [ProducesResponseType(typeof(ApiResponse<ParentDetailVM>), 200)]
+        public async Task<IActionResult> AddNewParent([FromForm] AddParentVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -125,9 +125,9 @@ namespace Auth.API.Controllers.Users
         }
 
 
-        [HttpPost]
+        [HttpPost("{Id}")]
         [ProducesResponseType(typeof(ApiResponse<ResultModel<ParentDetailVM>>), 200)]
-        public async Task<IActionResult> UpdateParent([FromQuery]long Id,[FromForm] UpdateParentVM vm)
+        public async Task<IActionResult> UpdateParent(long Id,[FromForm]UpdateParentVM vm)
         {
             if (!ModelState.IsValid)
             {

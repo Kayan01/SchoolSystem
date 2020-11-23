@@ -53,7 +53,7 @@ namespace UserManagement.API.Controllers
         [HttpPost]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        public async Task<IActionResult> AddStudentToClass([FromForm] ClassStudentVM vm)
+        public async Task<IActionResult> AddStudentToClass([FromBody] ClassStudentVM vm)
         {
             if (!ModelState.IsValid)
             {
@@ -206,7 +206,7 @@ namespace UserManagement.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<ClassUpdateVM>), 200)]
-        public async Task<IActionResult> UpdateClass([FromForm] ClassUpdateVM model)
+        public async Task<IActionResult> UpdateClass([FromBody] ClassUpdateVM model)
         {
             if (!ModelState.IsValid)
             {
