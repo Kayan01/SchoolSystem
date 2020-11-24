@@ -28,7 +28,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSchool([FromForm] CreateSchoolVM model)
+        public async Task<IActionResult> AddSchool([FromForm]CreateSchoolVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -49,17 +49,40 @@ namespace UserManagement.API.Controllers
             }
         }
 
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        public async Task<IActionResult> BulkAddSchool([FromForm]IFormFile file)
+        {
+            if (file == null)
+                return ApiResponse<string>(errors: "No file uploaded");
+
+            if (!ModelState.IsValid)
+                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _schoolService.AddBulkSchool(file);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetSchools([FromQuery] PagingVM vM)
+        public async Task<IActionResult> GetSchools([FromQuery] QueryModel vM)
         {
             try
             {
                 var result = await _schoolService.GetAllSchools(vM);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
@@ -90,17 +113,22 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSchool([FromForm] SchoolUpdateVM vM)
+        public async Task<IActionResult> UpdateSchool([FromForm]UpdateSchoolVM vM,[FromRoute] long id)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
 
+            if (id < 1)
+            {
+                return ApiResponse<string>(errors: "Invalid school Id");
+            }
+
             try
             {
-                var result = await _schoolService.UpdateSchool(vM);
+                var result = await _schoolService.UpdateSchool(vM, id);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

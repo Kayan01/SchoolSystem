@@ -5,6 +5,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20201005073835_initiaal.cs" />
+    <Compile Remove="Migrations\20201005073835_initiaal.Designer.cs" />
+    <Compile Remove="Migrations\20201005171948_iita.cs" />
+    <Compile Remove="Migrations\20201005171948_iita.Designer.cs" />
+    <Compile Remove="Migrations\20201005172343_iin.cs" />
+    <Compile Remove="Migrations\20201005172343_iin.Designer.cs" />
+    <Compile Remove="Migrations\20201005172358_initi.cs" />
+    <Compile Remove="Migrations\20201005172358_initi.Designer.cs" />
+    <Compile Remove="Migrations\20201005172538_iitia.cs" />
+    <Compile Remove="Migrations\20201005172538_iitia.Designer.cs" />
+    <Compile Remove="Migrations\20201005172632_parebt.cs" />
+    <Compile Remove="Migrations\20201005172632_parebt.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="IdentityModel" Version="4.1.1" />
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="MailKit" Version="2.5.2" />

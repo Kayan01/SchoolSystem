@@ -76,14 +76,6 @@ namespace Shared.Utils
             return new string(name.Select(c => invalids.Contains(c) ? replace : c).ToArray());
         }
 
-
-        public static string SKU()
-        {
-            var prefix = CoreConstants.SkuPrefix;
-            var txt = RandomDigits(8);
-            return $"{prefix}{txt}";
-        }
-
         public static T GetEnumFromString<T>(Enum value, string str) where T : struct
         {
             if (!typeof(T).IsEnum)
@@ -97,6 +89,19 @@ namespace Shared.Utils
         }
 
 
+        public static byte[] GetBase64StringFromImage(this string str)
+        {
 
+            if (string.IsNullOrEmpty(str))
+                return null;
+
+            var filepath = Path.Combine("Filestore", str.ToString());
+
+            if (File.Exists(filepath))
+                 return File.ReadAllBytes(filepath);
+
+            return null;
+
+        }
     }
 }

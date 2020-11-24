@@ -14,6 +14,7 @@ using Shared.DataAccess.EfCore.Context;
 using Auth.Core.Context;
 using Shared.Utils;
 using Shared.Tenancy;
+using Shared.Collections;
 
 namespace Auth.API
 {
@@ -50,6 +51,16 @@ namespace Auth.API
             }
 
             //app.UseMiddleware<TenantInfoMiddleware>();
+
+            app.UseCors(x =>
+            {
+                x.WithOrigins(Configuration["AllowedCorsOrigin"]
+                  .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                  .Select(o => o.RemovePostFix("/"))
+                  .ToArray())
+             .AllowAnyMethod()
+             .AllowAnyHeader();
+            });
 
             app.UseRouting();
             app.UseAuthentication();

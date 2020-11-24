@@ -13,5 +13,6 @@ namespace LearningSvc.Core.Models
 
 
         public SchoolClass Class { get; set; }
+        public ICollection<AssignmentAnswer> AssignmentAnswers { get; set; }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using Auth.Core.Models;
 using Auth.Core.Services.Interfaces.Class;
 using Auth.Core.ViewModels.SchoolClass;
+using IPagedList;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.Pagination;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -55,13 +57,34 @@ namespace Auth.Core.Services.Class
             return result;
         }
 
-        public async Task<ResultModel<List<ClassSectionVM>>> GetAllSections()
+        public async Task<ResultModel<PaginatedModel<ClassSectionVM>>> GetAllSections(QueryModel vm)
         {
-            var result = new ResultModel<List<ClassSectionVM>>
+            var data = await _schoolSectionRepository.GetAll()                
+                .ToPagedListAsync(vm.PageIndex, vm.PageSize);
+
+            var result = new ResultModel<PaginatedModel<ClassSectionVM>>
             {
-                Data = await _schoolSectionRepository.GetAll().Select(x => (ClassSectionVM)x).ToListAsync()
+                Data = new PaginatedModel<ClassSectionVM>(data.Select(x => (ClassSectionVM)x), vm.PageIndex, vm.PageSize, data.TotalItemCount)
             };
             return result;
+        }
+
+        public async Task<ResultModel<ClassSectionVM>> GetSectionById(long Id)
+        {
+            var result = new ResultModel<ClassSectionVM>();
+            var sec = await _schoolSectionRepository.FirstOrDefaultAsync(Id);
+
+            if (sec == null)
+            {
+                result.AddError("Section could not be found");
+
+                return result;
+
+            }
+
+            result.Data = (ClassSectionVM)sec;
+            return result;
+            
         }
 
         public async Task<ResultModel<ClassSectionUpdateVM>> UpdateSection(ClassSectionUpdateVM model)

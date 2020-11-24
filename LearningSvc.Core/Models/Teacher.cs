@@ -10,8 +10,10 @@ namespace LearningSvc.Core.Models
     {
         public long TenantId { get; set; }
         public long? ClassId { get; set; }
+        
 
         public virtual SchoolClass Class { get; set; }
 
+        public ICollection<TeacherClassSubject> TeacherClassSubjects { get; set; }
     }
 }

@@ -24,6 +24,13 @@ using Shared.Net.WorkerService;
 using Auth.Core.Services.Users;
 using Auth.Core.Interfaces.Users;
 using Shared.Tenancy;
+using Auth.Core.Interfaces;
+using Shared.Permissions;
+using Microsoft.AspNetCore.Authorization;
+using Auth.Core.Services.Interfaces.Class;
+using Auth.Core.Services.Class;
+using Auth.Core.Interfaces.Setup;
+using Auth.Core.Services.Setup;
 
 namespace Auth.API
 {
@@ -94,22 +101,32 @@ namespace Auth.API
 
             services.AddScoped<IUserService, UserService>();
 
+            Directory.CreateDirectory(Path.Combine(HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath")));
+
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
+            services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
             services.AddScoped<IFileStorageService, FileStorageService>();
             //services.AddTransient<IFileUploadService, FileUploadService>();        }
             services.AddScoped<ITestService, TestService>();
 
             services.AddScoped<ISchoolService, SchoolService>();
+            services.AddScoped<IParentService, ParentService>();
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IStaffService, StaffService>();
+            services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<ISchoolClassService, SchoolClassService>();
             services.AddScoped<IAuthUserManagement, AuthUserManagementService>();
             services.AddScoped<IDocumentService, DocumentService>();
             services.AddScoped<IPublishService, PublishService>();
             services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IClassArmService, ClassArmService>();
+            services.AddScoped<ISectionService, SectionService>();
+            services.AddScoped<IFileStore, FileStore>();
+            services.AddScoped<IRoleService, RoleService>();
             services.AddTransient<AuthHandler>();
         }
     }

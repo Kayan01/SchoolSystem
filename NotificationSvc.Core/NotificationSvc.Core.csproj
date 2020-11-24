@@ -5,6 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\**" />
+    <Compile Remove="Services\Background\**" />
+    <EmbeddedResource Remove="Migrations\**" />
+    <EmbeddedResource Remove="Services\Background\**" />
+    <None Remove="Migrations\**" />
+    <None Remove="Services\Background\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="IdentityModel" Version="4.1.1" />
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="MailKit" Version="2.5.2" />
@@ -27,11 +36,6 @@
     <PackageReference Include="NPOI" Version="2.4.1" />
     <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="2.0.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-    <Folder Include="Services\Background\" />
   </ItemGroup>
 
   <ItemGroup>

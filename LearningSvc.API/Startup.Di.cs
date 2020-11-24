@@ -20,7 +20,7 @@ using LearningSvc.Core.Context;
 using Shared.PubSub;
 using Microsoft.AspNetCore.Hosting;
 using Shared.PubSub.KafkaImpl;
-using LearningSvc.Core.Services.Interfaces;
+using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Shared.Tenancy;
@@ -65,7 +65,7 @@ namespace LearningSvc.API
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<LearningHandler>();
-                handlers.Add((message) =>
+                handlers.Add(async (message) =>
                 {
                     switch (message.BusMessageType)
                     {
@@ -73,16 +73,24 @@ namespace LearningSvc.API
                         case (int)BusMessageTypes.STUDENT_UPDATE:
                         case (int)BusMessageTypes.STUDENT_DELETE:
                             {
-                                handler.HandleAddOrUpdateStudent(message);
+                                await handler.HandleAddOrUpdateStudentAsync(message);
                                 break;
                             }
                         case (int)BusMessageTypes.TEACHER:
                         case (int)BusMessageTypes.TEACHER_UPDATE:
                         case (int)BusMessageTypes.TEACHER_DELETE:
                             {
-                                handler.HandleAddOrUpdateTeacher(message);
+                                await handler.HandleAddOrUpdateTeacherAsync(message);
                                 break;
                             }
+                        case (int)BusMessageTypes.CLASS:
+                        case (int)BusMessageTypes.CLASS_UPDATE:
+                        case (int)BusMessageTypes.CLASS_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateClassAsync(message);
+                                break;
+                            }
+                       
                     }
                 });
                 return handlers;
@@ -94,14 +102,30 @@ namespace LearningSvc.API
             //Permission not needed here
             //services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
+           Directory.CreateDirectory(Path.Combine(HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath")));
+
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
 
-            services.AddScoped<IFileStorageService, FileStorageService>();
-            //services.AddTransient<IFileUploadService, FileUploadService>();     
-            services.AddScoped<INotificationService, NotificationService>();
             services.AddTransient<LearningHandler>();
+
+            services.AddScoped<IFileStorageService, FileStorageService>();
+            //services.AddTransient<IFileUploadService, FileUploadService>(); 
+            services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<ITimeTableService, TimeTableService>();
+            services.AddScoped<IAssignmentService, AssignmentService>();
+            services.AddScoped<IMediaService, MediaService>();
+            services.AddScoped<IClassWorkService, ClassWorkService>();
+            services.AddScoped<ILessonNoteService, LessonNoteService>();
+            services.AddScoped<ITeacherClassSubjectService, TeacherClassSubjectService>();
+            services.AddScoped<IClassSubjectService, ClassSubjectService>();
+            services.AddScoped<ISchoolClassService, SchoolClassService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<ISubjectService, SubjectService>();
+            services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<IFileStore, FileStore>();
         }
     }
 }

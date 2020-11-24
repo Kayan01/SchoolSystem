@@ -49,7 +49,7 @@ namespace Auth.Core.Services
             var data = new Test { Title = title, Description = title };
             await _producerClient.Produce("notice", new BusMessage
             {
-                BusMessageType = (int)BusMessageTypes.NOTICE,
+                BusMessageType = (int)BusMessageTypes.NOTIFICATION,
                 Data = JsonConvert.SerializeObject(data)
             });
             result.Data = "Okay";

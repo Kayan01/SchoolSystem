@@ -13,6 +13,16 @@ namespace Shared.ViewModels
         {
             Data = data;
         }
+        public ResultModel(string errorMessage)
+        {
+            AddError(errorMessage);
+        }
+
+        public ResultModel(List<string> errorMessage)
+        {
+            errorMessage.ForEach(x => AddError(x));
+        }
+
         public List<ValidationResult> ValidationErrors { get; set; } = new List<ValidationResult>();
 
         public List<string> ErrorMessages

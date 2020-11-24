@@ -1,5 +1,6 @@
 ﻿using Auth.Core.ViewModels;
 using Shared.Entities;
+using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +13,12 @@ namespace Auth.Core.Services.Interfaces
     {
         //adds user and returns id
         Task<long?> AddUserAsync(AuthUserModel model);
-
         Task<bool> UpdateUserAsync(long id, AuthUserModel model);
-
         Task<bool> DeleteUserAsync(long id);
-
         IQueryable<User> GetAllAuthUsersAsync();
+
+        Task<ResultModel<string>> RequestPasswordReset(string email);
+        Task<ResultModel<bool>> PassworReset(PasswordResetModel model);
+        Task<ResultModel<(User user, string code)>> GetPasswordRestCode(string email);
     }
 }

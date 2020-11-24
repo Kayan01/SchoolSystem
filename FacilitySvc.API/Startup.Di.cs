@@ -66,7 +66,7 @@ namespace FacilitySvc.API
                 {
                     switch (message.BusMessageType)
                     {
-                        case (int)BusMessageTypes.NOTICE:
+                        case (int)BusMessageTypes.NOTIFICATION:
                             {
                                 handler.HandleTest(message);
                                 break;

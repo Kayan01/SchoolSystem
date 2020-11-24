@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using LearningSvc.Core.Services.Interfaces;
+using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels;
 using Shared.PubSub;
 using System;
@@ -10,52 +10,36 @@ using LearningSvc.Core.Models;
 using Shared.DataAccess.Repository;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using System.Linq;
+using LearningSvc.Core.Services;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace LearningSvc.Core.EventHandlers
 {
     public class LearningHandler
     {
         private readonly ILogger<LearningHandler> _logger;
-        private readonly IRepository<Student, long> _studentRepo;
-        private readonly IRepository<Teacher, long> _teacherRepo;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ISchoolClassService _schoolClassService;
+        private readonly IStudentService _studentService;
+        private readonly ITeacherService _teacherService;
 
         public LearningHandler(ILogger<LearningHandler> logger,
-            IRepository<Student, long> studentRepo,
-            IRepository<Teacher, long> teacherRepo,
-            IUnitOfWork unitOfWork)
+            ISchoolClassService schoolClassService,
+            IStudentService studentService,
+            ITeacherService teacherService)
         {
-            _unitOfWork = unitOfWork;
-            _studentRepo = studentRepo;
-            _teacherRepo = teacherRepo;
+            _logger = logger;
+            _studentService = studentService;
+            _teacherService = teacherService;
+            _schoolClassService = schoolClassService;
         }
 
-        public void HandleAddOrUpdateStudent(BusMessage message)
+        public async Task HandleAddOrUpdateStudentAsync(BusMessage message)
         {
             try
             {
                 var data = JsonConvert.DeserializeObject<StudentSharedModel>(message.Data);
-
-                var student = _studentRepo.FirstOrDefault(x => x.Id == data.Id && x.TenantId == data.TenantId);
-                if(student == null)
-                {
-                    student = _studentRepo.Insert(new Student
-                    {
-                        Id = data.Id
-                    });
-                }
-
-                student.TenantId = data.TenantId;
-                student.ClassId = data.ClassId;
-                student.FirstName = data.FirstName;
-                student.LastName = data.LastName;
-                student.Email = data.Email;
-                student.Phone = data.Phone;
-                student.UserId = data.UserId;
-                student.IsActive = data.IsActive;
-                student.IsDeleted = data.IsDeleted;
-
-                _unitOfWork.SaveChanges();
+                await _studentService.AddOrUpdateStudentFromBroadcast(data);
             }
             catch (Exception e)
             {
@@ -64,32 +48,12 @@ namespace LearningSvc.Core.EventHandlers
             }
         }
 
-        public void HandleAddOrUpdateTeacher(BusMessage message)
+        public async Task HandleAddOrUpdateTeacherAsync(BusMessage message)
         {
             try
             {
                 var data = JsonConvert.DeserializeObject<TeacherSharedModel>(message.Data);
-
-                var teacher = _teacherRepo.FirstOrDefault(x => x.Id == data.Id && x.TenantId == data.TenantId);
-                if (teacher == null)
-                {
-                    teacher = _teacherRepo.Insert(new Teacher
-                    {
-                        Id = data.Id
-                    });
-                }
-
-                teacher.TenantId = data.TenantId;
-                teacher.ClassId = data.ClassId;
-                teacher.FirstName = data.FirstName;
-                teacher.LastName = data.LastName;
-                teacher.Email = data.Email;
-                teacher.Phone = data.Phone;
-                teacher.UserId = data.UserId;
-                teacher.IsActive = data.IsActive;
-                teacher.IsDeleted = data.IsDeleted;
-
-                _unitOfWork.SaveChanges();
+                await _teacherService.AddOrUpdateTeacherFromBroadcast(data);
             }
             catch (Exception e)
             {
@@ -97,6 +61,21 @@ namespace LearningSvc.Core.EventHandlers
                 throw;
             }
         }
+
+        public async Task HandleAddOrUpdateClassAsync(BusMessage message)
+        {
+            try
+            {
+                var data = JsonConvert.DeserializeObject<List<ClassSharedModel>>(message.Data);
+                await _schoolClassService.AddOrUpdateClassFromBroadcast(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+                throw;
+            }
+        }
+      
 
     }
 }

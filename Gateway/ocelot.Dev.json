@@ -1,0 +1,62 @@
+﻿{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "10.0.0.5",
+          "Port": 58101
+        }
+      ],
+      "UpstreamPathTemplate": "/schtrack-auth/{catchAll}"
+    },
+    {
+      "DownstreamPathTemplate": "/{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "10.0.0.5",
+          "Port": 58102
+        }
+      ],
+      "UpstreamPathTemplate": "/schtrack-notification/{catchAll}"
+    },
+    {
+      "DownstreamPathTemplate": "/{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "10.0.0.5",
+          "Port": 58103
+        }
+      ],
+      "UpstreamPathTemplate": "/schtrack-facility/{catchAll}"
+    },
+    {
+      "DownstreamPathTemplate": "/{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "10.0.0.5",
+          "Port": 58104
+        }
+      ],
+      "UpstreamPathTemplate": "/schtrack-learning/{catchAll}"
+    },
+    {
+      "DownstreamPathTemplate": "/{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "10.0.0.5",
+          "Port": 58105
+        }
+      ],
+      "UpstreamPathTemplate": "/schtrack-assessment/{catchAll}"
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://10.0.0.5:58100"
+  }
+}

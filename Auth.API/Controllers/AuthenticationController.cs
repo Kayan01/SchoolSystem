@@ -21,6 +21,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Auth.API.ViewModel;
+using Auth.Core.Services.Interfaces;
+using Shared.ViewModels.Enums;
+using Auth.Core.ViewModels;
 
 namespace Auth.API.Controllers
 {
@@ -30,17 +33,17 @@ namespace Auth.API.Controllers
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
-        private readonly IDataProtector _protector;
+        private readonly IAuthUserManagement _authUserService;
 
         public AuthenticationController(IOptions<IdentityOptions> identityOptions,
                                         SignInManager<User> signInManager,
-                                        IDataProtectionProvider provider,
+                                        IAuthUserManagement authUserService,
                                         UserManager<User> userManager)
         {
             _identityOptions = identityOptions;
             _signInManager = signInManager;
             _userManager = userManager;
-            _protector = provider.CreateProtector("Auth");
+            _authUserService = authUserService;
         }
 
         [AllowAnonymous, HttpPost]
@@ -275,37 +278,31 @@ namespace Auth.API.Controllers
         }
 
 
-        [HttpGet("{email}")]
+        [HttpPost()]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         [AllowAnonymous]
-        public async Task<IActionResult> RequestPasswordReset(string email)
+        public async Task<IActionResult> RequestPasswordReset([FromForm]string email)
         {
             try
             {
-                var response = new ApiResponse<string>();
-                var user = await _userManager.FindByEmailAsync(email);
-                if (user == null)
-                {
-                    response.Errors.Add($"User with {email} does not exist");
-                    return Ok(response);
-                }
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var tokenQueryModel = new PasswordResetQueryModel { Email = user.Email, Token = code };
-                var tokenQueryModelString = JsonConvert.SerializeObject(tokenQueryModel);
-                code = _protector.Protect(tokenQueryModelString);
-                //code = tokenQueryModelString;
-                //code = WebUtility.UrlEncode(code);                
-                response.Payload = code;
-                return Ok(response);
+                if (string.IsNullOrEmpty(email))
+                    return ApiResponse<string>(errors: "A valid email is required");
+
+                var result = await _authUserService.RequestPasswordReset(email);
+
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<string>(message: result.Message, codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception e)
             {
-                throw;
+                return  HandleError(e);
             }
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         [AllowAnonymous]
         public async Task<IActionResult> PasswordReset([FromBody]PasswordResetModel model)
         {
@@ -315,39 +312,13 @@ namespace Auth.API.Controllers
                     return ApiResponse<string>(errors: "Token is required");
                 if (string.IsNullOrEmpty(model.NewPassword))
                     return ApiResponse<string>(errors: "Password is required");
-                var passwordResetModelString = "";
-                var response = new ApiResponse<string>();
-                try
-                {
-                    passwordResetModelString = _protector.Unprotect(model.Token);
-                    //passwordResetModelString = model.Token;
 
-                }
-                catch (Exception e)
-                {
-                    response.Errors.Add("Invalid Token");
-                    return Ok(response);
-                }
-                var passwordResetModel = JsonConvert.DeserializeObject<PasswordResetQueryModel>(passwordResetModelString);
-                //passwordResetModel.Token = WebUtility.UrlDecode(passwordResetModel.Token);
-                var user = await _userManager.FindByEmailAsync(passwordResetModel.Email);
-                if (user == null)
-                {
-                    response.Errors.Add($"User with {passwordResetModel?.Email} does not exist");
-                    return Ok(response);
-                }
-                if (!user.EmailConfirmed)
-                {
-                    user.EmailConfirmed = true;
-                }
-                //Update Password
-                var res = await _userManager.ResetPasswordAsync(user, passwordResetModel.Token, model.NewPassword);
-                if (!res.Succeeded)
-                {
-                    response.Errors.Add("Failed to reset password");
-                    return Ok(response);
-                }
-                return Ok(response);
+                var result = await _authUserService.PassworReset(model);
+
+                if (result.HasError)
+                    return ApiResponse<bool>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<bool>(message: result.Message, codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {

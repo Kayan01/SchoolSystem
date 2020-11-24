@@ -44,16 +44,6 @@ namespace Auth.Core.Context
             var cls = new List<SchoolClass>() { new SchoolClass { Id = 1L, Name = "Jss1A", SchoolSectionId = 1 }, new SchoolClass { Id = 2L, Name = "Jss2A", SchoolSectionId = 2} };
 
 
-            var studts = new List<Student>
-            {
-                new Student{ Id = 1, TenantId = 1, ClassId = 1L},
-                new Student{ Id = 2, TenantId = 1, ClassId = 1L },
-                new Student{ Id = 3, TenantId = 2, ClassId = 1L },
-                new Student{ Id = 4, TenantId = 2, ClassId = 2L },
-                new Student{ Id = 5, TenantId = 3, ClassId = 2L},
-                new Student{ Id = 6, TenantId = 3, ClassId = 2L}
-
-            };
 
             builder.Entity<SchoolSection>().HasData(secs);
             builder.Entity<SchoolClass>().HasData(cls);

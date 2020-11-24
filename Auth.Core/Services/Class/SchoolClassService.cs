@@ -11,6 +11,8 @@ using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.SchoolClass;
 using Auth.Core.Models.Users;
 using Shared.PubSub;
+using Shared.Pagination;
+using IPagedList;
 
 namespace Auth.Core.Services
 {
@@ -39,9 +41,9 @@ namespace Auth.Core.Services
             _publishService = publishService;
         }
 
-        public async Task<ResultModel<ClassVM>> AddClass(ClassVM model)
+        public async Task<ResultModel<bool>> AddClass(AddClassVM model)
         {
-            var result = new ResultModel<ClassVM>();
+            var result = new ResultModel<bool>();
 
             //check if section exists
             var schoolSection = await _schoolSectionsRepo.FirstOrDefaultAsync(model.SectionId);
@@ -52,34 +54,57 @@ namespace Auth.Core.Services
             }
 
             //check if class arm exist
-            var classArm = await _classArmRepo.FirstOrDefaultAsync(model.ClassGroupId);
+            var classArms = _classArmRepo.GetAll().Where(x => model.ClassArmIds.Contains(x.Id)).ToList();
 
-            if (classArm == null)
+            if (classArms.Count < 1 )
             {
-                result.AddError("Class arm does not exist. Please create the class arm");
+                result.AddError("No class arms found");
                 return result;
             }
 
             //todo: add more props
-            var cls = new SchoolClass
-            {
-                Name = model.Name,
-                ClassArm = classArm.Name,
-                SchoolSectionId = model.SectionId
-            };
+            var classList = new List<SchoolClass>();
 
-            var id = _classRepo.InsertAndGetId(cls);
+            foreach (var arm in classArms)
+            {
+                classList.Add(new SchoolClass
+                {
+                    ClassArm = arm.Name,
+                    Name = model.Name,
+                    SchoolSectionId = model.SectionId,
+                    IsActive = model.Status,
+                     TenantId = schoolSection.TenantId,
+                     Sequence = model.Sequence,
+                      
+                });
+
+            }
+            schoolSection.Classes = classList;
+
+            _schoolSectionsRepo.Update(schoolSection);
+
             await _unitOfWork.SaveChangesAsync();
-            model.Id = id;
-            result.Data = model;
+            result.Data = true;
 
-            //PublishMessage
-            await _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS, new ClassSharedModel
+            //PublishMessage for all classes
+            //classList.Select(x => _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS, new ClassSharedModel
+            //{
+            //    Id = x.Id,
+            //    TenantId = x.TenantId,
+            //    Name = x.Name,
+            //    ClassArm = x.ClassArm
+            //}));
+
+            var listClassSharedModel = classList.Select(x => new ClassSharedModel
             {
-                TenantId = cls.TenantId,
-                Name = cls.Name,
-                ClassArm = cls.ClassArm
-            });
+                ClassArm = x.ClassArm,
+                Id = x.Id,
+                Name = x.Name,
+                TenantId = x.TenantId
+            }).ToList();
+
+
+            await _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS, listClassSharedModel);
 
             return result;
         }
@@ -183,12 +208,14 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<ListClassVM>>> GetAllClasses()
+        public async Task<ResultModel<PaginatedModel<ListClassVM>>> GetAllClasses(QueryModel vm)
         {
-            var result = new ResultModel<List<ListClassVM>>
-            {
-                Data = await _classRepo.GetAll().Select(x => (ListClassVM)x).ToListAsync()
-            };
+            var result = new ResultModel<PaginatedModel<ListClassVM>>();
+            var query = await _classRepo.GetAll()
+                .Include(x => x.SchoolSection).ToPagedListAsync(vm.PageIndex, vm.PageSize);
+           
+            result.Data = new PaginatedModel<ListClassVM>(query.Select(x => (ListClassVM)x), vm.PageIndex, vm.PageSize, query.TotalItemCount);
+
             return result;
         }
 
@@ -228,6 +255,27 @@ namespace Auth.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<List<ListClassVM>>> GetClassBySection(long levelId)
+        {
+            var result = new ResultModel<List<ListClassVM>>();
+
+            //check if section exists
+            var schoolSection = await _schoolSectionsRepo.GetAll()
+                .Include(x=> x.Classes)
+                .Where(x=> x.Id == levelId)
+                .FirstOrDefaultAsync();
+            if (schoolSection == null)
+            {
+                result.AddError("School section does not exist.Please create school section");
+                return result;
+            }
+
+
+            result.Data = new List<ListClassVM>(schoolSection.Classes.Select(x => (ListClassVM)x));
+            return result;
+
+        }
+
         public async Task<ResultModel<ClassUpdateVM>> UpdateClass(ClassUpdateVM model)
         {
             var @class = await _classRepo.FirstOrDefaultAsync(model.Id);
@@ -243,8 +291,21 @@ namespace Auth.Core.Services
             //TODO: add more props
             @class.Name = model.Name;
 
-            await _classRepo.UpdateAsync(@class);
             await _unitOfWork.SaveChangesAsync();
+
+            var listClassSharedModel = new List<ClassSharedModel>
+            {
+                new ClassSharedModel
+                {
+                    ClassArm = @class.ClassArm,
+                    Id = @class.Id,
+                    Name = @class.Name,
+                    TenantId = @class.TenantId
+                }
+            };
+
+            await _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS_UPDATE, listClassSharedModel);
+
             result.Data = model;
             return result;
         }

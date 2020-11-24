@@ -24,14 +24,14 @@ namespace Auth.Core.Services.Class
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ResultModel<ClassArmVM>> AddClassArm(ClassArmVM model)
+        public async Task<ResultModel<ClassArmVM>> AddClassArm(AddClassArm model)
         {
             var result = new ResultModel<ClassArmVM>();
             //todo: add more props
-            var classArm = _classArmRepo.Insert(new ClassArm { Name = model.Name });
+            var classArm = _classArmRepo.Insert(new ClassArm { Name = model.Name, IsActive = model.Status });
             await _unitOfWork.SaveChangesAsync();
-            model.Id = classArm.Id;
-            result.Data = model;
+            
+            result.Data = (ClassArmVM)classArm;
             return result;
         }
 
@@ -41,7 +41,19 @@ namespace Auth.Core.Services.Class
 
             await _classArmRepo.DeleteAsync(Id);
             await _unitOfWork.SaveChangesAsync();
+
             result.Data = true;
+
+            return result;
+        }
+
+        public async Task<ResultModel<ClassArmVM>> GetAllClassArmById(long Id)
+        {
+            var result = new ResultModel<ClassArmVM>();
+
+           var classArm = await _classArmRepo.FirstOrDefaultAsync(Id);
+
+            result.Data = (ClassArmVM)classArm;
 
             return result;
         }
@@ -55,9 +67,9 @@ namespace Auth.Core.Services.Class
             return result;
         }
 
-        public async Task<ResultModel<ClassArmVM>> UpdateClassArm(ClassArmVM model)
+        public async Task<ResultModel<ClassArmVM>> UpdateClassArm(UpdateClassArmVM model, long id   )
         {
-            var classArm = await _classArmRepo.FirstOrDefaultAsync(model.Id);
+            var classArm = await _classArmRepo.FirstOrDefaultAsync(id);
             var result = new ResultModel<ClassArmVM>();
 
             if (classArm == null)
@@ -69,10 +81,11 @@ namespace Auth.Core.Services.Class
 
             //TODO: add more props
             classArm.Name = model.Name;
+            classArm.IsActive = model.Status;
 
             await _classArmRepo.UpdateAsync(classArm);
             await _unitOfWork.SaveChangesAsync();
-            result.Data = model;
+            result.Data = (ClassArmVM)classArm;
             return result;
         }
     }

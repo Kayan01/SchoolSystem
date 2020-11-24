@@ -1,0 +1,24 @@
+﻿using Auth.Core.ViewModels.Parent;
+using IPagedList;
+using Shared.Pagination;
+using Shared.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Auth.Core.Interfaces.Users
+{
+    public interface IParentService
+    {
+        Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParents(QueryModel vm);
+        Task<ResultModel<ParentDetailVM>> GetParentsForStudent(long studId);
+        Task<ResultModel<ParentDetailVM>> GetParentById(long Id);
+
+        Task<ResultModel<ParentDetailVM>> AddNewParent(AddParentVM vm);
+        Task<ResultModel<ParentDetailVM>> UpdateParent(long Id,UpdateParentVM vm);
+        Task<ResultModel<string>> DeleteParent(long Id);
+
+
+    }
+}

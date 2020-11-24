@@ -7,19 +7,24 @@ namespace Shared.Utils
         public const string DateFormat = "dd MMMM, yyyy";
         public const string TimeFormat = "hh:mm tt";
         public const string SystemDateFormat = "dd/MM/yyyy";
-        public const string SkuPrefix = "SKU-";
-        public const int requestIdNoMinLength = 8;
 
         public static readonly string[] validExcels = new[] { ".xls", ".xlsx" };
 
-        public class MailUrl
+        public static class EmailTemplateType
         {
-            public const string PasswordReset = "filestore/emailtemplates/passwordreset.htm";
-            public const string RFQInvitation = "RFQInvitation";
-            public const string QuotationCreation = "QuotationCreation";
-            public const string SelectedQuote = "SelectedQuotation";
-            public const string ContractOffer = "ContactOffer";
-            public const string SupplyInitialization = "SupplyInitialization";
+            public const string PasswordReset = nameof(PasswordReset);
+            public const string SuccessPasswordReset = nameof(SuccessPasswordReset);
+            public const string NewUser = nameof(NewUser);
+            public const string NewTeacher = nameof(NewTeacher);
+        }
+
+        public static class EntityType
+        {
+            public const string User = nameof(User);
+            public const string Teacher = nameof(Teacher);
+            public const string Student = nameof(Student);
+            public const string Staff = nameof(Staff);
+            public const string Assignment = nameof(Assignment);
         }
 
         public class EmailTemplate
@@ -37,11 +42,10 @@ namespace Shared.Utils
 
         public static readonly List<EmailTemplate> EmailTemplates = new List<EmailTemplate>
         {
-            new EmailTemplate(MailUrl.RFQInvitation, "RFQ Invitation", "filestore/emailtemplates/rfqinvitation.htm"),
-            new EmailTemplate(MailUrl.QuotationCreation, "QUotation Url", "filestore/emailtemplates/quotecreation.htm"),
-            new EmailTemplate(MailUrl.SelectedQuote, "Selected Quotation", "filestore/emailtemplates/selectedquote.htm"),
-            new EmailTemplate(MailUrl.ContractOffer, "Contract Offer", "filestore/emailtemplates/contractoffer.htm"),
-            new EmailTemplate(MailUrl.SupplyInitialization, "Supply Initialization", "filestore/emailtemplates/supplyinit.htm" ),
+            new EmailTemplate(EmailTemplateType.PasswordReset, "Password Reset Request", "filestore/emailtemplates/passwordreset.htm"),
+            new EmailTemplate(EmailTemplateType.SuccessPasswordReset, "Successful Password Reset", "filestore/emailtemplates/successpasswordreset.htm"),
+            new EmailTemplate(EmailTemplateType.NewUser, "New User", "filestore/emailtemplates/newuser.htm"),
+            new EmailTemplate(EmailTemplateType.NewTeacher, "New Teacher", "filestore/emailtemplates/newteacher.htm"),
         };
 
         public class PaginationConsts

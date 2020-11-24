@@ -5,18 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.School;
+using Shared.Utils;
+using Shared.Pagination;
+using Microsoft.AspNetCore.Http;
 
 namespace Auth.Core.Services.Interfaces
 {
     public interface ISchoolService
     {
-        Task<ResultModel<List<SchoolVM>>> GetAllSchools(PagingVM model);
 
-        Task<ResultModel<CreateSchoolVM>> AddSchool(CreateSchoolVM model);
+        Task<ResultModel<int>> GetTotalSchoolsCount();
+        Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model);
+        Task<ResultModel<bool>> AddBulkSchool(IFormFile model);
 
-        Task<ResultModel<SchoolVM>> GetSchoolById(long Id);
+        Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model);
+        Task<ResultModel<SchoolDetailVM>> GetSchoolById(long Id);
 
-        Task<ResultModel<SchoolUpdateVM>> UpdateSchool(SchoolUpdateVM model);
+        Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model, long Id);
 
         Task<ResultModel<bool>> DeleteSchool(long Id);
     }

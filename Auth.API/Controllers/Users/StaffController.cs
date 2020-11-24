@@ -27,7 +27,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddStaff(StaffVM model)
+        public async Task<IActionResult> AddStaff([FromForm]AddStaffVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -54,16 +54,16 @@ namespace UserManagement.API.Controllers
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllStaffInSchool([FromQuery] PagingVM vM)
+        public async Task<IActionResult> GetAllStaffInSchool([FromQuery] QueryModel vM)
         {
 
             try
             {
-                var result = await _staffService.GetAllStaff(vM.PageNumber, vM.PageSize);
+                var result = await _staffService.GetAllStaff(vM);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items);
             }
             catch (Exception ex)
             {
@@ -71,7 +71,7 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{staffId}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public async Task<IActionResult> GetStaffById(long staffId)
@@ -95,7 +95,7 @@ namespace UserManagement.API.Controllers
         [HttpPut]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateStaff(StaffUpdateVM vM)
+        public async Task<IActionResult> UpdateStaff([FromForm]StaffUpdateVM vM)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);

@@ -1,11 +1,14 @@
-﻿using Microsoft.OpenApi.Extensions;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.OpenApi.Extensions;
 using Shared.Entities;
+using Shared.Enums;
 using Shared.Utils;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Shared.FileStorage
 {
@@ -16,19 +19,32 @@ namespace Shared.FileStorage
         {
             _fileStorageService = fileStorageService;
         }
-        public List<FileUpload> TryUploadSupportingDocuments(List<DocumentVM> formFiles)
+
+        public async Task<FileUpload> TryUploadSupportingDocument(IFormFile formFile, DocumentType docType)
+        {
+                var fileName = CommonHelper.GenerateTimeStampedFileName(formFile.FileName);
+                var uploaded = await _fileStorageService.TrySaveStreamAsync(fileName,
+                  formFile.OpenReadStream());
+                
+            if (uploaded)
+                return new FileUpload { ContentType = formFile.ContentType, Name = docType.GetDisplayName(), Path = fileName };
+
+            return null;
+        }
+
+        public async Task<List<FileUpload>> TryUploadSupportingDocuments(List<IFormFile> formFiles, List<DocumentType> DocTypes)
         {
 
             var fileUploads = new List<FileUpload>();
             var uploaded = false;
             foreach (var file in formFiles)
             {
-                var formFile = file.File;
-                var fileName = CommonHelper.GenerateTimeStampedFileName(formFile.FileName);
-                uploaded = _fileStorageService.TrySaveStream(fileName,
-                  formFile.OpenReadStream());
+                var index = formFiles.IndexOf(file);
+                var fileName = CommonHelper.GenerateTimeStampedFileName(file.FileName);
+                uploaded = await _fileStorageService.TrySaveStreamAsync(fileName,
+                  file.OpenReadStream());
                 if (uploaded)
-                    fileUploads.Add(new FileUpload { ContentType = formFile.ContentType, Name = file.DocumentType.GetDisplayName(), Path = fileName });
+                    fileUploads.Add(new FileUpload { ContentType = file.ContentType, Name = DocTypes[index].GetDisplayName(), Path = fileName });
                 else
                     break;
             }
