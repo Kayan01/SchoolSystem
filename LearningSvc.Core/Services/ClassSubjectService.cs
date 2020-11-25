@@ -63,8 +63,8 @@ namespace LearningSvc.Core.Services
             var subject = await _subjectRepo.GetAll().Where(x => x.Id == model.SubjectId).FirstOrDefaultAsync();
             if (subject == null)
             {
-                r.Data = "Subject was not found";
                 r.AddError("Subject was not found");
+                return r;
             }
 
             foreach (var id in model.ClassIds)

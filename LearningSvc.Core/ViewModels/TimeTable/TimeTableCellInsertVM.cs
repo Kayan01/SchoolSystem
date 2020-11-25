@@ -16,7 +16,6 @@ namespace LearningSvc.Core.ViewModels.TimeTable
         [Required]
         public long TeacherClassSubjectId { get; set; }
 
-        public int NoOfPeriod { get; set; } = 1;
         public bool HasVirtual { get; set; } = false;
 
     }

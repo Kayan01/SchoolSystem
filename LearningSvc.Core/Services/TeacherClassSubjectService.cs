@@ -32,8 +32,8 @@ namespace LearningSvc.Core.Services
             var teacher = await _teacherRepo.FirstOrDefaultAsync(x => x.Id == model.TeacherId);
             if (teacher == null)
             {
-                r.Data = "Teacher was not found";
                 r.AddError("Teacher was not found");
+                return r;
             }
 
             foreach (var id in model.ClassSubjectIds)
