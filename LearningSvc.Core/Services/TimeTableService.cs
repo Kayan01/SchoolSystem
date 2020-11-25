@@ -21,24 +21,34 @@ namespace LearningSvc.Core.Services
         private readonly IRepository<TimeTableCell, long> _timeTableRepo;
         private readonly IRepository<Period, long> _periodRepo;
         private readonly IRepository<TeacherClassSubject, long> _teacherClassSubjectRepo;
+        private readonly IRepository<Teacher, long> _teacherRepo;
         private readonly IUnitOfWork _unitOfWork;
 
         public TimeTableService(IUnitOfWork unitOfWork, 
             IRepository<TimeTableCell, long> timeTableRepo, 
             IRepository<Period, long> periodRepo, 
-            IRepository<TeacherClassSubject, long> teacherClassSubjectRepo)
+            IRepository<TeacherClassSubject, long> teacherClassSubjectRepo,
+            IRepository<Teacher, long> teacherRepo)
         {
             _unitOfWork = unitOfWork;
             _timeTableRepo = timeTableRepo;
             _periodRepo = periodRepo;
             _teacherClassSubjectRepo = teacherClassSubjectRepo;
+            _teacherRepo = teacherRepo;
         }
 
-        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForTeacherToday(long teacherId, WeekDays day)
+        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForTeacherToday(long currentUserId, WeekDays day)
         {
-            var result = new ResultModel<List<ClassSessionOutputVM>>
+            var result = new ResultModel<List<ClassSessionOutputVM>>();
+
+            var teacher = await _teacherRepo.GetAll().Where(m => m.UserId == currentUserId).FirstOrDefaultAsync();
+            if (teacher == null)
             {
-                Data = await _timeTableRepo.GetAll().Where(m => m.TeacherClassSubject.TeacherId == teacherId && m.Day == day)
+                result.AddError("Current user is not a valid Teacher");
+                return result;
+            }
+
+            result.Data = await _timeTableRepo.GetAll().Where(m => m.TeacherClassSubject.TeacherId == teacher.Id && m.Day == day)
                 .Select(x => new ClassSessionOutputVM
                 {
                     TimeTableCellId = x.Id,
@@ -52,8 +62,8 @@ namespace LearningSvc.Core.Services
                     NoOfStudent = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Students.Count,
                     HasVirtual = x.HasVirtual,
                     ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId
-                }).ToListAsync()
-            };
+                }).ToListAsync();
+
             return result;
         }
 
@@ -66,28 +76,35 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetNextClassesForTeacherToday(long teacherId, WeekDays day, int curPeriod, int Count)
+        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetNextClassesForTeacherToday(long currentUserId, WeekDays day, int curPeriod, int Count)
         {
-            var result = new ResultModel<List<ClassSessionOutputVM>>
+            var result = new ResultModel<List<ClassSessionOutputVM>>();
+
+            var teacher = await _teacherRepo.GetAll().Where(m => m.UserId == currentUserId).FirstOrDefaultAsync();
+            if (teacher == null)
             {
-                Data = await _timeTableRepo.GetAll().Where(m => m.TeacherClassSubject.TeacherId == teacherId && m.Day == day && m.Period.Step > curPeriod)
-                    .Select(x => new ClassSessionOutputVM
-                    {
-                        TimeTableCellId = x.Id,
-                        ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
-                        SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
-                        TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
-                        TimeFrom = x.Period.TimeFrom,
-                        TimeTo = x.Period.TimeTo,
-                        NoOfPeriods = x.NoOfPeriod,
-                        PeriodName = x.Period.Name,
-                        NoOfStudent = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Students.Count,
-                        HasVirtual = x.HasVirtual,
-                        ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId
-                    })
-                    .Take(Count)
-                    .ToListAsync()
-            };
+                result.AddError("Current user is not a valid Teacher");
+                return result;
+            }
+
+            result.Data = await _timeTableRepo.GetAll().Where(m => m.TeacherClassSubject.TeacherId == teacher.Id && m.Day == day && m.Period.Step > curPeriod)
+                .Select(x => new ClassSessionOutputVM
+                {
+                    TimeTableCellId = x.Id,
+                    ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
+                    SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
+                    TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
+                    TimeFrom = x.Period.TimeFrom,
+                    TimeTo = x.Period.TimeTo,
+                    NoOfPeriods = x.NoOfPeriod,
+                    PeriodName = x.Period.Name,
+                    NoOfStudent = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Students.Count,
+                    HasVirtual = x.HasVirtual,
+                    ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId
+                })
+                .Take(Count)
+                .ToListAsync();
+
             return result;
         }
 
@@ -118,30 +135,37 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForTeacher(long teacherId)
+        public async Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForTeacher(long currentUserId)
         {
-            var result = new ResultModel<List<TimeTableCellVM>>
-            {
-                Data = await _timeTableRepo.GetAll().Where(m => m.TeacherClassSubject.TeacherId == teacherId)
-                    .Select(x => new TimeTableCellVM
-                    {
-                        Id = x.Id,
-                        PeriodId = x.PeriodId,
-                        PeriodName = x.Period.Name,
-                        Day = x.Day,
-                        TeacherClassSubjectId = x.TeacherClassSubjectId,
-                        TeacherId = x.TeacherClassSubject.TeacherId,
-                        TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
-                        SubjectId = x.TeacherClassSubject.SchoolClassSubject.SubjectId,
-                        SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
-                        SchoolClassId = x.TeacherClassSubject.SchoolClassSubject.SchoolClassId,
-                        ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
-                        NoOfPeriod = x.NoOfPeriod,
-                        HasVirtual = x.HasVirtual,
-                        ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
+            var result = new ResultModel<List<TimeTableCellVM>>();
 
-                    }).ToListAsync()
-            };
+            var teacher = await _teacherRepo.GetAll().Where(m => m.UserId == currentUserId).FirstOrDefaultAsync();
+            if (teacher == null)
+            {
+                result.AddError("Current user is not a valid Teacher");
+                return result;
+            }
+
+             result.Data = await _timeTableRepo.GetAll().Where(m => m.TeacherClassSubject.TeacherId == teacher.Id)
+                .Select(x => new TimeTableCellVM
+                {
+                    Id = x.Id,
+                    PeriodId = x.PeriodId,
+                    PeriodName = x.Period.Name,
+                    Day = x.Day,
+                    TeacherClassSubjectId = x.TeacherClassSubjectId,
+                    TeacherId = x.TeacherClassSubject.TeacherId,
+                    TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
+                    SubjectId = x.TeacherClassSubject.SchoolClassSubject.SubjectId,
+                    SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
+                    SchoolClassId = x.TeacherClassSubject.SchoolClassSubject.SchoolClassId,
+                    ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
+                    NoOfPeriod = x.NoOfPeriod,
+                    HasVirtual = x.HasVirtual,
+                    ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
+
+                }).ToListAsync();
+
             return result;
         }
 

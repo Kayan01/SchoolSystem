@@ -69,11 +69,11 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet("{teacherId}")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetTimetableForTeacher(long teacherId)
+        public async Task<IActionResult> GetTimetableForTeacher()
         {
             try
             {
-                var result = await _timeTableService.GetTimeTableCellsForTeacher(teacherId);
+                var result = await _timeTableService.GetTimeTableCellsForTeacher(CurrentUser.UserId);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -127,11 +127,11 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetAllClassesForTeacherByDay(long teacherId, WeekDays day)
+        public async Task<IActionResult> GetAllClassesForTeacherByDay(WeekDays day)
         {
             try
             {
-                var result = await _timeTableService.GetAllClassesForTeacherToday(teacherId, day);
+                var result = await _timeTableService.GetAllClassesForTeacherToday(CurrentUser.UserId, day);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -145,11 +145,11 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetNextClassesForTeacherByDay(long teacherId, WeekDays day, int currentPeriod, int count)
+        public async Task<IActionResult> GetNextClassesForTeacherByDay(WeekDays day, int currentPeriod, int count)
         {
             try
             {
-                var result = await _timeTableService.GetNextClassesForTeacherToday(teacherId, day, currentPeriod, count);
+                var result = await _timeTableService.GetNextClassesForTeacherToday(CurrentUser.UserId, day, currentPeriod, count);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
