@@ -38,6 +38,7 @@ namespace Auth.Core.Services.Users
         private readonly IPublishService _publishService;
         private readonly IAuthUserManagement _authUserManagement;
         private readonly ILogger<TeacherService> _logger;
+        private readonly IStaffService _staffService;
 
         public TeacherService(UserManager<User> userManager,
             IRepository<TeachingStaff, long> teacherRepo,
@@ -46,7 +47,8 @@ namespace Auth.Core.Services.Users
             IRepository<Department, long> departmentRepo,
             IAuthUserManagement authUserManagement,
             ILogger<TeacherService> logger,
-            IPublishService publishService)
+            IPublishService publishService,
+            IStaffService staffService)
         {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
@@ -56,6 +58,7 @@ namespace Auth.Core.Services.Users
             _logger = logger;
             _departmentRepo = departmentRepo;
             _documentService = documentService;
+            _staffService = staffService;
         }
 
         public async Task<ResultModel<PaginatedModel<TeacherVM>>> GetTeachers(QueryModel model)
@@ -67,9 +70,9 @@ namespace Auth.Core.Services.Users
                               x.Id,
                               x.Staff.User.Email,
                               x.Staff.User.LastName,
-                              x.Staff.User.PhoneNumber, 
+                              x.Staff.User.PhoneNumber,
                               x.Staff.User.FirstName,
-                               x.Staff.StaffType
+                              x.Staff.StaffType
                           }
                           );
 
@@ -103,7 +106,7 @@ namespace Auth.Core.Services.Users
             return result ;
         }
 
-        public async Task<ResultModel<TeacherVM>> AddTeacher(AddTeacherVM model)
+        public async Task<ResultModel<TeacherVM>> AddTeacher(AddStaffVM model)
         {
             var result = new ResultModel<TeacherVM>();
 
@@ -225,10 +228,10 @@ namespace Auth.Core.Services.Users
                     HighestQualification = model.EmploymentDetails.HighestQualification,
                     Town = model.ContactDetails.Town,
                     State = model.ContactDetails.State,
-                    Address = model.Address,
-                    AltEmailAddress = model.AltEmailAddress,
-                    AltPhoneNumber = model.AltPhoneNumber,
-                    Country = model.Country,
+                    Address = model.ContactDetails.Address,
+                    AltEmailAddress = model.ContactDetails.AltEmailAddress,
+                    AltPhoneNumber = model.ContactDetails.AltPhoneNumber,
+                    Country = model.ContactDetails.Country,
                     JobTitle = model.EmploymentDetails.JobTitle,
                     NextOfKin = nextOfKin,
                     WorkExperiences = workExperiences,
