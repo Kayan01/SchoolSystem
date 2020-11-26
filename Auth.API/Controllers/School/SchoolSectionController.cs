@@ -27,8 +27,8 @@ namespace Auth.API.Controllers.School
 
         [HttpPost]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddSection([FromForm]ClassSectionVM model)
+        [ProducesResponseType(typeof(ApiResponse<ClassSectionVM>), 200)]
+        public async Task<IActionResult> AddSection([FromBody]ClassSectionVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -52,7 +52,7 @@ namespace Auth.API.Controllers.School
 
         [HttpDelete("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteSection(long id)
         {
             if (id < 1)
@@ -76,7 +76,7 @@ namespace Auth.API.Controllers.School
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<ClassSectionVM>>), 200)]
         public async Task<IActionResult> GetAllSections([FromQuery] QueryModel vm)
         {
             try
@@ -95,7 +95,7 @@ namespace Auth.API.Controllers.School
         }
 
         [HttpGet("{Id}")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<ClassSectionVM>), 200)]
         public async Task<IActionResult> GetSectionById(long Id)
         {
             try
@@ -116,8 +116,8 @@ namespace Auth.API.Controllers.School
 
         [HttpPut]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateSection([FromForm] ClassSectionUpdateVM model)
+        [ProducesResponseType(typeof(ApiResponse<ClassSectionUpdateVM>), 200)]
+        public async Task<IActionResult> UpdateSection([FromBody] ClassSectionUpdateVM model)
         {
             if (!ModelState.IsValid)
             {

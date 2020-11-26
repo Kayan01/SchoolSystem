@@ -25,7 +25,7 @@ namespace Auth.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<AdminListVM>), 200)]
         public async Task<IActionResult> AddSchoolTrackAdmin([FromForm] AddAdminVM model)
         {
             if (model == null)
@@ -49,7 +49,7 @@ namespace Auth.API.Controllers
 
         [HttpGet]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<AdminListVM>>), 200)]
         public async Task<IActionResult> GetSchoolTrackAdmins([FromQuery] QueryModel vM)
         {
             try
@@ -67,7 +67,7 @@ namespace Auth.API.Controllers
 
         [HttpGet("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<AdminDetailVM>), 200)]
         public async Task<IActionResult> GetAdminById(long id)
         {
             if (id <= 0)
@@ -90,7 +90,7 @@ namespace Auth.API.Controllers
 
         [HttpPut]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<AdminListVM>), 200)]
         public async Task<IActionResult> UpdateAdmin(UpdateAdminVM vM)
         {
             if (!ModelState.IsValid)
@@ -111,7 +111,7 @@ namespace Auth.API.Controllers
 
         [HttpDelete("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteAdmin(long id)
         {
             if (id < 1)

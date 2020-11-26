@@ -28,7 +28,7 @@ namespace Auth.API.Controllers
         [HttpPost]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<ClassVM>), 200)]
-        public async Task<IActionResult> AddClassArm([FromForm]AddClassArm model)
+        public async Task<IActionResult> AddClassArm([FromBody]AddClassArm model)
         {
             if (!ModelState.IsValid)
             {
@@ -118,7 +118,7 @@ namespace Auth.API.Controllers
         [HttpPut("{Id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<ClassArmVM>), 200)]
-        public async Task<IActionResult> UpdateClassArm([FromForm]UpdateClassArmVM model, long Id)
+        public async Task<IActionResult> UpdateClassArm([FromBody]UpdateClassArmVM model, long Id)
         {
             if (!ModelState.IsValid)
             {

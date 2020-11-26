@@ -27,7 +27,7 @@ namespace UserManagement.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<SchoolVM>), 200)]
         public async Task<IActionResult> AddSchool([FromForm]CreateSchoolVM model)
         {
             if (model == null)
@@ -50,7 +50,7 @@ namespace UserManagement.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> BulkAddSchool([FromForm]IFormFile file)
         {
             if (file == null)
@@ -74,7 +74,7 @@ namespace UserManagement.API.Controllers
 
         [HttpGet]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<SchoolVM>>), 200)]
         public async Task<IActionResult> GetSchools([FromQuery] QueryModel vM)
         {
             try
@@ -92,7 +92,7 @@ namespace UserManagement.API.Controllers
 
         [HttpGet("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<SchoolDetailVM>), 200)]
         public async Task<IActionResult> GetSchool(long id)
         {
             if (id <= 0)
@@ -115,7 +115,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPut("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<SchoolVM>), 200)]
         public async Task<IActionResult> UpdateSchool([FromForm]UpdateSchoolVM vM,[FromRoute] long id)
         {
             if (!ModelState.IsValid)
@@ -141,7 +141,7 @@ namespace UserManagement.API.Controllers
 
         [HttpDelete("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteSchool(long id)
         {
             if (id < 1)
