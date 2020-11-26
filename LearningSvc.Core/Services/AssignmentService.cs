@@ -91,29 +91,26 @@ namespace LearningSvc.Core.Services
             var result = new ResultModel<AssignmentVM>();
 
             var query = await _assignmentRepo.GetAll().Where(m => m.Id == id)
-                    .Select(x => new AssignmentVM
-                    {
-                        Id = x.Id,
-                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
-                        CreationDate = x.CreationTime,
-                        SubjectName = x.SchoolClassSubject.Subject.Name,
-                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
-                        FileType = x.Attachment.ContentType,
-                        FileName = x.Attachment.Path,
-                    }).FirstOrDefaultAsync();
+                .Select(x => new AssignmentVM
+                {
+                    Id = x.Id,
+                    ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
+                    CreationDate = x.CreationTime,
+                    SubjectName = x.SchoolClassSubject.Subject.Name,
+                    TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                    FileType = x.Attachment.ContentType,
+                    FileName = x.Attachment.Path,
+                }).FirstOrDefaultAsync();
 
-            if (query == null)
+            if (query != null)
             {
-                result.Data = query;
-                return result;
-            }
+                var filepath = Path.Combine("Filestore", query.FileName);
 
-            var filepath = Path.Combine("Filestore", query.FileName);
-
-            if (File.Exists(filepath))
-            {
-                query.File = File.ReadAllBytes(filepath);
-                query.FileSize = $"{(query.File.Length / 1000).ToString("0.00")}KB";
+                if (File.Exists(filepath))
+                {
+                    query.File = File.ReadAllBytes(filepath);
+                    query.FileSize = $"{(query.File.Length / 1000).ToString("0.00")}KB";
+                }
             }
 
             result.Data = query;
@@ -125,7 +122,7 @@ namespace LearningSvc.Core.Services
             var assignmentAnswer = await _assignmentAnswerRepo.GetAll()
                 .Where(m => m.AssignmentId == assignmentId).Select(x=> new AssignmentSubmissionListVM()
                 {
-                    ClassName = $"{x.Assignment.SchoolClassSubject.SchoolClass.Name} {x.Assignment.SchoolClassSubject.SchoolClass.Name}",
+                    ClassName = $"{x.Assignment.SchoolClassSubject.SchoolClass.Name} {x.Assignment.SchoolClassSubject.SchoolClass.ClassArm}",
                     Date = x.DateSubmitted,
                     StudentNumber = x.Student.UserId.ToString(),
                     StudentName = $"{x.Student.LastName} {x.Student.FirstName}",
@@ -147,7 +144,7 @@ namespace LearningSvc.Core.Services
                     {
                         Id = x.Id,
                         SubjectName = x.SchoolClassSubject.Subject.Name,
-                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.Name}",
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
                         CreationDate = x.CreationTime,
                         DueDate = x.DueDate,
                         NumberOfStudentsSubmitted = x.AssignmentAnswers.Count(),
@@ -182,7 +179,7 @@ namespace LearningSvc.Core.Services
                     {
                         Id = x.Id,
                         SubjectName = x.SchoolClassSubject.Subject.Name,
-                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.Name}",
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
                         CreationDate = x.CreationTime,
                         DueDate = x.DueDate,
                         NumberOfStudentsSubmitted = x.AssignmentAnswers.Count(),
