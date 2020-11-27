@@ -67,15 +67,6 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<PeriodVM>>> GetAllPeriodForSchool()
-        {
-            var result = new ResultModel<List<PeriodVM>>
-            {
-                Data = await _periodRepo.GetAll().Select(x => (PeriodVM)x).ToListAsync()
-            };
-            return result;
-        }
-
         public async Task<ResultModel<List<ClassSessionOutputVM>>> GetNextClassesForTeacherToday(long currentUserId, WeekDays day, int curPeriod, int Count)
         {
             var result = new ResultModel<List<ClassSessionOutputVM>>();
@@ -105,6 +96,63 @@ namespace LearningSvc.Core.Services
                 .Take(Count)
                 .ToListAsync();
 
+            return result;
+        }
+
+        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForClassToday(long classId, WeekDays day)
+        {
+            var result = new ResultModel<List<ClassSessionOutputVM>>();
+
+            result.Data = await _timeTableRepo.GetAll().Where(m => m.TeacherClassSubject.SchoolClassSubject.SchoolClassId == classId && m.Day == day)
+                .Select(x => new ClassSessionOutputVM
+                {
+                    TimeTableCellId = x.Id,
+                    ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
+                    SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
+                    TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
+                    TimeFrom = x.Period.TimeFrom,
+                    TimeTo = x.Period.TimeTo,
+                    NoOfPeriods = x.NoOfPeriod,
+                    PeriodName = x.Period.Name,
+                    NoOfStudent = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Students.Count,
+                    HasVirtual = x.HasVirtual,
+                    ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId
+                }).ToListAsync();
+
+            return result;
+        }
+
+        public async Task<ResultModel<List<ClassSessionOutputVM>>> GetNextClassesForClassToday(long classId, WeekDays day, int curPeriod, int Count)
+        {
+            var result = new ResultModel<List<ClassSessionOutputVM>>();
+
+            result.Data = await _timeTableRepo.GetAll().Where(m => m.TeacherClassSubject.SchoolClassSubject.SchoolClassId == classId && m.Day == day && m.Period.Step > curPeriod)
+                .Select(x => new ClassSessionOutputVM
+                {
+                    TimeTableCellId = x.Id,
+                    ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
+                    SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
+                    TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
+                    TimeFrom = x.Period.TimeFrom,
+                    TimeTo = x.Period.TimeTo,
+                    NoOfPeriods = x.NoOfPeriod,
+                    PeriodName = x.Period.Name,
+                    NoOfStudent = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Students.Count,
+                    HasVirtual = x.HasVirtual,
+                    ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId
+                })
+                .Take(Count)
+                .ToListAsync();
+
+            return result;
+        }
+
+        public async Task<ResultModel<List<PeriodVM>>> GetAllPeriodForSchool()
+        {
+            var result = new ResultModel<List<PeriodVM>>
+            {
+                Data = await _periodRepo.GetAll().Select(x => (PeriodVM)x).ToListAsync()
+            };
             return result;
         }
 
@@ -279,5 +327,6 @@ namespace LearningSvc.Core.Services
             result.Data = "Deleted Successfully";
             return result;
         }
+
     }
 }
