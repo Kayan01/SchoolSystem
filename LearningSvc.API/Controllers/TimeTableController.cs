@@ -159,6 +159,41 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<ClassSessionOutputVM>>), 200)]
+        public async Task<IActionResult> GetAllClassesForClassToday(long classId, WeekDays day)
+        {
+            try
+            {
+                var result = await _timeTableService.GetAllClassesForClassToday(classId, day);
+                if (result.HasError)
+                    return ApiResponse<List<ClassSessionOutputVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<List<ClassSessionOutputVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<ClassSessionOutputVM>>), 200)]
+        public async Task<IActionResult> GetNextClassesForClassToday(long classId, WeekDays day, int currentPeriod, int count)
+        {
+            try
+            {
+                var result = await _timeTableService.GetNextClassesForClassToday(classId, day, currentPeriod, count);
+                if (result.HasError)
+                    return ApiResponse<List<ClassSessionOutputVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<List<ClassSessionOutputVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpDelete("{timeTableCellId}")]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> DeleteTimetableCell(long timeTableCellId)
