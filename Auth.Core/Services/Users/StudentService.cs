@@ -218,6 +218,7 @@ namespace Auth.Core.Services
             var query = _studentRepo.GetAll()
                 .Select(x => new StudentVM
                 {
+                     Id = x.Id,
                     Class = x.Class.FullName,
                     DateOfBirth = x.DateOfBirth,
                     FirstName = x.User.FirstName,
