@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.ClassSubject;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -14,12 +15,15 @@ namespace LearningSvc.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
+    [AllowAnonymous]
     public class ClassSubjectController : BaseController
     {
         private readonly IClassSubjectService _classSubjectService;
-        public ClassSubjectController(IClassSubjectService classSubjectService)
+        private readonly IStudentService _studentService;
+        public ClassSubjectController(IClassSubjectService classSubjectService, IStudentService studentService)
         {
             _classSubjectService = classSubjectService;
+            _studentService = studentService;
         }
 
         [HttpGet]
@@ -39,16 +43,43 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpGet("{classId}")]
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<ClassSubjectListVM>>), 200)]
-        public async Task<IActionResult> GetSubjectsForClass(long classId)
+        public async Task<IActionResult> GetSubjectsForClass([FromQuery]long classId)
         {
             try
             {
+                if (classId < 1)
+                {
+                    classId = await _studentService.GetStudentClassIdByUserId(CurrentUser.UserId);
+                }
+
                 var result = await _classSubjectService.GetSubjectsForClass(classId);
                 if (result.HasError)
                     return ApiResponse<List<ClassSubjectListVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<List<ClassSubjectListVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<ClassSubjectWithAssignmentCountVM>>), 200)]
+        public async Task<IActionResult> GetSubjectsForClassWithAssignmentCount([FromQuery] long classId)
+        {
+            try
+            {
+                if (classId < 1)
+                {
+                    classId = await _studentService.GetStudentClassIdByUserId(CurrentUser.UserId);
+                }
+
+                var result = await _classSubjectService.GetSubjectsForClassWithAssignmentCount(classId);
+                if (result.HasError)
+                    return ApiResponse<List<ClassSubjectWithAssignmentCountVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<List<ClassSubjectWithAssignmentCountVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {

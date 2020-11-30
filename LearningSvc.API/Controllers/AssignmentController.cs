@@ -19,9 +19,11 @@ namespace LearningSvc.API.Controllers
     public class AssignmentController : BaseController
     {
         private readonly IAssignmentService _assignmentService;
-        public AssignmentController(IAssignmentService assignmentService)
+        private readonly IStudentService _studentService;
+        public AssignmentController(IAssignmentService assignmentService, IStudentService studentService)
         {
             _assignmentService = assignmentService;
+            _studentService = studentService;
         }
 
         [HttpGet]
@@ -47,6 +49,11 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
+                if (classId < 1)
+                {
+                    classId = await _studentService.GetStudentClassIdByUserId(CurrentUser.UserId);
+                }
+
                 var result = await _assignmentService.GetAssignmentsForClass(classId, vM);
                 if (result.HasError)
                     return ApiResponse<List<AssignmentGetVM>>(errors: result.ErrorMessages.ToArray());

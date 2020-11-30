@@ -88,7 +88,7 @@ namespace LearningSvc.Core.Services
             {
                 Data = await _classSubjectRepo.GetAll().Select(x => new ClassSubjectListVM() { 
                     Id = x.Id,
-                    Class = x.SchoolClass.Name,
+                    Class = $"{x.SchoolClass.Name} {x.SchoolClass.ClassArm}",
                     Subject = x.Subject.Name
                 }).ToListAsync()
             };
@@ -103,7 +103,7 @@ namespace LearningSvc.Core.Services
                 .Select(x => new ClassSubjectListVM()
                 {
                     Id = x.Id,
-                    Class = x.SchoolClass.Name,
+                    Class = $"{x.SchoolClass.Name} {x.SchoolClass.ClassArm}",
                     Subject = x.Subject.Name
                 }).ToListAsync()
             };
@@ -118,8 +118,24 @@ namespace LearningSvc.Core.Services
                 .Select(x => new ClassSubjectListVM()
                 {
                     Id = x.Id,
-                    Class = x.SchoolClass.Name,
+                    Class = $"{x.SchoolClass.Name} {x.SchoolClass.ClassArm}",
                     Subject = x.Subject.Name
+                }).ToListAsync()
+            };
+            return result;
+        }
+
+        public async Task<ResultModel<List<ClassSubjectWithAssignmentCountVM>>> GetSubjectsForClassWithAssignmentCount(long classId)
+        {
+            var result = new ResultModel<List<ClassSubjectWithAssignmentCountVM>>
+            {
+                Data = await _classSubjectRepo.GetAll().Where(m => m.SchoolClassId == classId)
+                .Select(x => new ClassSubjectWithAssignmentCountVM()
+                {
+                    Id = x.Id,
+                    Class = $"{x.SchoolClass.Name} {x.SchoolClass.ClassArm}",
+                    Subject = x.Subject.Name,
+                    AssignmentCount = x.Assignments.Count()
                 }).ToListAsync()
             };
             return result;
