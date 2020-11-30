@@ -24,7 +24,27 @@ namespace Auth.API.Controllers
             _studentService = studentService;
         }
 
+        [HttpGet("{Id}")]
+        [ProducesResponseType(typeof(ApiResponse<StudentDetailVM>), 200)]
+        public async Task<IActionResult> GetStudentProfile(long Id)
+        {
 
+            if (Id < 1)
+                return ApiResponse<string>(errors: "Invalid Id");
+           
+            try
+            {
+                var result = await _studentService.GetStudentProfileById(Id);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
         [HttpPost]
         [RequiresPermission(Permission.STUDENT_CREATE)]
