@@ -114,10 +114,10 @@ namespace Auth.API.Controllers.School
         }
 
 
-        [HttpPut]
+        [HttpPut("{Id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<ClassSectionUpdateVM>), 200)]
-        public async Task<IActionResult> UpdateSection([FromBody] ClassSectionUpdateVM model)
+        public async Task<IActionResult> UpdateSection(long Id,[FromBody] ClassSectionUpdateVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -126,7 +126,7 @@ namespace Auth.API.Controllers.School
 
             try
             {
-                var result = await _sectionService.UpdateSection(model);
+                var result = await _sectionService.UpdateSection(Id,model);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

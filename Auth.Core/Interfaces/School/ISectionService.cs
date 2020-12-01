@@ -15,6 +15,6 @@ namespace Auth.Core.Services.Interfaces.Class
 
         Task<ResultModel<PaginatedModel<ClassSectionVM>>> GetAllSections(QueryModel vm);
 
-        Task<ResultModel<ClassSectionUpdateVM>> UpdateSection(ClassSectionUpdateVM model);
+        Task<ResultModel<ClassSectionUpdateVM>> UpdateSection(long id, ClassSectionUpdateVM model);
     }
 }
