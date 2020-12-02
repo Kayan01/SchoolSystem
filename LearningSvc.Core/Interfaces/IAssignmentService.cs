@@ -13,11 +13,8 @@ namespace LearningSvc.Core.Interfaces
     {
         Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForTeacher(long currentUserId, QueryModel queryModel);
         Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForClass(long classId, QueryModel queryModel);
+        Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForClassSubject(long classSubjectId, QueryModel queryModel);
         Task<ResultModel<AssignmentVM>> AssignmentDetail(long id);
-        Task<ResultModel<List<AssignmentSubmissionListVM>>> GetAllSubmission(long assignmentId);
-        Task<ResultModel<AssignmentSubmissionVM>> GetAssignmentSubmission(long submissionId);
-        Task<ResultModel<string>> UpdateScore(AssignmentSubmissionUpdateScoreVM model);
-        Task<ResultModel<string>> UpdateComment(AssignmentSubmissionUpdateCommentVM model);
         Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment, long currentUserId);
     }
 }
