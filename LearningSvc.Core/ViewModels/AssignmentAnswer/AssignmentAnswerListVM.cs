@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace LearningSvc.Core.ViewModels.Assignment
+namespace LearningSvc.Core.ViewModels.AssignmentAnswer
 {
-    public class AssignmentSubmissionListVM
+    public class AssignmentAnswerListVM
     {
         public long Id { get; set; }
 
