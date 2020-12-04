@@ -56,7 +56,7 @@ namespace Auth.Core.Services
             //check if class arm exist
             var classArms = _classArmRepo.GetAll().Where(x => model.ClassArmIds.Contains(x.Id)).ToList();
 
-            if (classArms.Count < 1 )
+            if (classArms.Count < 1)
             {
                 result.AddError("No class arms found");
                 return result;
@@ -73,9 +73,9 @@ namespace Auth.Core.Services
                     Name = model.Name,
                     SchoolSectionId = model.SectionId,
                     IsActive = model.Status,
-                     TenantId = schoolSection.TenantId,
-                     Sequence = model.Sequence,
-                      
+                    TenantId = schoolSection.TenantId,
+                    Sequence = model.Sequence,
+
                 });
 
             }
@@ -211,10 +211,23 @@ namespace Auth.Core.Services
         public async Task<ResultModel<PaginatedModel<ListClassVM>>> GetAllClasses(QueryModel vm)
         {
             var result = new ResultModel<PaginatedModel<ListClassVM>>();
-            var query = await _classRepo.GetAll()
-                .Include(x => x.SchoolSection).ToPagedListAsync(vm.PageIndex, vm.PageSize);
-           
-            result.Data = new PaginatedModel<ListClassVM>(query.Select(x => (ListClassVM)x), vm.PageIndex, vm.PageSize, query.TotalItemCount);
+
+
+            var query = _classRepo.GetAll()
+                .OrderByDescending(x => x.CreationTime)
+                .Select(x => new ListClassVM
+                {
+                    Name = x.Name,
+                    ClassSection = x.SchoolSection.Name,
+                    ClassGroup = x.ClassArm,
+                    Id = x.Id,
+                    Status = x.IsActive,
+                    Sequence = x.Sequence
+                });
+
+            var pagedData = await query.ToPagedListAsync(vm.PageIndex, vm.PageSize);
+
+            result.Data = new PaginatedModel<ListClassVM>(pagedData, vm.PageIndex, vm.PageSize, pagedData.TotalItemCount);
 
             return result;
         }
@@ -261,8 +274,8 @@ namespace Auth.Core.Services
 
             //check if section exists
             var schoolSection = await _schoolSectionsRepo.GetAll()
-                .Include(x=> x.Classes)
-                .Where(x=> x.Id == levelId)
+                .Include(x => x.Classes)
+                .Where(x => x.Id == levelId)
                 .FirstOrDefaultAsync();
             if (schoolSection == null)
             {

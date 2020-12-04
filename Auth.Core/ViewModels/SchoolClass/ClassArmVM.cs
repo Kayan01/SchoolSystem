@@ -1,6 +1,7 @@
 ﻿using Auth.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Auth.Core.ViewModels.SchoolClass
@@ -8,6 +9,7 @@ namespace Auth.Core.ViewModels.SchoolClass
 
     public class AddClassArm
     {
+        [Required]
         public string Name { get; set; }
         public bool Status { get; set; }
     }

@@ -218,6 +218,7 @@ namespace Auth.Core.Services
             var query = _studentRepo.GetAll()
                 .Select(x => new StudentVM
                 {
+                     Id = x.Id,
                     Class = x.Class.FullName,
                     DateOfBirth = x.DateOfBirth,
                     FirstName = x.User.FirstName,
@@ -259,6 +260,88 @@ namespace Auth.Core.Services
                             x.Level,
                             ClassName = x.Class.FullName,
                             SchoolSection =  x.Class.SchoolSection.Name,
+                            x.StudentType,
+                            x.MedicalDetail.BloodGroup,
+                            x.MedicalDetail.Genotype,
+                            x.MedicalDetail.Allergies,
+                            x.MedicalDetail.ConfidentialNotes,
+                            Immunization = x.MedicalDetail.ImmunizationHistories.Select(x => new { x.DateImmunized, x.Vaccine }),
+                            x.User.PhoneNumber,
+                            x.User.Email,
+                            x.Country,
+                            x.Address,
+                            x.Town,
+                            x.State,
+                            files = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
+                        }).FirstOrDefaultAsync();
+
+            if (std == null)
+            {
+                result.AddError("Student does not exist");
+                return result;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            foreach (var item in std.Immunization)
+            {
+                sb.AppendLine($"{item.DateImmunized} {item.Vaccine}");
+            }
+            result.Data = new StudentDetailVM
+            {
+                StudentType = std.StudentType.GetDisplayName(),
+                StateOfOrigin = std.StateOfOrigin,
+                State = std.State,
+                Sex = std.Sex,
+                Section = std.SchoolSection,
+                AdmissionDate = std.AdmissionDate,
+                Allergies = std.Allergies,
+                BloodGroup = std.BloodGroup,
+                Class = std.ClassName,
+                City = std.Town,
+                ConfidentialNote = std.ConfidentialNotes,
+                DateOfBirth = std.DateOfBirth,
+                Country = std.Country,
+                EmailAddress = std.Email,
+                FirstName = std.FirstName,
+                Genotype = std.Genotype,
+                HomeAddress = std.Address,
+                Id = std.Id,
+                ImagePath = std.files?.Path,
+                Immunization = sb.ToString(),
+                LastName = std.LastName,
+                LocalGovernment = std.LocalGovernment,
+                MothersMaidenName = std.MothersMaidenName,
+                Nationality = std.Nationality,
+                ParentName = std.ParentName,
+                PhoneNumber = std.PhoneNumber,
+                Religion = std.Religion,
+
+            };
+            return result;
+        }
+
+        public async Task<ResultModel<StudentDetailVM>> GetStudentProfileById(long Id)
+        {
+            var result = new ResultModel<StudentDetailVM>();
+            var std = await _studentRepo.GetAll().Where(x => x.UserId == Id)
+                        .Select(x => new
+                        {
+                            x.Id,
+                            x.User.FirstName,
+                            x.User.LastName,
+                            x.MothersMaidenName,
+                            x.Sex,
+                            x.DateOfBirth,
+                            ParentName = x.Parent.User.FullName,
+                            x.Nationality,
+                            x.Religion,
+                            x.LocalGovernment,
+                            x.StateOfOrigin,
+                            x.EntryType,
+                            x.AdmissionDate,
+                            x.Level,
+                            ClassName = x.Class.FullName,
+                            SchoolSection = x.Class.SchoolSection.Name,
                             x.StudentType,
                             x.MedicalDetail.BloodGroup,
                             x.MedicalDetail.Genotype,

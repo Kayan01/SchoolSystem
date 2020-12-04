@@ -19,9 +19,11 @@ namespace LearningSvc.API.Controllers
     public class AssignmentController : BaseController
     {
         private readonly IAssignmentService _assignmentService;
-        public AssignmentController(IAssignmentService assignmentService)
+        private readonly IStudentService _studentService;
+        public AssignmentController(IAssignmentService assignmentService, IStudentService studentService)
         {
             _assignmentService = assignmentService;
+            _studentService = studentService;
         }
 
         [HttpGet]
@@ -47,7 +49,29 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
+                if (classId < 1)
+                {
+                    classId = await _studentService.GetStudentClassIdByUserId(CurrentUser.UserId);
+                }
+
                 var result = await _assignmentService.GetAssignmentsForClass(classId, vM);
+                if (result.HasError)
+                    return ApiResponse<List<AssignmentGetVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<AssignmentGetVM>>), 200)]
+        public async Task<IActionResult> GetAssignmentsByClassSubject([FromQuery] long classSubjectId, [FromQuery] QueryModel vM)
+        {
+            try
+            {
+                var result = await _assignmentService.GetAssignmentsForClassSubject(classSubjectId, vM);
                 if (result.HasError)
                     return ApiResponse<List<AssignmentGetVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
@@ -68,42 +92,6 @@ namespace LearningSvc.API.Controllers
                 if (result.HasError)
                     return ApiResponse<AssignmentVM>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-
-        [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<List<AssignmentSubmissionListVM>>), 200)]
-        public async Task<IActionResult> GetAllAssignmentAnswers(long assignmentId)
-        {
-            try
-            {
-                var result = await _assignmentService.GetAllSubmission(assignmentId);
-                if (result.HasError)
-                    return ApiResponse<List<AssignmentSubmissionListVM>>(errors: result.ErrorMessages.ToArray());
-
-                return ApiResponse<List<AssignmentSubmissionListVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-
-        [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<AssignmentSubmissionVM>), 200)]
-        public async Task<IActionResult> GetAssignmentAnswer(long answerId)
-        {
-            try
-            {
-                var result = await _assignmentService.GetAssignmentSubmission(answerId);
-                if (result.HasError)
-                    return ApiResponse<AssignmentSubmissionVM>(errors: result.ErrorMessages.ToArray());
-
-                return ApiResponse<AssignmentSubmissionVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -135,52 +123,5 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpPut]
-        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        public async Task<IActionResult> UpdateScore(AssignmentSubmissionUpdateScoreVM model)
-        {
-            if (model == null)
-                return ApiResponse<string>(errors: "Empty payload");
-
-            if (!ModelState.IsValid)
-                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
-
-            try
-            {
-                var result = await _assignmentService.UpdateScore(model);
-
-                if (result.HasError)
-                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-
-        [HttpPut]
-        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        public async Task<IActionResult> UpdateComment(AssignmentSubmissionUpdateCommentVM model)
-        {
-            if (model == null)
-                return ApiResponse<string>(errors: "Empty payload");
-
-            if (!ModelState.IsValid)
-                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
-
-            try
-            {
-                var result = await _assignmentService.UpdateComment(model);
-
-                if (result.HasError)
-                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
     }
 }

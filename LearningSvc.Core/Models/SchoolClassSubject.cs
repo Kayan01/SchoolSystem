@@ -15,5 +15,7 @@ namespace LearningSvc.Core.Models
 
         public long SubjectId { get; set; }
         public Subject Subject { get; set; }
+
+        public ICollection<Assignment> Assignments { get; set; }
     }
 }

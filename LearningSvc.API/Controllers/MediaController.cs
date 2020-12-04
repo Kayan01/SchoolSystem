@@ -23,15 +23,15 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<MediaListVM>>), 200)]
         public async Task<IActionResult> GetAllFileByTeacher([FromQuery] QueryModel vM)
         {
             try
             {
                 var result = await _mediaService.GetAllFileByTeacher(CurrentUser.UserId, vM);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+                    return ApiResponse<IEnumerable<MediaListVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<IEnumerable<MediaListVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
@@ -40,15 +40,15 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<MediaListVM>>), 200)]
         public async Task<IActionResult> GetAllFileByClass([FromQuery] long classId, [FromQuery] QueryModel vM)
         {
             try
             {
                 var result = await _mediaService.GetAllFileByClass(classId, vM);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+                    return ApiResponse<IEnumerable<MediaListVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<IEnumerable<MediaListVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
@@ -74,22 +74,22 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UploadFile([FromForm] MediaUploadVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
                 var result = await _mediaService.UploadLearningFile(model, CurrentUser.UserId);
 
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -99,7 +99,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpDelete("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> DeleteFile(long id)
         {
             if (id < 1)
@@ -112,9 +112,9 @@ namespace LearningSvc.API.Controllers
                 var result = await _mediaService.DeleteMedia(id);
 
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
 
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {

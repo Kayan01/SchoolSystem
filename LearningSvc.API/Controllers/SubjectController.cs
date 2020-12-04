@@ -23,15 +23,15 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<SubjectVM>>), 200)]
         public async Task<IActionResult> GetSubjects([FromQuery] QueryModel vM)
         {
             try
             {
                 var result = await _subjectService.GetAllSubjects(vM);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+                    return ApiResponse<IEnumerable<SubjectVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<IEnumerable<SubjectVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
@@ -40,15 +40,15 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<SubjectVM>>), 200)]
         public async Task<IActionResult> GetAllSubjects()
         {
             try
             {
                 var result = await _subjectService.GetAllSubjects();
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
+                    return ApiResponse<List<SubjectVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<List<SubjectVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
             }
             catch (Exception ex)
             {
@@ -57,22 +57,22 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> NewSubject([FromForm] SubjectInsertVM model)
+        [ProducesResponseType(typeof(ApiResponse<SubjectVM>), 200)]
+        public async Task<IActionResult> NewSubject([FromBody] SubjectInsertVM model)
         {
             if (model == null)
-                return ApiResponse<string>(errors: "Empty payload");
+                return ApiResponse<SubjectVM>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<SubjectVM>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
                 var result = await _subjectService.AddSubject(model);
 
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<SubjectVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<SubjectVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {

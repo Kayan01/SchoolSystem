@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LearningSvc.Core.Models
+namespace AssessmentSvc.Core.Models
 {
     public class Subject : AuditedEntity<long>, ITenantModelType
     {
@@ -12,6 +12,5 @@ namespace LearningSvc.Core.Models
         public string Name { get; set; }
         public bool IsActive { get; set; }
 
-        public ICollection<SchoolClassSubject> SchoolClassSubjects { get; set; }
     }
 }
