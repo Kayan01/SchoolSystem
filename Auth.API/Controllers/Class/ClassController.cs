@@ -130,7 +130,7 @@ namespace UserManagement.API.Controllers
                 var result = await _classService.GetAllClasses(vm);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
