@@ -7,10 +7,13 @@
   <ItemGroup>
     <Compile Remove="Migrations\**" />
     <Compile Remove="Services\Background\**" />
+    <Compile Remove="Services\Interfaces\**" />
     <EmbeddedResource Remove="Migrations\**" />
     <EmbeddedResource Remove="Services\Background\**" />
+    <EmbeddedResource Remove="Services\Interfaces\**" />
     <None Remove="Migrations\**" />
     <None Remove="Services\Background\**" />
+    <None Remove="Services\Interfaces\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,8 +48,6 @@
   <ItemGroup>
     <Folder Include="EventHandlers\" />
     <Folder Include="Models\Map\" />
-    <Folder Include="Services\Interfaces\" />
-    <Folder Include="ViewModels\" />
   </ItemGroup>
 
 </Project>
