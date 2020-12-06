@@ -20,6 +20,8 @@ using Shared.PubSub;
 using Microsoft.AspNetCore.Hosting;
 using Shared.PubSub.KafkaImpl;
 using Shared.Net.WorkerService;
+using AssessmentSvc.Core.Interfaces;
+using AssessmentSvc.Core.Services;
 
 namespace AssessmentSvc.API
 {
@@ -64,6 +66,7 @@ namespace AssessmentSvc.API
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
 
+            services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
         }
     }
