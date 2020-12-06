@@ -10,6 +10,7 @@ using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Shared.AspNetCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
@@ -18,6 +19,7 @@ using Shared.Extensions;
 using Shared.FileStorage;
 using Shared.Pagination;
 using Shared.PubSub;
+using Shared.Tenancy;
 using Shared.Utils;
 using Shared.ViewModels;
 using System.Collections.Generic;
@@ -39,6 +41,7 @@ namespace Auth.Core.Services.Users
         private readonly IAuthUserManagement _authUserManagement;
         private readonly ILogger<TeacherService> _logger;
         private readonly IStaffService _staffService;
+        private readonly IHttpUserService _httpUserService;
 
         public TeacherService(UserManager<User> userManager,
             IRepository<TeachingStaff, long> teacherRepo,
@@ -48,6 +51,7 @@ namespace Auth.Core.Services.Users
             IAuthUserManagement authUserManagement,
             ILogger<TeacherService> logger,
             IPublishService publishService,
+            IHttpUserService httpUserService,
             IStaffService staffService)
         {
             _userManager = userManager;
@@ -59,6 +63,7 @@ namespace Auth.Core.Services.Users
             _departmentRepo = departmentRepo;
             _documentService = documentService;
             _staffService = staffService;
+            _httpUserService = httpUserService;
         }
 
         public async Task<ResultModel<PaginatedModel<TeacherVM>>> GetTeachers(QueryModel model)
@@ -161,6 +166,9 @@ namespace Auth.Core.Services.Users
                 result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
                 return result;
             }
+
+            //Add TenantId to UserClaims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
 
             //create next of kin
             var nextOfKin = new NextOfKin
