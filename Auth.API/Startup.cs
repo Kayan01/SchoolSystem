@@ -50,7 +50,7 @@ namespace Auth.API
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMiddleware<TenantInfoMiddleware>();
+            //app.UseMiddleware<TenantInfoMiddleware>();
 
             app.UseCors(x =>
             {
