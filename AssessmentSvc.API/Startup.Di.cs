@@ -20,6 +20,8 @@ using Shared.PubSub;
 using Microsoft.AspNetCore.Hosting;
 using Shared.PubSub.KafkaImpl;
 using Shared.Net.WorkerService;
+using AssessmentSvc.Core.Interfaces;
+using AssessmentSvc.Core.Services;
 
 namespace AssessmentSvc.API
 {
@@ -65,6 +67,7 @@ namespace AssessmentSvc.API
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
 
             services.AddScoped<IFileStorageService, FileStorageService>();
+            services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();
         }
     }
 }
