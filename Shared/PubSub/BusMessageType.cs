@@ -23,5 +23,8 @@ namespace Shared.PubSub
         CLASS_DELETE,
         ADMIN,
         ADMIN_DELETE,
+        SUBJECT,
+        SUBJECT_UPDATE,
+        SUBJECT_DELETE,
     }
 }
