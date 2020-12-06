@@ -179,9 +179,12 @@ namespace Auth.Core.Services
             var sch = await _schoolRepo.GetAll()
                 .Include(x => x.SchoolSections)
                 .Include(x=> x.Staffs)
+                .ThenInclude(x => x.User)
                 .Include(x => x.Students)
+                .ThenInclude(x => x.User)
                 .Include(x => x.TeachingStaffs)
                 .Include(x => x.FileUploads)
+                .Include(x => x.SchoolContactDetails)
                 .Where(x => x.Id == Id)
                 .FirstOrDefaultAsync();
 
