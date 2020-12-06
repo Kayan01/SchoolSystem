@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AssessmentSvc.Core.Models;
+using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.Context;
 using Shared.Entities;
 using System;
@@ -31,6 +32,13 @@ namespace AssessmentSvc.Core.Context
         }
 
         public DbSet<TestModel> TestModels { get; set; }
+        public DbSet<SchoolClass> SchoolClasses { get; set; }
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Subject> Subjects { get; set; }
+        public DbSet<AssessmentSetup> AssessmentSetups { get; set; }
+        public DbSet<Result> Results { get; set; }
+        public DbSet<SessionSetup> SessionSetups { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
 
         public async Task AddSampleData()
         {
