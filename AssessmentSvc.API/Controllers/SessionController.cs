@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 
 namespace AssessmentSvc.API.Controllers
 {
-    [Route("api/v1/[controller]")]
+
+    [Route("api/v1/[controller]/[action]")]
     [ApiController]
     public class SessionController : BaseController
     {
