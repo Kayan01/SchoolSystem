@@ -26,6 +26,7 @@ using Shared.FileStorage;
 using Microsoft.OpenApi.Extensions;
 using Shared.Tenancy;
 using static Shared.Utils.CoreConstants;
+using Shared.AspNetCore;
 
 namespace Auth.Core.Services
 {
@@ -38,7 +39,7 @@ namespace Auth.Core.Services
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
         private readonly IDocumentService _documentService;
-        private readonly TenantInfo _tenantInfo;
+        private readonly IHttpUserService _httpUserService;
 
         public StaffService(
             IRepository<Staff, long> staffRepo,
@@ -47,7 +48,7 @@ namespace Auth.Core.Services
             IRepository<TeachingStaff, long> teachingStaffRepo,
             IPublishService publishService,
             IRepository<Department,long> departmentRepo,
-            TenantInfo tenantInfo,
+            IHttpUserService httpUserService,
             IDocumentService documentService)
         {
             _staffRepo = staffRepo;
@@ -57,7 +58,7 @@ namespace Auth.Core.Services
             _departmentRepo = departmentRepo;
             _publishService = publishService;
             _documentService = documentService;
-            _tenantInfo = tenantInfo;
+            _httpUserService = httpUserService;
         }
 
         public async Task<ResultModel<PaginatedModel<StaffVM>>> GetAllStaff(QueryModel model)
@@ -167,7 +168,7 @@ namespace Auth.Core.Services
             }
 
             //Add TenantId to UserClaims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _tenantInfo.TenantId.ToString()));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
 
             //create next of kin
             var nextOfKin = new NextOfKin

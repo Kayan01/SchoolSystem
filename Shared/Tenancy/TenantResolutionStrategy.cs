@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Shared.Utils.CoreConstants;
 
 namespace Shared.Tenancy
 {
@@ -33,7 +34,7 @@ namespace Shared.Tenancy
             if (_httpContextAccessor.HttpContext == null)
                 return 0;
 
-            var tenantClaim = _httpContextAccessor.HttpContext.User?.Claims?.FirstOrDefault(x => x.Type == "tenantId");
+            var tenantClaim = _httpContextAccessor.HttpContext.User?.Claims?.FirstOrDefault(x => x.Type == ClaimsKey.TenantId);
 
             if (tenantClaim == null)
             {

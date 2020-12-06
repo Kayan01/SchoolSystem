@@ -10,6 +10,7 @@ using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Shared.AspNetCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
@@ -40,7 +41,7 @@ namespace Auth.Core.Services.Users
         private readonly IAuthUserManagement _authUserManagement;
         private readonly ILogger<TeacherService> _logger;
         private readonly IStaffService _staffService;
-        private readonly TenantInfo _tenantInfo;
+        private readonly IHttpUserService _httpUserService;
 
         public TeacherService(UserManager<User> userManager,
             IRepository<TeachingStaff, long> teacherRepo,
@@ -50,7 +51,7 @@ namespace Auth.Core.Services.Users
             IAuthUserManagement authUserManagement,
             ILogger<TeacherService> logger,
             IPublishService publishService,
-            TenantInfo tenantInfo,
+            IHttpUserService httpUserService,
             IStaffService staffService)
         {
             _userManager = userManager;
@@ -62,7 +63,7 @@ namespace Auth.Core.Services.Users
             _departmentRepo = departmentRepo;
             _documentService = documentService;
             _staffService = staffService;
-            _tenantInfo = tenantInfo;
+            _httpUserService = httpUserService;
         }
 
         public async Task<ResultModel<PaginatedModel<TeacherVM>>> GetTeachers(QueryModel model)
@@ -167,7 +168,7 @@ namespace Auth.Core.Services.Users
             }
 
             //Add TenantId to UserClaims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _tenantInfo.TenantId.ToString()));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
 
             //create next of kin
             var nextOfKin = new NextOfKin

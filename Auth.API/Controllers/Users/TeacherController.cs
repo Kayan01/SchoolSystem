@@ -15,7 +15,6 @@ namespace Auth.API.Controllers.Users
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
-    [AllowAnonymous]
     public class TeacherController : BaseController
     {
         private readonly ITeacherService _teacherService;

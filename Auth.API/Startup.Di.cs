@@ -38,7 +38,7 @@ namespace Auth.API
     {
         public void ConfigureDIService(IServiceCollection services)
         {
-            services.AddScoped<TenantInfo>();
+            //services.AddScoped<TenantInfo>();
 
             services.AddTransient<DbContext, AppDbContext>();
 

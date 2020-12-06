@@ -7,6 +7,7 @@ using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Extensions;
+using Shared.AspNetCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
@@ -34,7 +35,7 @@ namespace Auth.Core.Services
         private readonly IDocumentService _documentService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
-        private readonly TenantInfo _tenantInfo;
+        private readonly IHttpUserService _httpUserService;
 
         public StudentService(
             IRepository<Student, long> studentRepo,
@@ -43,7 +44,7 @@ namespace Auth.Core.Services
             IDocumentService documentService,
             IUnitOfWork unitOfWork,
             IPublishService publishService,
-            TenantInfo tenantInfo,
+            IHttpUserService httpUserService,
             UserManager<User> userManager)
         {
             _studentRepo = studentRepo;
@@ -53,7 +54,7 @@ namespace Auth.Core.Services
             _documentService = documentService;
             _publishService = publishService;
             _userManager = userManager;
-            _tenantInfo = tenantInfo;
+            _httpUserService = httpUserService;
         }
 
         public async Task<ResultModel<StudentVM>> AddStudentToSchool(CreateStudentVM model)
@@ -121,7 +122,7 @@ namespace Auth.Core.Services
             }
 
             //Add TenantId to UserClaims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _tenantInfo.TenantId.ToString()));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
 
             var medicalHistory = new MedicalDetail {
                 Allergies = model.Allergies,
