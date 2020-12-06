@@ -82,91 +82,14 @@ namespace Shared.AspnetCore.Identity
             }
         }
 
-        public string Function
+        public string TenantId
         {
             get
             {
-                var functionClaim = FindFirst(CoreConstants.ClaimsKey.Function);
-                if (functionClaim is null)
+                var tenantIdClaim = FindFirst(CoreConstants.ClaimsKey.TenantId);
+                if (tenantIdClaim is null)
                     return string.Empty;
-                return functionClaim.Value;
-            }
-        }
-
-        public string Category
-        {
-            get
-            {
-                var categoryClaim = FindFirst(CoreConstants.ClaimsKey.JobCategory);
-                if (categoryClaim is null)
-                    return string.Empty;
-                return categoryClaim.Value;
-            }
-        }
-
-
-        public string Directorate
-        {
-            get
-            {
-                var directorateClaim = FindFirst(CoreConstants.ClaimsKey.Directorate);
-                if (directorateClaim is null)
-                    return string.Empty;
-                return directorateClaim.Value;
-            }
-        }
-
-        public string Region
-        {
-            get
-            {
-                var regionClaim = FindFirst(CoreConstants.ClaimsKey.Region);
-                if (regionClaim is null)
-                    return string.Empty;
-                return regionClaim.Value;
-            }
-        }
-
-        public string Division
-        {
-            get
-            {
-                var divisionClaim = FindFirst(CoreConstants.ClaimsKey.Division);
-                if (divisionClaim is null)
-                    return string.Empty;
-                return divisionClaim.Value;
-            }
-        }
-
-        //public string JobCategory
-        //{
-        //    get
-        //    {
-        //        var functionClaim = FindFirst(CoreConstants.ClaimsKey.JobCategory);
-        //        if (functionClaim is null)
-        //            return string.Empty;
-        //        return functionClaim.Value;
-        //    }
-        //}
-
-        public IEnumerable<string> Branches
-        {
-            get
-            {
-                var functionClaim = FindAll(x => x.Type.Equals(CoreConstants.ClaimsKey.Branch, StringComparison.InvariantCultureIgnoreCase));
-                if (functionClaim is null)
-                    return new List<string>();
-
-                return functionClaim.Select(x => x.Value);
-            }
-        }
-
-        // TODO: Add get branch Id from claims
-        public int BranchId
-        {
-            get
-            {
-                return 1;
+                return tenantIdClaim.Value;
             }
         }
     }

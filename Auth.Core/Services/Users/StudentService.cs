@@ -14,12 +14,14 @@ using Shared.Enums;
 using Shared.FileStorage;
 using Shared.Pagination;
 using Shared.PubSub;
+using Shared.Tenancy;
 using Shared.Utils;
 using Shared.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Shared.Utils.CoreConstants;
 
 namespace Auth.Core.Services
 {
@@ -32,6 +34,7 @@ namespace Auth.Core.Services
         private readonly IDocumentService _documentService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
+        private readonly TenantInfo _tenantInfo;
 
         public StudentService(
             IRepository<Student, long> studentRepo,
@@ -40,6 +43,7 @@ namespace Auth.Core.Services
             IDocumentService documentService,
             IUnitOfWork unitOfWork,
             IPublishService publishService,
+            TenantInfo tenantInfo,
             UserManager<User> userManager)
         {
             _studentRepo = studentRepo;
@@ -49,6 +53,7 @@ namespace Auth.Core.Services
             _documentService = documentService;
             _publishService = publishService;
             _userManager = userManager;
+            _tenantInfo = tenantInfo;
         }
 
         public async Task<ResultModel<StudentVM>> AddStudentToSchool(CreateStudentVM model)
@@ -114,6 +119,10 @@ namespace Auth.Core.Services
                 result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
                 return result;
             }
+
+            //Add TenantId to UserClaims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _tenantInfo.TenantId.ToString()));
+
             var medicalHistory = new MedicalDetail {
                 Allergies = model.Allergies,
                 BloodGroup = model.BloodGroup,
