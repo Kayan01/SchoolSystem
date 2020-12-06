@@ -68,6 +68,7 @@ namespace AssessmentSvc.API
 
             services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
+            services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();
         }
     }
 }
