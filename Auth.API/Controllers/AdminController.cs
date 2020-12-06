@@ -15,7 +15,6 @@ namespace Auth.API.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
-    [AllowAnonymous]
     public class AdminController : BaseController
     {
         private readonly IAdminService _adminService;
