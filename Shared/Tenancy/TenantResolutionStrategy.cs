@@ -33,28 +33,25 @@ namespace Shared.Tenancy
             if (_httpContextAccessor.HttpContext == null)
                 return 0;
 
-            _httpContextAccessor.HttpContext.Request.Headers.TryGetValue("tenantId", out tenantIds);
+            var tenantClaim = _httpContextAccessor.HttpContext.User?.Claims?.FirstOrDefault(x => x.Type == "tenantId");
 
-            var firstTenant = tenantIds.FirstOrDefault();
-
-
-            if (tenantIds.Count < 1 || firstTenant == null)
+            if (tenantClaim == null)
             {
                 throw new Exception("No tenant Id provided");
             }
 
-            long tId;
-            try
-            {
-                tId = long.Parse(firstTenant);
-            }
-            catch (Exception)
-            {
+            var result = long.TryParse(tenantClaim?.Value, out long tenantId);
 
+            if (result == false)
+            {
                 throw new Exception("Tenant Id provided is not in proper format");
             }
+            else if (tenantId < 1)
+            {
+                throw new Exception("No tenant Id provided");
+            }
 
-            return tId;
+            return tenantId;
         }
     }
 }
