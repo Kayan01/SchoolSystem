@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LearningSvc.Core.Models.Map
+namespace AssessmentSvc.Core.Models.Map
 {
     public class ClassMap : IEntityTypeConfiguration<SchoolClass>
     {
