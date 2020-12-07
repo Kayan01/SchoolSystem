@@ -120,7 +120,7 @@ namespace Auth.API.Controllers
         public async Task<IActionResult> UpdateStudent([FromForm]StudentUpdateVM vM)
         {
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {

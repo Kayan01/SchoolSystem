@@ -89,7 +89,7 @@ namespace Auth.Core.Services
                     Email = model.Email,
                     UserName = model.Email,
                     PhoneNumber = model.PhoneNumber,
-                    UserType = UserType.Admin,
+                    UserType = UserType.GlobalAdmin,
                 };
                 var userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
 
@@ -169,7 +169,7 @@ namespace Auth.Core.Services
                     Email = model.Email,
                     UserName = model.UserName,
                     PhoneNumber = model.PhoneNumber,
-                    UserType = UserType.Admin,
+                    UserType = UserType.GlobalAdmin,
                 };
 
                 var userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
@@ -186,7 +186,7 @@ namespace Auth.Core.Services
                 var admin = new Admin
                 {
                     UserId = user.Id,
-                    UserType = UserType.Admin
+                    UserType = UserType.GlobalAdmin
                 };
 
             
