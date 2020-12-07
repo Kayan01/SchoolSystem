@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Http;
 using ExcelManager;
 using Auth.Core.Models.Contact;
 using IPagedList;
+using static Shared.Utils.CoreConstants;
 
 namespace Auth.Core.Services
 {
@@ -63,23 +64,7 @@ namespace Auth.Core.Services
                     return result;
                 }
             }
-            //add auth user
-            var user = new User
-            {
-                FirstName = model.ContactFirstName,
-                LastName = model.ContactLastName,
-                Email = model.ContactEmail,
-                UserName = model.ContactEmail,
-                PhoneNumber = model.ContactPhoneNo,
-                UserType = UserType.Admin,
-            };
-            var userResult = await _userManager.CreateAsync(user, model.ContactPhoneNo);
-
-            if (!userResult.Succeeded)
-            {
-                result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
-                return result;
-            }
+           
 
             //todo: add more props
             var contactDetails = new SchoolContactDetails  {
@@ -109,6 +94,26 @@ namespace Auth.Core.Services
             await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Commit();
 
+            //add auth user
+            var user = new User
+            {
+                FirstName = model.ContactFirstName,
+                LastName = model.ContactLastName,
+                Email = model.ContactEmail,
+                UserName = model.ContactEmail,
+                PhoneNumber = model.ContactPhoneNo,
+                UserType = UserType.SchoolAdmin,
+            };
+            var userResult = await _userManager.CreateAsync(user, model.ContactPhoneNo);
+
+            if (!userResult.Succeeded)
+            {
+                result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                return result;
+            }
+
+            //adds tenant id to school primary contact
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, school.Id.ToString()));
 
             result.Data = school;
             return result;
@@ -234,7 +239,7 @@ namespace Auth.Core.Services
                     Email = model.ContactEmail,
                     UserName = model.ContactEmail,
                     PhoneNumber = model.ContactPhoneNo,
-                    UserType = UserType.Admin,
+                    UserType = UserType.SchoolAdmin,
                 };
                 var userResult = await _userManager.CreateAsync(user, model.ContactPhoneNo);
 
