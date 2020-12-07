@@ -31,7 +31,7 @@ namespace AssessmentSvc.API.Controllers
                 return ApiResponse<string>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
@@ -54,7 +54,7 @@ namespace AssessmentSvc.API.Controllers
                 return ApiResponse<string>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
@@ -75,7 +75,7 @@ namespace AssessmentSvc.API.Controllers
         {
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
@@ -95,7 +95,7 @@ namespace AssessmentSvc.API.Controllers
         {
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
