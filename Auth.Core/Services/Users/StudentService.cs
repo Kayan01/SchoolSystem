@@ -178,6 +178,7 @@ namespace Auth.Core.Services
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
             {
                 Id = stud.Id,
+                RegNumber = stud.RegNumber,
                 IsActive = true,
                 ClassId = stud.ClassId,
                 TenantId = stud.TenantId,
