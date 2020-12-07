@@ -26,7 +26,7 @@ namespace UserManagement.API.Controllers
 
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<StaffVM>), 200)]
         public async Task<IActionResult> AddStaff([FromForm]AddStaffVM model)
         {
             if (model == null)
@@ -53,7 +53,7 @@ namespace UserManagement.API.Controllers
 
         [HttpGet]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<StaffVM>>), 200)]
         public async Task<IActionResult> GetAllStaffInSchool([FromQuery] QueryModel vM)
         {
 
@@ -73,7 +73,7 @@ namespace UserManagement.API.Controllers
 
         [HttpGet("{staffId}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<StaffDetailVM>), 200)]
         public async Task<IActionResult> GetStaffById(long staffId)
         {
             if (staffId < 1)
@@ -94,7 +94,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPut]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<StaffVM>), 200)]
         public async Task<IActionResult> UpdateStaff([FromForm]StaffUpdateVM vM)
         {
             if (!ModelState.IsValid)
@@ -116,7 +116,7 @@ namespace UserManagement.API.Controllers
 
         [HttpDelete("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteStaff( long id)
         {
             if (id == 0)

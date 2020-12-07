@@ -15,7 +15,7 @@ namespace Shared.ViewModels
         {
             Description = description;
             Entity = entityType;
-            entityId = entityId;
+            EntityId = entityId;
             UserIds = userIds;
         }
 

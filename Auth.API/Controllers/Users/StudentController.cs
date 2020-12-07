@@ -5,6 +5,7 @@ using Auth.Core.ViewModels.Student;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
 using Shared.AspNetCore.Policy;
+using Shared.Pagination;
 using Shared.Permissions;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
@@ -23,12 +24,32 @@ namespace Auth.API.Controllers
             _studentService = studentService;
         }
 
+        [HttpGet("{Id}")]
+        [ProducesResponseType(typeof(ApiResponse<StudentDetailVM>), 200)]
+        public async Task<IActionResult> GetStudentProfile(long Id)
+        {
 
+            if (Id < 1)
+                return ApiResponse<string>(errors: "Invalid Id");
+           
+            try
+            {
+                var result = await _studentService.GetStudentProfileById(Id);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
         [HttpPost]
         [RequiresPermission(Permission.STUDENT_CREATE)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddStudent(CreateStudentVM model)
+        [ProducesResponseType(typeof(ApiResponse<StudentVM>), 200)]
+        public async Task<IActionResult> AddStudent([FromForm]CreateStudentVM model)
         {
 
             if (model == null)
@@ -43,7 +64,7 @@ namespace Auth.API.Controllers
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -55,7 +76,7 @@ namespace Auth.API.Controllers
 
         [HttpGet]
         [RequiresPermission(Permission.STUDENT_READ)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PaginatedModel<StudentVM>>), 200)]
         public async Task<IActionResult> GetAllStudent([FromQuery] QueryModel vM)
         { 
             try
@@ -64,7 +85,7 @@ namespace Auth.API.Controllers
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
@@ -74,7 +95,7 @@ namespace Auth.API.Controllers
 
         [HttpGet("{id}")]
         [RequiresPermission(Permission.STUDENT_READ)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<StudentVM>), 200)]
         public async Task<IActionResult> GetStudentById(long id)
         {
             if(id < 1)
@@ -84,8 +105,8 @@ namespace Auth.API.Controllers
             {
                 var result = await _studentService.GetStudentById(id);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -95,8 +116,8 @@ namespace Auth.API.Controllers
 
         [HttpPut]
         [RequiresPermission(Permission.STUDENT_UPDATE)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateStudent(StudentUpdateVM vM)
+        [ProducesResponseType(typeof(ApiResponse<StudentVM>), 200)]
+        public async Task<IActionResult> UpdateStudent([FromForm]StudentUpdateVM vM)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
@@ -105,8 +126,8 @@ namespace Auth.API.Controllers
             {
                 var result = await _studentService.UpdateStudent(vM);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -117,7 +138,7 @@ namespace Auth.API.Controllers
 
         [HttpDelete("{id}")]
         [RequiresPermission(Permission.STUDENT_DELETE)]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteStudent(long id)
         {
             if ( id <1)
@@ -127,8 +148,8 @@ namespace Auth.API.Controllers
             {
                 var result = await _studentService.DeleteStudent(id);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<bool>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {

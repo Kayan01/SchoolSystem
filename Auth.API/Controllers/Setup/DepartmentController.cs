@@ -25,8 +25,8 @@ namespace Auth.API.Controllers.Setup
         }
         [HttpPost]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddDepartment([FromForm]AddDepartmentVM model)
+        [ProducesResponseType(typeof(ApiResponse<DepartmentVM>), 200)]
+        public async Task<IActionResult> AddDepartment([FromBody]AddDepartmentVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -50,7 +50,7 @@ namespace Auth.API.Controllers.Setup
 
         [HttpDelete("{id}")]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteDepartment(long id)
         {
             if (id < 1)
@@ -75,7 +75,7 @@ namespace Auth.API.Controllers.Setup
 
         [HttpGet]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<DepartmentListVM>>), 200)]
         public async Task<IActionResult> GetAllDepartments([FromQuery]QueryModel queryModel)
         {
             try
@@ -95,7 +95,7 @@ namespace Auth.API.Controllers.Setup
 
         [HttpGet]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<DepartmentVM>), 200)]
         public async Task<IActionResult> GetDepartmentById(long Id)
         {
             try
@@ -115,8 +115,8 @@ namespace Auth.API.Controllers.Setup
 
         [HttpPut]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> UpdateDepartment([FromForm] UpdateDepartmentVM model, [FromRoute] long id)
+        [ProducesResponseType(typeof(ApiResponse<DepartmentVM>), 200)]
+        public async Task<IActionResult> UpdateDepartment([FromBody] UpdateDepartmentVM model, [FromRoute] long id)
         {
             if (!ModelState.IsValid)
             {
