@@ -42,6 +42,7 @@ namespace AssessmentSvc.Core.Services
             student.Email = model.Email;
             student.Phone = model.Phone;
             student.UserId = model.UserId;
+            student.RegNumber = model.RegNumber;
             student.IsActive = model.IsActive;
             student.IsDeleted = model.IsDeleted;
 
