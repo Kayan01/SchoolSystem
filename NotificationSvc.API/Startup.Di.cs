@@ -79,6 +79,9 @@ namespace NotificationSvc.API
             services.AddHostedService<EventHubProcessorService>();
             services.AddHostedService<EventHubReaderService>();
 
+
+            Directory.CreateDirectory(Path.Combine(HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath")));
+
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
