@@ -31,7 +31,7 @@ namespace Auth.API.Controllers
                 return ApiResponse<string>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
@@ -93,7 +93,7 @@ namespace Auth.API.Controllers
         public async Task<IActionResult> UpdateAdmin(UpdateAdminVM vM)
         {
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {

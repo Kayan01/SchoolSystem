@@ -32,7 +32,7 @@ namespace Auth.API.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
             }
 
             try
@@ -122,7 +122,7 @@ namespace Auth.API.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return ApiResponse(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
             }
 
             try
