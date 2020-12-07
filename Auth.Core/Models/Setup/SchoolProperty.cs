@@ -1,4 +1,5 @@
 ﻿using Shared.Entities.Auditing;
+using Shared.Enums;
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace Auth.Core.Models.Setup
         public string Seperator { get; set; }
         public long EnrollmentAmount { get; set; }
         public int NumberOfTerms { get; set; }
-        public int ClassDays { get; set; }
+        public ClassDaysType ClassDays { get; set; }
 
 
     }
