@@ -10,7 +10,7 @@ namespace Auth.Core.Models.Users
     public class Admin : FullAuditedEntity<long>
     {
 
-        public UserType UserType { get; set; } = UserType.Admin;
+        public UserType UserType { get; set; } = UserType.GlobalAdmin;
 
         public long UserId { get; set; }
         public User User { get; set; }

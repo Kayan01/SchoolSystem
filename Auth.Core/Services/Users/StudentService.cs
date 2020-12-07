@@ -178,6 +178,7 @@ namespace Auth.Core.Services
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
             {
                 Id = stud.Id,
+                RegNumber = stud.RegNumber,
                 IsActive = true,
                 ClassId = stud.ClassId,
                 TenantId = stud.TenantId,
@@ -226,6 +227,7 @@ namespace Auth.Core.Services
             var result = new ResultModel<PaginatedModel<StudentVM>>();
 
             var query = _studentRepo.GetAll()
+                .OrderByDescending(x=> x.CreationTime)
                 .Select(x => new StudentVM
                 {
                      Id = x.Id,
@@ -242,7 +244,6 @@ namespace Auth.Core.Services
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
             
-
             result.Data = new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;

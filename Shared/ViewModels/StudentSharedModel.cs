@@ -8,6 +8,7 @@ namespace Shared.ViewModels
     {
         public long TenantId { get; set; }
         public long Id { get; set; }
+        public string RegNumber { get; set; }
         public long? ClassId { get; set; }
     }
 }

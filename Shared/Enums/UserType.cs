@@ -6,7 +6,8 @@ namespace Shared.Enums
 {
     public enum UserType
     {
-        Admin = 1,
+        GlobalAdmin = 1,
+        SchoolAdmin,
         Student,
         Staff,
         Parent

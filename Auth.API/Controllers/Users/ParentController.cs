@@ -106,7 +106,7 @@ namespace Auth.API.Controllers.Users
         {
             if (!ModelState.IsValid)
             {
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
             }
 
 

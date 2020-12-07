@@ -13,15 +13,6 @@
     <EmbeddedResource Remove="Services\Interfaces\**" />
     <None Remove="Migrations\**" />
     <None Remove="Services\Background\**" />
-    <None Remove="Services\Interfaces\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Migrations\20201205231543_initial.cs" />
-    <Compile Include="Migrations\20201205231543_initial.Designer.cs" />
-    <Compile Include="Migrations\20201206070356_xyz.cs" />
-    <Compile Include="Migrations\20201206070356_xyz.Designer.cs" />
-    <Compile Include="Migrations\AppDbContextModelSnapshot.cs" />
   </ItemGroup>
 
   <ItemGroup>
