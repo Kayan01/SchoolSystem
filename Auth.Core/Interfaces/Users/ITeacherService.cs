@@ -10,7 +10,7 @@ namespace Auth.Core.Interfaces.Users
 {
     public interface ITeacherService
     {
-        Task<ResultModel<TeacherVM>> AddTeacher(AddTeacherVM model);
+        Task<ResultModel<TeacherVM>> AddTeacher(AddStaffVM model);
         Task<ResultModel<PaginatedModel<TeacherVM>>> GetTeachers(QueryModel model);
         Task<ResultModel<TeacherVM>> GetTeacherById(long Id);
         Task<ResultModel<TeacherVM>> UpdateTeacher(UpdateTeacherVM model);

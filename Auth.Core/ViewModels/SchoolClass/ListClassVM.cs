@@ -20,7 +20,7 @@ namespace Auth.Core.ViewModels.SchoolClass
             return model == null ? null : new ListClassVM
             {
                 Name = model.Name,
-                ClassSection = model.SchoolSection.Name,
+                ClassSection = model.SchoolSection?.Name,
                 ClassGroup = model.ClassArm,
                 Id = model.Id,
                 Status = model.IsActive,

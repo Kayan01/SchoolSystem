@@ -57,31 +57,13 @@ namespace Shared.Utils
         public class ClaimsKey
         {
             public const string LastLogin = nameof(LastLogin);
-            public const string Division = nameof(Division);
-            public const string Function = nameof(Function);
-            public const string Grade = nameof(Grade);
-            public const string Branch = nameof(Branch);
-            public const string Directorate = nameof(Directorate);
-            public const string Region = nameof(Region);
-            public const string Unit = nameof(Unit);
-            public const string JobCategory = nameof(JobCategory);
+            public const string TenantId = nameof(TenantId);
             public const string Permissions = nameof(Permissions);
         }
 
         public class AllowedFileExtensions
         {
             public const string Signature = ".jpg,.png";
-        }
-
-        public class JobFunction
-        {
-            public const string DH = "Divisional Head";
-            public const string BM = "Branch Manager";
-            public const string ED = "Executive Director";
-            public const string MD = "Managing Director";
-            public const string RBH = "Regional Bank Head";
-            public const string BO = "Banking Officer";
-            public const string CFO = "Chief Financial Officer";
         }
 
         public class Dashboard
@@ -93,13 +75,13 @@ namespace Shared.Utils
             };
         }
 
-        public class DocumentType
+        /*public class DocumentType
         {
             public const string Invoice = "Invoice";
             public const string Contract = "Contract";
             public const string SignedContract = "SignedContract";
             public const string DeliveryNote = "DeliveryNote";
             public const string ProofOfItem = "ProofOfItem";
-        }
+        }*/
     }
 }

@@ -15,31 +15,29 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Pagination;
 using IPagedList;
+using System.IO;
 
 namespace LearningSvc.Core.Services
 {
     public class AssignmentService : IAssignmentService
     {
         private readonly IRepository<Assignment, long> _assignmentRepo;
-        private readonly IRepository<AssignmentAnswer, long> _assignmentAnswerRepo;
         private readonly IRepository<SchoolClassSubject, long> _schoolClassSubjectRepo;
         private readonly IRepository<Teacher, long> _teacherRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDocumentService _documentService;
 
-        public AssignmentService(IUnitOfWork unitOfWork, IRepository<Assignment, long> assignmentRepo, 
-            IRepository<AssignmentAnswer, long> assignmentAnswerRepo, IDocumentService documentService,
+        public AssignmentService(IUnitOfWork unitOfWork, IRepository<Assignment, long> assignmentRepo,  IDocumentService documentService,
             IRepository<SchoolClassSubject, long> schoolClassSubjectRepo, IRepository<Teacher, long> teacherRepo)
         {
             _unitOfWork = unitOfWork;
             _assignmentRepo = assignmentRepo;
-            _assignmentAnswerRepo = assignmentAnswerRepo;
             _schoolClassSubjectRepo = schoolClassSubjectRepo;
             _teacherRepo = teacherRepo;
             _documentService = documentService;
         }
 
-        public async Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment)
+        public async Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment, long currentUserId)
         {
             var result = new ResultModel<string>();
 
@@ -50,17 +48,17 @@ namespace LearningSvc.Core.Services
                 return result;
             }
 
-            var teacher = await _teacherRepo.GetAsync(assignment.TeacherId);
+            var teacher = await _teacherRepo.GetAll().Where(m=> m.UserId == currentUserId).FirstOrDefaultAsync();
             if (teacher == null)
             {
-                result.AddError("Teacher not found");
+                result.AddError("Current user is not a valid Teacher");
                 return result;
             }
 
             //save file
             var file = await _documentService.TryUploadSupportingDocument(assignment.Document, Shared.Enums.DocumentType.Assignment );
 
-            if (file != null)
+            if (file == null)
             {
                 result.AddError("File could not be uploaded");
 
@@ -72,7 +70,7 @@ namespace LearningSvc.Core.Services
                 DueDate = assignment.DueDate,
                 SchoolClassSubjectId = assignment.ClassSubjectId,
                 TotalScore = assignment.TotalScore,
-                TeacherId = assignment.TeacherId,
+                TeacherId = teacher.Id,
                 Title = assignment.Title,
                 Attachment = file,
                 OptionalComment = assignment.Comment,
@@ -85,23 +83,34 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<AssignmentSubmissionListVM>>> GetAllSubmission(long assignmentId)
+        public async Task<ResultModel<AssignmentVM>> AssignmentDetail(long id)
         {
-            var assignmentAnswer = await _assignmentAnswerRepo.GetAll()
-                .Where(m => m.AssignmentId == assignmentId).Select(x=> new AssignmentSubmissionListVM()
+            var result = new ResultModel<AssignmentVM>();
+
+            var query = await _assignmentRepo.GetAll().Where(m => m.Id == id)
+                .Select(x => new AssignmentVM
                 {
-                    ClassName = $"{x.Assignment.SchoolClassSubject.SchoolClass.Name} {x.Assignment.SchoolClassSubject.SchoolClass.Name}",
-                    Date = x.DateSubmitted,
-                    StudentNumber = x.Student.UserId.ToString(),
-                    StudentName = $"{x.Student.LastName} {x.Student.FirstName}",
-                })
-                .ToListAsync();
+                    Id = x.Id,
+                    ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
+                    CreationDate = x.CreationTime,
+                    SubjectName = x.SchoolClassSubject.Subject.Name,
+                    TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                    FileType = x.Attachment.ContentType,
+                    FileName = x.Attachment.Path,
+                }).FirstOrDefaultAsync();
 
-            var result = new ResultModel<List<AssignmentSubmissionListVM>>
+            if (query != null)
             {
-                Data = assignmentAnswer
-            };
+                var filepath = Path.Combine("Filestore", query.FileName);
 
+                if (File.Exists(filepath))
+                {
+                    query.File = File.ReadAllBytes(filepath);
+                    query.FileSize = $"{(query.File.Length / 1000).ToString("0.00")}KB";
+                }
+            }
+
+            result.Data = query;
             return result;
         }
 
@@ -112,7 +121,7 @@ namespace LearningSvc.Core.Services
                     {
                         Id = x.Id,
                         SubjectName = x.SchoolClassSubject.Subject.Name,
-                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.Name}",
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
                         CreationDate = x.CreationTime,
                         DueDate = x.DueDate,
                         NumberOfStudentsSubmitted = x.AssignmentAnswers.Count(),
@@ -132,14 +141,14 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForTeacher(long teacherId, QueryModel queryModel)
+        public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForClassSubject(long classSubjectId, QueryModel queryModel)
         {
-            var query = await _assignmentRepo.GetAll().Where(m => m.TeacherId == teacherId)
+            var query = await _assignmentRepo.GetAll().Where(m => m.SchoolClassSubjectId == classSubjectId)
                     .Select(x => new AssignmentGetVM
                     {
                         Id = x.Id,
                         SubjectName = x.SchoolClassSubject.Subject.Name,
-                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.Name}",
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
                         CreationDate = x.CreationTime,
                         DueDate = x.DueDate,
                         NumberOfStudentsSubmitted = x.AssignmentAnswers.Count(),
@@ -159,66 +168,40 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<AssignmentSubmissionVM>> GetAssignmentSubmission(long submissionId)
+        public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForTeacher(long currentUserId, QueryModel queryModel)
         {
-            var result = new ResultModel<AssignmentSubmissionVM>
+            var teacher = await _teacherRepo.GetAll().Where(m => m.UserId == currentUserId).FirstOrDefaultAsync();
+            if (teacher == null)
             {
-                Data = await _assignmentAnswerRepo.GetAll().Where(m => m.Id == submissionId)
-                    .Select(x => new AssignmentSubmissionVM
+                var r = new ResultModel<PaginatedModel<AssignmentGetVM>>();
+                r.AddError("Current user is not a valid Teacher");
+                return r;
+            }
+
+            var query = await _assignmentRepo.GetAll().Where(m => m.TeacherId == teacher.Id)
+                    .Select(x => new AssignmentGetVM
                     {
                         Id = x.Id,
-                        StudentName = $"{x.Student.FirstName} {x.Student.LastName}",
-                        StudentNumber = x.Student.UserId.ToString(),
-                        AssignmentTitle = x.Assignment.Title,
-                        Comment = x.Comment,
-                        Score = x.Score,
-                        Date = x.DateSubmitted,
-                        FileId = x.FileUploadId
-                    }).FirstOrDefaultAsync()
+                        SubjectName = x.SchoolClassSubject.Subject.Name,
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
+                        CreationDate = x.CreationTime,
+                        DueDate = x.DueDate,
+                        NumberOfStudentsSubmitted = x.AssignmentAnswers.Count(),
+                        TotalStudentsInClass = x.SchoolClassSubject.SchoolClass.Students.Count(),
+                        FileId = x.FileUploadId.Value,
+                        ClassSubjectId = x.SchoolClassSubjectId,
+                        Name = x.Title,
+                        OptionalComment = x.OptionalComment,
+                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                    })
+                    .ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
+
+            var result = new ResultModel<PaginatedModel<AssignmentGetVM>>
+            {
+                Data = new PaginatedModel<AssignmentGetVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
             };
             return result;
         }
 
-        public async Task<ResultModel<string>> UpdateComment(AssignmentSubmissionUpdateCommentVM model)
-        {
-            var result = new ResultModel<string>();
-
-            var answer = await _assignmentAnswerRepo.FirstOrDefaultAsync(model.AssignmentSubmissionId);
-
-            if (answer == null)
-            {
-                result.AddError("Some files could not be uploaded");
-
-                return result;
-            }
-            answer.Comment += "/n/n" + model.Comment;
-
-            await _assignmentAnswerRepo.UpdateAsync(answer);
-            await _unitOfWork.SaveChangesAsync();
-
-            result.Data = "Saved successfully";
-            return result;
-        }
-
-        public async Task<ResultModel<string>> UpdateScore(AssignmentSubmissionUpdateScoreVM model)
-        {
-            var result = new ResultModel<string>();
-
-            var answer = await _assignmentAnswerRepo.FirstOrDefaultAsync(model.AssignmentSubmissionId);
-
-            if (answer == null)
-            {
-                result.AddError("Some files could not be uploaded");
-
-                return result;
-            }
-            answer.Score = model.Score;
-
-            await _assignmentAnswerRepo.UpdateAsync(answer);
-            await _unitOfWork.SaveChangesAsync();
-
-            result.Data = "Saved successfully";
-            return result;
-        }
     }
 }

@@ -87,9 +87,9 @@ namespace Auth.Core.Services.Class
             
         }
 
-        public async Task<ResultModel<ClassSectionUpdateVM>> UpdateSection(ClassSectionUpdateVM model)
+        public async Task<ResultModel<ClassSectionUpdateVM>> UpdateSection(long id, ClassSectionUpdateVM model)
         {
-            var sec = await _schoolSectionRepository.FirstOrDefaultAsync(model.Id);
+            var sec = await _schoolSectionRepository.FirstOrDefaultAsync(id);
             var result = new ResultModel<ClassSectionUpdateVM>();
 
             if (sec == null)

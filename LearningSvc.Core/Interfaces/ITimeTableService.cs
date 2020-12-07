@@ -14,9 +14,11 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<List<PeriodVM>>> GetAllPeriodForSchool();
         Task<ResultModel<TimeTableCellVM>> AddTimeTableCell(TimeTableCellInsertVM model);
         Task<ResultModel<string>> DeleteTimeTableCell(long TimeTableCellId);
-        Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForTeacher(long teacherId);
+        Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForTeacher(long currentUserId);
         Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForClass(long classId);
-        Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForTeacherToday(long teacherId, WeekDays day);
-        Task<ResultModel<List<ClassSessionOutputVM>>> GetNextClassesForTeacherToday(long teacherId, WeekDays day, int curPeriod, int Count);
+        Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForTeacherToday(long currentUserId, WeekDays day);
+        Task<ResultModel<List<ClassSessionOutputVM>>> GetNextClassesForTeacherToday(long currentUserId, WeekDays day, int curPeriod, int Count);
+        Task<ResultModel<List<ClassSessionOutputVM>>> GetAllClassesForClassToday(long classId, WeekDays day);
+        Task<ResultModel<List<ClassSessionOutputVM>>> GetNextClassesForClassToday(long classId, WeekDays day, int curPeriod, int Count);
     }
 }

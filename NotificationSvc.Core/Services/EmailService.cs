@@ -59,7 +59,7 @@ namespace NotificationSvc.Core.Services
             return new List<EmailVM>();
         }
 
-        public async Task SendEmail(string[] emailAddresses, string emailTemplate, StringDictionary replacements)
+        public async Task SendEmail(string[] emailAddresses, string emailTemplate, Dictionary<string, string> replacements)
         {
             var template = CoreConstants.EmailTemplates.FirstOrDefault(x => x.Name.Equals(emailTemplate, StringComparison.InvariantCultureIgnoreCase));
 
@@ -98,10 +98,10 @@ namespace NotificationSvc.Core.Services
             }
         }
 
-        private string DictionaryToJson(StringDictionary dict)
+        private string DictionaryToJson(Dictionary<string, string> dict)
         {
             var result = "{";
-            foreach (DictionaryEntry dic in dict)
+            foreach (var dic in dict)
             {
                 result += string.Join(",", string.Format("\"{0}\": [{1}]", dic.Key, dic.Value));
             }

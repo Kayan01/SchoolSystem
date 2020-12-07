@@ -18,7 +18,7 @@ namespace Auth.Core.Interfaces
         Task<ResultModel<IEnumerable<PermissionVM>>> GetRolePermissions(long roleId);
         Task<ResultModel<RoleVM>> CreateRole(CreateRoleVM model);
         Task<ResultModel<RoleVM>> AddPermissionsToRole(AddPermissionsToRoleVM model);
-        Task<ResultModel<RoleVM>> AddUserToRole(AddUserToRoleVM model);
+        Task<ResultModel<List<RoleVM>>> AddUserToRoles(AddUserToRolesVM model);
         Task<ResultModel<RoleVM>> RemovePermissionsFromRole(RemovePermissionsFromRoleVM model);
         Task<ResultModel<RoleVM>> RemoveUserFromRole(RemoveUserFromRoleVM model);
     }

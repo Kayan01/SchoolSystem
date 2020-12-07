@@ -23,15 +23,15 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpGet("{teacherid}")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<TeacherClassSubjectListVM>>), 200)]
         public async Task<IActionResult> GetAllClassSubjectsForTeacher(long teacherid)
         {
             try
             {
                 var result = await _teacherClassSubjectService.GetAllTeacherClassSubjects(teacherid);
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<List<TeacherClassSubjectListVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<List<TeacherClassSubjectListVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -57,22 +57,22 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddClassSubjectsToTeacher([FromForm] TeacherClassSubjectInsertVM model)
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> AddClassSubjectsToTeacher([FromBody] TeacherClassSubjectInsertVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
                 var result = await _teacherClassSubjectService.AddTeacherToClassSubjects(model);
 
                 if (result.HasError)
-                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {

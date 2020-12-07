@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AssessmentSvc.Core.Models.Map
+namespace LearningSvc.Core.Models.Map
 {
     public class TeacherMap : IEntityTypeConfiguration<Teacher>
     {

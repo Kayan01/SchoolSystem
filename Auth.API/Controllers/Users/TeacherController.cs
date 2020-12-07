@@ -15,7 +15,6 @@ namespace Auth.API.Controllers.Users
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
-    [AllowAnonymous]
     public class TeacherController : BaseController
     {
         private readonly ITeacherService _teacherService;
@@ -66,8 +65,8 @@ namespace Auth.API.Controllers.Users
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> AddTeacher([FromForm]AddTeacherVM model)
+        [ProducesResponseType(typeof(ApiResponse<TeacherVM>), 200)]
+        public async Task<IActionResult> AddTeacher([FromForm]AddStaffVM model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -90,7 +89,7 @@ namespace Auth.API.Controllers.Users
         }
 
         [HttpPut]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<TeacherVM>), 200)]
         public async Task<IActionResult> UpdateTeacher([FromForm]UpdateTeacherVM model)
         {
             if (model == null)
@@ -114,7 +113,7 @@ namespace Auth.API.Controllers.Users
         }
 
         [HttpDelete("{userId}")]
-        [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteTeacher(long userId)
         {
             if(userId < 1)
