@@ -44,11 +44,14 @@ namespace AssessmentSvc.Core.Services
                 Terms = terms
             };
 
-            //update the current session to false
-            var lastCurrentSession = await _sessionRepo.GetAll().Where(x => x.IsCurrent).FirstOrDefaultAsync();
-            lastCurrentSession.IsCurrent = false;
+            if (vM.IsCurrent == true)
+            {
+                //update the current session to false
+                var lastCurrentSession = await _sessionRepo.GetAll().Where(x => x.IsCurrent).FirstOrDefaultAsync();
+                lastCurrentSession.IsCurrent = false;
+            }
 
-           await _sessionRepo.InsertAsync(session);
+            await _sessionRepo.InsertAsync(session);
 
            await _unitOfWork.SaveChangesAsync();
 
