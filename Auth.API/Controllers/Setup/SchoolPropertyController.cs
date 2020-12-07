@@ -49,7 +49,7 @@ namespace Auth.API.Controllers.Setup
         }
 
 
-        [HttpPost]
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<SchoolPropertyVM>), 200)]
         public async Task<IActionResult> GetSchoolProperty()
         {
