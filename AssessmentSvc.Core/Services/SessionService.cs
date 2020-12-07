@@ -102,7 +102,7 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<SessionSetupList>>> GetSchoolSessionS()
+        public async Task<ResultModel<List<SessionSetupList>>> GetSchoolSessions()
         {
             var result = new ResultModel<List<SessionSetupList>>();
 
