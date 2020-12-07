@@ -125,7 +125,8 @@ namespace Auth.Core.Services
                 .Include(x=> x.Staffs)
                 .Include(x => x.FileUploads)
                 .Include(x => x.Students)
-                .Include(x => x.TeachingStaffs);
+                .Include(x => x.TeachingStaffs)
+                .OrderByDescending(x=> x.CreationTime);
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
