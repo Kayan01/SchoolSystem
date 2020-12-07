@@ -22,6 +22,7 @@ using Shared.PubSub.KafkaImpl;
 using Shared.Net.WorkerService;
 using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Services;
+using AssessmentSvc.Core.EventHandlers;
 
 namespace AssessmentSvc.API
 {
@@ -55,6 +56,49 @@ namespace AssessmentSvc.API
                 return consumerClient;
             });
 
+            services.AddTransient<Func<List<BusHandler>>>(cont =>
+            () =>
+            {
+                List<BusHandler> handlers = new List<BusHandler>();
+                var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
+                var handler = scope.ServiceProvider.GetRequiredService<AssessmentHandler>();
+                handlers.Add(async (message) =>
+                {
+                    switch (message.BusMessageType)
+                    {
+                        case (int)BusMessageTypes.STUDENT:
+                        case (int)BusMessageTypes.STUDENT_UPDATE:
+                        case (int)BusMessageTypes.STUDENT_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateStudentAsync(message);
+                                break;
+                            }
+                        case (int)BusMessageTypes.TEACHER:
+                        case (int)BusMessageTypes.TEACHER_UPDATE:
+                        case (int)BusMessageTypes.TEACHER_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateTeacherAsync(message);
+                                break;
+                            }
+                        case (int)BusMessageTypes.CLASS:
+                        case (int)BusMessageTypes.CLASS_UPDATE:
+                        case (int)BusMessageTypes.CLASS_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateClassAsync(message);
+                                break;
+                            }
+                        case (int)BusMessageTypes.SUBJECT:
+                        case (int)BusMessageTypes.SUBJECT_UPDATE:
+                        case (int)BusMessageTypes.SUBJECT_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateSubjectAsync(message);
+                                break;
+                            }
+
+                    }
+                });
+                return handlers;
+            });
             services.AddSingleton<BoundedMessageChannel<BusMessage>>();
             //services.AddHostedService<EventHubProcessorService>();
             services.AddHostedService<EventHubReaderService>();
@@ -70,6 +114,10 @@ namespace AssessmentSvc.API
             services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();
+            services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<ISchoolClassService, SchoolClassService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<ISubjectService, SubjectService>();
         }
     }
 }
