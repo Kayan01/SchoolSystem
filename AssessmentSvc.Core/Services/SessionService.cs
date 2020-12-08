@@ -48,7 +48,10 @@ namespace AssessmentSvc.Core.Services
             {
                 //update the current session to false
                 var lastCurrentSession = await _sessionRepo.GetAll().Where(x => x.IsCurrent).FirstOrDefaultAsync();
-                lastCurrentSession.IsCurrent = false;
+                if (lastCurrentSession != null)
+                {
+                    lastCurrentSession.IsCurrent = false;
+                }
             }
 
             await _sessionRepo.InsertAsync(session);
