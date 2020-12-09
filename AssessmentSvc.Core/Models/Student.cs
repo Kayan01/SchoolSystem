@@ -12,7 +12,6 @@ namespace AssessmentSvc.Core.Models
         public long? ClassId { get; set; }
         public string RegNumber { get; set; }
 
-
         public SchoolClass Class { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Shared.ViewModels;
+﻿using AssessmentSvc.Core.ViewModels.Student;
+using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,5 +11,6 @@ namespace AssessmentSvc.Core.Interfaces
     {
         Task AddOrUpdateStudentFromBroadcast(StudentSharedModel model);
         Task<long> GetStudentClassIdByUserId(long userId);
+        Task<ResultModel<List<StudentVM>>> GetStudentsByClass(long classId);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Models;
+using AssessmentSvc.Core.ViewModels.Student;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
@@ -57,6 +58,18 @@ namespace AssessmentSvc.Core.Services
                 return 0;
             }
             return student.ClassId.Value;
+        }
+
+        public async Task<ResultModel<List<StudentVM>>> GetStudentsByClass(long classId)
+        {
+            var students = await _studentRepo.GetAll()
+                .Where(m => m.ClassId == classId)
+                .Select(m=>(StudentVM)m).ToListAsync();
+
+            return new ResultModel<List<StudentVM>>()
+            {
+                Data = students
+            };
         }
     }
 }
