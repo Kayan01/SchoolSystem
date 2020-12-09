@@ -15,7 +15,6 @@ namespace AssessmentSvc.API.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]/[action]")]
-    [AllowAnonymous]
     public class AssessmentSetupController : BaseController
     {
         private readonly IAssessmentSetupService _assessmentSetupService;
