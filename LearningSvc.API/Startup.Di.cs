@@ -110,6 +110,7 @@ namespace LearningSvc.API
 
             services.AddTransient<LearningHandler>();
 
+            services.AddScoped<IPublishService, PublishService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
             //services.AddTransient<IFileUploadService, FileUploadService>(); 
             services.AddScoped<IDocumentService, DocumentService>();

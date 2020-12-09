@@ -13,5 +13,6 @@ namespace AssessmentSvc.Core.Interfaces
         Task<ResultModel<SessionSetupDetail>> UpdateSchoolSession(long Id, AddSessionSetupVM vM);
         Task<ResultModel<List<SessionSetupList>>> GetSchoolSessions();
         Task<ResultModel<SessionSetupDetail>> GetCurrentSchoolSession();
+        Task<ResultModel<CurrentSessionAndTermVM>> GetCurrentSessionAndTerm();
     }
 }

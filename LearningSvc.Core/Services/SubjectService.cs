@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Shared.Pagination;
 using IPagedList;
+using Shared.PubSub;
 
 namespace LearningSvc.Core.Services
 {
@@ -21,13 +22,19 @@ namespace LearningSvc.Core.Services
         private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly IClassSubjectService _classSubjectService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPublishService _publishService;
 
-        public SubjectService(IUnitOfWork unitOfWork, IRepository<Subject, long> subjectRepo, IRepository<SchoolClass, long> schoolClassRepo, IClassSubjectService classSubjectService)
+        public SubjectService(IUnitOfWork unitOfWork, 
+            IRepository<Subject, long> subjectRepo, 
+            IRepository<SchoolClass, long> schoolClassRepo, 
+            IClassSubjectService classSubjectService,
+            IPublishService publishService)
         {
             _unitOfWork = unitOfWork;
             _subjectRepo = subjectRepo;
             _schoolClassRepo = schoolClassRepo;
             _classSubjectService = classSubjectService;
+            _publishService = publishService;
         }
 
         public async Task<ResultModel<SubjectVM>> AddSubject(SubjectInsertVM model)
@@ -42,14 +49,14 @@ namespace LearningSvc.Core.Services
             }
 
             //create class session
-            var cls = new Subject
+            var subject = new Subject
             {
                 //Todo : Add more fields
                 Name = model.Name.ToLower(),
                 IsActive = model.IsActive
             };
 
-            var id = _subjectRepo.InsertAndGetId(cls);
+            _subjectRepo.Insert(subject);
             await _unitOfWork.SaveChangesAsync();
 
             if (model.ClassIds.Length > 0)
@@ -60,13 +67,24 @@ namespace LearningSvc.Core.Services
                 {
                     await _classSubjectService.AddClassesToSubject(new ViewModels.ClassSubject.ClassesToSubjectInsertVM()
                     {
-                        SubjectId = id,
+                        SubjectId = subject.Id,
                         ClassIds = classes.ToArray(),
                     });
                 }
             }
 
-            result.Data = new SubjectVM() { Id = id, Name = model.Name.ToLower(), IsActive = model.IsActive};
+            var subjectSharedModel = new SubjectSharedModel
+            {
+                Id = subject.Id,
+                Name = subject.Name,
+                TenantId = subject.TenantId,
+                IsActive = subject.IsActive,
+            };
+
+
+            await _publishService.PublishMessage(Topics.Subject, BusMessageTypes.SUBJECT, subjectSharedModel);
+
+            result.Data = new SubjectVM() { Id = subject.Id, Name = model.Name.ToLower(), IsActive = model.IsActive};
             return result;
         }
 

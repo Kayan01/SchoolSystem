@@ -41,6 +41,7 @@ namespace AssessmentSvc.Core.Services
             {
                 var assessmentSetup = new AssessmentSetup
                 {
+                    SequenceNumber = item.SequenceNumber,
                     MaxScore = item.MaxScore,
                     Name = item.Name
                 };
@@ -62,8 +63,12 @@ namespace AssessmentSvc.Core.Services
         {
             var result = new ResultModel<List<AssessmentSetupVM>>
             {
-                Data = await _assessmentSetupRepo.GetAll().Select(x => (AssessmentSetupVM)x).ToListAsync()
+                Data = await _assessmentSetupRepo.GetAll()
+                    .OrderBy(m=>m.SequenceNumber)
+                    .Select(x => (AssessmentSetupVM)x)
+                    .ToListAsync()
             };
+
             return result;
         }
 
@@ -87,7 +92,7 @@ namespace AssessmentSvc.Core.Services
                 result.AddError("Not found");
                 return result;
             }
-
+            assessment.SequenceNumber = model.SequenceNumber;
             assessment.MaxScore = model.MaxScore;
             assessment.Name = model.Name;
 

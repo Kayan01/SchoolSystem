@@ -105,6 +105,37 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<CurrentSessionAndTermVM>> GetCurrentSessionAndTerm()
+        {
+            var result = new ResultModel<CurrentSessionAndTermVM>();
+
+            var session = await _sessionRepo.GetAll().Where(x => x.IsCurrent == true).FirstOrDefaultAsync();
+
+            if (session == null)
+            {
+                result.AddError("No current session exists");
+                return result;
+            }
+            var now = DateTime.Now;
+            var currentTerm = session.Terms.Where(m => m.StartDate < now && m.EndDate > now).FirstOrDefault();
+
+            if (currentTerm == null)
+            {
+                result.AddError("Today's date does not fall within any term. Please adjust term dates and try again.");
+                return result;
+            }
+
+            result.Data = new CurrentSessionAndTermVM
+            {
+                sessionId = session.Id,
+                SessionName = session.SessionName,
+                TermName=currentTerm.Name,
+                TermSequence=currentTerm.SequenceNumber,
+            };
+
+            return result;
+        }
+
         public async Task<ResultModel<List<SessionSetupList>>> GetSchoolSessions()
         {
             var result = new ResultModel<List<SessionSetupList>>();
