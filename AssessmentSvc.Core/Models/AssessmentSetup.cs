@@ -10,6 +10,7 @@ namespace AssessmentSvc.Core.Models
     {
         public long TenantId { get; set; }
 
+        public int SequenceNumber { get; set; }
         public string Name { get; set; }
         public int MaxScore { get; set; }
     }
