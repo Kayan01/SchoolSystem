@@ -23,16 +23,16 @@ namespace AssessmentSvc.Core.Services
     public class ResultService : IResultService
     {
         private readonly IRepository<Result, long> _resultRepo;
-        private readonly AssessmentSetupService _assessmentService;
-        private readonly StudentService _studentServive;
+        private readonly IAssessmentSetupService _assessmentService;
+        private readonly IStudentService _studentServive;
         private readonly IUnitOfWork _unitOfWork;
 
         private readonly ISessionSetup _sessionService;
 
         public ResultService(IUnitOfWork unitOfWork,
             IRepository<Result, long> resultRepo,
-            AssessmentSetupService assessmentService,
-            StudentService studentServive,
+            IAssessmentSetupService assessmentService,
+            IStudentService studentServive,
             ISessionSetup sessionService)
         {
             _unitOfWork = unitOfWork;
@@ -145,7 +145,7 @@ namespace AssessmentSvc.Core.Services
             // output the XLSX file
             using (var ms = new MemoryStream())
             {
-                workbook.Write(ms);
+                workbook.Write(ms, leaveOpen: true);
                 ms.Seek(0, SeekOrigin.Begin);
                 result.Data = ms.ToArray();
             }

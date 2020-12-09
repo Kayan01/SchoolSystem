@@ -40,14 +40,15 @@ namespace AssessmentSvc.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        public async Task<IActionResult> GetResultUploadExcel([FromQuery] long classId, [FromBody] string className)
+        [ProducesResponseType(typeof(FileContentResult), 200)]
+        public async Task<FileContentResult> GetResultUploadExcel([FromQuery] long classId, [FromQuery] string className)
         {
             try
             {
                 var result = await _resultService.GenerateResultUploadExcel(classId);
                 if (result.HasError)
-                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                    return null;
+                    //return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
 
 
                 string fileName = "ClassResultSheet.xlsx";
@@ -55,13 +56,13 @@ namespace AssessmentSvc.API.Controllers
                 {
                     fileName = $"{className}ResultSheet.xlsx";
                 }
-                string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                string contentType = "application/octet-stream";
 
                 return File(result.Data, contentType, fileName);
             }
             catch (Exception ex)
             {
-                return HandleError(ex);
+                return null;
             }
         }
 
