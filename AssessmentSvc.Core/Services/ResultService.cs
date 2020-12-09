@@ -203,7 +203,7 @@ namespace AssessmentSvc.Core.Services
             var assessments = await _assessmentService.GetAllAssessmentSetup();
             if (assessments.Data?.Any() != true)
             {
-                result.AddError("Assessments has not been setup!");
+                result.AddError("Assessment setting has not been setup!");
                 return result;
             }
 
@@ -260,7 +260,7 @@ namespace AssessmentSvc.Core.Services
                     return result;
                 }
 
-                if (student.Name.ToLowerInvariant() == row.GetCell(row.FirstCellNum + 2).ToString().ToLowerInvariant())
+                if (student.Name.ToLowerInvariant() != row.GetCell(row.FirstCellNum + 2).ToString().ToLowerInvariant())
                 {
                     result.AddError("Encountered invalid data. Student Id does not match name.");
                     return result;
@@ -268,16 +268,16 @@ namespace AssessmentSvc.Core.Services
 
                 List<AssessmentAndScore> scores = new List<AssessmentAndScore>();
 
-                for (int j = (row.FirstCellNum + 4); i < row.LastCellNum; i++)
+                for (int j = (row.FirstCellNum + 4); j < row.LastCellNum; j++)
                 {
                     int cellScore ;
 
-                    if (!int.TryParse((row.GetCell(row.FirstCellNum + 1)).ToString(), out cellScore))
+                    if (!int.TryParse((row.GetCell(j)).ToString(), out cellScore))
                     {
                         cellScore = 0;
                     }
 
-                    var assessment = assessments.Data[i - 4];
+                    var assessment = assessments.Data[j - 4];
                     scores.Add(new AssessmentAndScore()
                     {
                         AssessmentName = assessment.Name,
@@ -330,7 +330,7 @@ namespace AssessmentSvc.Core.Services
                 }
             }
 
-            var rowcount = sheet.LastRowNum - sheet.FirstRowNum - 1; // count rows except header row.
+            var rowcount = sheet.LastRowNum - sheet.FirstRowNum; // count rows except header row.
             if (rowcount != studentCount)
             {
                 return false;

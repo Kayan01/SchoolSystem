@@ -89,7 +89,7 @@ namespace AssessmentSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        public async Task<IActionResult> PostResultFromExcel([FromBody] ResultFileUploadVM model)
+        public async Task<IActionResult> PostResultFromExcel([FromForm] ResultFileUploadVM model)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
