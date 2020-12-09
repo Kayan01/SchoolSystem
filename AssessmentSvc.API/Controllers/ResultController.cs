@@ -56,7 +56,7 @@ namespace AssessmentSvc.API.Controllers
                 {
                     fileName = $"{className}ResultSheet.xlsx";
                 }
-                string contentType = "application/octet-stream";
+                string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
                 return File(result.Data, contentType, fileName);
             }
