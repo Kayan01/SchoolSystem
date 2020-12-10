@@ -38,6 +38,7 @@ namespace LearningSvc.Core.Services
             var assignmentAnswer = await _assignmentAnswerRepo.GetAll()
                 .Where(m => m.AssignmentId == assignmentId).Select(x => new AssignmentAnswerListVM()
                 {
+                    Id= x.Id,
                     ClassName = $"{x.Assignment.SchoolClassSubject.SchoolClass.Name} {x.Assignment.SchoolClassSubject.SchoolClass.ClassArm}",
                     Date = x.CreationTime,
                     StudentNumber = x.Student.UserId.ToString(),
@@ -81,11 +82,11 @@ namespace LearningSvc.Core.Services
 
             if (answer == null)
             {
-                result.AddError("Some files could not be uploaded");
+                result.AddError("Assignment answer not found.");
 
                 return result;
             }
-            answer.Comment += "/n/n" + model.Comment;
+            answer.Comment += "\n\n" + model.Comment;
 
             await _assignmentAnswerRepo.UpdateAsync(answer);
             await _unitOfWork.SaveChangesAsync();
