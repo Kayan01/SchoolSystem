@@ -43,6 +43,7 @@ namespace LearningSvc.Core.Services
                     Date = x.CreationTime,
                     StudentNumber = x.Student.UserId.ToString(),
                     StudentName = $"{x.Student.LastName} {x.Student.FirstName}",
+                    Score = x.Score,
                 })
                 .ToListAsync();
 
