@@ -91,7 +91,7 @@ namespace AssessmentSvc.API.Controllers
         }
         [HttpGet()]
         [ProducesResponseType(typeof(ApiResponse<List<SessionSetupDetail>>), 200)]
-        public async Task<IActionResult> GetCurrentSchoolSessions(long Id)
+        public async Task<IActionResult> GetCurrentSchoolSessions()
         {
 
             if (!ModelState.IsValid)
