@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 
 namespace AssessmentSvc.API.Controllers
 {
+    [ApiController]
+    [Route("api/v1/[controller]/[action]")]
     public class GradeSetupController : BaseController
     {
         private readonly IGradeSetupService _gradeSetupService;
