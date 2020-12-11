@@ -144,14 +144,23 @@ namespace LearningSvc.Core.Services
                 return result;
             }
 
-            var newAssignmentAnswer = new AssignmentAnswer
-            {
-                AssignmentId = assignmentAnswer.AssignmentId,
-                Attachment = file,
-                StudentId = student.Id,
-            };
+            var answer = await _assignmentAnswerRepo.GetAll().Where(m => m.AssignmentId == assignmentAnswer.AssignmentId && m.StudentId == student.Id).FirstOrDefaultAsync();
 
-            _assignmentAnswerRepo.Insert(newAssignmentAnswer);
+            if (answer != null)
+            {
+                answer.Attachment = file;
+            }
+            else
+            {
+                answer = new AssignmentAnswer
+                {
+                    AssignmentId = assignmentAnswer.AssignmentId,
+                    Attachment = file,
+                    StudentId = student.Id,
+                };
+
+                _assignmentAnswerRepo.Insert(answer);
+            }
 
             await _unitOfWork.SaveChangesAsync();
 
