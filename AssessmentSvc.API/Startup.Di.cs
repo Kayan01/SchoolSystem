@@ -111,6 +111,7 @@ namespace AssessmentSvc.API
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
 
+            services.AddTransient<AssessmentHandler>();
             services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();
