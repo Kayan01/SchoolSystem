@@ -100,7 +100,7 @@ namespace AssessmentSvc.API
                 return handlers;
             });
             services.AddSingleton<BoundedMessageChannel<BusMessage>>();
-            //services.AddHostedService<EventHubProcessorService>();
+            services.AddHostedService<EventHubProcessorService>();
             services.AddHostedService<EventHubReaderService>();
 
             //Permission not needed here
@@ -112,6 +112,7 @@ namespace AssessmentSvc.API
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
 
             services.AddTransient<AssessmentHandler>();
+
             services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();
