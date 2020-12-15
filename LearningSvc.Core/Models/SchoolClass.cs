@@ -13,6 +13,7 @@ namespace LearningSvc.Core.Models
         public string ClassArm { get; set; }
 
         public string ZoomRoomId { get; set; }
+        public string ZoomRoomStartUrl { get; set; }
 
         public ICollection<Student> Students { get; set; }
         public ICollection<SchoolClassSubject> SchoolClassSubjects { get; set; }
