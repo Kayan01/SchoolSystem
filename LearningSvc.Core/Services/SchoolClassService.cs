@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace LearningSvc.Core.Services
 {
@@ -17,10 +20,14 @@ namespace LearningSvc.Core.Services
     {
         private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ZoomService _zoomService;
 
-        public SchoolClassService(IUnitOfWork unitOfWork, IRepository<SchoolClass, long> schoolClassRepo)
+        public SchoolClassService(IUnitOfWork unitOfWork,
+            ZoomService zoomService,
+            IRepository<SchoolClass, long> schoolClassRepo)
         {
             _unitOfWork = unitOfWork;
+            _zoomService = zoomService;
             _schoolClassRepo = schoolClassRepo;
         }
 
@@ -55,11 +62,22 @@ namespace LearningSvc.Core.Services
                 var schClass = schoolClasses.FirstOrDefault(x => x.Id == cls.Id);
                 if (schClass == null)
                 {
-                    schClass =_schoolClassRepo.Insert(new SchoolClass
+                    schClass = _schoolClassRepo.Insert(new SchoolClass
                     {
                         Id = cls.Id,
                     });
                 }
+
+                if (string.IsNullOrWhiteSpace(schClass.ZoomRoomId))
+                {
+                    var zoomObj = await _zoomService.GetZoomID($"{schClass.Name} {schClass.ClassArm}");
+                    if (zoomObj != null)
+                    {
+                        schClass.ZoomRoomId = zoomObj.id.ToString();
+                        schClass.ZoomRoomStartUrl = zoomObj.start_url;
+                    }
+                }
+
                 schClass.TenantId = cls.TenantId;
                 schClass.Name = cls.Name;
                 schClass.ClassArm = cls.ClassArm;
@@ -67,7 +85,7 @@ namespace LearningSvc.Core.Services
 
             await _unitOfWork.SaveChangesAsync();
         }
-      
+
 
         public async Task<ResultModel<List<SchoolClassVM>>> GetAllSchoolClass()
         {
@@ -78,4 +96,5 @@ namespace LearningSvc.Core.Services
             return result;
         }
     }
+
 }
