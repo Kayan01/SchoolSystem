@@ -40,7 +40,7 @@ namespace AssessmentSvc.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(FileContentResult), 200)]
+        [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> GetResultUploadExcel([FromQuery] long classId)
         {
             try
