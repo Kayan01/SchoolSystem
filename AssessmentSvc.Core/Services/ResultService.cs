@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace AssessmentSvc.Core.Services
 {
@@ -395,6 +396,72 @@ namespace AssessmentSvc.Core.Services
             {
                 return null;
             }
+        }
+
+        public async Task<ResultModel<List<ResultBroadSheet>>> GetClassBroadSheet(long classId)
+        {
+            //get current term
+            //get results for current term
+            var result = new ResultModel<List<ResultBroadSheet>>();
+            var sessionResult = await _sessionService.GetCurrentSchoolSession();
+
+            if (sessionResult.HasError)
+            {
+                foreach (string err in sessionResult.ErrorMessages)
+                {
+                    result.AddError(err);
+                }
+
+                return result;
+            }
+
+            var currSession = sessionResult.Data;
+
+            var query = _resultRepo.GetAll()
+                 .Where(x => x.SessionSetupId == currSession.Id && x.SchoolClassId == classId)
+                 .Select(x => new
+                 {
+                     StudentName = $"{x.Student.FirstName} {x.Student.LastName}",
+                     StudentRegNo = x.Student.RegNumber,
+                     SubjectName = x.Subject.Name,
+                     ScoresJSON = x.ScoresJSON
+                 })
+                 .ToList();
+
+            if (query.Count < 1)
+            {
+                result.AddError("No rsult for this class!");
+                return result;
+            }
+
+            var queryGroup = query.GroupBy(x => x.StudentName);
+            var data = new List<ResultBroadSheet>();
+            foreach (var group in queryGroup)
+            {
+                var rbroadsheet = new ResultBroadSheet
+                {
+                    StudentName = group.Key,
+                    StudentRegNo = group.FirstOrDefault().StudentRegNo
+                };
+
+                foreach (var sc  in group)
+                {
+
+                    var temp = JsonConvert.DeserializeObject<List<Score>>(sc.ScoresJSON, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+
+                    var totalscore = temp.Sum(x => x.StudentScore);
+
+                    rbroadsheet.AssessmentAndScores.Add(new SubjectResultBroadSheet { SubjectName = sc.SubjectName, Score = totalscore }) ;
+                }
+
+                data.Add(rbroadsheet);
+               
+            }
+
+            result.Data = data;
+
+
+            return result;
         }
     }
 }

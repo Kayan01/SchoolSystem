@@ -14,5 +14,6 @@ namespace AssessmentSvc.Core.Interfaces
         Task<ResultModel<ResultUploadFormData>> FetchResultUploadFormData(long SchoolClassId);
         Task<ResultModel<string>> ProcessResultFromExcel(ResultFileUploadVM vM);
         Task<ResultModel<string>> ProcessResult(ResultUploadVM models);
+        Task<ResultModel<List<ResultBroadSheet>>> GetClassBroadSheet(long classId);
     }
 }
