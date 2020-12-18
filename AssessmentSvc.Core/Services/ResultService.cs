@@ -168,23 +168,43 @@ namespace AssessmentSvc.Core.Services
                 return result;
             }
 
+            var oldResults = _resultRepo.GetAll()
+                .Where(m => m.SchoolClassId == model.ClassId &&
+                    m.SubjectId == model.SubjectId &&
+                    m.SessionSetupId == currentSessionResult.Data.sessionId &&
+                    m.TermSequenceNumber == currentSessionResult.Data.TermSequence).AsNoTracking().ToList(); 
+
             foreach (var studentresult in model.StudentResults)
             {
-                var resultObject = new Result()
-                {
-                    SchoolClassId = model.ClassId,
-                    SessionSetupId = currentSessionResult.Data.sessionId,
-                    StudentId = studentresult.StudentId,
-                    SubjectId = model.SubjectId,
-                    TermSequenceNumber = currentSessionResult.Data.TermSequence,
-                    Scores = studentresult.AssessmentAndScores.Select(m => new Score()
-                    {
-                        AssessmentName = m.AssessmentName,
-                        StudentScore = m.Score,
-                    }).ToList(),
-                };
+                var resultObject = oldResults.FirstOrDefault(m => m.StudentId == studentresult.StudentId);
 
-                _resultRepo.Insert(resultObject);
+                if (resultObject == null)
+                {
+                    resultObject = new Result()
+                    {
+                        SchoolClassId = model.ClassId,
+                        SessionSetupId = currentSessionResult.Data.sessionId,
+                        StudentId = studentresult.StudentId,
+                        SubjectId = model.SubjectId,
+                        TermSequenceNumber = currentSessionResult.Data.TermSequence,
+                    };
+                }
+
+                resultObject.Scores = studentresult.AssessmentAndScores.Select(m => new Score()
+                {
+                    AssessmentName = m.AssessmentName,
+                    StudentScore = m.Score,
+                }).ToList();
+
+                if (resultObject.Id < 1)
+                {
+                    _resultRepo.Insert(resultObject);
+                }
+                else
+                {
+                    _resultRepo.Update(resultObject);
+                    oldResults.Remove(resultObject);
+                }
             }
 
             await _unitOfWork.SaveChangesAsync();
