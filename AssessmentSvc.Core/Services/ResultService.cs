@@ -421,7 +421,7 @@ namespace AssessmentSvc.Core.Services
                 var rbroadsheet = new ResultBroadSheet
                 {
                     StudentName = group.Key,
-                    StudentRegNo = group.FirstOrDefault().StudentName
+                    StudentRegNo = group.FirstOrDefault().StudentRegNo
                 };
 
                 foreach (var sc  in group)
