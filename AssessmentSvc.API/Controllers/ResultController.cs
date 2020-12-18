@@ -100,18 +100,18 @@ namespace AssessmentSvc.API.Controllers
         }
 
         [HttpGet("{Id}")]
-        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<ResultBroadSheet>>), 200)]
         public async Task<IActionResult> GetClassBroadSheet(long Id)
         {
             if (Id < 1)
-                return ApiResponse<string>(errors: "Please provide valid Id", codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<List<ResultBroadSheet>>(errors: "Please provide valid Id", codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
                 var result = await _resultService.GetClassBroadSheet(Id);
 
                 if (result.HasError)
-                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                    return ApiResponse<List<ResultBroadSheet>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
