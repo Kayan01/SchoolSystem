@@ -10,7 +10,7 @@ namespace AssessmentSvc.Core.ViewModels.Result
         public string StudentName { get; set; }
         public string StudentRegNo { get; set; }
         public List<SubjectResultBroadSheet> AssessmentAndScores { get; set; } = new List<SubjectResultBroadSheet>();
-        public double? AverageScore { get { return AssessmentAndScores?.Select(x => x.Score).Sum(); } }
+        public double? AverageScore { get { return AssessmentAndScores?.Select(x => x.Score).Sum()/ AssessmentAndScores?.Count; } }
     }
 
     public class SubjectResultBroadSheet
