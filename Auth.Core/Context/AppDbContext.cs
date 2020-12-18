@@ -18,7 +18,7 @@ namespace Auth.Core.Context
         public AppDbContext(DbContextOptions options) : base(options)
         {
         }
-
+        public DbSet<SchoolProperty> SchoolProperties { get; set; }
         public DbSet<FileUpload> FileUploads { get; set; }
         public DbSet<Test> Tests { get; set; }
         public DbSet<School> Schools { get; set; }

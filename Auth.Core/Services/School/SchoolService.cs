@@ -20,6 +20,7 @@ using ExcelManager;
 using Auth.Core.Models.Contact;
 using IPagedList;
 using static Shared.Utils.CoreConstants;
+using Microsoft.OpenApi.Extensions;
 
 namespace Auth.Core.Services
 {
@@ -84,7 +85,8 @@ namespace Auth.Core.Services
                     Country = model.Country,
                     State = model.State,
                     WebsiteAddress = model.WebsiteAddress,
-                    FileUploads = files
+                    FileUploads = files,
+                    IsActive = model.IsActive
                 };
 
             school.SchoolContactDetails.Add(contactDetails);
@@ -122,14 +124,47 @@ namespace Auth.Core.Services
         public async Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model)
         {
             var query = _schoolRepo.GetAll()
-                .Include(x=> x.Staffs)
+                .Include(x => x.Staffs)
                 .Include(x => x.FileUploads)
                 .Include(x => x.Students)
-                .Include(x => x.TeachingStaffs);
+                .Include(x => x.TeachingStaffs)
+                .OrderByDescending(x => x.CreationTime)
+                .Select(x => new
+                {
+                    x.Address,
+                    x.City,
+                    x.ClientCode,
+                    x.Country,
+                    x.CreationTime,
+                    x.DomainName,
+                    logoPath = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path,
+                    x.Id,
+                    x.Name,
+                    x.SchoolSections,
+                    x.State,
+                    staffCount = x.Staffs.Count,
+                    studentCount = x.Students.Count,
+                    teacherCount = x.Students.Count,
+                    x.WebsiteAddress,
+                     x.IsActive
+                });
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
-            var data = new PaginatedModel<SchoolVM>(pagedData.Select(x => (SchoolVM)x), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
+            var data = new PaginatedModel<SchoolVM>(pagedData.Select(x => new SchoolVM
+            {
+                Id = x.Id,
+                Name = x.Name,
+                State = x.State,
+                Logo = x.logoPath == null ? null : _documentService.TryGetUploadedFile(x.logoPath),
+                ClientCode = x.ClientCode,
+                DateCreated = x.CreationTime,
+                Status = x.IsActive,
+                UsersCount = x.staffCount + x.studentCount + x.teacherCount
+
+            }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
+
+
             var result = new ResultModel<PaginatedModel<SchoolVM>>
             {
                 Data = data

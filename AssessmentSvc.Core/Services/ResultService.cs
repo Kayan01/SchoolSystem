@@ -173,7 +173,7 @@ namespace AssessmentSvc.Core.Services
                 var resultObject = new Result()
                 {
                     SchoolClassId = model.ClassId,
-                    SessionId = currentSessionResult.Data.sessionId,
+                    SessionSetupId = currentSessionResult.Data.sessionId,
                     StudentId = studentresult.StudentId,
                     SubjectId = model.SubjectId,
                     TermSequenceNumber = currentSessionResult.Data.TermSequence,

@@ -15,7 +15,7 @@ namespace Auth.API.Controllers.Setup
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
-    [AllowAnonymous]
+    [Authorize]
     public class DepartmentController : BaseController
     {
         public IDepartmentService _departmentService;

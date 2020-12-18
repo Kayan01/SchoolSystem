@@ -100,7 +100,7 @@ namespace AssessmentSvc.API
                 return handlers;
             });
             services.AddSingleton<BoundedMessageChannel<BusMessage>>();
-            //services.AddHostedService<EventHubProcessorService>();
+            services.AddHostedService<EventHubProcessorService>();
             services.AddHostedService<EventHubReaderService>();
 
             //Permission not needed here
@@ -111,6 +111,8 @@ namespace AssessmentSvc.API
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
             services.AddScoped<IBaseRequestAPIService, BaseRequestAPIService>();
 
+            services.AddTransient<AssessmentHandler>();
+
             services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();
@@ -119,6 +121,7 @@ namespace AssessmentSvc.API
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<IResultService, ResultService>();
+            services.AddScoped<IGradeSetupService, GradeSetupService>();
         }
     }
 }

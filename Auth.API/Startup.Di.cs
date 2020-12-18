@@ -127,6 +127,7 @@ namespace Auth.API
             services.AddScoped<ISectionService, SectionService>();
             services.AddScoped<IFileStore, FileStore>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<ISchoolPropertyService, SchoolPropertyService>();
             services.AddTransient<AuthHandler>();
         }
     }

@@ -81,12 +81,12 @@ namespace Auth.Core.ViewModels
         public string ClientCode { get; set; }
         public bool Status { get; set; }
         public DateTime DateCreated { get; set; }
-        public byte[] Logo { get; set; }
+        public string Logo { get; set; }
         public long? UsersCount { get; set; }
 
         public static implicit operator SchoolVM(Models.School model)
         {
-            var cont = model.SchoolContactDetails?.FirstOrDefault(x => x.IsPrimaryContact);
+            //var cont = model.SchoolContactDetails?.FirstOrDefault(x => x.IsPrimaryContact);
             var staffCount = model.Staffs?.Count();
             var studentCount = model.Students?.Count();
             var teachersCount = model.TeachingStaffs?.Count();
@@ -101,7 +101,7 @@ namespace Auth.Core.ViewModels
                 State = model.State,
                 UsersCount = studentCount + teachersCount + staffCount,
                 ClientCode = model.ClientCode,
-                Logo = fileId.GetBase64StringFromImage(),
+               // Logo = fileId.GetBase64StringFromImage(),
             };
         }
 
