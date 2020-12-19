@@ -11,7 +11,8 @@ namespace AssessmentSvc.Core.ViewModels.Result
         public string StudentRegNo { get; set; }
         public List<SubjectResultBroadSheet> AssessmentAndScores { get; set; } = new List<SubjectResultBroadSheet>();
         public double? AverageScore { get {
-                return AssessmentAndScores?.Select(x => x.Score).Sum() / AssessmentAndScores?.Count;
+                return AssessmentAndScores == null ? 0 : 
+                    Math.Round(AssessmentAndScores.Select(x => x.Score).Sum() / AssessmentAndScores.Count, 1, MidpointRounding.AwayFromZero);
             } }
     }
 

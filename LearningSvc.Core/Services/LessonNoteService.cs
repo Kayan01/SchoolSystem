@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Shared.Pagination;
 using IPagedList;
 using System.IO;
+using LearningSvc.Core.ViewModels.LearningFile;
 
 namespace LearningSvc.Core.Services
 {
@@ -83,6 +84,33 @@ namespace LearningSvc.Core.Services
             var result = new ResultModel<PaginatedModel<LessonNoteListVM>>
             {
                 Data = new PaginatedModel<LessonNoteListVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
+            };
+            return result;
+        }
+
+        public async Task<ResultModel<PaginatedModel<StudentFileVM>>> GetAllFileByClassSubject(long classSubjectId, QueryModel queryModel)
+        {
+            var query = await _lessonnoteRepo.GetAll().Where(m => m.SchoolClassSubjectId == classSubjectId)
+                    .Select(x => new StudentFileVM
+                    {
+                        Id = x.Id,
+                        FileName = x.File.Name,
+                        CreationDate = x.CreationTime,
+                        FileId = x.FileUploadId.ToString(),
+                        Type = "Lesson Note",
+                        TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
+                        FilePath = x.File.Path
+
+                    }).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
+
+            foreach (var item in query)
+            {
+                item.FileSize = _documentService.TryGetUploadedFileSize(item.FilePath);
+            }
+
+            var result = new ResultModel<PaginatedModel<StudentFileVM>>
+            {
+                Data = new PaginatedModel<StudentFileVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
             };
             return result;
         }

@@ -15,5 +15,6 @@ namespace Shared.FileStorage
        Task<FileUpload> TryUploadSupportingDocument(IFormFile formFile, DocumentType DocType);
 
         string TryGetUploadedFile(string path);
+        string TryGetUploadedFileSize(string path)
     }
 }
