@@ -369,6 +369,39 @@ namespace Auth.Core.Services.Users
             return result;
         }
 
+        public async Task<ResultModel<string>> MakeClassTeacher(ClassTeacherVM model)
+        {
+            var result = new ResultModel<string>();
+
+            var teacher = await _teacherRepo.GetAll().Where(x => x.Id == model.ClassId)
+                            .Include(x => x.Staff).ThenInclude(m=>m.User)
+                            .FirstOrDefaultAsync();
+
+            if (teacher == null)
+            {
+                result.AddError($"Teacher not found");
+                return result;
+            }
+
+            teacher.ClassId = model.ClassId;
+
+            await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
+            {
+                Id = teacher.Id,
+                IsActive = teacher.Staff.IsActive,
+                StaffType = teacher.Staff.StaffType,
+                TenantId = teacher.TenantId,
+                UserId = teacher.Staff.User.Id,
+                Email = teacher.Staff.User.Email,
+                FirstName = teacher.Staff.User.FirstName,
+                LastName = teacher.Staff.User.LastName,
+                Phone = teacher.Staff.User.PhoneNumber
+            });
+
+            result.Data = "Saved";
+            return result;
+        }
+
         #region notification
 
         private async Task<ResultModel<bool>> NewTeacherNotification(TeachingStaff teacher, string email)
