@@ -24,7 +24,7 @@ namespace AssessmentSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<ResultUploadFormData>), 200)]
-        public async Task<IActionResult> GetResultUploadFormData([FromQuery]long classId)
+        public async Task<IActionResult> GetResultUploadFormData([FromQuery] long classId)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace AssessmentSvc.API.Controllers
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: Convert.ToBase64String(result.Data), totalCount: 1);
-                
+
             }
             catch (Exception ex)
             {
@@ -112,6 +112,27 @@ namespace AssessmentSvc.API.Controllers
 
                 if (result.HasError)
                     return ApiResponse<List<ResultBroadSheet>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<IndividualBroadSheet>), 200)]
+        public async Task<IActionResult> GetStudentBroadSheet(long studId, long classId)
+        {
+            if (studId < 1 || classId < 1)
+                return ApiResponse<IndividualBroadSheet>(errors: "Please provide valid Id", codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _resultService.GetStudentResultSheet(classId, studId);
+
+                if (result.HasError)
+                    return ApiResponse<IndividualBroadSheet>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
