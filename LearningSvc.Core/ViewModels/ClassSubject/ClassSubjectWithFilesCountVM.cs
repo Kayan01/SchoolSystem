@@ -4,11 +4,11 @@ using System.Text;
 
 namespace LearningSvc.Core.ViewModels.ClassSubject
 {
-    public class ClassSubjectWithAssignmentCountVM
+    public class ClassSubjectWithFilesCountVM
     {
         public long Id { get; set; }
         public string Class { get; set; }
         public string Subject { get; set; }
-        public int AssignmentCount { get; set; }
+        public int FilesCount { get; set; }
     }
 }

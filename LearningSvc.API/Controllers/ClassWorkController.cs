@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.ViewModels.ClassWork;
+using LearningSvc.Core.ViewModels.LearningFile;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -49,6 +50,23 @@ namespace LearningSvc.API.Controllers
                 if (result.HasError)
                     return ApiResponse<IEnumerable<ClassWorkListVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<IEnumerable<ClassWorkListVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<StudentFileVM>>), 200)]
+        public async Task<IActionResult> GetFileByClassSubject([FromQuery] long classSubjectId, [FromQuery] QueryModel vM)
+        {
+            try
+            {
+                var result = await _classworkService.GetAllFileByClassSubject(classSubjectId, vM);
+                if (result.HasError)
+                    return ApiResponse<List<StudentFileVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
