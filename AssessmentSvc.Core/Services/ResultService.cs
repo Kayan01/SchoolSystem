@@ -26,6 +26,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IRepository<Result, long> _resultRepo;
         private readonly IAssessmentSetupService _assessmentService;
         private readonly IStudentService _studentServive;
+        public readonly IGradeSetupService _gradeService;
         private readonly IUnitOfWork _unitOfWork;
 
         private readonly ISessionSetup _sessionService;
@@ -34,13 +35,14 @@ namespace AssessmentSvc.Core.Services
             IRepository<Result, long> resultRepo,
             IAssessmentSetupService assessmentService,
             IStudentService studentServive,
-            ISessionSetup sessionService)
+            ISessionSetup sessionService,
+            IGradeSetupService gradeService)
         {
             _unitOfWork = unitOfWork;
             _resultRepo = resultRepo;
             _assessmentService = assessmentService;
             _studentServive = studentServive;
-
+            _gradeService = gradeService;
             _sessionService = sessionService;
         }
 
@@ -441,6 +443,94 @@ namespace AssessmentSvc.Core.Services
             result.Data = data;
 
 
+            return result;
+        }
+
+        public async Task<ResultModel<IndividualBroadSheet>> GetStudentResultSheet(long classId, long studentId)
+        {
+
+            var result = new ResultModel<IndividualBroadSheet>();
+
+            //get grade setup for school
+            var gradeSetupResult = await _gradeService.GetAllGradeForSchoolSetup();
+
+            if (gradeSetupResult.HasError || gradeSetupResult.Data.Count < 1)
+            {
+                result.AddError("Grade has not setup");
+                return result; 
+            }
+
+
+            var sessionResult = await _sessionService.GetCurrentSchoolSession();
+
+            if (sessionResult.HasError)
+            {
+                foreach (string err in sessionResult.ErrorMessages)
+                {
+                    result.AddError(err);
+                }
+
+                return result;
+            }
+
+            var currSession = sessionResult.Data;
+
+            var currTermSequence = currSession.Terms.Where(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now).FirstOrDefault().SequenceNumber;
+
+
+            var classResults = await _resultRepo.GetAll()
+                .Where(x => x.SessionSetupId == currSession.Id && x.SchoolClassId == classId && x.TermSequenceNumber == currTermSequence)
+                .Include(x=> x.Subject)
+                .ToListAsync();
+
+            if (classResults.Count < 1)
+            {
+                result.AddError("No result found in current term and session");
+                return result;
+            }
+
+            var resultsBySubjects = classResults.GroupBy(x => x.SubjectId);
+
+            var studResult = new IndividualBroadSheet();
+
+
+            foreach (var resultGroup in resultsBySubjects)
+            {
+                var breakdown = new SubjectResultBreakdown
+                {
+                    SubjectName = resultGroup.FirstOrDefault(x => x.SubjectId == resultGroup.Key)?.Subject.Name,
+                    
+                    AssesmentAndScores = resultGroup
+                    .Where(x => x.StudentId == studentId)
+                    .SelectMany(x => x.Scores)
+                    .Select(x => new AssesmentAndScoreViewModel
+                    {
+                        AssessmentName = x.AssessmentName,
+                        StudentScore = x.StudentScore
+                    }).ToList()
+                };
+
+                //calculate position
+                var orderedResults = resultGroup.OrderByDescending(x => x.Scores.Sum(x => x.StudentScore)).ToList();
+                var position = orderedResults.IndexOf(orderedResults.Where(x => x.StudentId == studentId).FirstOrDefault());
+
+                breakdown.Position = position + 1;
+
+                //get interpretation
+                foreach (var setup in gradeSetupResult.Data)
+                {
+                    if (breakdown.CummulativeScore >= setup.LowerBound
+                        && breakdown.CummulativeScore <= setup.UpperBound) {
+                        
+                        breakdown.Interpretation = setup.Interpretation;
+                        break;
+                    }
+                }
+
+                studResult.Breakdowns.Add(breakdown);
+            }
+
+            result.Data = studResult;
             return result;
         }
     }
