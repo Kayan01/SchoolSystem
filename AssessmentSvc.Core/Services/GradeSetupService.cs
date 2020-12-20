@@ -27,6 +27,19 @@ namespace AssessmentSvc.Core.Services
         {
             var result = new ResultModel<List<GradeSetupListVM>>();
 
+            //delete old setups
+            var gradeSetups = await _gradeRepository.GetAll().ToListAsync();
+
+            if (gradeSetups.Count > 0)
+            {
+                foreach (var setup in gradeSetups)
+                {
+                    await _gradeRepository.DeleteAsync(setup);
+                }
+            }
+            
+
+            //add new grade setup
             var grades = models.Select(x => new GradeSetup
             {
                 Grade = x.Grade,
@@ -108,26 +121,5 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<GradeSetupVM>> UpdateGradeSetup(long id, GradeSetupVM model)
-        {
-            var result = new ResultModel<GradeSetupVM>();
-
-            var grade = await _gradeRepository.GetAll().Where(x => x.Id == id).FirstOrDefaultAsync();
-
-            grade.Grade = model.Grade;
-            grade.Interpretation = model.Interpretation;
-            grade.IsActive = model.IsActive;
-
-            grade.LowerBound = model.LowerBound;
-            grade.Sequence = model.Sequence;
-            grade.UpperBound = model.UpperBound;
-
-          await  _gradeRepository.InsertOrUpdateAsync(grade);
-
-          await  _unitOfWork.SaveChangesAsync();
-
-            result.Data = model;
-            return result;
-        }
     }
 }
