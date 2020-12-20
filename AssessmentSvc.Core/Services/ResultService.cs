@@ -523,6 +523,7 @@ namespace AssessmentSvc.Core.Services
                         && breakdown.CummulativeScore <= setup.UpperBound) {
                         
                         breakdown.Interpretation = setup.Interpretation;
+                        breakdown.Grade = setup.Grade;
                         break;
                     }
                 }
