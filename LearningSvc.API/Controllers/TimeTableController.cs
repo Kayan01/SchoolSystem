@@ -89,7 +89,7 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
-                var result = await _timeTableService.GetTimeTableCellsForClass(classId);
+                var result = await _timeTableService.GetTimeTableCellsForClass(CurrentUser.UserId, classId);
                 if (result.HasError)
                     return ApiResponse<List<TimeTableCellVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<List<TimeTableCellVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

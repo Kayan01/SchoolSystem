@@ -26,6 +26,7 @@ namespace LearningSvc.Core.ViewModels.TimeTable
         public int NoOfPeriod { get; set; } = 1;
         public bool HasVirtual { get; set; } = false;
         public string ZoomId { get; set; }
+        public string ZoomStartUrl { get; set; }
 
 
     }
