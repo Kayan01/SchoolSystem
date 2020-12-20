@@ -404,6 +404,7 @@ namespace AssessmentSvc.Core.Services
                  .Select(x => new
                  {
                      StudentName = $"{x.Student.FirstName} {x.Student.LastName}",
+                     StudentId = x.StudentId,
                      StudentRegNo = x.Student.RegNumber,
                      SubjectName = x.Subject.Name,
                      ScoresJSON = x.ScoresJSON
@@ -416,14 +417,15 @@ namespace AssessmentSvc.Core.Services
                 return result;
             }
 
-            var queryGroup = query.GroupBy(x => x.StudentName);
+            var queryGroup = query.GroupBy(x => new { x.StudentId, x.StudentName, x.StudentRegNo });
             var data = new List<ResultBroadSheet>();
             foreach (var group in queryGroup)
             {
                 var rbroadsheet = new ResultBroadSheet
                 {
-                    StudentName = group.Key,
-                    StudentRegNo = group.FirstOrDefault().StudentRegNo
+                    StudentName = group.Key.StudentName,
+                    StudentId = group.Key.StudentId,
+                    StudentRegNo = group.Key.StudentRegNo
                 };
 
                 foreach (var sc  in group)
