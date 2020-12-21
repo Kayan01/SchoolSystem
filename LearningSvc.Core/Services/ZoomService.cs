@@ -65,10 +65,10 @@ namespace LearningSvc.Core.Services
                 password = "123456789",
                 settings = new Settings()
                 {
-                    host_video = true,
-                    join_before_host = false,
-                    waiting_room = true,
-                    approval_type = 3,
+                    host_video = false,
+                    join_before_host = true,
+                    waiting_room = false,
+                    approval_type = 2,
                     audio = "both",
                     auto_recording = "none",
                     meeting_authentication = false,
