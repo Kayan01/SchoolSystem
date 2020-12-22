@@ -47,7 +47,7 @@ namespace LearningSvc.Core.Services
 
         public async Task AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model)
         {
-            var teacher = await _teacherRepo.FirstOrDefaultAsync(x => x.Id == model.Id && x.TenantId == model.TenantId);
+            var teacher = await _teacherRepo.GetAll().Where(x => x.Id == model.Id && x.TenantId == model.TenantId).FirstOrDefaultAsync();
             if (teacher == null)
             {
                 teacher = _teacherRepo.Insert(new Teacher
@@ -81,7 +81,7 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<TeacherVM>
             {
-                Data = await _teacherRepo.FirstOrDefaultAsync(id)
+                Data = await _teacherRepo.GetAll().Where(m=>m.Id == id).FirstOrDefaultAsync()
             };
             return result;
         }

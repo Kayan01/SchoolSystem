@@ -26,7 +26,7 @@ namespace LearningSvc.Core.Services
 
         public async Task AddOrUpdateStudentFromBroadcast(StudentSharedModel model)
         {
-            var student = await _studentRepo.FirstOrDefaultAsync(x => x.Id == model.Id && x.TenantId == model.TenantId);
+            var student = await _studentRepo.GetAll().Where(x => x.Id == model.Id && x.TenantId == model.TenantId).FirstOrDefaultAsync();
             if (student == null)
             {
                 student = _studentRepo.Insert(new Student
