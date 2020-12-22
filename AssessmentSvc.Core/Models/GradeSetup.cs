@@ -6,7 +6,7 @@ using System.Text;
 
 namespace AssessmentSvc.Core.Models
 {
-    public class GradeSetup : AuditedEntity<long>, ITenantModelType
+    public class GradeSetup : FullAuditedEntity<long>, ITenantModelType
     {
         public long TenantId { get ; set; }
 
