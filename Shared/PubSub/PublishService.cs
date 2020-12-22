@@ -25,12 +25,14 @@ namespace Shared.PubSub
         public PublishService(IProducerClient<BusMessage> producerClient,
             IRepository<PublishedMessage, Guid> pubMessageRepository,
             IServiceScopeFactory serviceScopeFactory,
+            ILogger<PublishService> logger,
             IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
             _pubMessageRepository = pubMessageRepository;
             _producerClient = producerClient;
             _serviceScopeFactory = serviceScopeFactory;
+            _logger = logger;
         }
 
         public async Task PublishMessage(string topic, BusMessageTypes messageType, object data)

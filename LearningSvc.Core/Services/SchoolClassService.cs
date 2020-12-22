@@ -31,7 +31,7 @@ namespace LearningSvc.Core.Services
             _schoolClassRepo = schoolClassRepo;
         }
 
-        public async Task<ResultModel<SchoolClassVM>> AddSchoolClass(SchoolClassVM model)
+        public ResultModel<SchoolClassVM> AddSchoolClass(SchoolClassVM model)
         {
             var result = new ResultModel<SchoolClassVM>();
 
@@ -43,19 +43,19 @@ namespace LearningSvc.Core.Services
             };
 
             var id = _schoolClassRepo.InsertAndGetId(cls);
-            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.SaveChanges();
             model.Id = id;
             result.Data = model;
             return result;
         }
 
-        public async Task AddOrUpdateClassFromBroadcast(List<ClassSharedModel> model)
+        public void AddOrUpdateClassFromBroadcast(List<ClassSharedModel> model)
         {
             //list of broadcasted class ids
             var ids = model.Select(x => x.Id).ToList();
 
             //get all classes from db
-            var schoolClasses = await _schoolClassRepo.GetAll().Where(x => ids.Contains(x.Id)).ToListAsync();
+            var schoolClasses = _schoolClassRepo.GetAll().Where(x => ids.Contains(x.Id)).ToList();
 
             foreach (var cls in model)
             {
@@ -70,7 +70,7 @@ namespace LearningSvc.Core.Services
 
                 if (string.IsNullOrWhiteSpace(schClass.ZoomRoomId))
                 {
-                    var zoomObj = await _zoomService.GetZoomID($"{schClass.Name} {schClass.ClassArm}");
+                    var zoomObj = _zoomService.GetZoomID($"{schClass.Name} {schClass.ClassArm}").Result;
                     if (zoomObj != null)
                     {
                         schClass.ZoomRoomId = zoomObj.id.ToString();
@@ -83,7 +83,7 @@ namespace LearningSvc.Core.Services
                 schClass.ClassArm = cls.ClassArm;
             }
 
-            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.SaveChanges();
         }
 
 

@@ -10,7 +10,7 @@ namespace LearningSvc.Core.Interfaces
     public interface ISchoolClassService
     {
         Task<ResultModel<List<SchoolClassVM>>> GetAllSchoolClass();
-        Task<ResultModel<SchoolClassVM>> AddSchoolClass(SchoolClassVM model);
-        Task AddOrUpdateClassFromBroadcast(List<ClassSharedModel> model);
+        ResultModel<SchoolClassVM> AddSchoolClass(SchoolClassVM model);
+        void AddOrUpdateClassFromBroadcast(List<ClassSharedModel> model);
     }
 }

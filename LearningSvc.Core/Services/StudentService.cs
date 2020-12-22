@@ -4,10 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.ViewModels;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace LearningSvc.Core.Services
@@ -24,9 +21,9 @@ namespace LearningSvc.Core.Services
         }
 
 
-        public async Task AddOrUpdateStudentFromBroadcast(StudentSharedModel model)
+        public void AddOrUpdateStudentFromBroadcast(StudentSharedModel model)
         {
-            var student = await _studentRepo.FirstOrDefaultAsync(x => x.Id == model.Id && x.TenantId == model.TenantId);
+            var student = _studentRepo.FirstOrDefault(x => x.Id == model.Id && x.TenantId == model.TenantId);
             if (student == null)
             {
                 student = _studentRepo.Insert(new Student
@@ -45,7 +42,7 @@ namespace LearningSvc.Core.Services
             student.IsActive = model.IsActive;
             student.IsDeleted = model.IsDeleted;
 
-            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.SaveChanges();
         }
 
         public async Task<long> GetStudentClassIdByUserId(long userId)

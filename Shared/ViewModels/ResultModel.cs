@@ -12,6 +12,7 @@ namespace Shared.ViewModels
         public ResultModel(T data, string message="")
         {
             Data = data;
+            Message = message;
         }
         public ResultModel(string errorMessage)
         {

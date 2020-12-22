@@ -24,7 +24,7 @@ namespace LearningSvc.Core.Services
             _teacherRepo = teacherRepo;
         }
 
-        public async Task<ResultModel<TeacherVM>> AddTeacher(TeacherVM model)
+        public ResultModel<TeacherVM> AddTeacher(TeacherVM model)
         {
             var result = new ResultModel<TeacherVM>();
 
@@ -39,15 +39,15 @@ namespace LearningSvc.Core.Services
             };
 
             var id = _teacherRepo.InsertAndGetId(cls);
-            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.SaveChanges();
             model.Id = id;
             result.Data = model;
             return result;
         }
 
-        public async Task AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model)
+        public void AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model)
         {
-            var teacher = await _teacherRepo.FirstOrDefaultAsync(x => x.Id == model.Id && x.TenantId == model.TenantId);
+            var teacher = _teacherRepo.FirstOrDefault(x => x.Id == model.Id && x.TenantId == model.TenantId);
             if (teacher == null)
             {
                 teacher = _teacherRepo.Insert(new Teacher
@@ -66,7 +66,7 @@ namespace LearningSvc.Core.Services
             teacher.IsActive = model.IsActive;
             teacher.IsDeleted = model.IsDeleted;
 
-            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.SaveChanges();
         }
         public async Task<ResultModel<List<TeacherVM>>> GetAllTeacher()
         {
