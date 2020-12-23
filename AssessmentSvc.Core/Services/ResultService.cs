@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace AssessmentSvc.Core.Services
 {
@@ -25,6 +26,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IRepository<Result, long> _resultRepo;
         private readonly IAssessmentSetupService _assessmentService;
         private readonly IStudentService _studentServive;
+        public readonly IGradeSetupService _gradeService;
         private readonly IUnitOfWork _unitOfWork;
 
         private readonly ISessionSetup _sessionService;
@@ -33,13 +35,14 @@ namespace AssessmentSvc.Core.Services
             IRepository<Result, long> resultRepo,
             IAssessmentSetupService assessmentService,
             IStudentService studentServive,
-            ISessionSetup sessionService)
+            ISessionSetup sessionService,
+            IGradeSetupService gradeService)
         {
             _unitOfWork = unitOfWork;
             _resultRepo = resultRepo;
             _assessmentService = assessmentService;
             _studentServive = studentServive;
-
+            _gradeService = gradeService;
             _sessionService = sessionService;
         }
 
@@ -168,23 +171,43 @@ namespace AssessmentSvc.Core.Services
                 return result;
             }
 
+            var oldResults = _resultRepo.GetAll()
+                .Where(m => m.SchoolClassId == model.ClassId &&
+                    m.SubjectId == model.SubjectId &&
+                    m.SessionSetupId == currentSessionResult.Data.sessionId &&
+                    m.TermSequenceNumber == currentSessionResult.Data.TermSequence).AsNoTracking().ToList(); 
+
             foreach (var studentresult in model.StudentResults)
             {
-                var resultObject = new Result()
-                {
-                    SchoolClassId = model.ClassId,
-                    SessionSetupId = currentSessionResult.Data.sessionId,
-                    StudentId = studentresult.StudentId,
-                    SubjectId = model.SubjectId,
-                    TermSequenceNumber = currentSessionResult.Data.TermSequence,
-                    Scores = studentresult.AssessmentAndScores.Select(m => new Score()
-                    {
-                        AssessmentName = m.AssessmentName,
-                        StudentScore = m.Score,
-                    }).ToList(),
-                };
+                var resultObject = oldResults.FirstOrDefault(m => m.StudentId == studentresult.StudentId);
 
-                _resultRepo.Insert(resultObject);
+                if (resultObject == null)
+                {
+                    resultObject = new Result()
+                    {
+                        SchoolClassId = model.ClassId,
+                        SessionSetupId = currentSessionResult.Data.sessionId,
+                        StudentId = studentresult.StudentId,
+                        SubjectId = model.SubjectId,
+                        TermSequenceNumber = currentSessionResult.Data.TermSequence,
+                    };
+                }
+
+                resultObject.Scores = studentresult.AssessmentAndScores.Select(m => new Score()
+                {
+                    AssessmentName = m.AssessmentName,
+                    StudentScore = m.Score,
+                }).ToList();
+
+                if (resultObject.Id < 1)
+                {
+                    _resultRepo.Insert(resultObject);
+                }
+                else
+                {
+                    _resultRepo.Update(resultObject);
+                    oldResults.Remove(resultObject);
+                }
             }
 
             await _unitOfWork.SaveChangesAsync();
@@ -375,6 +398,163 @@ namespace AssessmentSvc.Core.Services
             {
                 return null;
             }
+        }
+
+        public async Task<ResultModel<List<ResultBroadSheet>>> GetClassBroadSheet(long classId)
+        {
+            //get current term
+            //get results for current term
+            var result = new ResultModel<List<ResultBroadSheet>>();
+            var sessionResult = await _sessionService.GetCurrentSchoolSession();
+
+            if (sessionResult.HasError)
+            {
+                foreach (string err in sessionResult.ErrorMessages)
+                {
+                    result.AddError(err);
+                }
+
+                return result;
+            }
+
+            var currSession = sessionResult.Data;
+
+            var query = _resultRepo.GetAll()
+                 .Where(x => x.SessionSetupId == currSession.Id && x.SchoolClassId == classId)
+                 .Select(x => new
+                 {
+                     StudentName = $"{x.Student.FirstName} {x.Student.LastName}",
+                     StudentId = x.StudentId,
+                     StudentRegNo = x.Student.RegNumber,
+                     SubjectName = x.Subject.Name,
+                     ScoresJSON = x.ScoresJSON
+                 })
+                 .ToList();
+
+            if (query.Count < 1)
+            {
+                result.AddError("No rsult for this class!");
+                return result;
+            }
+
+            var queryGroup = query.GroupBy(x => new { x.StudentId, x.StudentName, x.StudentRegNo });
+            var data = new List<ResultBroadSheet>();
+            foreach (var group in queryGroup)
+            {
+                var rbroadsheet = new ResultBroadSheet
+                {
+                    StudentName = group.Key.StudentName,
+                    StudentId = group.Key.StudentId,
+                    StudentRegNo = group.Key.StudentRegNo
+                };
+
+                foreach (var sc  in group)
+                {
+
+                    var temp = JsonConvert.DeserializeObject<List<Score>>(sc.ScoresJSON, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+
+                    var totalscore = temp.Sum(x => x.StudentScore);
+
+                    rbroadsheet.AssessmentAndScores.Add(new SubjectResultBroadSheet { SubjectName = sc.SubjectName, Score = totalscore }) ;
+                }
+
+                data.Add(rbroadsheet);
+               
+            }
+
+            result.Data = data;
+
+
+            return result;
+        }
+
+        public async Task<ResultModel<IndividualBroadSheet>> GetStudentResultSheet(long classId, long studentId)
+        {
+
+            var result = new ResultModel<IndividualBroadSheet>();
+
+            //get grade setup for school
+            var gradeSetupResult = await _gradeService.GetAllGradeForSchoolSetup();
+
+            if (gradeSetupResult.HasError || gradeSetupResult.Data.Count < 1)
+            {
+                result.AddError("Grade has not setup");
+                return result; 
+            }
+
+
+            var sessionResult = await _sessionService.GetCurrentSchoolSession();
+
+            if (sessionResult.HasError)
+            {
+                foreach (string err in sessionResult.ErrorMessages)
+                {
+                    result.AddError(err);
+                }
+
+                return result;
+            }
+
+            var currSession = sessionResult.Data;
+
+            var currTermSequence = currSession.Terms.Where(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now).FirstOrDefault().SequenceNumber;
+
+
+            var classResults = await _resultRepo.GetAll()
+                .Where(x => x.SessionSetupId == currSession.Id && x.SchoolClassId == classId && x.TermSequenceNumber == currTermSequence)
+                .Include(x=> x.Subject)
+                .ToListAsync();
+
+            if (classResults.Count < 1)
+            {
+                result.AddError("No result found in current term and session");
+                return result;
+            }
+
+            var resultsBySubjects = classResults.GroupBy(x => x.SubjectId);
+
+            var studResult = new IndividualBroadSheet();
+
+
+            foreach (var resultGroup in resultsBySubjects)
+            {
+                var breakdown = new SubjectResultBreakdown
+                {
+                    SubjectName = resultGroup.FirstOrDefault(x => x.SubjectId == resultGroup.Key)?.Subject.Name,
+                    
+                    AssesmentAndScores = resultGroup
+                    .Where(x => x.StudentId == studentId)
+                    .SelectMany(x => x.Scores)
+                    .Select(x => new AssesmentAndScoreViewModel
+                    {
+                        AssessmentName = x.AssessmentName,
+                        StudentScore = x.StudentScore
+                    }).ToList()
+                };
+
+                //calculate position
+                var orderedResults = resultGroup.OrderByDescending(x => x.Scores.Sum(x => x.StudentScore)).ToList();
+                var position = orderedResults.IndexOf(orderedResults.Where(x => x.StudentId == studentId).FirstOrDefault());
+
+                breakdown.Position = position + 1;
+
+                //get interpretation
+                foreach (var setup in gradeSetupResult.Data)
+                {
+                    if (breakdown.CummulativeScore >= setup.LowerBound
+                        && breakdown.CummulativeScore <= setup.UpperBound) {
+                        
+                        breakdown.Interpretation = setup.Interpretation;
+                        breakdown.Grade = setup.Grade;
+                        break;
+                    }
+                }
+
+                studResult.Breakdowns.Add(breakdown);
+            }
+
+            result.Data = studResult;
+            return result;
         }
     }
 }

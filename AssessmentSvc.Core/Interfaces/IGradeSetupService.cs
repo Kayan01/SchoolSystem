@@ -11,7 +11,6 @@ namespace AssessmentSvc.Core.Interfaces
     {
         Task<ResultModel<List<GradeSetupListVM>>> GetAllGradeForSchoolSetup();
         Task<ResultModel<GradeSetupVM>> GetGradeSetupById(long Id);
-        Task<ResultModel<GradeSetupVM>> UpdateGradeSetup(long id,GradeSetupVM model);
         Task<ResultModel<List<GradeSetupListVM>>> AddGradeSetup(List<GradeSetupVM> models);
     }
 }

@@ -81,7 +81,7 @@ namespace LearningSvc.Core.Services
         {
             var result = new ResultModel<TeacherVM>
             {
-                Data = await _teacherRepo.FirstOrDefaultAsync(id)
+                Data = await _teacherRepo.GetAll().Where(m=>m.Id == id).FirstOrDefaultAsync()
             };
             return result;
         }

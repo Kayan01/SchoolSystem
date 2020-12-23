@@ -61,7 +61,8 @@ namespace LearningSvc.Core.Services
                     PeriodName = x.Period.Name,
                     NoOfStudent = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Students.Count,
                     HasVirtual = x.HasVirtual,
-                    ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId
+                    ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
+                    ZoomStartUrl= x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomStartUrl,
                 }).ToListAsync();
 
             return result;
@@ -91,7 +92,8 @@ namespace LearningSvc.Core.Services
                     PeriodName = x.Period.Name,
                     NoOfStudent = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Students.Count,
                     HasVirtual = x.HasVirtual,
-                    ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId
+                    ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
+                    ZoomStartUrl = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomStartUrl,
                 })
                 .Take(Count)
                 .ToListAsync();
@@ -156,9 +158,11 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForClass(long classId)
+        public async Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForClass(long currentUserId, long classId)
         {
-            var result = new ResultModel<List<TimeTableCellVM>>
+            var result = new ResultModel<List<TimeTableCellVM>>();
+
+            result = new ResultModel<List<TimeTableCellVM>>
             {
                 Data = await _timeTableRepo.GetAll().Where(m => m.TeacherClassSubject.SchoolClassSubject.SchoolClassId == classId)
                     .Select(x => new TimeTableCellVM
@@ -177,9 +181,17 @@ namespace LearningSvc.Core.Services
                         NoOfPeriod = x.NoOfPeriod,
                         HasVirtual = x.HasVirtual,
                         ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
+                        ZoomStartUrl = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomStartUrl,
 
                     }).ToListAsync()
             };
+
+            var teacher = await _teacherRepo.GetAll().Where(m => m.UserId == currentUserId).FirstOrDefaultAsync();
+            if (teacher == null)
+            {
+                result.Data.ForEach(m => m.ZoomStartUrl = "");
+            }
+
             return result;
         }
 
@@ -211,6 +223,7 @@ namespace LearningSvc.Core.Services
                     NoOfPeriod = x.NoOfPeriod,
                     HasVirtual = x.HasVirtual,
                     ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
+                    ZoomStartUrl = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomStartUrl,
 
                 }).ToListAsync();
 

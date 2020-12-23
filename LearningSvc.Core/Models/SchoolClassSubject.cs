@@ -1,4 +1,5 @@
-﻿using Shared.Entities.Auditing;
+﻿using LearningSvc.Core.Models.Files;
+using Shared.Entities.Auditing;
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;
@@ -17,5 +18,8 @@ namespace LearningSvc.Core.Models
         public Subject Subject { get; set; }
 
         public ICollection<Assignment> Assignments { get; set; }
+        public ICollection<Classwork> Classworks { get; set; }
+        public ICollection<LessonNote> LessonNotes { get; set; }
+        public ICollection<Media> Medias { get; set; }
     }
 }

@@ -140,5 +140,21 @@ namespace LearningSvc.Core.Services
             };
             return result;
         }
+
+        public async Task<ResultModel<List<ClassSubjectWithFilesCountVM>>> GetSubjectsForClassWithFilesCount(long classId)
+        {
+            var result = new ResultModel<List<ClassSubjectWithFilesCountVM>>
+            {
+                Data = await _classSubjectRepo.GetAll().Where(m => m.SchoolClassId == classId)
+                .Select(x => new ClassSubjectWithFilesCountVM()
+                {
+                    Id = x.Id,
+                    Class = $"{x.SchoolClass.Name} {x.SchoolClass.ClassArm}",
+                    Subject = x.Subject.Name,
+                    FilesCount = x.LessonNotes.Count() + x.Classworks.Count() + x.Medias.Count(),
+                }).ToListAsync()
+            };
+            return result;
+        }
     }
 }

@@ -37,6 +37,15 @@ namespace Shared.FileStorage
 
         }
 
+        public string TryGetUploadedFileSize(string path)
+        {
+            var file = _fileStorageService.GetFile(path);
+            
+            return $"{(file.Length/1000).ToString("0.00")} KB";
+
+        }
+
+
         public async Task<FileUpload> TryUploadSupportingDocument(IFormFile formFile, DocumentType docType)
         {
             var fileName = CommonHelper.GenerateTimeStampedFileName(formFile.FileName);

@@ -87,6 +87,28 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<ClassSubjectWithFilesCountVM>>), 200)]
+        public async Task<IActionResult> GetSubjectsForClassWithFilesCount([FromQuery] long classId)
+        {
+            try
+            {
+                if (classId < 1)
+                {
+                    classId = await _studentService.GetStudentClassIdByUserId(CurrentUser.UserId);
+                }
+
+                var result = await _classSubjectService.GetSubjectsForClassWithFilesCount(classId);
+                if (result.HasError)
+                    return ApiResponse<List<ClassSubjectWithFilesCountVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<List<ClassSubjectWithFilesCountVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpGet("{subjectId}")]
         [ProducesResponseType(typeof(ApiResponse<List<ClassSubjectListVM>>), 200)]
         public async Task<IActionResult> GetClassesForSubject(long subjectId)

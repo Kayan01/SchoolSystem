@@ -18,5 +18,6 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<List<ClassSubjectListVM>>> GetClassesForSubject(long subjectId);
 
         Task<ResultModel<List<ClassSubjectWithAssignmentCountVM>>> GetSubjectsForClassWithAssignmentCount(long classId);
+        Task<ResultModel<List<ClassSubjectWithFilesCountVM>>> GetSubjectsForClassWithFilesCount(long classId);
     }
 }

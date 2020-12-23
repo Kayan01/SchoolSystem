@@ -112,6 +112,30 @@ namespace Auth.API.Controllers.Users
             }
         }
 
+        [HttpPut]
+        [ProducesResponseType(typeof(ApiResponse<TeacherVM>), 200)]
+        public async Task<IActionResult> SetClassTeacher([FromBody] ClassTeacherVM model)
+        {
+            if (model == null)
+                return ApiResponse<string>(errors: "Empty payload");
+
+            if (!ModelState.IsValid)
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _teacherService.MakeClassTeacher(model);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpDelete("{userId}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public async Task<IActionResult> DeleteTeacher(long userId)
