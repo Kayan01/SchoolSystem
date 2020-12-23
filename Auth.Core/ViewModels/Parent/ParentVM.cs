@@ -61,7 +61,7 @@ namespace Auth.Core.ViewModels.Parent
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
         public bool Status { get; set; }
-        public byte[] Image { get; set; }
+        public string Image { get; set; }
 
 
         public static implicit operator ParentListVM(Models.Users.Parent model)
