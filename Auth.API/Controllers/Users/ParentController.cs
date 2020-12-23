@@ -14,7 +14,7 @@ using Shared.ViewModels.Enums;
 namespace Auth.API.Controllers.Users
 {
     [Route("api/v1/[controller]/[action]")]
-    [AllowAnonymous]
+    [Authorize]
     public class ParentController : BaseController
     {
         private readonly IParentService _parentService;

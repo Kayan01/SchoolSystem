@@ -6,6 +6,7 @@ using Auth.Core.ViewModels.Parent;
 using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Extensions;
 using NPOI.Util;
 using Org.BouncyCastle.Math.EC.Rfc7748;
 using Shared.DataAccess.EfCore.UnitOfWork;
@@ -162,11 +163,32 @@ namespace Auth.Core.Services.Users
 
             var query = _studentRepo.GetAll()
                 .Include(x => x.Parent)
-                .Select(x => x.Parent);
+                .Select(x => new
+                {
+                    Email = x.Parent.User.Email,
+                    FullName = x.User.FullName,
+                    Id = x.ParentId,
+                    ParentCode = $"PRT/{x.Parent.CreationTime.Year}/{x.Parent.Id}",
+                    PhoneNumber = x.Parent.User.PhoneNumber,
+                    Status = x.Parent.Status,
+                    Image = x.Parent.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                });
 
-            var parents = await query.ToPagedListAsync(vm.PageIndex, vm.PageSize);
 
-            var data = new PaginatedModel<ParentListVM>(parents.Select(x => (ParentListVM)x), vm.PageIndex, vm.PageSize, parents.TotalItemCount);
+            var pagedData = await query.ToPagedListAsync(vm.PageIndex, vm.PageSize);
+
+            var parents = pagedData.Items.GroupBy(x => x.Id).Select(x => new ParentListVM
+            {
+                Email = x.FirstOrDefault()?.Email,
+                FullName = x.FirstOrDefault()?.FullName,
+                ParentCode = x.FirstOrDefault()?.ParentCode,
+                Id = x.FirstOrDefault().Id,
+                PhoneNumber = x.FirstOrDefault()?.PhoneNumber,
+                Status = x.FirstOrDefault().Status,
+                Image = x.FirstOrDefault().Image == null ? null : _documentService.TryGetUploadedFile(x.FirstOrDefault().Image),
+            });
+
+            var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, pagedData.TotalItemCount - (pagedData.Items.Count() - parents.Count()));
 
             resultModel.Data = data;
 
