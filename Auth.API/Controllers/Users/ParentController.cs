@@ -40,7 +40,33 @@ namespace Auth.API.Controllers.Users
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+
+
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<ParentListVM>>), 200)]
+        public async Task<IActionResult> GetAllParentsInSchool(QueryModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+
+            try
+            {
+                var result = await _parentService.GetAllParentsInSchool(model);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount : result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {

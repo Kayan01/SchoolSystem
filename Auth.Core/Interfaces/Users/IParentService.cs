@@ -12,6 +12,7 @@ namespace Auth.Core.Interfaces.Users
     public interface IParentService
     {
         Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParents(QueryModel vm);
+        Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParentsInSchool(QueryModel vm);
         Task<ResultModel<ParentDetailVM>> GetParentsForStudent(long studId);
         Task<ResultModel<ParentDetailVM>> GetParentById(long Id);
 

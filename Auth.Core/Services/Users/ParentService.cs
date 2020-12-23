@@ -143,6 +143,7 @@ namespace Auth.Core.Services.Users
 
             var query =  _parentRepo.GetAll()
                 .Include(x => x.User)
+                .Include(x=> x.Students)
                 .Include(x => x.FileUploads);
 
             var parents = await query.ToPagedListAsync(vm.PageIndex, vm.PageSize);
@@ -153,6 +154,25 @@ namespace Auth.Core.Services.Users
 
             return resultModel;
         }
+
+        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParentsInSchool(QueryModel vm)
+        {
+
+            var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
+
+            var query = _studentRepo.GetAll()
+                .Include(x => x.Parent)
+                .Select(x => x.Parent);
+
+            var parents = await query.ToPagedListAsync(vm.PageIndex, vm.PageSize);
+
+            var data = new PaginatedModel<ParentListVM>(parents.Select(x => (ParentListVM)x), vm.PageIndex, vm.PageSize, parents.TotalItemCount);
+
+            resultModel.Data = data;
+
+            return resultModel;
+        }
+
 
         public async Task<ResultModel<ParentDetailVM>> GetParentById(long Id)
         {
