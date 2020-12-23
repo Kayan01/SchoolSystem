@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Extensions;
 using Shared.Entities;
 using Shared.Enums;
@@ -16,24 +17,35 @@ namespace Shared.FileStorage
     public class DocumentService : IDocumentService
     {
         readonly IFileStorageService _fileStorageService;
-        public DocumentService(IFileStorageService fileStorageService)
+        private readonly ILogger<DocumentService> _logger;
+        public DocumentService(IFileStorageService fileStorageService, ILogger<DocumentService> logger)
         {
             _fileStorageService = fileStorageService;
+            _logger = logger;
         }
 
         public string TryGetUploadedFile(string path)
         {
-
-            var file = _fileStorageService.GetFile(path);
-            string base64String;
-            using (var fileStream = file.CreateReadStream())
+            try
             {
-                using var ms = new MemoryStream();
-                fileStream.CopyTo(ms);
-                var fileBytes = ms.ToArray();
-                base64String = Convert.ToBase64String(fileBytes);
+
+                var file = _fileStorageService.GetFile(path);
+                string base64String;
+                using (var fileStream = file.CreateReadStream())
+                {
+                    using var ms = new MemoryStream();
+                    fileStream.CopyTo(ms);
+                    var fileBytes = ms.ToArray();
+                    base64String = Convert.ToBase64String(fileBytes);
+                }
+                return base64String;
             }
-            return base64String;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+
+                return null;
+            }
 
         }
 
