@@ -158,7 +158,7 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForClass(long currentUserId, long classId)
+        public async Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForClass( long classId)
         {
             var result = new ResultModel<List<TimeTableCellVM>>();
 
@@ -181,16 +181,9 @@ namespace LearningSvc.Core.Services
                         NoOfPeriod = x.NoOfPeriod,
                         HasVirtual = x.HasVirtual,
                         ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
-                        ZoomStartUrl = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomStartUrl,
 
                     }).ToListAsync()
             };
-
-            var teacher = await _teacherRepo.GetAll().Where(m => m.UserId == currentUserId).FirstOrDefaultAsync();
-            if (teacher == null)
-            {
-                result.Data.ForEach(m => m.ZoomStartUrl = "");
-            }
 
             return result;
         }
