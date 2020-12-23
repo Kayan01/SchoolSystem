@@ -23,9 +23,9 @@ namespace AssessmentSvc.Core.Services
             _teacherRepo = teacherRepo;
         }
 
-        public async Task AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model)
+        public void AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model)
         {
-            var teacher = await _teacherRepo.GetAll().Where(x => x.Id == model.Id && x.TenantId == model.TenantId).FirstOrDefaultAsync();
+            var teacher = _teacherRepo.FirstOrDefault(x => x.Id == model.Id && x.TenantId == model.TenantId);
             if (teacher == null)
             {
                 teacher = _teacherRepo.Insert(new Teacher
@@ -44,7 +44,7 @@ namespace AssessmentSvc.Core.Services
             teacher.IsActive = model.IsActive;
             teacher.IsDeleted = model.IsDeleted;
 
-            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.SaveChanges();
         }
         
     }

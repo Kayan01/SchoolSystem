@@ -38,7 +38,7 @@ namespace AssessmentSvc.Core.EventHandlers
             try
             {
                 var data = JsonConvert.DeserializeObject<StudentSharedModel>(message.Data);
-                await _studentService.AddOrUpdateStudentFromBroadcast(data);
+                _studentService.AddOrUpdateStudentFromBroadcast(data);
             }
             catch (Exception e)
             {
@@ -52,7 +52,7 @@ namespace AssessmentSvc.Core.EventHandlers
             try
             {
                 var data = JsonConvert.DeserializeObject<TeacherSharedModel>(message.Data);
-                await _teacherService.AddOrUpdateTeacherFromBroadcast(data);
+                _teacherService.AddOrUpdateTeacherFromBroadcast(data);
             }
             catch (Exception e)
             {
@@ -66,7 +66,7 @@ namespace AssessmentSvc.Core.EventHandlers
             try
             {
                 var data = JsonConvert.DeserializeObject<List<ClassSharedModel>>(message.Data);
-                await _schoolClassService.AddOrUpdateClassFromBroadcast(data);
+                _schoolClassService.AddOrUpdateClassFromBroadcast(data);
             }
             catch (Exception e)
             {
@@ -80,7 +80,7 @@ namespace AssessmentSvc.Core.EventHandlers
             try
             {
                 var data = JsonConvert.DeserializeObject<SubjectSharedModel>(message.Data);
-                await _subjectService.AddOrUpdateSubjectFromBroadcast(data);
+                _subjectService.AddOrUpdateSubjectFromBroadcast(data);
             }
             catch (Exception e)
             {

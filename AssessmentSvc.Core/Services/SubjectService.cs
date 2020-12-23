@@ -21,9 +21,9 @@ namespace AssessmentSvc.Core.Services
             _subjectRepo = subjectRepo;
         }
 
-        public async Task AddOrUpdateSubjectFromBroadcast(SubjectSharedModel model)
+        public void AddOrUpdateSubjectFromBroadcast(SubjectSharedModel model)
         {
-            var subject = await _subjectRepo.FirstOrDefaultAsync(x => x.Id == model.Id && x.TenantId == model.TenantId);
+            var subject = _subjectRepo.FirstOrDefault(x => x.Id == model.Id && x.TenantId == model.TenantId);
             if (subject == null)
             {
                 subject = _subjectRepo.Insert(new Subject
@@ -36,7 +36,7 @@ namespace AssessmentSvc.Core.Services
             subject.Name = model.Name;
             subject.IsActive = model.IsActive;
 
-            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.SaveChangesAsync();
         }
 
     }

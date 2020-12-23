@@ -8,6 +8,6 @@ namespace AssessmentSvc.Core.Interfaces
 {
     public interface ISchoolClassService
     {
-        Task AddOrUpdateClassFromBroadcast(List<ClassSharedModel> model);
+        void AddOrUpdateClassFromBroadcast(List<ClassSharedModel> model);
     }
 }
