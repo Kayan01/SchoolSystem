@@ -87,7 +87,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TimeTableCellVM>>), 200)]
-        public async Task<IActionResult> GetTimetableForClass([FromBody] long classId)
+        public async Task<IActionResult> GetTimetableForClass([FromQuery] long classId)
         {
             try
             {
