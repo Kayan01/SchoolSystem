@@ -20,9 +20,11 @@ namespace LearningSvc.API.Controllers
     public class TimeTableController : BaseController
     {
         private readonly ITimeTableService _timeTableService;
-        public TimeTableController(ITimeTableService tService)
+        private readonly IStudentService _studentService;
+        public TimeTableController(ITimeTableService tService, IStudentService studentService)
         {
             _timeTableService = tService;
+            _studentService = studentService;
         }
 
         [HttpGet]
@@ -66,7 +68,7 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpGet("{teacherId}")]
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TimeTableCellVM>>), 200)]
         public async Task<IActionResult> GetTimetableForTeacher()
         {
@@ -83,13 +85,18 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-        [HttpGet("{classId}")]
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TimeTableCellVM>>), 200)]
-        public async Task<IActionResult> GetTimetableForClass(long classId)
+        public async Task<IActionResult> GetTimetableForClass([FromBody] long classId)
         {
             try
             {
-                var result = await _timeTableService.GetTimeTableCellsForClass(CurrentUser.UserId, classId);
+                if (classId < 1)
+                {
+                    classId = await _studentService.GetStudentClassIdByUserId(CurrentUser.UserId);
+                }
+
+                var result = await _timeTableService.GetTimeTableCellsForClass(classId);
                 if (result.HasError)
                     return ApiResponse<List<TimeTableCellVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<List<TimeTableCellVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
@@ -161,10 +168,15 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<ClassSessionOutputVM>>), 200)]
-        public async Task<IActionResult> GetAllClassesForClassToday(long classId, WeekDays day)
+        public async Task<IActionResult> GetAllClassesForClassToday([FromQuery]long classId, [FromQuery]WeekDays day)
         {
             try
             {
+                if (classId < 1)
+                {
+                    classId = await _studentService.GetStudentClassIdByUserId(CurrentUser.UserId);
+                }
+
                 var result = await _timeTableService.GetAllClassesForClassToday(classId, day);
                 if (result.HasError)
                     return ApiResponse<List<ClassSessionOutputVM>>(errors: result.ErrorMessages.ToArray());
@@ -183,6 +195,11 @@ namespace LearningSvc.API.Controllers
         {
             try
             {
+                if (classId < 1)
+                {
+                    classId = await _studentService.GetStudentClassIdByUserId(CurrentUser.UserId);
+                }
+
                 var result = await _timeTableService.GetNextClassesForClassToday(classId, day, currentPeriod, count);
                 if (result.HasError)
                     return ApiResponse<List<ClassSessionOutputVM>>(errors: result.ErrorMessages.ToArray());
