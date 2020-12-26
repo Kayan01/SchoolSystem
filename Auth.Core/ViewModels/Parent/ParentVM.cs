@@ -10,7 +10,7 @@ namespace Auth.Core.ViewModels.Parent
 {
     public class ChildView
     {
-        public byte[] Image { get; set; }
+        public string Image { get; set; }
         public string Name { get; set; }
         public long Id { get; set; }
     }
@@ -44,10 +44,11 @@ namespace Auth.Core.ViewModels.Parent
                 OfficeHomeAddress = model.OfficeAddress,
                 Sex = model.Sex,
                 Title = model.Title,
-                Children = model.Students?.Select(x => new ChildView {
+                Children = model.Students?.Select(x => new ChildView
+                {
                     Id = x.Id,
                     Name = x.User?.FullName,
-                    Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())?.Path.GetBase64StringFromImage()
+                    //Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())?.Path.GetBase64StringFromImage()
                 }).ToList()
             };
         }
