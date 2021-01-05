@@ -200,17 +200,58 @@ namespace Auth.Core.Services.Users
         {
             var resultModel = new ResultModel<ParentDetailVM>();
 
-            var parent = await _parentRepo.GetAll()
-                .Include(x => x.User)
-                .Include(x => x.FileUploads)
+            var query = await _parentRepo.GetAll()
                 .Where(x=> x.Id == Id)
+                .Select(model => new {
+                    ContactEmail = model.User.Email,
+                    ContactHomeAddress = model.HomeAddress,
+                    ContactNumber = model.User.PhoneNumber,
+                    model.User.FirstName,
+                    model.IdentificationNumber,
+                    model.User.LastName,
+                    ModeOfIdentification = model.IdentificationType,
+                    model.Occupation,
+                    OfficeHomeAddress = model.OfficeAddress,
+                    model.Sex,
+                    model.Title,
+                    Children = model.Students.Select(x => new
+                    {
+                        Id = x.Id,
+                        Name = x.User.FullName,
+                        logoPath = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                    })
+                })
                 .FirstOrDefaultAsync();
 
-            if (parent == null)
+
+            if (query == null)
             {
                 resultModel.AddError($"No parent for id : {Id}");
                 return resultModel;
             }
+
+            var children = query.Children?.Select(x => new ChildView {
+                Id = x.Id, 
+                Image = _documentService.TryGetUploadedFile(x.logoPath),
+                Name = x.Name
+            }).ToList();
+
+
+            var parent = new ParentDetailVM
+            {
+                Children = children,
+                ContactEmail = query.ContactEmail,
+                ContactHomeAddress = query.ContactHomeAddress,
+                ContactNumber = query.ContactNumber,
+                FirstName = query.FirstName,
+                IdentificationNumber = query.IdentificationNumber,
+                LastName = query.LastName,
+                ModeOfIdentification = query.ModeOfIdentification,
+                Occupation = query.Occupation,
+                OfficeHomeAddress = query.OfficeHomeAddress,
+                Sex = query.Sex,
+                Title = query.Title,
+            };
 
             resultModel.Data = parent;
 
