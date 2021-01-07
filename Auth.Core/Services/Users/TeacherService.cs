@@ -385,6 +385,9 @@ namespace Auth.Core.Services.Users
 
             teacher.ClassId = model.ClassId;
 
+            await _teacherRepo.UpdateAsync(teacher);
+            _unitOfWork.SaveChanges();
+
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
                 Id = teacher.Id,
