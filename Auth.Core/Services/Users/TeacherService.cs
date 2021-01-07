@@ -373,7 +373,7 @@ namespace Auth.Core.Services.Users
         {
             var result = new ResultModel<string>();
 
-            var teacher = await _teacherRepo.GetAll().Where(x => x.Id == model.ClassId)
+            var teacher = await _teacherRepo.GetAll().Where(x => x.Id == model.TeacherId)
                             .Include(x => x.Staff).ThenInclude(m=>m.User)
                             .FirstOrDefaultAsync();
 
