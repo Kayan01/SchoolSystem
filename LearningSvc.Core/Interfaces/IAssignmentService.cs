@@ -16,5 +16,6 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForClassSubject(long classSubjectId, QueryModel queryModel);
         Task<ResultModel<AssignmentVM>> AssignmentDetail(long id);
         Task<ResultModel<string>> AddAssignment(AssignmentUploadVM assignment, long currentUserId);
+        Task<ResultModel<string>> UpdateAssignmentDueDate(AssignmentDueDateUpdateVM model);
     }
 }

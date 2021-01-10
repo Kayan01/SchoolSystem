@@ -279,6 +279,15 @@ namespace LearningSvc.Core.Services
                 return result;
             }
 
+            var checkTeacherHasOtherClassForPeriod = await _timeTableRepo.GetAll()
+                .Where(m => m.TeacherClassSubject.TeacherId == checkTeacherClassSubjectExists.TeacherId && m.PeriodId == checkPeriodExists.Id)
+                .FirstOrDefaultAsync();
+            if (checkTeacherHasOtherClassForPeriod != null)
+            {
+                result.AddError("Teacher has another class for this period.");
+                return result;
+            }
+
             var t = new TimeTableCell
             {
                 Day = model.Day,

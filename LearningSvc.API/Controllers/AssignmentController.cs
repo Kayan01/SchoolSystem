@@ -123,5 +123,29 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpPut]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> UpdateAssignmentDueDate([FromBody]AssignmentDueDateUpdateVM model)
+        {
+            if (model == null)
+                return ApiResponse<string>(errors: "Empty payload");
+
+            if (!ModelState.IsValid)
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _assignmentService.UpdateAssignmentDueDate(model);
+
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
     }
 }
