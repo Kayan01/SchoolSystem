@@ -405,6 +405,25 @@ namespace Auth.Core.Services.Users
             return result;
         }
 
+        public async Task<ResultModel<ClassTeacherVM>> GetTeacherClassById(long Id)
+        {
+            var result = new ResultModel<ClassTeacherVM>();
+            var query = await _teacherRepo.GetAll()
+                            .Where(x => x.Id == Id)
+                            .Select(m => new ClassTeacherVM()
+                            {
+                                ClassId = m.Class.Id,
+                                TeacherId = m.Id,
+                                ClassName = $"{m.Class.Name} {m.Class.ClassArm}"
+                            }
+                                )
+                            .FirstOrDefaultAsync();
+
+            result.Data = query;
+            return result;
+        }
+
+
         #region notification
 
         private async Task<ResultModel<bool>> NewTeacherNotification(TeachingStaff teacher, string email)
