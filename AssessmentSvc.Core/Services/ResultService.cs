@@ -497,8 +497,13 @@ namespace AssessmentSvc.Core.Services
 
             var currSession = sessionResult.Data;
 
-            var currTermSequence = currSession.Terms.Where(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now).FirstOrDefault().SequenceNumber;
+            var currTermSequence = currSession.Terms.Where(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now).FirstOrDefault()?.SequenceNumber;
 
+            if (currTermSequence == null)
+            {
+                result.AddError("Current term date has expired or its not setup");
+                return result;
+            }
 
             var classResults = await _resultRepo.GetAll()
                 .Where(x => x.SessionSetupId == currSession.Id && x.SchoolClassId == classId && x.TermSequenceNumber == currTermSequence)
