@@ -104,7 +104,7 @@ namespace LearningSvc.Core.Services
 
             if (answer == null)
             {
-                result.AddError("Some files could not be uploaded");
+                result.AddError("Answer was not found");
 
                 return result;
             }
