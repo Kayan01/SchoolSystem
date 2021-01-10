@@ -203,5 +203,30 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<string>> UpdateAssignmentDueDate(AssignmentDueDateUpdateVM model)
+        {
+            var result = new ResultModel<string>();
+
+            var query = await _assignmentRepo.GetAll().Where(m => m.Id == model.AssignmentId).FirstOrDefaultAsync();
+
+            if (query == null)
+            {
+                result.AddError("Assignment not found.");
+                return result;
+            }
+
+            if (query.CreationTime > model.NewDate)
+            {
+                result.AddError("New date should be greater than the assignment creation date.");
+                return result;
+            }
+
+            query.DueDate = model.NewDate;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            result.Data = "Updated successfully";
+            return result;
+        }
     }
 }
