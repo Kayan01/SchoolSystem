@@ -84,8 +84,9 @@ namespace AssessmentSvc.Core.Services
                 oldApprovedResult.SessionId = currSession.Id;
                 oldApprovedResult.TermSequence = currTermSequence.Value;
                 oldApprovedResult.StudentId = vm.StudentId;
-                oldApprovedResult.IsClassTeacherApproved = vm.IsClassTeacherApproved;
-                oldApprovedResult.IsSchoolAdminApproved = vm.IsAdminApproved;
+                oldApprovedResult.ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus;
+                oldApprovedResult.SchoolAdminApprovalStatus = vm.AdminApprovalStatus;
+                oldApprovedResult.HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus;
 
                 await _approvedResultRepo.InsertAsync(oldApprovedResult);
             }
@@ -100,8 +101,9 @@ namespace AssessmentSvc.Core.Services
                     SessionId = currSession.Id,
                     TermSequence = currTermSequence.Value,
                     StudentId = vm.StudentId,
-                    IsClassTeacherApproved = vm.IsClassTeacherApproved,
-                    IsSchoolAdminApproved = vm.IsAdminApproved
+                    ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus,
+                    SchoolAdminApprovalStatus = vm.AdminApprovalStatus,
+                     HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus
                 };
 
                 await _approvedResultRepo.InsertAsync(newApprovedResult);
@@ -114,7 +116,7 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<GetApprovedStudentResultViewModel>> GetStudentResultForApproval(UpdateApprovedStudentResultViewModel vm)
+        public async Task<ResultModel<GetApprovedStudentResultViewModel>> GetStudentResultForApproval(GetStudentResultForApproval vm)
         {
             var result = new ResultModel<GetApprovedStudentResultViewModel>();
 
@@ -159,15 +161,15 @@ namespace AssessmentSvc.Core.Services
 
                 var data = new GetApprovedStudentResultViewModel
                 {
-                    ClassTeacherComment = vm.ClassTeacherComment,
-                    HeadTeacherComment = vm.HeadTeacherComment,
+                    ClassTeacherComment = oldApprovedResult.ClassTeacherComment,
+                    HeadTeacherComment = oldApprovedResult.HeadTeacherComment,
                     ClassId = vm.ClassId,
                     SessionId = currSession.Id,
                     TermSequence = currTermSequence.Value,
                     StudentId = vm.StudentId,
-                    IsClassTeacherApproved = vm.IsClassTeacherApproved,
-                    IsAdminApproved = vm.IsAdminApproved,
-
+                    ClassTeacherApprovalStatus = oldApprovedResult.ClassTeacherApprovalStatus,
+                    AdminApprovalStatus = oldApprovedResult.SchoolAdminApprovalStatus,
+                     HeadTeacherApprovalStatus = oldApprovedResult.HeadTeacherApprovedStatus,
                     StudentBroadSheet = resultsModel.Data,
                 };
 
