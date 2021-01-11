@@ -17,9 +17,11 @@ namespace AssessmentSvc.API.Controllers
     public class ResultController : BaseController
     {
         private readonly IResultService _resultService;
-        public ResultController(IResultService resultService)
+        private readonly IApprovedResultService _approvedResultService;
+        public ResultController(IResultService resultService, IApprovedResultService approvedResultService)
         {
             _resultService = resultService;
+            _approvedResultService = approvedResultService;
         }
 
         [HttpGet]
@@ -32,6 +34,47 @@ namespace AssessmentSvc.API.Controllers
                 if (result.HasError)
                     return ApiResponse<ResultUploadFormData>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: 1);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
+        {
+            if (!ModelState.IsValid)
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+
+                var result = await _approvedResultService.SubmitStudentResult(vm);
+                if (result.HasError)
+                    return ApiResponse<ResultUploadFormData>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<GetApprovedStudentResultViewModel>), 200)]
+        public async Task<IActionResult> GetStudentResultForApproval([FromQuery] GetStudentResultForApproval vm)
+        {
+            if (!ModelState.IsValid)
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _approvedResultService.GetStudentResultForApproval(vm);
+                if (result.HasError)
+                    return ApiResponse<ResultUploadFormData>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
