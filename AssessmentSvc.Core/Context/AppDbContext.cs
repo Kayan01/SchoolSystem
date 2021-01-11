@@ -40,6 +40,7 @@ namespace AssessmentSvc.Core.Context
         public DbSet<SessionSetup> SessionSetups { get; set; }
         public DbSet<Teacher> Teachers { get; set; }
         public DbSet<GradeSetup> GradeSetups { get; set; }
+        public DbSet<ApprovedResult> ApprovedResults { get; set; }
 
         public async Task AddSampleData()
         {
