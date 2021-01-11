@@ -1,4 +1,5 @@
-﻿using Shared.Entities.Auditing;
+﻿using AssessmentSvc.Core.Enumeration;
+using Shared.Entities.Auditing;
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;
@@ -15,14 +16,15 @@ namespace AssessmentSvc.Core.Models
         public long SessionId { get; set; }
         public int TermSequence { get; set; }
         public long SchoolClassId { get; set; }
+        public ApprovalStatus? HeadTeacherApprovedStatus { get; set; }
 
-        public bool IsClassTeacherApproved { get; set; }
-        public bool IsSchoolAdminApproved { get; set; }
+        public ApprovalStatus? ClassTeacherApprovalStatus { get; set; }
+        public ApprovalStatus? SchoolAdminApprovalStatus { get; set; }
 
 
-        public SessionSetup  SessionSetup { get; set; }
-        public Student Student { get; set; }
-        public SchoolClass SchoolClass { get; set; }
+       // public SessionSetup  SessionSetup { get; set; }
+        //public Student Student { get; set; }
+        //public SchoolClass SchoolClass { get; set; }
 
         public List<Result> Results { get; set; }
     }
