@@ -9,5 +9,6 @@ namespace Auth.Core.ViewModels.Staff
         public long TeacherId { get; set; }
         public long ClassId { get; set; }
         public string ClassName { get; set; }
+        public string ClassSection { get; set; }
     }
 }

@@ -414,7 +414,8 @@ namespace Auth.Core.Services.Users
                             {
                                 ClassId = m.Class.Id,
                                 TeacherId = m.Id,
-                                ClassName = $"{m.Class.Name} {m.Class.ClassArm}"
+                                ClassName = $"{m.Class.Name} {m.Class.ClassArm}",
+                                ClassSection = m.Class.SchoolSection.Name,
                             }
                                 )
                             .FirstOrDefaultAsync();
