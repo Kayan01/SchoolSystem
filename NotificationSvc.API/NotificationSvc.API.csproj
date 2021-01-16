@@ -31,5 +31,17 @@
     <ProjectReference Include="..\NotificationSvc.Core\NotificationSvc.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="FileStore\emailtemplates\newschool.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="FileStore\emailtemplates\newuser.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="FileStore\emailtemplates\ResetAccount.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 
 </Project>
