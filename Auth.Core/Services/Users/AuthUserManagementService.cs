@@ -24,18 +24,14 @@ namespace Auth.Core.Services
         private readonly IDataProtector _protector;
         private readonly IPublishService _publishService;
 
-        private readonly IHttpContextAccessor _context;
         public AuthUserManagementService(
             UserManager<User> userManager,
             IDataProtectionProvider provider,
-            IPublishService publishService,
-            IHttpContextAccessor context
-            )
+            IPublishService publishService)
         {
             _userManager = userManager;
             _protector = provider.CreateProtector("Auth");
             _publishService = publishService;
-            _context = context;
         }
 
         public async Task<long?> AddUserAsync(AuthUserModel model)
