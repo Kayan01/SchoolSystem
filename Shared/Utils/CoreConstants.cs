@@ -16,10 +16,12 @@ namespace Shared.Utils
             public const string SuccessPasswordReset = nameof(SuccessPasswordReset);
             public const string NewUser = nameof(NewUser);
             public const string NewTeacher = nameof(NewTeacher);
+            public const string NewSchool = nameof(NewSchool);
         }
 
         public static class EntityType
         {
+            public const string School = nameof(School);
             public const string User = nameof(User);
             public const string Teacher = nameof(Teacher);
             public const string Student = nameof(Student);
@@ -46,6 +48,7 @@ namespace Shared.Utils
             new EmailTemplate(EmailTemplateType.SuccessPasswordReset, "Successful Password Reset", "filestore/emailtemplates/successpasswordreset.htm"),
             new EmailTemplate(EmailTemplateType.NewUser, "New User", "filestore/emailtemplates/newuser.htm"),
             new EmailTemplate(EmailTemplateType.NewTeacher, "New Teacher", "filestore/emailtemplates/newteacher.htm"),
+            new EmailTemplate(EmailTemplateType.NewSchool, "New School", "filestore/emailtemplates/newschool.htm"),
         };
 
         public class PaginationConsts

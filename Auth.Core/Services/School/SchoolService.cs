@@ -21,6 +21,8 @@ using Auth.Core.Models.Contact;
 using IPagedList;
 using static Shared.Utils.CoreConstants;
 using Microsoft.OpenApi.Extensions;
+using Shared.PubSub;
+using System.Text;
 
 namespace Auth.Core.Services
 {
@@ -30,16 +32,22 @@ namespace Auth.Core.Services
         private readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
+        private readonly IPublishService _publishService;
+        private readonly IAuthUserManagement _authUserManagement;
         public SchoolService(
         IRepository<School, long> schoolRepo, 
             IUnitOfWork unitOfWork,
-            IDocumentService documentService,
+         IPublishService publishService,
+        IDocumentService documentService,
+        IAuthUserManagement authUserManagement,
             UserManager<User> userManager)
         {
             _unitOfWork = unitOfWork;
             _schoolRepo = schoolRepo;
             _documentService = documentService;
             _userManager = userManager;
+            _publishService = publishService;
+            _authUserManagement = authUserManagement;
         }
 
         public async Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model)
@@ -117,6 +125,16 @@ namespace Auth.Core.Services
             //adds tenant id to school primary contact
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, school.Id.ToString()));
 
+            //broadcast login detail to email
+           var emailResult = await _authUserManagement.SendRegistrationEmail(user);
+
+            if (emailResult.HasError)
+            {
+                var sb = new StringBuilder();
+                _ = emailResult.ErrorMessages.Select(x => { sb.AppendLine(x); return x; }).ToList();
+
+                result.Message = sb.ToString();
+            }
             result.Data = school;
             return result;
         }
@@ -146,7 +164,7 @@ namespace Auth.Core.Services
                     studentCount = x.Students.Count,
                     teacherCount = x.Students.Count,
                     x.WebsiteAddress,
-                     x.IsActive
+                    x.IsActive
                 });
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
@@ -333,6 +351,8 @@ namespace Auth.Core.Services
             return result;
 
         }
+
+       
     }
 
 
