@@ -7,6 +7,7 @@ using Shared.Configuration;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
+using Shared.FileStorage;
 using Shared.Utils;
 using System;
 using System.Collections;
@@ -25,6 +26,7 @@ namespace NotificationSvc.Core.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger _logger;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IFileStorageService _documentService;
         private readonly AppSettingsConfiguration _appSettingsConfiguration = new AppSettingsConfiguration();
 
         public EmailService(IUnitOfWork unitOfWork,
@@ -32,7 +34,8 @@ namespace NotificationSvc.Core.Services
             IWebHostEnvironment webHostEnvironment,
             IRepository<Email, long> emailRepository,
             ILogger<EmailService> logger,
-            IConfiguration config
+            IConfiguration config,
+            IFileStorageService documentService
             )
         {
             _unitOfWork = unitOfWork;
@@ -40,6 +43,7 @@ namespace NotificationSvc.Core.Services
             _emailRepository = emailRepository;
             _mailService = mailService;
             _logger = logger;
+            _documentService = documentService;
             config.Bind(nameof(AppSettingsConfiguration), _appSettingsConfiguration);
         }
 
@@ -72,7 +76,7 @@ namespace NotificationSvc.Core.Services
                                 template.Subject, emailAddresses);
             mailBase.IsBodyHtml = true;
             mailBase.BodyIsFile = true;
-            mailBase.BodyPath = Path.Combine(_webHostEnvironment.ContentRootPath, template.TemplatePath);
+            mailBase.BodyPath = _documentService.GetFile(template.TemplatePath).PhysicalPath;
 
             try
             {

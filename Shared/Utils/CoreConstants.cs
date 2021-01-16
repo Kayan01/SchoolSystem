@@ -44,11 +44,11 @@ namespace Shared.Utils
 
         public static readonly List<EmailTemplate> EmailTemplates = new List<EmailTemplate>
         {
-            new EmailTemplate(EmailTemplateType.PasswordReset, "Password Reset Request", "filestore/emailtemplates/passwordreset.htm"),
-            new EmailTemplate(EmailTemplateType.SuccessPasswordReset, "Successful Password Reset", "filestore/emailtemplates/successpasswordreset.htm"),
-            new EmailTemplate(EmailTemplateType.NewUser, "New User", "filestore/emailtemplates/newuser.htm"),
-            new EmailTemplate(EmailTemplateType.NewTeacher, "New Teacher", "filestore/emailtemplates/newteacher.htm"),
-            new EmailTemplate(EmailTemplateType.NewSchool, "New School", "filestore/emailtemplates/newschool.htm"),
+            new EmailTemplate(EmailTemplateType.PasswordReset, "Password Reset Request", "/emailtemplates/passwordreset.htm"),
+            new EmailTemplate(EmailTemplateType.SuccessPasswordReset, "Successful Password Reset", "/emailtemplates/successpasswordreset.htm"),
+            new EmailTemplate(EmailTemplateType.NewUser, "New User", "/emailtemplates/newuser.htm"),
+            new EmailTemplate(EmailTemplateType.NewTeacher, "New Teacher", "/emailtemplates/newteacher.htm"),
+            new EmailTemplate(EmailTemplateType.NewSchool, "New School", "/emailtemplates/newschool.htm"),
         };
 
         public class PaginationConsts
