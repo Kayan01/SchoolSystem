@@ -17,6 +17,7 @@ namespace Auth.Core.Services.Interfaces
         Task<bool> DeleteUserAsync(long id);
         IQueryable<User> GetAllAuthUsersAsync();
 
+        Task<ResultModel<bool>> SendRegistrationEmail(User user, string emailTitle = "Confirm your email");
         Task<ResultModel<string>> RequestPasswordReset(string email);
         Task<ResultModel<bool>> PassworReset(PasswordResetModel model);
         Task<ResultModel<(User user, string code)>> GetPasswordRestCode(string email);
