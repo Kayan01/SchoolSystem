@@ -23,6 +23,7 @@ using Shared.PubSub.KafkaImpl;
 using NotificationSvc.Core.Services.Interfaces;
 using NotificationSvc.Core.Services;
 using Shared.Net.WorkerService;
+using Shared.Configuration;
 
 namespace NotificationSvc.API
 {
@@ -30,6 +31,7 @@ namespace NotificationSvc.API
     {
         public void ConfigureDIService(IServiceCollection services)
         {
+            services.Configure<SmtpConfig>(o => Configuration.GetSection("SmtpConfig").Bind(o));
             services.AddTransient<DbContext, AppDbContext>();
 
             services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
