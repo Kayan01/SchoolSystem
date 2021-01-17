@@ -32,13 +32,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="FileStore\emailtemplates\newschool.htm">
+    <None Update="Filestore\emailtemplates\newschool.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="FileStore\emailtemplates\newuser.htm">
+    <None Update="Filestore\emailtemplates\newuser.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="FileStore\emailtemplates\ResetAccount.html">
+    <None Update="Filestore\emailtemplates\ResetAccount.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
