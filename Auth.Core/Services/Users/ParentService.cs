@@ -6,6 +6,7 @@ using Auth.Core.ViewModels.Parent;
 using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Extensions;
 using NPOI.Util;
 using Org.BouncyCastle.Math.EC.Rfc7748;
 using Shared.DataAccess.EfCore.UnitOfWork;
@@ -143,6 +144,7 @@ namespace Auth.Core.Services.Users
 
             var query =  _parentRepo.GetAll()
                 .Include(x => x.User)
+                .Include(x=> x.Students)
                 .Include(x => x.FileUploads);
 
             var parents = await query.ToPagedListAsync(vm.PageIndex, vm.PageSize);
@@ -154,21 +156,102 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
+        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParentsInSchool(QueryModel vm)
+        {
+
+            var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
+
+            var query = _studentRepo.GetAll()
+                .Include(x => x.Parent)
+                .Select(x => new
+                {
+                    Email = x.Parent.User.Email,
+                    FullName = x.User.FullName,
+                    Id = x.ParentId,
+                    ParentCode = $"PRT/{x.Parent.CreationTime.Year}/{x.Parent.Id}",
+                    PhoneNumber = x.Parent.User.PhoneNumber,
+                    Status = x.Parent.Status,
+                    Image = x.Parent.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                });
+
+
+            var pagedData = await query.ToPagedListAsync(vm.PageIndex, vm.PageSize);
+
+            var parents = pagedData.Items.GroupBy(x => x.Id).Select(x => new ParentListVM
+            {
+                Email = x.FirstOrDefault()?.Email,
+                FullName = x.FirstOrDefault()?.FullName,
+                ParentCode = x.FirstOrDefault()?.ParentCode,
+                Id = x.FirstOrDefault().Id,
+                PhoneNumber = x.FirstOrDefault()?.PhoneNumber,
+                Status = x.FirstOrDefault().Status,
+                Image = x.FirstOrDefault().Image == null ? null : _documentService.TryGetUploadedFile(x.FirstOrDefault().Image),
+            });
+
+            var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, pagedData.TotalItemCount - (pagedData.Items.Count() - parents.Count()));
+
+            resultModel.Data = data;
+
+            return resultModel;
+        }
+
+
         public async Task<ResultModel<ParentDetailVM>> GetParentById(long Id)
         {
             var resultModel = new ResultModel<ParentDetailVM>();
 
-            var parent = await _parentRepo.GetAll()
-                .Include(x => x.User)
-                .Include(x => x.FileUploads)
+            var query = await _parentRepo.GetAll()
                 .Where(x=> x.Id == Id)
+                .Select(model => new {
+                    ContactEmail = model.User.Email,
+                    ContactHomeAddress = model.HomeAddress,
+                    ContactNumber = model.User.PhoneNumber,
+                    model.User.FirstName,
+                    model.IdentificationNumber,
+                    model.User.LastName,
+                    ModeOfIdentification = model.IdentificationType,
+                    model.Occupation,
+                    OfficeHomeAddress = model.OfficeAddress,
+                    model.Sex,
+                    model.Title,
+                    Children = model.Students.Select(x => new
+                    {
+                        Id = x.Id,
+                        Name = x.User.FullName,
+                        logoPath = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                    })
+                })
                 .FirstOrDefaultAsync();
 
-            if (parent == null)
+
+            if (query == null)
             {
                 resultModel.AddError($"No parent for id : {Id}");
                 return resultModel;
             }
+
+            var children = query.Children?.Select(x => new ChildView {
+                Id = x.Id, 
+                Image = _documentService.TryGetUploadedFile(x.logoPath),
+                Name = x.Name
+            }).ToList();
+
+
+            var parent = new ParentDetailVM
+            {
+                Children = children,
+                ContactEmail = query.ContactEmail,
+                ContactHomeAddress = query.ContactHomeAddress,
+                ContactNumber = query.ContactNumber,
+                FirstName = query.FirstName,
+                IdentificationNumber = query.IdentificationNumber,
+                LastName = query.LastName,
+                ModeOfIdentification = query.ModeOfIdentification,
+                Occupation = query.Occupation,
+                OfficeHomeAddress = query.OfficeHomeAddress,
+                Sex = query.Sex,
+                Title = query.Title,
+            };
 
             resultModel.Data = parent;
 

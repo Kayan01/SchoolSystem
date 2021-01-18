@@ -99,8 +99,9 @@ namespace LearningSvc.Core.Services
                         FileId = x.FileUploadId.ToString(),
                         Type = "Lesson Note",
                         TeacherName = $"{x.Teacher.FirstName} {x.Teacher.LastName}",
-                        FilePath = x.File.Path
-
+                        FilePath = x.File.Path,
+                        ClassName = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
+                        SubjectName = x.SchoolClassSubject.Subject.Name,
                     }).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
             foreach (var item in query)

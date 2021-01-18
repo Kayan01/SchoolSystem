@@ -16,10 +16,12 @@ namespace Shared.Utils
             public const string SuccessPasswordReset = nameof(SuccessPasswordReset);
             public const string NewUser = nameof(NewUser);
             public const string NewTeacher = nameof(NewTeacher);
+            public const string NewSchool = nameof(NewSchool);
         }
 
         public static class EntityType
         {
+            public const string School = nameof(School);
             public const string User = nameof(User);
             public const string Teacher = nameof(Teacher);
             public const string Student = nameof(Student);
@@ -42,10 +44,11 @@ namespace Shared.Utils
 
         public static readonly List<EmailTemplate> EmailTemplates = new List<EmailTemplate>
         {
-            new EmailTemplate(EmailTemplateType.PasswordReset, "Password Reset Request", "filestore/emailtemplates/passwordreset.htm"),
-            new EmailTemplate(EmailTemplateType.SuccessPasswordReset, "Successful Password Reset", "filestore/emailtemplates/successpasswordreset.htm"),
-            new EmailTemplate(EmailTemplateType.NewUser, "New User", "filestore/emailtemplates/newuser.htm"),
-            new EmailTemplate(EmailTemplateType.NewTeacher, "New Teacher", "filestore/emailtemplates/newteacher.htm"),
+            new EmailTemplate(EmailTemplateType.PasswordReset, "Password Reset Request", "/emailtemplates/passwordreset.htm"),
+            new EmailTemplate(EmailTemplateType.SuccessPasswordReset, "Successful Password Reset", "/emailtemplates/successpasswordreset.htm"),
+            new EmailTemplate(EmailTemplateType.NewUser, "New User", "/emailtemplates/newuser.htm"),
+            new EmailTemplate(EmailTemplateType.NewTeacher, "New Teacher", "/emailtemplates/newteacher.htm"),
+            new EmailTemplate(EmailTemplateType.NewSchool, "New School", "/emailtemplates/newschool.htm"),
         };
 
         public class PaginationConsts

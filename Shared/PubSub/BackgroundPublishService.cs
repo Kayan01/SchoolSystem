@@ -22,6 +22,7 @@ namespace Shared.PubSub
         private IRepository<PublishedMessage, Guid> _pubMessageRepository;
         private IUnitOfWork _unitOfWork;
         private ILogger<BackgroundPublishService> _logger;
+        private static readonly object _object = new object();
 
         public BackgroundPublishService(IServiceScopeFactory serviceScopeFactory)
         {
@@ -48,17 +49,27 @@ namespace Shared.PubSub
                         break;
                 }
             }
-            Console.WriteLine($"Delaying for 30 mins. . . ");
-            Thread.Sleep(60000 * 30);// delay for 30 mins 60000 * 30
+            //wait for message that are attempting publishing. Status == Sending
+            Console.WriteLine($"Delaying for 3 mins. . . ");
+            Thread.Sleep(60000 * 3);// delay for 3 mins 60000 * 3
+            pubMessages = _pubMessageRepository.GetAll().AsNoTracking().Where(x => x.Status == Enums.MessageStatus.Sending).AsNoTracking().Take(100).ToList();
+
+
+            //If there is any message in sending skip 30 mins delay 
+            if (!pubMessages.Any())
+            {
+                Console.WriteLine($"Delaying for 30 mins. . . ");
+                Thread.Sleep(60000 * 30);// delay for 30 mins 60000 * 30
+            }
         }
 
         private async Task ResetMessageStuckInSending()
         {
             Console.WriteLine($"Reseting ...");
-            //Reset all message stuck in sending for over 20 mins
-            var twentyMinsAgo = DateTime.Now.AddMinutes(20);
-            var stuckMessages = _pubMessageRepository.GetAll().Where(x => x.Status == Enums.MessageStatus.Sending && x.LastModificationTime <= twentyMinsAgo ||
-                x.Status == Enums.MessageStatus.Sending && x.CreationTime <= twentyMinsAgo && x.LastModificationTime == null).ToList();
+            //Reset all message stuck in sending for over 5 mins
+            var fiveMinsAgo = DateTime.Now.AddMinutes(-5);
+            var stuckMessages = _pubMessageRepository.GetAll().Where(x => x.Status == Enums.MessageStatus.Sending && x.LastModificationTime <= fiveMinsAgo ||
+                x.Status == Enums.MessageStatus.Sending && x.CreationTime <= fiveMinsAgo && x.LastModificationTime == null).ToList();
 
             stuckMessages.ForEach(x => x.Status = Enums.MessageStatus.Pending);
             Console.WriteLine($"Reseting ...{stuckMessages.Count()}");
@@ -73,14 +84,18 @@ namespace Shared.PubSub
                 Data = pubMessage.Message,
                 BusMessageType = (int)pubMessage.MessageType,
             };
-            pubMessage = _pubMessageRepository.FirstOrDefault(x => x.Id == pubMessage.Id);
 
-            if (pubMessage.Status != Enums.MessageStatus.Pending)
-                return pubMessage;
+            lock (_object)
+            {
+                pubMessage = _pubMessageRepository.FirstOrDefault(x => x.Id == pubMessage.Id);
 
-            pubMessage.Status = Enums.MessageStatus.Sending;
-            _pubMessageRepository.Update(pubMessage);
-            _unitOfWork.SaveChanges();
+                if (pubMessage.Status != Enums.MessageStatus.Pending)
+                    return pubMessage;
+
+                pubMessage.Status = Enums.MessageStatus.Sending;
+                _pubMessageRepository.Update(pubMessage);
+                _unitOfWork.SaveChanges();
+            }
 
             try
             {

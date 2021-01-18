@@ -7,6 +7,7 @@ namespace AssessmentSvc.Core.ViewModels.Result
 {
     public class ResultBroadSheet
     {
+        public long StudentId { get; set; }
         public string StudentName { get; set; }
         public string StudentRegNo { get; set; }
         public List<SubjectResultBroadSheet> AssessmentAndScores { get; set; } = new List<SubjectResultBroadSheet>();

@@ -25,9 +25,9 @@ namespace AssessmentSvc.Core.Services
         }
 
 
-        public async Task AddOrUpdateStudentFromBroadcast(StudentSharedModel model)
+        public void AddOrUpdateStudentFromBroadcast(StudentSharedModel model)
         {
-            var student = await _studentRepo.GetAll().Where(x => x.Id == model.Id && x.TenantId == model.TenantId).FirstOrDefaultAsync();
+            var student = _studentRepo.FirstOrDefault(x => x.Id == model.Id && x.TenantId == model.TenantId);
             if (student == null)
             {
                 student = _studentRepo.Insert(new Student
@@ -47,7 +47,7 @@ namespace AssessmentSvc.Core.Services
             student.IsActive = model.IsActive;
             student.IsDeleted = model.IsDeleted;
 
-            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.SaveChanges();
         }
 
         public async Task<long> GetStudentClassIdByUserId(long userId)

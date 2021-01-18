@@ -9,7 +9,7 @@ namespace LearningSvc.Core.Interfaces
 {
     public interface IStudentService
     {
-        Task AddOrUpdateStudentFromBroadcast(StudentSharedModel model);
+        void AddOrUpdateStudentFromBroadcast(StudentSharedModel model);
         Task<long> GetStudentClassIdByUserId(long userId);
     }
 }

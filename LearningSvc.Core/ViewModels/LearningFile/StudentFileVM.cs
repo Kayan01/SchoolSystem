@@ -14,5 +14,7 @@ namespace LearningSvc.Core.ViewModels.LearningFile
         public string FilePath { get; set; }
         public string FileSize { get; set; }
         public string Type { get; set; }
+        public string ClassName { get; set; }
+        public string SubjectName { get; set; }
     }
 }

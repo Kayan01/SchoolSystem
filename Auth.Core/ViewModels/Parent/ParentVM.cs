@@ -10,7 +10,7 @@ namespace Auth.Core.ViewModels.Parent
 {
     public class ChildView
     {
-        public byte[] Image { get; set; }
+        public string Image { get; set; }
         public string Name { get; set; }
         public long Id { get; set; }
     }
@@ -44,10 +44,11 @@ namespace Auth.Core.ViewModels.Parent
                 OfficeHomeAddress = model.OfficeAddress,
                 Sex = model.Sex,
                 Title = model.Title,
-                Children = model.Students?.Select(x => new ChildView {
+                Children = model.Students?.Select(x => new ChildView
+                {
                     Id = x.Id,
                     Name = x.User?.FullName,
-                    Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())?.Path.GetBase64StringFromImage()
+                    //Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())?.Path.GetBase64StringFromImage()
                 }).ToList()
             };
         }
@@ -61,7 +62,7 @@ namespace Auth.Core.ViewModels.Parent
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
         public bool Status { get; set; }
-        public byte[] Image { get; set; }
+        public string Image { get; set; }
 
 
         public static implicit operator ParentListVM(Models.Users.Parent model)

@@ -1,7 +1,9 @@
 ﻿using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Shared.Entities;
 using Shared.PubSub;
@@ -81,7 +83,38 @@ namespace Auth.Core.Services
 
             return false;
         }
+        public async Task<ResultModel<bool>> SendRegistrationEmail(User user, string emailTitle = "Confirm your email")
+        {
 
+            //var baseUrl = $"{_context.HttpContext.Request.Scheme}://{_context.HttpContext.Request.Host}";
+            var baseUrl = "https://school-track-1.vercel.app";
+
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+
+            var callbackUrl = $"{baseUrl}/email-verified?userId={user.Id}&code={code}";
+
+
+            await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
+            {
+                Emails = new List<CreateEmailModel>
+                {
+                    new CreateEmailModel(EmailTemplateType.NewSchool, new Dictionary<string, string>{
+                        { "link", callbackUrl },
+                    }, user)
+                },
+                Notifications = new List<InAppNotificationModel>
+                {
+                    new InAppNotificationModel("Password reset email was sent", EntityType.User, user.Id, new[] { user.Id }.ToList())
+                }
+            });
+
+            return new ResultModel<bool>(true, "Success");
+
+        }
         public async Task<ResultModel<string>> RequestPasswordReset(string email)
         {
             var result = await GetPasswordRestCode(email);
@@ -171,5 +204,7 @@ namespace Auth.Core.Services
                 }
             });
         }
+
+       
     }
 }

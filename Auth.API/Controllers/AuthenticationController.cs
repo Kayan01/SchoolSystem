@@ -326,5 +326,44 @@ namespace Auth.API.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+
+            try
+            {
+
+                if (string.IsNullOrEmpty(userId))
+                    return ApiResponse<string>(errors: "UserId is required");
+                if (string.IsNullOrEmpty(code))
+                    return ApiResponse<string>(errors: "code is required");
+
+
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return ApiResponse<string>(errors: $"Unable to load user with ID '{userId}'.");
+                }
+
+                var result = await _userManager.ConfirmEmailAsync(user, code);
+                if (!result.Succeeded)
+
+                {
+                    return ApiResponse<string>(errors: $"Error confirming email for user with ID '{userId}':");
+
+                }
+
+                return ApiResponse<bool>(message: "User confirmed", codes: ApiResponseCodes.OK);
+            }
+            catch (Exception ex)
+            {
+                return  HandleError(ex);
+            }
+         
+        }
+
     }
 }

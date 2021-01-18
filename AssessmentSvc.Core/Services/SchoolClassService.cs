@@ -23,13 +23,13 @@ namespace AssessmentSvc.Core.Services
             _schoolClassRepo = schoolClassRepo;
         }
 
-        public async Task AddOrUpdateClassFromBroadcast(List<ClassSharedModel> model)
+        public void AddOrUpdateClassFromBroadcast(List<ClassSharedModel> model)
         {
             //list of broadcasted class ids
             var ids = model.Select(x => x.Id).ToList();
 
             //get all classes from db
-            var schoolClasses = await _schoolClassRepo.GetAll().Where(x => ids.Contains(x.Id)).ToListAsync();
+            var schoolClasses = _schoolClassRepo.GetAll().Where(x => ids.Contains(x.Id)).ToList();
 
             foreach (var cls in model)
             {
@@ -46,7 +46,7 @@ namespace AssessmentSvc.Core.Services
                 schClass.ClassArm = cls.ClassArm;
             }
 
-            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.SaveChanges();
         }
 
     }
