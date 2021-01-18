@@ -109,7 +109,7 @@ namespace AssessmentSvc.API.Controllers
         public async Task<IActionResult> SubmitClassResultForApproval(UpdateApprovedClassResultViewModel vm)
         {
             if (!ModelState.IsValid)
-                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: "Please enter valid id", codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
