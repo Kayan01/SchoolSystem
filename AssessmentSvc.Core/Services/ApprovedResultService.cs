@@ -2,6 +2,7 @@
 using AssessmentSvc.Core.Models;
 using AssessmentSvc.Core.ViewModels.Result;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.ViewModels;
@@ -116,6 +117,79 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<string>> SubmitClassResultForApproval(UpdateApprovedClassResultViewModel vm)
+        {
+            var result = new ResultModel<string>();
+
+            var sessionResult = await _sessionService.GetCurrentSchoolSession();
+
+            if (sessionResult.HasError)
+            {
+                foreach (string err in sessionResult.ErrorMessages)
+                {
+                    result.AddError(err);
+                }
+
+                return result;
+            }
+
+            var currSession = sessionResult.Data;
+
+            var currTermSequence = currSession.Terms.FirstOrDefault(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now)?.SequenceNumber;
+
+            if (currTermSequence == null)
+            {
+                result.AddError("Current term date has expired or its not setup");
+            }
+
+
+            //fetch results
+            var classResults = await _resultRepo.GetAll().Include(m=>m.ApprovedResult)
+                .Where(x => x.SessionSetupId == currSession.Id && x.TermSequenceNumber == currTermSequence && x.SchoolClassId == vm.ClassId)
+                .ToListAsync();
+
+            if (classResults.Count < 1)
+            {
+                result.AddError("No saved result records for student found.");
+                return result;
+            }
+
+            foreach (var classResult in classResults)
+            {
+                if (classResult.ApprovedResult != null)
+                {
+                    classResult.ApprovedResult.ClassTeacherComment = vm.ClassTeacherComment;
+                    classResult.ApprovedResult.HeadTeacherComment = vm.HeadTeacherComment;
+                    classResult.ApprovedResult.ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus;
+                    classResult.ApprovedResult.SchoolAdminApprovalStatus = vm.AdminApprovalStatus;
+                    classResult.ApprovedResult.HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus;
+                }
+                else
+                {
+                    classResult.ApprovedResult = new ApprovedResult
+                    {
+                        ClassTeacherComment = vm.ClassTeacherComment,
+                        HeadTeacherComment = vm.HeadTeacherComment,
+                        SchoolClassId = vm.ClassId,
+                        SessionId = currSession.Id,
+                        TermSequence = currTermSequence.Value,
+                        StudentId = classResult.StudentId,
+                        ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus,
+                        SchoolAdminApprovalStatus = vm.AdminApprovalStatus,
+                        HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus
+                    };
+                }
+
+                await _resultRepo.UpdateAsync(classResult);
+            }
+            
+            await _unitOfWork.SaveChangesAsync();
+
+            result.Data = "Record updated";
+
+            return result;
+        }
+
         public async Task<ResultModel<GetApprovedStudentResultViewModel>> GetStudentResultForApproval(GetStudentResultForApproval vm)
         {
             var result = new ResultModel<GetApprovedStudentResultViewModel>();
@@ -184,5 +258,86 @@ namespace AssessmentSvc.Core.Services
                 return result;
             }
         }
+
+
+        public async Task<ResultModel<List<ResultBroadSheet>>> GetClassTeacherApprovedClassBroadSheet(long classId)
+        {
+            //get current term
+            //get results for current term
+            var result = new ResultModel<List<ResultBroadSheet>>();
+            var sessionResult = await _sessionService.GetCurrentSchoolSession();
+
+            if (sessionResult.HasError)
+            {
+                foreach (string err in sessionResult.ErrorMessages)
+                {
+                    result.AddError(err);
+                }
+
+                return result;
+            }
+
+            var currSession = sessionResult.Data;
+
+            var currTermSequence = currSession.Terms.FirstOrDefault(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now)?.SequenceNumber;
+
+            if (currTermSequence == null)
+            {
+                result.AddError("Current term date has expired or its not setup");
+            }
+
+            var query = _resultRepo.GetAll()
+                 .Where(x => x.SessionSetupId == currSession.Id &&
+                    x.SchoolClassId == classId &&
+                    x.TermSequenceNumber == currTermSequence &&
+                    x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved
+                    )
+                 .Select(x => new
+                 {
+                     StudentName = $"{x.Student.FirstName} {x.Student.LastName}",
+                     StudentId = x.StudentId,
+                     StudentRegNo = x.Student.RegNumber,
+                     SubjectName = x.Subject.Name,
+                     ScoresJSON = x.ScoresJSON
+                 })
+                 .ToList();
+
+            if (query.Count < 1)
+            {
+                result.AddError("No result for this class!");
+                return result;
+            }
+
+            var queryGroup = query.GroupBy(x => new { x.StudentId, x.StudentName, x.StudentRegNo });
+            var data = new List<ResultBroadSheet>();
+            foreach (var group in queryGroup)
+            {
+                var rbroadsheet = new ResultBroadSheet
+                {
+                    StudentName = group.Key.StudentName,
+                    StudentId = group.Key.StudentId,
+                    StudentRegNo = group.Key.StudentRegNo
+                };
+
+                foreach (var sc in group)
+                {
+
+                    var temp = JsonConvert.DeserializeObject<List<Score>>(sc.ScoresJSON, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+
+                    var totalscore = temp.Sum(x => x.StudentScore);
+
+                    rbroadsheet.AssessmentAndScores.Add(new SubjectResultBroadSheet { SubjectName = sc.SubjectName, Score = totalscore });
+                }
+
+                data.Add(rbroadsheet);
+
+            }
+
+            result.Data = data;
+
+
+            return result;
+        }
+
     }
 }
