@@ -373,7 +373,7 @@ namespace Auth.Core.Services.Users
         {
             var result = new ResultModel<string>();
 
-            var teacher = await _teacherRepo.GetAll().Where(x => x.Id == model.ClassId)
+            var teacher = await _teacherRepo.GetAll().Where(x => x.Id == model.TeacherId)
                             .Include(x => x.Staff).ThenInclude(m=>m.User)
                             .FirstOrDefaultAsync();
 
@@ -384,6 +384,9 @@ namespace Auth.Core.Services.Users
             }
 
             teacher.ClassId = model.ClassId;
+
+            await _teacherRepo.UpdateAsync(teacher);
+            _unitOfWork.SaveChanges();
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
@@ -401,6 +404,26 @@ namespace Auth.Core.Services.Users
             result.Data = "Saved";
             return result;
         }
+
+        public async Task<ResultModel<ClassTeacherVM>> GetTeacherClassById(long Id)
+        {
+            var result = new ResultModel<ClassTeacherVM>();
+            var query = await _teacherRepo.GetAll()
+                            .Where(x => x.Id == Id)
+                            .Select(m => new ClassTeacherVM()
+                            {
+                                ClassId = m.Class.Id,
+                                TeacherId = m.Id,
+                                ClassName = $"{m.Class.Name} {m.Class.ClassArm}",
+                                ClassSection = m.Class.SchoolSection.Name,
+                            }
+                                )
+                            .FirstOrDefaultAsync();
+
+            result.Data = query;
+            return result;
+        }
+
 
         #region notification
 

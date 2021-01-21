@@ -342,7 +342,6 @@ healthchecksdb
 */Migrations/*
 !*/Migrations/sp_*[a-zA-Z0-9]*.cs
 
-*/FileStore/*
 */Log/*
 /UserManagement/UserManagement.Core/Migrations
 /Auth.Tests

@@ -117,7 +117,8 @@ namespace LearningSvc.Core.Services
         public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForClass(long classId, QueryModel queryModel)
         {
             var query = await _assignmentRepo.GetAll().Where(m => m.SchoolClassSubject.SchoolClassId == classId)
-                    .Select(x => new AssignmentGetVM
+                .OrderByDescending(m=>m.CreationTime)
+                .Select(x => new AssignmentGetVM
                     {
                         Id = x.Id,
                         SubjectName = x.SchoolClassSubject.Subject.Name,
@@ -144,6 +145,7 @@ namespace LearningSvc.Core.Services
         public async Task<ResultModel<PaginatedModel<AssignmentGetVM>>> GetAssignmentsForClassSubject(long classSubjectId, QueryModel queryModel)
         {
             var query = await _assignmentRepo.GetAll().Where(m => m.SchoolClassSubjectId == classSubjectId)
+                .OrderByDescending(m => m.CreationTime)
                     .Select(x => new AssignmentGetVM
                     {
                         Id = x.Id,
@@ -179,6 +181,7 @@ namespace LearningSvc.Core.Services
             }
 
             var query = await _assignmentRepo.GetAll().Where(m => m.TeacherId == teacher.Id)
+                .OrderByDescending(m => m.CreationTime)
                     .Select(x => new AssignmentGetVM
                     {
                         Id = x.Id,
@@ -203,5 +206,30 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<string>> UpdateAssignmentDueDate(AssignmentDueDateUpdateVM model)
+        {
+            var result = new ResultModel<string>();
+
+            var query = await _assignmentRepo.GetAll().Where(m => m.Id == model.AssignmentId).FirstOrDefaultAsync();
+
+            if (query == null)
+            {
+                result.AddError("Assignment not found.");
+                return result;
+            }
+
+            if (query.CreationTime > model.NewDate)
+            {
+                result.AddError("New date should be greater than the assignment creation date.");
+                return result;
+            }
+
+            query.DueDate = model.NewDate;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            result.Data = "Updated successfully";
+            return result;
+        }
     }
 }

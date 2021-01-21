@@ -64,6 +64,25 @@ namespace Auth.API.Controllers.Users
             }
         }
 
+        [HttpGet("{Id}")]
+        [ProducesResponseType(typeof(ApiResponse<ClassTeacherVM>), 200)]
+        public async Task<IActionResult> GetTeacherClass(long Id)
+        {
+            try
+            {
+                var result = await _teacherService.GetTeacherClassById(Id);
+
+                if (result.HasError)
+                    return ApiResponse<ClassTeacherVM>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<ClassTeacherVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<TeacherVM>), 200)]
         public async Task<IActionResult> AddTeacher([FromForm]AddStaffVM model)

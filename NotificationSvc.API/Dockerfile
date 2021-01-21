@@ -7,7 +7,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["NotificationSvc.API/NotificationSvc.API.csproj", "NotificationSvc.API/"]
-RUN mkdir NotificationSvc.API/Filestore && touch NotificationSvc.API/Filestore/TempFile.txt
+#RUN mkdir NotificationSvc.API/Filestore && touch NotificationSvc.API/Filestore/TempFile.txt
 COPY ["NotificationSvc.Core/NotificationSvc.Core.csproj", "NotificationSvc.Core/"]
 COPY ["Shared/Shared.csproj", "Shared/"]
 RUN dotnet restore "NotificationSvc.API/NotificationSvc.API.csproj"

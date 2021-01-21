@@ -82,6 +82,48 @@ namespace AssessmentSvc.API.Controllers
             }
         }
 
+
+        [HttpGet("{classId}")]
+        [ProducesResponseType(typeof(ApiResponse<GetApprovedStudentResultViewModel>), 200)]
+        public async Task<IActionResult> GetClassResultForApproval(long classId)
+        {
+            if (classId < 1)
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _approvedResultService.GetClassTeacherApprovedClassBroadSheet(classId);
+                if (result.HasError)
+                    return ApiResponse<ResultUploadFormData>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<GetApprovedStudentResultViewModel>), 200)]
+        public async Task<IActionResult> SubmitClassResultForApproval(UpdateApprovedClassResultViewModel vm)
+        {
+            if (!ModelState.IsValid)
+                return ApiResponse<string>(errors: "Please enter valid id", codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _approvedResultService.SubmitClassResultForApproval(vm);
+                if (result.HasError)
+                    return ApiResponse<ResultUploadFormData>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpGet]
         [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> GetResultUploadExcel([FromQuery] long classId)
