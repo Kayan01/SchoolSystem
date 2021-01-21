@@ -1,0 +1,88 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Shared.AspNetCore;
+using Shared.DataAccess.EfCore;
+using Shared.DataAccess.EfCore.Context;
+using Shared.DataAccess.EfCore.UnitOfWork;
+using Shared.FileStorage;
+using Shared.Utils;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using FinanceSvc.Core.EventHandlers;
+using FinanceSvc.Core.Context;
+using Shared.PubSub;
+using Microsoft.AspNetCore.Hosting;
+using Shared.PubSub.KafkaImpl;
+using FinanceSvc.Core.Services.Interfaces;
+using FinanceSvc.Core.Services;
+using Shared.Net.WorkerService;
+
+namespace FinanceSvc.API
+{
+    public partial class Startup
+    {
+        public void ConfigureDIService(IServiceCollection services)
+        {
+            services.AddTransient<DbContext, AppDbContext>();
+
+            services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
+            services.AddScoped(typeof(IDbContextProvider<>), typeof(UnitOfWorkDbContextProvider<>));
+
+            services.RegisterGenericRepos(typeof(AppDbContext));
+
+            services.AddScoped<IHttpUserService, HttpUserService>();
+            services.AddHttpContextAccessor();
+
+            services.AddSingleton<IProducerClient<BusMessage>>(service =>
+            {
+                var env = service.GetRequiredService<IWebHostEnvironment>();
+                var producerClient = new ProducerClient<BusMessage>(env, Configuration);
+                return producerClient;
+            });
+
+            services.AddSingleton<IConsumerClient<BusMessage>>(service =>
+            {
+                var env = service.GetRequiredService<IWebHostEnvironment>();
+                var consumerClient = new ConsumerClient<BusMessage>(env, Configuration);
+                return consumerClient;
+            });
+
+            services.AddTransient<Func<List<BusHandler>>>(cont =>
+            () =>
+            {
+                List<BusHandler> handlers = new List<BusHandler>();
+                var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
+                var handler = scope.ServiceProvider.GetRequiredService<FinanceHandler>();
+                handlers.Add((message) =>
+                {
+                    switch (message.BusMessageType)
+                    {
+                        case (int)BusMessageTypes.NOTIFICATION:
+                            {
+                                handler.HandleTest(message);
+                                break;
+                            }
+                    }
+                });
+                return handlers;
+            });
+            services.AddSingleton<BoundedMessageChannel<BusMessage>>();
+            services.AddHostedService<EventHubProcessorService>();
+            services.AddHostedService<EventHubReaderService>();
+
+            //Permission not needed here
+            //services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+            services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
+                          HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
+
+            services.AddScoped<IFileStorageService, FileStorageService>();
+            //services.AddTransient<IFileUploadService, FileUploadService>();     
+            services.AddScoped<IFinanceService, FinanceService>();
+            services.AddTransient<FinanceHandler>();
+        }
+    }
+}
