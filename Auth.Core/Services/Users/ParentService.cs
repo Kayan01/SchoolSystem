@@ -4,6 +4,7 @@ using Auth.Core.Models.Users;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Parent;
 using Auth.Core.ViewModels.School;
+using Auth.Core.ViewModels.Student;
 using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -283,6 +284,38 @@ namespace Auth.Core.Services.Users
             resultModel.Data = student.Parent;
 
             return resultModel;
+        }
+
+        public async Task<ResultModel<List<StudentParentVM>>> GetStudentsInSchool(long parentId)
+        {
+            var query = await _studentRepo.GetAll()
+                .Where(x => x.ParentId == parentId)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.User.FullName,
+                    x.RegNumber,
+                    ImageId = x.FileUploads.FirstOrDefault(h => h.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                })
+                .ToListAsync();
+
+
+            var students = new List<StudentParentVM>();
+
+            foreach (var st in query)
+            {
+                students.Add(new StudentParentVM
+                {
+                    FullName = st.FullName,
+                    Id = st.Id,
+                    Image = _documentService.TryGetUploadedFile(st.ImageId),
+                    RegNo = st.RegNumber
+                });
+            }
+
+            return new ResultModel<List<StudentParentVM>> { Data = students };
+
+
         }
 
         public async Task<ResultModel<List<SchoolParentViewModel>>> GetStudentsSchools(long currentUserId)
