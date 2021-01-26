@@ -54,6 +54,17 @@
         }
       ],
       "UpstreamPathTemplate": "/schtrack-assessment/{catchAll}"
+    },
+    {
+      "DownstreamPathTemplate": "/{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "10.0.0.5",
+          "Port": 58106
+        }
+      ],
+      "UpstreamPathTemplate": "/schtrack-finance/{catchAll}"
     }
   ],
   "GlobalConfiguration": {
