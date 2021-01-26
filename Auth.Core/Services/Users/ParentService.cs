@@ -3,6 +3,7 @@ using Auth.Core.Models;
 using Auth.Core.Models.Users;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Parent;
+using Auth.Core.ViewModels.School;
 using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ namespace Auth.Core.Services.Users
     {
         private readonly IRepository<Parent, long> _parentRepo;
         private readonly IRepository<Student, long> _studentRepo;
+        private readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
@@ -36,6 +38,7 @@ namespace Auth.Core.Services.Users
             IRepository<Parent, long> parentRepo,
             IUnitOfWork unitOfWork,
             IRepository<Student, long> studentRepo,
+            IRepository<School, long> schoolRepo,
             UserManager<User> userManager,
             IDocumentService documentService)
         {
@@ -44,6 +47,7 @@ namespace Auth.Core.Services.Users
             _studentRepo = studentRepo;
             _userManager = userManager;
             _documentService = documentService;
+            _schoolRepo = schoolRepo;
         }
         public async Task<ResultModel<ParentDetailVM>> AddNewParent(AddParentVM vm)
         {
@@ -279,6 +283,38 @@ namespace Auth.Core.Services.Users
             resultModel.Data = student.Parent;
 
             return resultModel;
+        }
+
+        public async Task<ResultModel<List<SchoolParentViewModel>>> GetStudentsSchools(long currentUserId)
+        {
+            var query = await _parentRepo.GetAll()
+                .Where(x => x.UserId == currentUserId)
+                .SelectMany(x =>
+                    x.Students.Select(m => new
+                    {
+                        Id = m.TenantId,
+                        ImagePath = m.School.FileUploads.FirstOrDefault(h => h.Name == DocumentType.Logo.GetDisplayName()).Path,
+                        Name = m.School.Name
+                    }))
+                .ToListAsync();
+
+            //removes duplicate  records
+            var query2 = query
+               .GroupBy(o => o.Id)
+               .Select(g => g.First())
+               .ToList();
+
+            var schools = new List<SchoolParentViewModel>();
+            foreach (var sch in query2)
+            {
+                schools.Add(new SchoolParentViewModel {
+                    Id = sch.Id,
+                    Image = _documentService.TryGetUploadedFile(sch.ImagePath),
+                    Name = sch.Name
+                });
+            }
+
+            return new ResultModel<List<SchoolParentViewModel>> { Data = schools };
         }
 
         public async Task<ResultModel<ParentDetailVM>> UpdateParent(long Id, UpdateParentVM vm)
