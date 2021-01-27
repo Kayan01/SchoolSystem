@@ -14,6 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Migrations\20210127075103_initial.cs" />
+    <Compile Include="Migrations\20210127075103_initial.Designer.cs" />
+    <Compile Include="Migrations\AppDbContextModelSnapshot.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="IdentityModel" Version="4.1.1" />
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="MailKit" Version="2.5.2" />
@@ -43,7 +49,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Map\" />
     <Folder Include="ViewModels\" />
   </ItemGroup>
 
