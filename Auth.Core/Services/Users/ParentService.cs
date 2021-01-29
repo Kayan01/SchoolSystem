@@ -295,6 +295,7 @@ namespace Auth.Core.Services.Users
                     x.Id,
                     x.User.FullName,
                     x.RegNumber,
+                    x.ClassId,
                     ImageId = x.FileUploads.FirstOrDefault(h => h.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
                 })
                 .ToListAsync();
@@ -308,6 +309,7 @@ namespace Auth.Core.Services.Users
                 {
                     FullName = st.FullName,
                     Id = st.Id,
+                    ClassID = st.ClassId.Value,
                     Image = _documentService.TryGetUploadedFile(st.ImageId),
                     RegNo = st.RegNumber
                 });
