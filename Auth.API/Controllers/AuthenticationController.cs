@@ -350,10 +350,8 @@ namespace Auth.API.Controllers
 
                 var result = await _userManager.ConfirmEmailAsync(user, code);
                 if (!result.Succeeded)
-
                 {
-                    return ApiResponse<string>(errors: $"Error confirming email for user with ID '{userId}':");
-
+                    return ApiResponse<string>(errors: result.Errors.Select(x=> x.Description).ToArray());
                 }
 
                 return ApiResponse<bool>(message: "User confirmed", codes: ApiResponseCodes.OK);

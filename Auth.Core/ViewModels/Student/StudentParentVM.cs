@@ -10,5 +10,6 @@ namespace Auth.Core.ViewModels.Student
         public string  FullName { get; set; }
         public string RegNo { get; set; }
         public string Image { get; set; }
+        public long ClassID { get; set; }
     }
 }
