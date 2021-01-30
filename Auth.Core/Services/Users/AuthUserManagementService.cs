@@ -87,7 +87,7 @@ namespace Auth.Core.Services
         {
 
             //var baseUrl = $"{_context.HttpContext.Request.Scheme}://{_context.HttpContext.Request.Host}";
-            var baseUrl = "https://school-track-1.vercel.app";
+            var baseUrl = "http://school-track-1.vercel.app";
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -95,7 +95,7 @@ namespace Auth.Core.Services
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
 
-            var callbackUrl = $"{baseUrl}/email-verified?userId={user.Id}&code={code}";
+            var callbackUrl = $"{baseUrl}/#/email-verified?userId={user.Id}&code={code}";
 
 
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel

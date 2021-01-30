@@ -24,6 +24,8 @@ using Auth.API.ViewModel;
 using Auth.Core.Services.Interfaces;
 using Shared.ViewModels.Enums;
 using Auth.Core.ViewModels;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
 
 namespace Auth.API.Controllers
 {
@@ -348,6 +350,7 @@ namespace Auth.API.Controllers
                     return ApiResponse<string>(errors: $"Unable to load user with ID '{userId}'.");
                 }
 
+                code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
                 var result = await _userManager.ConfirmEmailAsync(user, code);
                 if (!result.Succeeded)
                 {
