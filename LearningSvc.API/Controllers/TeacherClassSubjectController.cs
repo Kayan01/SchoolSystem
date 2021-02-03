@@ -17,17 +17,28 @@ namespace LearningSvc.API.Controllers
     public class TeacherClassSubjectController : BaseController
     {
         private readonly ITeacherClassSubjectService _teacherClassSubjectService;
-        public TeacherClassSubjectController(ITeacherClassSubjectService teacherClassSubjectService)
+        private readonly ITeacherService _teacherService;
+        public TeacherClassSubjectController(ITeacherClassSubjectService teacherClassSubjectService, ITeacherService teacherService)
         {
             _teacherClassSubjectService = teacherClassSubjectService;
+            _teacherService = teacherService;
         }
 
-        [HttpGet("{teacherid}")]
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TeacherClassSubjectListVM>>), 200)]
-        public async Task<IActionResult> GetAllClassSubjectsForTeacher(long teacherid)
+        public async Task<IActionResult> GetAllClassSubjectsForTeacher([FromQuery]long teacherid)
         {
             try
             {
+                if (teacherid < 1)
+                {
+                    teacherid = await _teacherService.GetTeacherIdByUserId(CurrentUser.UserId);
+                }
+                if (teacherid < 1)
+                {
+                    return ApiResponse<List<TeacherClassSubjectListVM>>(errors: new[] { "Logged in user is not a teacher." });
+                }
+
                 var result = await _teacherClassSubjectService.GetAllTeacherClassSubjects(teacherid);
                 if (result.HasError)
                     return ApiResponse<List<TeacherClassSubjectListVM>>(errors: result.ErrorMessages.ToArray());
