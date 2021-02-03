@@ -104,8 +104,8 @@ namespace Auth.API
                         .AllowRefreshTokenFlow()
                         .AcceptAnonymousClients()
                         .AllowPasswordFlow()
-                        .SetAccessTokenLifetime(TimeSpan.FromMinutes(60))
-                        .SetIdentityTokenLifetime(TimeSpan.FromMinutes(60))
+                        .SetAccessTokenLifetime(TimeSpan.FromDays(1))
+                        .SetIdentityTokenLifetime(TimeSpan.FromDays(1))
                         .SetRefreshTokenLifetime(TimeSpan.FromMinutes(120))
                         .AddSigningCertificate(x509Certificate)
                         .UseJsonWebTokens();
