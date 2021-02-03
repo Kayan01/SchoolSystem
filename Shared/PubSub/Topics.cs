@@ -13,6 +13,7 @@ namespace Shared.PubSub
         public static string Teacher => nameof(Teacher).ToLower();
         public static string Admin => nameof(Admin).ToLower();
         public static string Subject => nameof(Subject).ToLower();
+        public static string Parent => nameof(Parent).ToLower();
 
     }
 }
