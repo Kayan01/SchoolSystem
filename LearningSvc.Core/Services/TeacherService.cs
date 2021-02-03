@@ -85,5 +85,10 @@ namespace LearningSvc.Core.Services
             };
             return result;
         }
+        public async Task<long> GetTeacherIdByUserId(long userId)
+        {
+            var teacherId = await _teacherRepo.GetAll().Where(m => m.UserId == userId).Select(n => n.Id).FirstOrDefaultAsync();
+            return teacherId;
+        }
     }
 }
