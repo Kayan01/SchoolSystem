@@ -148,6 +148,7 @@ namespace Auth.Core.Services
             if (!user.EmailConfirmed)
                 user.EmailConfirmed = true;
 
+
             //Update Password
             var res = await _userManager.ResetPasswordAsync(user, passwordResetModel.Token, model.NewPassword);
             if (!res.Succeeded)
