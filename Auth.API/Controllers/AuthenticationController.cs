@@ -111,6 +111,19 @@ namespace Auth.API.Controllers
                         });
                     }
 
+
+
+                    //check if user is logging in for the first time
+                    if (applicationUser.IsFirstTimeLogin)
+                    {
+                        return BadRequest(new 
+                        {
+                            Error = "first_time_login",
+                            ErrorDescription = "First time login. The user should change his password.",
+                            PasswordResetCode = (await _authUserService.GetPasswordRestCode(applicationUser.Email)).Data.code
+                        });
+                    }
+
                     if (_userManager.SupportsUserLockout)
                     {
                         await _userManager.ResetAccessFailedCountAsync(applicationUser);
@@ -357,7 +370,9 @@ namespace Auth.API.Controllers
                     return ApiResponse<string>(errors: result.Errors.Select(x=> x.Description).ToArray());
                 }
 
-                return ApiResponse<bool>(message: "User confirmed", codes: ApiResponseCodes.OK);
+                var PasswordResetCode = (await _authUserService.GetPasswordRestCode(user.Email)).Data.code;
+
+                return ApiResponse<string>(message: "User confirmed", data : PasswordResetCode, codes: ApiResponseCodes.OK);
             }
             catch (Exception ex)
             {

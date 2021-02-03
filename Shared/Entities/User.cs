@@ -13,7 +13,7 @@ namespace Shared.Entities
         public string Unit { get; set; }
         public string MiddleName { get; set; }
         public string LastName { get; set; }
-        public bool IsFirstTimeLogin { get; set; }
+        public bool IsFirstTimeLogin { get; set; } = true;
         public DateTime CreationTime { get; set; }
         public DateTime? DeletionTime { get; set; }
         public bool IsDeleted { get; set; }
