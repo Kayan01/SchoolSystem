@@ -39,8 +39,8 @@ namespace FinanceSvc.Core.Context
         public DbSet<Component> Components { get; set; }
         public DbSet<BankAccount> BankAccounts { get; set; }
         public DbSet<Account> Accounts { get; set; }
-        public DbSet<AccountClass> AccountClasses { get; set; }
-        public DbSet<AccountType> AccountTypes { get; set; }
+        public DbSet<AccountType> AccountClasses { get; set; }
+        public DbSet<AccountClass> AccountTypes { get; set; }
 
 
         public async Task AddSampleData()

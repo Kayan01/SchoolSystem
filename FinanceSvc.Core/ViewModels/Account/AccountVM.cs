@@ -1,16 +1,15 @@
-﻿using Shared.Entities.Auditing;
-using Shared.Tenancy;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace FinanceSvc.Core.Models
+namespace FinanceSvc.Core.ViewModels.Account
 {
-    public class Account : AuditedEntity<long>, ITenantModelType
+    public class AccountVM
     {
-        public long TenantId { get; set; }
+        public long Id { get; set; }
 
         public long AccountTypeId { get; set; }
+        public string AccountType { get; set; }
 
         public string Name { get; set; }
         public string Description { get; set; }
@@ -20,8 +19,5 @@ namespace FinanceSvc.Core.Models
 
         public bool IsActive { get; set; }
 
-        public AccountType AccountType { get; set; }
-
-        public ICollection<Component> Components { get; set; } = new List<Component>();
     }
 }

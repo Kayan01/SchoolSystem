@@ -10,13 +10,13 @@ namespace FinanceSvc.Core.Models
     {
         public long TenantId { get; set; }
 
+        public long AccountClassId { get; set; }
+
         public string Name { get; set; }
-        public int MinNumberValue { get; set; }
-        public int MaxNumberValue { get; set; }
+        public string Description { get; set; }
 
         public bool IsActive { get; set; }
 
-        public ICollection<AccountClass> AccountClasses { get; set; } = new List<AccountClass>();
-
+        public AccountClass AccountClass { get; set; }
     }
 }

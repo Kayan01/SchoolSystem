@@ -11,7 +11,7 @@ namespace FinanceSvc.Core.Models
         public long TenantId { get; set; }
 
         public string Name { get; set; }
-        public string Decription { get; set; }
+        public string Description { get; set; }
 
         public bool IsActive { get; set; }
 

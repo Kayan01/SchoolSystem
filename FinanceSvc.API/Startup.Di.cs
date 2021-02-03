@@ -56,7 +56,7 @@ namespace FinanceSvc.API
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<FinanceHandler>();
-                handlers.Add((message) =>
+                handlers.Add(async (message) =>
                 {
                     switch (message.BusMessageType)
                     {
@@ -65,10 +65,33 @@ namespace FinanceSvc.API
                                 handler.HandleTest(message);
                                 break;
                             }
+                        case (int)BusMessageTypes.STUDENT:
+                        case (int)BusMessageTypes.STUDENT_UPDATE:
+                        case (int)BusMessageTypes.STUDENT_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateStudentAsync(message);
+                                break;
+                            }
+                        case (int)BusMessageTypes.PARENT:
+                        case (int)BusMessageTypes.PARENT_UPDATE:
+                        case (int)BusMessageTypes.PARENT_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateParentAsync(message);
+                                break;
+                            }
+                        case (int)BusMessageTypes.CLASS:
+                        case (int)BusMessageTypes.CLASS_UPDATE:
+                        case (int)BusMessageTypes.CLASS_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateClassAsync(message);
+                                break;
+                            }
+
                     }
                 });
                 return handlers;
             });
+
             services.AddSingleton<BoundedMessageChannel<BusMessage>>();
             services.AddHostedService<EventHubProcessorService>();
             services.AddHostedService<EventHubReaderService>();
@@ -80,7 +103,16 @@ namespace FinanceSvc.API
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
 
             services.AddScoped<IFileStorageService, FileStorageService>();
-            //services.AddTransient<IFileUploadService, FileUploadService>();     
+            services.AddScoped<IParentService, ParentService>();
+            services.AddScoped<ISchoolClassService, SchoolClassService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IAccountClassService, AccountClassService>();
+            services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IAccountTypeService, AccountTypeService>();
+            services.AddScoped<IBankAccountService, BankAccountService>();
+            services.AddScoped<IComponentService, ComponentService>();
+
+            //services.AddTransient<IFileUploadService, FileUploadService>();
             services.AddScoped<IFinanceService, FinanceService>();
             services.AddTransient<FinanceHandler>();
         }
