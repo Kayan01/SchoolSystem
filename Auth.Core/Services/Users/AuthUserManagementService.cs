@@ -156,6 +156,10 @@ namespace Auth.Core.Services
 
 
             //update user 
+            if (user.IsFirstTimeLogin)
+            {
+                user.IsFirstTimeLogin = false;
+            }
             await _userManager.UpdateAsync(user);
 
             await SendSuccessfulPasswordResetMessage(user);
@@ -181,11 +185,13 @@ namespace Auth.Core.Services
 
         private async Task SendPasswordResetEmail(User user, string code)
         {
+            var link = $"{baseUrl}/#/reset-password?code={code}";
+
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
             {
                 Emails = new List<CreateEmailModel>
                 {
-                    new CreateEmailModel(EmailTemplateType.PasswordReset, new Dictionary<string, string>{ { "Code", code} }, user)
+                    new CreateEmailModel(EmailTemplateType.PasswordReset, new Dictionary<string, string>{ { "link", link},  {"FullName", user.FullName }}, user)
                 },
                 Notifications = new List<InAppNotificationModel>
                 {
