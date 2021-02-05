@@ -169,6 +169,8 @@ namespace Auth.Core.Services.Users
 
             //Add TenantId to UserClaims
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+            //add stafftype to claims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, StaffType.TeachingStaff.GetDescription()));
 
             //create next of kin
             var nextOfKin = new NextOfKin

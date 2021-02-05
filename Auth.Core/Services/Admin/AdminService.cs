@@ -12,6 +12,7 @@ using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
 using Shared.Enums;
+using Shared.Extensions;
 using Shared.FileStorage;
 using Shared.Pagination;
 using Shared.PubSub;
@@ -22,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Shared.Utils.CoreConstants;
 
 namespace Auth.Core.Services
 {
@@ -72,7 +74,7 @@ namespace Auth.Core.Services
                         return result;
                     }
                     files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
-                    if (files.Count() != model.Files.Count())
+                    if (files.Count != model.Files.Count)
                     {
                         result.AddError("Some files could not be uploaded");
 
@@ -106,6 +108,10 @@ namespace Auth.Core.Services
 
                 });
 
+
+
+                //add stafftype to claims
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.GlobalAdmin.GetDescription()));
 
                 await _unitOfWork.SaveChangesAsync();
                 await _publishService.PublishMessage(Topics.Admin, BusMessageTypes.ADMIN, new AdminSharedModel
