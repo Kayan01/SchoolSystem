@@ -23,6 +23,7 @@ using static Shared.Utils.CoreConstants;
 using Microsoft.OpenApi.Extensions;
 using Shared.PubSub;
 using System.Text;
+using Shared.Extensions;
 
 namespace Auth.Core.Services
 {
@@ -125,8 +126,11 @@ namespace Auth.Core.Services
             //adds tenant id to school primary contact
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, school.Id.ToString()));
 
+            //add stafftype to claims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.SchoolAdmin.GetDescription()));
+
             //broadcast login detail to email
-           var emailResult = await _authUserManagement.SendRegistrationEmail(user);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(user);
 
             if (emailResult.HasError)
             {

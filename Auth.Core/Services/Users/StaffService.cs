@@ -27,6 +27,7 @@ using Microsoft.OpenApi.Extensions;
 using Shared.Tenancy;
 using static Shared.Utils.CoreConstants;
 using Shared.AspNetCore;
+using Shared.Extensions;
 
 namespace Auth.Core.Services
 {
@@ -169,6 +170,8 @@ namespace Auth.Core.Services
 
             //Add TenantId to UserClaims
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+            //add stafftype to claims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, StaffType.NonTeachingStaff.GetDescription()));
 
             //create next of kin
             var nextOfKin = new NextOfKin

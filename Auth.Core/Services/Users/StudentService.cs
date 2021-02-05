@@ -12,6 +12,7 @@ using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
 using Shared.Enums;
+using Shared.Extensions;
 using Shared.FileStorage;
 using Shared.Pagination;
 using Shared.PubSub;
@@ -123,6 +124,8 @@ namespace Auth.Core.Services
 
             //Add TenantId to UserClaims
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+            //add stafftype to claims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
 
             var medicalHistory = new MedicalDetail {
                 Allergies = model.Allergies,

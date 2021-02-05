@@ -15,6 +15,7 @@ using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
 using Shared.Enums;
+using Shared.Extensions;
 using Shared.FileStorage;
 using Shared.Pagination;
 using Shared.Utils;
@@ -24,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Shared.Utils.CoreConstants;
 
 namespace Auth.Core.Services.Users
 {
@@ -115,6 +117,11 @@ namespace Auth.Core.Services.Users
             await   _parentRepo.InsertAsync(parent);
 
             await  _unitOfWork.SaveChangesAsync();
+
+
+            //add stafftype to claims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
+
 
             _unitOfWork.Commit();
 
