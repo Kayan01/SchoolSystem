@@ -38,7 +38,7 @@
     <None Update="Filestore\newuser.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Filestore\ResetAccount.html">
+    <None Update="Filestore\passwordreset.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
