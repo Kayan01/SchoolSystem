@@ -24,6 +24,8 @@ using Auth.API.ViewModel;
 using Auth.Core.Services.Interfaces;
 using Shared.ViewModels.Enums;
 using Auth.Core.ViewModels;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
 
 namespace Auth.API.Controllers
 {
@@ -106,6 +108,19 @@ namespace Auth.API.Controllers
                         {
                             Error = OpenIdConnectConstants.Errors.InvalidGrant,
                             ErrorDescription = "Login or password is incorrect."
+                        });
+                    }
+
+
+
+                    //check if user is logging in for the first time
+                    if (applicationUser.IsFirstTimeLogin)
+                    {
+                        return BadRequest(new 
+                        {
+                            Error = "first_time_login",
+                            ErrorDescription = "First time login. The user should change his password.",
+                            PasswordResetCode = (await _authUserService.GetPasswordRestCode(applicationUser.Email)).Data.code
                         });
                     }
 
@@ -264,6 +279,8 @@ namespace Auth.API.Controllers
             {
                 identity.AddClaim(new Claim(JwtClaimTypes.Email, user.Email));
             }
+
+            identity.AddClaim(new Claim("last_login_time", user.LastLoginDate.Value.ToShortDateString()));
         }
 
         [AllowAnonymous, HttpPost]
@@ -348,15 +365,16 @@ namespace Auth.API.Controllers
                     return ApiResponse<string>(errors: $"Unable to load user with ID '{userId}'.");
                 }
 
+                code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
                 var result = await _userManager.ConfirmEmailAsync(user, code);
                 if (!result.Succeeded)
-
                 {
-                    return ApiResponse<string>(errors: $"Error confirming email for user with ID '{userId}':");
-
+                    return ApiResponse<string>(errors: result.Errors.Select(x=> x.Description).ToArray());
                 }
 
-                return ApiResponse<bool>(message: "User confirmed", codes: ApiResponseCodes.OK);
+                var PasswordResetCode = (await _authUserService.GetPasswordRestCode(user.Email)).Data.code;
+
+                return ApiResponse<string>(message: "User confirmed", data : PasswordResetCode, codes: ApiResponseCodes.OK);
             }
             catch (Exception ex)
             {

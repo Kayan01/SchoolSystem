@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Interfaces.Users;
 using Auth.Core.ViewModels.Parent;
+using Auth.Core.ViewModels.School;
+using Auth.Core.ViewModels.Student;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -91,6 +93,54 @@ namespace Auth.API.Controllers.Users
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+
+
+
+        }
+
+
+        [HttpGet()]
+        [ProducesResponseType(typeof(ApiResponse<List<SchoolParentViewModel>>), 200)]
+        public async Task<IActionResult> GetStudentsSchools()
+        {
+            
+            try
+            {
+                var result = await _parentService.GetStudentsSchools(CurrentUser.UserId);
+
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+
+
+
+        }
+
+
+        [HttpGet()]
+        [ProducesResponseType(typeof(ApiResponse<List<StudentParentVM>>), 200)]
+        public async Task<IActionResult> GetStudentsInSchool()
+        {
+
+            try
+            {
+                var result = await _parentService.GetStudentsInSchool(CurrentUser.UserId);
+
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {

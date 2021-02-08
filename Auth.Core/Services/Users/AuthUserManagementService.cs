@@ -33,7 +33,7 @@ namespace Auth.Core.Services
             _protector = provider.CreateProtector("Auth");
             _publishService = publishService;
         }
-
+        readonly string  baseUrl = "http://school-track-1.vercel.app";
         public async Task<long?> AddUserAsync(AuthUserModel model)
         {
             var user = new User { Email = model.Email, UserName = model.Email, FirstName = model.FirstName, LastName = model.LastName, PhoneNumber = model.PhoneNumber };
@@ -87,7 +87,7 @@ namespace Auth.Core.Services
         {
 
             //var baseUrl = $"{_context.HttpContext.Request.Scheme}://{_context.HttpContext.Request.Host}";
-            var baseUrl = "https://school-track-1.vercel.app";
+           
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -95,7 +95,7 @@ namespace Auth.Core.Services
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
 
-            var callbackUrl = $"{baseUrl}/email-verified?userId={user.Id}&code={code}";
+            var callbackUrl = $"{baseUrl}/#/email-verified?userId={user.Id}&code={code}";
 
 
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
@@ -108,7 +108,7 @@ namespace Auth.Core.Services
                 },
                 Notifications = new List<InAppNotificationModel>
                 {
-                    new InAppNotificationModel("Password reset email was sent", EntityType.User, user.Id, new[] { user.Id }.ToList())
+                    new InAppNotificationModel("New registration email was sent", EntityType.User, user.Id, new[] { user.Id }.ToList())
                 }
             });
 
@@ -153,6 +153,15 @@ namespace Auth.Core.Services
             if (!res.Succeeded)
                 return new ResultModel<bool>("Failed to reset password");
 
+
+
+            //update user 
+            if (user.IsFirstTimeLogin)
+            {
+                user.IsFirstTimeLogin = false;
+            }
+            await _userManager.UpdateAsync(user);
+
             await SendSuccessfulPasswordResetMessage(user);
 
             return new ResultModel<bool>(true, "Success");
@@ -170,18 +179,19 @@ namespace Auth.Core.Services
             var tokenQueryModel = new PasswordResetQueryModel { Email = user.Email, Token = code };
             var tokenQueryModelString = JsonConvert.SerializeObject(tokenQueryModel);
             code = _protector.Protect(tokenQueryModelString);
-            //code = tokenQueryModelString;
-            //code = WebUtility.UrlEncode(code);
+           
             return new ResultModel<(User user, string code)>((user, code), "Success");
         }
 
         private async Task SendPasswordResetEmail(User user, string code)
         {
+            var link = $"{baseUrl}/#/reset-password?code={code}";
+
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
             {
                 Emails = new List<CreateEmailModel>
                 {
-                    new CreateEmailModel(EmailTemplateType.PasswordReset, new Dictionary<string, string>{ { "Code", code} }, user)
+                    new CreateEmailModel(EmailTemplateType.PasswordReset, new Dictionary<string, string>{ { "link", link},  {"FullName", user.FullName }}, user)
                 },
                 Notifications = new List<InAppNotificationModel>
                 {

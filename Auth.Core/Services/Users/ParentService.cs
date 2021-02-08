@@ -3,6 +3,8 @@ using Auth.Core.Models;
 using Auth.Core.Models.Users;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Parent;
+using Auth.Core.ViewModels.School;
+using Auth.Core.ViewModels.Student;
 using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
 using Shared.Enums;
+using Shared.Extensions;
 using Shared.FileStorage;
 using Shared.Pagination;
 using Shared.PubSub;
@@ -23,6 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Shared.Utils.CoreConstants;
 
 namespace Auth.Core.Services.Users
 {
@@ -31,6 +35,7 @@ namespace Auth.Core.Services.Users
         private readonly IPublishService _publishService;
         private readonly IRepository<Parent, long> _parentRepo;
         private readonly IRepository<Student, long> _studentRepo;
+        private readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
@@ -39,6 +44,7 @@ namespace Auth.Core.Services.Users
             IRepository<Parent, long> parentRepo,
             IUnitOfWork unitOfWork,
             IRepository<Student, long> studentRepo,
+            IRepository<School, long> schoolRepo,
             UserManager<User> userManager,
             IDocumentService documentService)
         {
@@ -48,6 +54,7 @@ namespace Auth.Core.Services.Users
             _studentRepo = studentRepo;
             _userManager = userManager;
             _documentService = documentService;
+            _schoolRepo = schoolRepo;
         }
         public async Task<ResultModel<ParentDetailVM>> AddNewParent(AddParentVM vm)
         {
@@ -114,6 +121,11 @@ namespace Auth.Core.Services.Users
             await   _parentRepo.InsertAsync(parent);
 
             await  _unitOfWork.SaveChangesAsync();
+
+
+            //add stafftype to claims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
+
 
             _unitOfWork.Commit();
 
@@ -300,6 +312,72 @@ namespace Auth.Core.Services.Users
             resultModel.Data = student.Parent;
 
             return resultModel;
+        }
+
+        public async Task<ResultModel<List<StudentParentVM>>> GetStudentsInSchool(long parentId)
+        {
+            var query = await _studentRepo.GetAll()
+                .Where(x => x.ParentId == parentId)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.User.FullName,
+                    x.RegNumber,
+                    x.ClassId,
+                    ImageId = x.FileUploads.FirstOrDefault(h => h.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                })
+                .ToListAsync();
+
+
+            var students = new List<StudentParentVM>();
+
+            foreach (var st in query)
+            {
+                students.Add(new StudentParentVM
+                {
+                    FullName = st.FullName,
+                    Id = st.Id,
+                    ClassID = st.ClassId.Value,
+                    Image = _documentService.TryGetUploadedFile(st.ImageId),
+                    RegNo = st.RegNumber
+                });
+            }
+
+            return new ResultModel<List<StudentParentVM>> { Data = students };
+
+
+        }
+
+        public async Task<ResultModel<List<SchoolParentViewModel>>> GetStudentsSchools(long currentUserId)
+        {
+            var query = await _parentRepo.GetAll()
+                .Where(x => x.UserId == currentUserId)
+                .SelectMany(x =>
+                    x.Students.Select(m => new
+                    {
+                        Id = m.TenantId,
+                        ImagePath = m.School.FileUploads.FirstOrDefault(h => h.Name == DocumentType.Logo.GetDisplayName()).Path,
+                        Name = m.School.Name
+                    }))
+                .ToListAsync();
+
+            //removes duplicate  records
+            var query2 = query
+               .GroupBy(o => o.Id)
+               .Select(g => g.First())
+               .ToList();
+
+            var schools = new List<SchoolParentViewModel>();
+            foreach (var sch in query2)
+            {
+                schools.Add(new SchoolParentViewModel {
+                    Id = sch.Id,
+                    Image = _documentService.TryGetUploadedFile(sch.ImagePath),
+                    Name = sch.Name
+                });
+            }
+
+            return new ResultModel<List<SchoolParentViewModel>> { Data = schools };
         }
 
         public async Task<ResultModel<ParentDetailVM>> UpdateParent(long Id, UpdateParentVM vm)

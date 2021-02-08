@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Shared.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace Shared.Tenancy
     public class TenantHeaderResolutionStrategy : ITenantResolutionStrategy
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private StringValues tenantIds = new StringValues();
+       
 
         public TenantHeaderResolutionStrategy(IHttpContextAccessor httpContextAccessor)
         {
@@ -38,21 +39,54 @@ namespace Shared.Tenancy
 
             if (tenantClaim == null)
             {
-                throw new Exception("No tenant Id provided");
+                //check for tenancy in header if its not present in clams
+                var tenantId = CheckTenancyInHeader();
+
+                return tenantId;
+
             }
-
-            var result = long.TryParse(tenantClaim?.Value, out long tenantId);
-
-            if (result == false)
+            else
             {
-                throw new Exception("Tenant Id provided is not in proper format");
+                var result = long.TryParse(tenantClaim?.Value, out long tenantId);
+
+
+                if (!result)
+                {
+                    throw new TenantNotFoundException("Tenant Id provided is not in proper format");
+                }
+                else if (tenantId < 1)
+                {
+                    throw new TenantNotFoundException("No tenant Id provided");
+                }
+
+                return tenantId;
             }
-            else if (tenantId < 1)
+            
+        }
+
+        private long CheckTenancyInHeader()
+        {
+            _httpContextAccessor.HttpContext.Request.Headers.TryGetValue("tenantId", out StringValues tenantIds);
+            var firstTenant = tenantIds.FirstOrDefault();
+
+
+            if (tenantIds.Count < 1 || firstTenant == null)
             {
-                throw new Exception("No tenant Id provided");
+                throw new TenantNotFoundException("No tenant Id provided");
             }
 
-            return tenantId;
+            long tId;
+            try
+            {
+                tId = long.Parse(firstTenant);
+            }
+            catch (Exception)
+            {
+
+                throw new TenantNotFoundException("Tenant Id provided is not in proper format");
+            }
+
+            return tId;
         }
     }
 }
