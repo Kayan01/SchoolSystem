@@ -111,6 +111,9 @@ namespace FinanceSvc.API
             services.AddScoped<IAccountTypeService, AccountTypeService>();
             services.AddScoped<IBankAccountService, BankAccountService>();
             services.AddScoped<IComponentService, ComponentService>();
+            services.AddScoped<IFeeGroupService, FeeGroupService>();
+            services.AddScoped<IFeeComponentService, FeeComponentService>();
+            services.AddScoped<IFeeService, FeeService>();
 
             //services.AddTransient<IFileUploadService, FileUploadService>();
             services.AddScoped<IFinanceService, FinanceService>();
