@@ -84,17 +84,17 @@ namespace AssessmentSvc.API.Controllers
 
 
         [HttpGet("{classId}")]
-        [ProducesResponseType(typeof(ApiResponse<GetApprovedStudentResultViewModel>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<ResultBroadSheet>>), 200)]
         public async Task<IActionResult> GetClassResultForApproval(long classId)
         {
             if (classId < 1)
-                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<List<ResultBroadSheet>>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
                 var result = await _approvedResultService.GetClassTeacherApprovedClassBroadSheet(classId);
                 if (result.HasError)
-                    return ApiResponse<ResultUploadFormData>(errors: result.ErrorMessages.ToArray());
+                    return ApiResponse<List<ResultBroadSheet>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
@@ -105,7 +105,7 @@ namespace AssessmentSvc.API.Controllers
 
 
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<GetApprovedStudentResultViewModel>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> SubmitClassResultForApproval(UpdateApprovedClassResultViewModel vm)
         {
             if (!ModelState.IsValid)

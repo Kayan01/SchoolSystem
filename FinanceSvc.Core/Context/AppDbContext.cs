@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FinanceSvc.Core.Models;
+using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.Context;
 using Shared.Entities;
 using System.Reflection;
@@ -28,6 +29,19 @@ namespace FinanceSvc.Core.Context
         }
 
         public DbSet<TestModel> TestModels { get; set; }
+        public DbSet<Parent> Parents { get; set; }
+        public DbSet<SchoolClass> Classes { get; set; }
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Discount> Discounts { get; set; }
+        public DbSet<FeeGroup> FeeGroups { get; set; }
+        public DbSet<FeeComponent> FeeComponents { get; set; }
+        public DbSet<Fee> Fees { get; set; }
+        public DbSet<Component> Components { get; set; }
+        public DbSet<BankAccount> BankAccounts { get; set; }
+        public DbSet<Account> Accounts { get; set; }
+        public DbSet<AccountType> AccountClasses { get; set; }
+        public DbSet<AccountClass> AccountTypes { get; set; }
+
 
         public async Task AddSampleData()
         {

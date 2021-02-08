@@ -18,6 +18,7 @@ using Shared.Enums;
 using Shared.Extensions;
 using Shared.FileStorage;
 using Shared.Pagination;
+using Shared.PubSub;
 using Shared.Utils;
 using Shared.ViewModels;
 using System;
@@ -31,6 +32,7 @@ namespace Auth.Core.Services.Users
 {
     public class ParentService : IParentService
     {
+        private readonly IPublishService _publishService;
         private readonly IRepository<Parent, long> _parentRepo;
         private readonly IRepository<Student, long> _studentRepo;
         private readonly IRepository<School, long> _schoolRepo;
@@ -38,6 +40,7 @@ namespace Auth.Core.Services.Users
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
         public ParentService(
+            IPublishService publishService,
             IRepository<Parent, long> parentRepo,
             IUnitOfWork unitOfWork,
             IRepository<Student, long> studentRepo,
@@ -45,6 +48,7 @@ namespace Auth.Core.Services.Users
             UserManager<User> userManager,
             IDocumentService documentService)
         {
+            _publishService = publishService;
             _parentRepo = parentRepo;
             _unitOfWork = unitOfWork;
             _studentRepo = studentRepo;
@@ -124,6 +128,23 @@ namespace Auth.Core.Services.Users
 
 
             _unitOfWork.Commit();
+
+            //PublishMessage
+            await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
+            {
+                Id = parent.Id,
+                SecondaryEmail = parent.SecondaryEmail,
+                IsActive = true,
+                SecondaryPhoneNumber = parent.SecondaryPhoneNumber,
+                HomeAddress = parent.HomeAddress,
+                UserId = parent.UserId,
+                IsDeleted = parent.IsDeleted,
+                OfficeAddress = parent.OfficeAddress,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Phone = user.PhoneNumber
+            });
 
             parent.User = user;
             var returnModel = (ParentDetailVM)parent;

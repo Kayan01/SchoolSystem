@@ -26,5 +26,8 @@ namespace Shared.PubSub
         SUBJECT,
         SUBJECT_UPDATE,
         SUBJECT_DELETE,
+        PARENT,
+        PARENT_UPDATE,
+        PARENT_DELETE,
     }
 }
