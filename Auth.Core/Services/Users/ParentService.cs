@@ -1,6 +1,7 @@
 ﻿using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
 using Auth.Core.Models.Users;
+using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Parent;
 using Auth.Core.ViewModels.School;
@@ -39,6 +40,7 @@ namespace Auth.Core.Services.Users
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
+        private readonly IAuthUserManagement _authUserManagementService;
         public ParentService(
             IPublishService publishService,
             IRepository<Parent, long> parentRepo,
@@ -46,7 +48,8 @@ namespace Auth.Core.Services.Users
             IRepository<Student, long> studentRepo,
             IRepository<School, long> schoolRepo,
             UserManager<User> userManager,
-            IDocumentService documentService)
+            IDocumentService documentService,
+            IAuthUserManagement authUserManagementService)
         {
             _publishService = publishService;
             _parentRepo = parentRepo;
@@ -55,6 +58,7 @@ namespace Auth.Core.Services.Users
             _userManager = userManager;
             _documentService = documentService;
             _schoolRepo = schoolRepo;
+            _authUserManagementService = authUserManagementService;
         }
         public async Task<ResultModel<ParentDetailVM>> AddNewParent(AddParentVM vm)
         {
@@ -129,6 +133,10 @@ namespace Auth.Core.Services.Users
 
             _unitOfWork.Commit();
 
+            //broadcast login detail to email
+            _ = await _authUserManagementService.SendRegistrationEmail(user);
+
+            
             //PublishMessage
             await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
             {

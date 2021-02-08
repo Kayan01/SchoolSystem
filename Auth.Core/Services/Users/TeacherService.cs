@@ -257,6 +257,10 @@ namespace Auth.Core.Services.Users
             await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Commit();
 
+
+            //broadcast login detail to email
+            _ = await _authUserManagement.SendRegistrationEmail(user);
+
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
                 Id = teacher.Id,

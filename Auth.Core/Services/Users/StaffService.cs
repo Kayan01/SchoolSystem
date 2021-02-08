@@ -28,6 +28,7 @@ using Shared.Tenancy;
 using static Shared.Utils.CoreConstants;
 using Shared.AspNetCore;
 using Shared.Extensions;
+using System.Text;
 
 namespace Auth.Core.Services
 {
@@ -41,7 +42,7 @@ namespace Auth.Core.Services
         private readonly IPublishService _publishService;
         private readonly IDocumentService _documentService;
         private readonly IHttpUserService _httpUserService;
-
+        private readonly IAuthUserManagement _authUserManagement;
         public StaffService(
             IRepository<Staff, long> staffRepo,
             IUnitOfWork unitOfWork,
@@ -50,7 +51,8 @@ namespace Auth.Core.Services
             IPublishService publishService,
             IRepository<Department,long> departmentRepo,
             IHttpUserService httpUserService,
-            IDocumentService documentService)
+            IDocumentService documentService,
+            IAuthUserManagement authUserManagement)
         {
             _staffRepo = staffRepo;
             _unitOfWork = unitOfWork;
@@ -60,6 +62,7 @@ namespace Auth.Core.Services
             _publishService = publishService;
             _documentService = documentService;
             _httpUserService = httpUserService;
+            _authUserManagement = authUserManagement;
         }
 
         public async Task<ResultModel<PaginatedModel<StaffVM>>> GetAllStaff(QueryModel model)
@@ -262,6 +265,10 @@ namespace Auth.Core.Services
                 PhoneNumber = user.PhoneNumber, 
                 StaffType = staff.StaffType.GetDisplayName()
             };
+
+            //broadcast login detail to email
+            _ = await _authUserManagement.SendRegistrationEmail(user);
+
 
             //TODO Refactor, and Move teachers logic to TeachersService
 
