@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Auth.Core.Models.Map
 {
-    public class StaffMap : IEntityTypeConfiguration<Staff>
+    public class StudentMap : IEntityTypeConfiguration<Student>
     {
-        public void Configure(EntityTypeBuilder<Staff> builder)
+        public void Configure(EntityTypeBuilder<Student> builder)
         {
             //builder.HasOne(a => a.TeachingStaff)
             //    .WithOne(b => b.Staff)

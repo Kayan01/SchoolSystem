@@ -41,6 +41,7 @@ namespace Auth.Core.ViewModels.Student
         [System.Text.Json.Serialization.JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
         public string ImagePath { get; set; }
+        public string RegNumber { get; internal set; }
     }
     public class StudentVM
     {

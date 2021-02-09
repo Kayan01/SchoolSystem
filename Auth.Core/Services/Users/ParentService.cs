@@ -1,4 +1,5 @@
-﻿using Auth.Core.Interfaces.Users;
+﻿using Auth.Core.Interfaces.Setup;
+using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
 using Auth.Core.Models.Users;
 using Auth.Core.ViewModels;
@@ -23,6 +24,7 @@ using Shared.Utils;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +41,8 @@ namespace Auth.Core.Services.Users
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
+        private readonly ISchoolPropertyService _schoolPropertyService;
+
         public ParentService(
             IPublishService publishService,
             IRepository<Parent, long> parentRepo,
@@ -46,7 +50,8 @@ namespace Auth.Core.Services.Users
             IRepository<Student, long> studentRepo,
             IRepository<School, long> schoolRepo,
             UserManager<User> userManager,
-            IDocumentService documentService)
+            IDocumentService documentService,
+            ISchoolPropertyService schoolPropertyService)
         {
             _publishService = publishService;
             _parentRepo = parentRepo;
@@ -55,10 +60,18 @@ namespace Auth.Core.Services.Users
             _userManager = userManager;
             _documentService = documentService;
             _schoolRepo = schoolRepo;
+            _schoolPropertyService = schoolPropertyService;
         }
         public async Task<ResultModel<ParentDetailVM>> AddNewParent(AddParentVM vm)
         {
             var resultModel = new ResultModel<ParentDetailVM>();
+
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
+            {
+                resultModel.AddError(schoolProperty.ValidationErrors);
+                return resultModel;
+            }
 
             var file = new FileUpload();
             //save filles
@@ -67,7 +80,7 @@ namespace Auth.Core.Services.Users
 
                 if (vm.DocumentType != DocumentType.ProfilePhoto)
                 {
-                    resultModel.AddError("Please send appropriate document tye for profile photo");
+                    resultModel.AddError("Please send appropriate document type for profile photo");
                     return resultModel;
 
                 }
@@ -81,6 +94,7 @@ namespace Auth.Core.Services.Users
                     return resultModel;
                 }
             }
+
             _unitOfWork.BeginTransaction();
 
             var user = new User
@@ -115,13 +129,37 @@ namespace Auth.Core.Services.Users
                 Status = vm.Status,
                 UserId = user.Id,
                 Title= vm.Title,
+                
                 FileUploads = new List<FileUpload> { file }
             };
 
-            await   _parentRepo.InsertAsync(parent);
+            var lastRegNumber = await _parentRepo.GetAll().OrderBy(m => m.Id).Select(m=>m.RegNumber).LastAsync();
+            var lastNumber = 0;
+            var seperator = schoolProperty.Data.Seperator;
+            if (!string.IsNullOrWhiteSpace(lastRegNumber))
+            {
+                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
+            }
+            var nextNumber = lastNumber;
 
-            await  _unitOfWork.SaveChangesAsync();
+            var saved = false;
+            while (!saved)
+            {
+                try
+                {
+                    nextNumber++;
+                    parent.RegNumber = $"PAT{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+                    await _parentRepo.InsertAsync(parent);
 
+                    await _unitOfWork.SaveChangesAsync();
+                    saved = true;
+                }
+                // 2627 is unique constraint (includes primary key), 2601 is unique index
+                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+                {
+                    saved = false;
+                }
+            }
 
             //add stafftype to claims
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
@@ -143,7 +181,8 @@ namespace Auth.Core.Services.Users
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                Phone = user.PhoneNumber
+                Phone = user.PhoneNumber,
+                RegNumber = parent.RegNumber
             });
 
             parent.User = user;
@@ -384,9 +423,9 @@ namespace Auth.Core.Services.Users
         {
             var resultModel = new ResultModel<ParentDetailVM>();
 
-            var parents = await _parentRepo.FirstOrDefaultAsync(Id);
+            var parent = await _parentRepo.FirstOrDefaultAsync(Id);
 
-            if (parents == null)
+            if (parent == null)
             {
                 resultModel.AddError($"No parent for id : {Id}");
                 return resultModel;
@@ -394,11 +433,29 @@ namespace Auth.Core.Services.Users
 
             //TODO: More props
 
-           await _parentRepo.UpdateAsync(parents);
+           await _parentRepo.UpdateAsync(parent);
 
             await _unitOfWork.SaveChangesAsync();
 
-            resultModel.Data = (ParentDetailVM)parents;
+            //PublishMessage
+            //await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT_UPDATE, new ParentSharedModel
+            //{
+            //    Id = parent.Id,
+            //    SecondaryEmail = parent.SecondaryEmail,
+            //    IsActive = true,
+            //    SecondaryPhoneNumber = parent.SecondaryPhoneNumber,
+            //    HomeAddress = parent.HomeAddress,
+            //    UserId = parent.UserId,
+            //    IsDeleted = parent.IsDeleted,
+            //    OfficeAddress = parent.OfficeAddress,
+            //    FirstName = user.FirstName,
+            //    LastName = user.LastName,
+            //    Email = user.Email,
+            //    Phone = user.PhoneNumber,
+            //    RegNumber = parent.RegNumber
+            //});
+
+            resultModel.Data = (ParentDetailVM)parent;
 
             return resultModel;
         }

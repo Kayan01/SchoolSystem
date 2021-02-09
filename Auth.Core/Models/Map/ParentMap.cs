@@ -14,6 +14,9 @@ namespace Auth.Core.Models.Map
             model.HasMany(b => b.Students).WithOne(p => p.Parent)
                 .HasForeignKey(p => p.ParentId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            model.HasIndex(b => b.RegNumber)
+                .IsUnique();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Auth.Core.Context;
+using Auth.Core.Interfaces.Setup;
 using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
 using Auth.Core.Models.Setup;
@@ -22,8 +23,10 @@ using Shared.PubSub;
 using Shared.Tenancy;
 using Shared.Utils;
 using Shared.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using static Shared.Utils.CoreConstants;
@@ -33,6 +36,7 @@ namespace Auth.Core.Services.Users
     public class TeacherService : ITeacherService
     {
         private readonly IRepository<TeachingStaff, long> _teacherRepo;
+        private readonly IRepository<Staff, long> _staffRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
@@ -42,9 +46,11 @@ namespace Auth.Core.Services.Users
         private readonly ILogger<TeacherService> _logger;
         private readonly IStaffService _staffService;
         private readonly IHttpUserService _httpUserService;
+        private readonly ISchoolPropertyService _schoolPropertyService;
 
         public TeacherService(UserManager<User> userManager,
             IRepository<TeachingStaff, long> teacherRepo,
+            IRepository<Staff, long> staffRepo,
             IUnitOfWork unitOfWork,
             IDocumentService documentService,
             IRepository<Department, long> departmentRepo,
@@ -52,9 +58,11 @@ namespace Auth.Core.Services.Users
             ILogger<TeacherService> logger,
             IPublishService publishService,
             IHttpUserService httpUserService,
-            IStaffService staffService)
+            IStaffService staffService,
+            ISchoolPropertyService schoolPropertyService)
         {
             _userManager = userManager;
+            _staffRepo = staffRepo;
             _unitOfWork = unitOfWork;
             _teacherRepo = teacherRepo;
             _publishService = publishService;
@@ -64,6 +72,7 @@ namespace Auth.Core.Services.Users
             _documentService = documentService;
             _staffService = staffService;
             _httpUserService = httpUserService;
+            _schoolPropertyService = schoolPropertyService;
         }
 
         public async Task<ResultModel<PaginatedModel<TeacherVM>>> GetTeachers(QueryModel model)
@@ -77,7 +86,8 @@ namespace Auth.Core.Services.Users
                               x.Staff.User.LastName,
                               x.Staff.User.PhoneNumber,
                               x.Staff.User.FirstName,
-                              x.Staff.StaffType
+                              x.Staff.StaffType,
+                              x.Staff.RegNumber
                           }
                           );
 
@@ -92,7 +102,8 @@ namespace Auth.Core.Services.Users
                 LastName = x.LastName,
                 Id = x.Id,
                 FirstName = x.FirstName,
-                StaffType = x.StaffType.GetDescription()
+                StaffType = x.StaffType.GetDescription(),
+                StaffNumber = x.RegNumber,
             }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;            
@@ -102,7 +113,7 @@ namespace Auth.Core.Services.Users
         {
             var result = new ResultModel<TeacherVM>();
             var query = _teacherRepo.GetAll()
-                            .Include(x => x.Staff.User)
+                            .Include(x => x.Staff).ThenInclude(m=>m.User)
                             .Include(x => x.Class)
                             .Where(x => x.Id == Id)
                             .FirstOrDefault();
@@ -114,6 +125,13 @@ namespace Auth.Core.Services.Users
         public async Task<ResultModel<TeacherVM>> AddTeacher(AddStaffVM model)
         {
             var result = new ResultModel<TeacherVM>();
+
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
+            {
+                result.AddError(schoolProperty.ValidationErrors);
+                return result;
+            }
 
             _unitOfWork.BeginTransaction();
 
@@ -213,7 +231,7 @@ namespace Auth.Core.Services.Users
                 });
             }
 
-            var teacher = _teacherRepo.Insert(new TeachingStaff
+            var teacher = new TeachingStaff
             {
                 
                 Staff = new Staff
@@ -249,12 +267,40 @@ namespace Auth.Core.Services.Users
                     FileUploads = files
 
                 }
-            });
+            };
 
            teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
 
+            var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastAsync();
+            var lastNumber = 0;
+            var seperator = schoolProperty.Data.Seperator;
+            if (!string.IsNullOrWhiteSpace(lastRegNumber))
+            {
+                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
+            }
+            var nextNumber = lastNumber;
 
-            await _unitOfWork.SaveChangesAsync();
+            var saved = false;
+
+            while (!saved)
+            {
+                try
+                {
+                    nextNumber++;
+                    teacher.Staff.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STF{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+
+                    _teacherRepo.Insert(teacher);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    saved = true;
+                }
+                // 2627 is unique constraint (includes primary key), 2601 is unique index
+                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+                {
+                    saved = false;
+                }
+            }
+
             _unitOfWork.Commit();
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
@@ -267,7 +313,8 @@ namespace Auth.Core.Services.Users
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Phone = user.PhoneNumber
+                Phone = user.PhoneNumber,
+                RegNumber = teacher.Staff.RegNumber,
             });
 
             //Email and Notifications
@@ -293,7 +340,7 @@ namespace Auth.Core.Services.Users
             var result = new ResultModel<TeacherVM>();
 
             var teacher = _teacherRepo.GetAll()
-                            .Include(x => x.Staff.User)
+                            .Include(x => x.Staff).ThenInclude(m=>m.User)
                             .Include(x => x.Class)
                             .FirstOrDefault(x => x.Staff.UserId == model.UserId);
 
@@ -331,7 +378,8 @@ namespace Auth.Core.Services.Users
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Phone = user.PhoneNumber,
-                ClassId = teacher.ClassId
+                ClassId = teacher.ClassId,
+                RegNumber = teacher.Staff.RegNumber
             });
 
             result.Data = teacher;

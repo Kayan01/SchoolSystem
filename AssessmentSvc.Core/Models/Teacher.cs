@@ -13,6 +13,5 @@ namespace AssessmentSvc.Core.Models
         
 
         public virtual SchoolClass Class { get; set; }
-
     }
 }

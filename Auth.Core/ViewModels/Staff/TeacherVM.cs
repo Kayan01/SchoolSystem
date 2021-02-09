@@ -20,6 +20,7 @@ namespace Auth.Core.ViewModels.Staff
                 FirstName = model.Staff?.User?.FirstName,
                 LastName = model.Staff?.User?.LastName,
                 PhoneNumber = model.Staff?.User?.PhoneNumber,
+                StaffNumber = model.Staff?.RegNumber
             };
         }
     }

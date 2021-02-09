@@ -43,6 +43,7 @@ namespace AssessmentSvc.Core.Services
             teacher.UserId = model.UserId;
             teacher.IsActive = model.IsActive;
             teacher.IsDeleted = model.IsDeleted;
+            teacher.RegNumber = model.RegNumber;
 
             _unitOfWork.SaveChanges();
         }

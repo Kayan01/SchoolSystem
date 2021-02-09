@@ -41,6 +41,7 @@ namespace LearningSvc.Core.Services
             student.UserId = model.UserId;
             student.IsActive = model.IsActive;
             student.IsDeleted = model.IsDeleted;
+            student.RegNumber = model.RegNumber;
 
             _unitOfWork.SaveChanges();
         }
