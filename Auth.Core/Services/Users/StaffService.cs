@@ -54,7 +54,6 @@ namespace Auth.Core.Services
             IHttpUserService httpUserService,
             IDocumentService documentService,
             ISchoolPropertyService schoolPropertyService,
-            IDocumentService documentService,
             IAuthUserManagement authUserManagement)
         {
             _staffRepo = staffRepo;
