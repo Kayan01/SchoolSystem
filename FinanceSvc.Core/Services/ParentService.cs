@@ -44,6 +44,7 @@ namespace FinanceSvc.Core.Services
             parent.SecondaryEmail = model.SecondaryEmail;
             parent.SecondaryPhoneNumber = model.SecondaryPhoneNumber;
             parent.HomeAddress = model.HomeAddress;
+            parent.RegNumber = model.RegNumber;
 
             _unitOfWork.SaveChanges();
         }

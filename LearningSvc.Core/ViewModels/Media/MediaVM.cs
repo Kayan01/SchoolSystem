@@ -14,6 +14,6 @@ namespace LearningSvc.Core.ViewModels.Media
         public DateTime CreationDate { get; set; }
         public string FileSize { get; set; }
         public string FileType { get; set; }
-        public byte[] File { get; set; }
+        public string File { get; set; }
     }
 }

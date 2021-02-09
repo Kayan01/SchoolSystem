@@ -18,5 +18,7 @@ namespace LearningSvc.Core.ViewModels.AssignmentAnswer
         public DateTime Date { get; set; }
         public Guid FileId { get; set; }
 
+        public string FileType { get; set; }
+        public string File { get; set; }
     }
 }
