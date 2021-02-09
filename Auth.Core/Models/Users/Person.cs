@@ -17,6 +17,7 @@ namespace Auth.Core
 
         public DateTime DateOfBirth { get; set; }
         public string Sex { get; set; }
+        public string RegNumber { get; set; }
 
         public User User { get; set; } //Test this out
 

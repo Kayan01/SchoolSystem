@@ -28,38 +28,39 @@ using Shared.Tenancy;
 using static Shared.Utils.CoreConstants;
 using Shared.AspNetCore;
 using Shared.Extensions;
+using System.Data.SqlClient;
 
 namespace Auth.Core.Services
 {
     public class StaffService : IStaffService
     {
         private readonly IRepository<Staff, long> _staffRepo;
-        private readonly IRepository<TeachingStaff, long> _teachingStaffRepo;
         private readonly IRepository<Department, long> _departmentRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
         private readonly IDocumentService _documentService;
         private readonly IHttpUserService _httpUserService;
+        private readonly ISchoolPropertyService _schoolPropertyService;
 
         public StaffService(
             IRepository<Staff, long> staffRepo,
             IUnitOfWork unitOfWork,
             UserManager<User> userManagement,
-            IRepository<TeachingStaff, long> teachingStaffRepo,
             IPublishService publishService,
             IRepository<Department,long> departmentRepo,
             IHttpUserService httpUserService,
-            IDocumentService documentService)
+            IDocumentService documentService,
+            ISchoolPropertyService schoolPropertyService)
         {
             _staffRepo = staffRepo;
             _unitOfWork = unitOfWork;
             _userManager = userManagement;
-            _teachingStaffRepo = teachingStaffRepo;
             _departmentRepo = departmentRepo;
             _publishService = publishService;
             _documentService = documentService;
             _httpUserService = httpUserService;
+            _schoolPropertyService = schoolPropertyService;
         }
 
         public async Task<ResultModel<PaginatedModel<StaffVM>>> GetAllStaff(QueryModel model)
@@ -75,7 +76,8 @@ namespace Auth.Core.Services
                     x.Id,
                     x.StaffType,
                     x.User.PhoneNumber,
-                    x.UserId
+                    x.UserId,
+                    x.RegNumber
                 });
 
 
@@ -91,7 +93,8 @@ namespace Auth.Core.Services
                 Id = x.Id,
                 LastName = x.LastName,
                 PhoneNumber = x.PhoneNumber,
-                UserId = x.UserId
+                UserId = x.UserId,
+                StaffNumber = x.RegNumber,
             }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
@@ -119,7 +122,13 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<StaffVM>();
 
-            _unitOfWork.BeginTransaction();
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
+            {
+                result.AddError(schoolProperty.ValidationErrors);
+                return result;
+            }
+
             //check if department exist
             var dept = await _departmentRepo.GetAll().Where(x => x.Id == model.EmploymentDetails.DepartmentId).FirstOrDefaultAsync();
 
@@ -129,6 +138,8 @@ namespace Auth.Core.Services
 
                 return result;
             }
+
+            _unitOfWork.BeginTransaction();
 
             //save filles
             var files = new List<FileUpload>();
@@ -215,7 +226,7 @@ namespace Auth.Core.Services
             }
 
             //create staff
-            var staff = _staffRepo.Insert(new Staff
+            var staff = new Staff
             {
                 UserId = user.Id,
                 BloodGroup = model.BloodGroup,
@@ -246,11 +257,38 @@ namespace Auth.Core.Services
                 EducationExperiences = eduExperiences,
                 FileUploads = files
 
-            });
+            };
 
-            _staffRepo.Insert(staff);
+            var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastAsync();
+            var lastNumber = 0;
+            var seperator = schoolProperty.Data.Seperator;
+            if (!string.IsNullOrWhiteSpace(lastRegNumber))
+            {
+                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
+            }
+            var nextNumber = lastNumber;
 
-            await _unitOfWork.SaveChangesAsync();
+            var saved = false;
+
+            while (!saved)
+            {
+                try
+                {
+                    nextNumber++;
+                    staff.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STF{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+
+                    _staffRepo.Insert(staff);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    saved = true;
+                }
+                // 2627 is unique constraint (includes primary key), 2601 is unique index
+                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+                {
+                    saved = false;
+                }
+            }
+
             _unitOfWork.Commit();
 
 
@@ -260,7 +298,8 @@ namespace Auth.Core.Services
                 LastName = user.LastName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber, 
-                StaffType = staff.StaffType.GetDisplayName()
+                StaffType = staff.StaffType.GetDisplayName(),
+                StaffNumber = staff.RegNumber,
             };
 
             //TODO Refactor, and Move teachers logic to TeachersService
@@ -272,6 +311,7 @@ namespace Auth.Core.Services
                     StaffType = staff.StaffType,
                     TenantId = staff.TenantId,
                     UserId = staff.UserId,
+                    RegNumber = staff.RegNumber
                 });
             
             return result;
@@ -347,6 +387,7 @@ namespace Auth.Core.Services
                 StaffType = staff.StaffType,
                 TenantId = staff.TenantId,
                 UserId = staff.UserId,
+                RegNumber = staff.RegNumber,
             });
 
             result.Data = staff;

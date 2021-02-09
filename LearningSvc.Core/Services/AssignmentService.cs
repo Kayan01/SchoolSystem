@@ -99,16 +99,8 @@ namespace LearningSvc.Core.Services
                     FileName = x.Attachment.Path,
                 }).FirstOrDefaultAsync();
 
-            if (query != null)
-            {
-                var filepath = Path.Combine("Filestore", query.FileName);
-
-                if (File.Exists(filepath))
-                {
-                    query.File = File.ReadAllBytes(filepath);
-                    query.FileSize = $"{(query.File.Length / 1000).ToString("0.00")}KB";
-                }
-            }
+            query.File = _documentService.TryGetUploadedFile(query.FileName);
+            query.FileSize = _documentService.TryGetUploadedFileSize(query.FileName);
 
             result.Data = query;
             return result;

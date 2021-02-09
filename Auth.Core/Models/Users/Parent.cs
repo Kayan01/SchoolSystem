@@ -9,6 +9,7 @@ namespace Auth.Core.Models.Users
     public class Parent : FullAuditedEntity<long>
     {
         public string Title { get; set; }
+        public string RegNumber { get; set; }
         public string Sex { get; set; }
         public string Occupation { get; set; }
         public string SecondaryPhoneNumber { get; set; }

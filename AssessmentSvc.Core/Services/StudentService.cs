@@ -46,6 +46,7 @@ namespace AssessmentSvc.Core.Services
             student.RegNumber = model.RegNumber;
             student.IsActive = model.IsActive;
             student.IsDeleted = model.IsDeleted;
+            student.RegNumber = model.RegNumber;
 
             _unitOfWork.SaveChanges();
         }

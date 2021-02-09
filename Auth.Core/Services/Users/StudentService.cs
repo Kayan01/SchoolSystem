@@ -1,4 +1,5 @@
-﻿using Auth.Core.Models;
+﻿using Auth.Core.Interfaces.Setup;
+using Auth.Core.Models;
 using Auth.Core.Models.Medical;
 using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
@@ -19,7 +20,9 @@ using Shared.PubSub;
 using Shared.Tenancy;
 using Shared.Utils;
 using Shared.ViewModels;
+using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,6 +40,7 @@ namespace Auth.Core.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IHttpUserService _httpUserService;
+        private readonly ISchoolPropertyService _schoolPropertyService;
 
         public StudentService(
             IRepository<Student, long> studentRepo,
@@ -46,7 +50,8 @@ namespace Auth.Core.Services
             IUnitOfWork unitOfWork,
             IPublishService publishService,
             IHttpUserService httpUserService,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            ISchoolPropertyService schoolPropertyService)
         {
             _studentRepo = studentRepo;
             _classRepo = classRepo;
@@ -56,11 +61,19 @@ namespace Auth.Core.Services
             _publishService = publishService;
             _userManager = userManager;
             _httpUserService = httpUserService;
+            _schoolPropertyService = schoolPropertyService;
         }
 
         public async Task<ResultModel<StudentVM>> AddStudentToSchool(CreateStudentVM model)
         {
             var result = new ResultModel<StudentVM>();
+
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
+            {
+                result.AddError(schoolProperty.ValidationErrors);
+                return result;
+            }
 
             _unitOfWork.BeginTransaction();
 
@@ -148,7 +161,7 @@ namespace Auth.Core.Services
 
             medicalHistory.ImmunizationHistories = immunizations;
 
-            var stud = _studentRepo.Insert(new Student
+            var stud = new Student
             {
                 UserId = user.Id,
                 Address = model.ContactAddress,
@@ -172,9 +185,38 @@ namespace Auth.Core.Services
                 StudentType = model.StudentType,
                 Town = model.ContactTown,
                  IsActive = true
-            });
+            };
 
-            await _unitOfWork.SaveChangesAsync();
+            var lastRegNumber = await _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastAsync();
+            var lastNumber = 0;
+            var seperator = schoolProperty.Data.Seperator;
+            if (!string.IsNullOrWhiteSpace(lastRegNumber))
+            {
+                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
+            }
+            var nextNumber = lastNumber;
+
+            var saved = false;
+
+            while (!saved)
+            {
+                try
+                {
+                    nextNumber++;
+                    stud.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STT{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+
+                    _studentRepo.Insert(stud);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    saved = true;
+                }
+                // 2627 is unique constraint (includes primary key), 2601 is unique index
+                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+                {
+                    saved = false;
+                }
+            }
+
             _unitOfWork.Commit();
 
             //PublishMessage
@@ -238,7 +280,7 @@ namespace Auth.Core.Services
                     DateOfBirth = x.DateOfBirth,
                     FirstName = x.User.FirstName,
                     LastName = x.User.LastName,
-                    StudentNumber = $"AMI/ST/2020/{x.Id}",
+                    StudentNumber = x.RegNumber,
                     Sex = x.Sex,
                     Section = x.Class.SchoolSection.Name,
                     IsActive = x.IsActive,
@@ -263,6 +305,7 @@ namespace Auth.Core.Services
                             x.User.LastName,
                             x.MothersMaidenName,
                             x.Sex,
+                            x.RegNumber,
                             x.DateOfBirth,
                             ParentName =  x.Parent.User.FullName,
                             x.Nationality,
@@ -306,6 +349,7 @@ namespace Auth.Core.Services
                 StateOfOrigin = std.StateOfOrigin,
                 State = std.State,
                 Sex = std.Sex,
+                RegNumber = std.RegNumber,
                 Section = std.SchoolSection,
                 AdmissionDate = std.AdmissionDate,
                 Allergies = std.Allergies,
@@ -341,6 +385,7 @@ namespace Auth.Core.Services
                         .Select(x => new
                         {
                             x.Id,
+                            x.RegNumber,
                             x.User.FirstName,
                             x.User.LastName,
                             x.MothersMaidenName,
@@ -411,7 +456,7 @@ namespace Auth.Core.Services
                 ParentName = std.ParentName,
                 PhoneNumber = std.PhoneNumber,
                 Religion = std.Religion,
-
+                RegNumber = std.RegNumber
             };
             return result;
         }
@@ -461,7 +506,8 @@ namespace Auth.Core.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                Phone = user.PhoneNumber
+                Phone = user.PhoneNumber,
+                RegNumber= stud.RegNumber,
             });
 
             result.Data = stud;

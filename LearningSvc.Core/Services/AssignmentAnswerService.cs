@@ -69,9 +69,12 @@ namespace LearningSvc.Core.Services
                         Comment = x.Comment,
                         Score = x.Score,
                         Date = x.CreationTime,
-                        FileId = x.FileUploadId
+                        FileId = x.FileUploadId,
+                        FileType = x.Attachment.ContentType,
+                        File =  _documentService.TryGetUploadedFile(x.Attachment.Path)
                     }).FirstOrDefaultAsync()
             };
+
             return result;
         }
 
