@@ -279,7 +279,6 @@ namespace Auth.API.Controllers
             {
                 identity.AddClaim(new Claim(JwtClaimTypes.Email, user.Email));
             }
-
             identity.AddClaim(new Claim("last_login_time", user.LastLoginDate.Value.ToShortDateString()));
         }
 
