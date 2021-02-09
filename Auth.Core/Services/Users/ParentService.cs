@@ -53,8 +53,7 @@ namespace Auth.Core.Services.Users
             IRepository<School, long> schoolRepo,
             UserManager<User> userManager,
             IDocumentService documentService,
-            ISchoolPropertyService schoolPropertyServic,
-            IDocumentService documentService,
+            ISchoolPropertyService schoolPropertyService,
             IAuthUserManagement authUserManagementService)
         {
             _publishService = publishService;
