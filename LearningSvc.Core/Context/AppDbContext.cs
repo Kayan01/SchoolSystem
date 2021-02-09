@@ -33,9 +33,13 @@ namespace LearningSvc.Core.Context
             modelBuilder.Ignore(typeof(RoleClaim));
             modelBuilder.Ignore(typeof(UserToken));
 
-            //configure one to one between learningFile and FileUpload
-            modelBuilder.Entity<LearningFile>().HasOne(f => f.File)
-                .WithOne().HasForeignKey<LearningFile>(m=>m.FileUploadId);
+            //configure one to one between learningFiles and FileUpload
+            modelBuilder.Entity<Classwork>().HasOne(f => f.File)
+                .WithOne().HasForeignKey<Classwork>(m=>m.FileUploadId);
+            modelBuilder.Entity<LessonNote>().HasOne(f => f.File)
+                .WithOne().HasForeignKey<LessonNote>(m => m.FileUploadId);
+            modelBuilder.Entity<Media>().HasOne(f => f.File)
+                .WithOne().HasForeignKey<Media>(m => m.FileUploadId);
 
             //configure one to one between Assignment and FileUpload
             modelBuilder.Entity<Assignment>().HasOne(a=>a.Attachment)
