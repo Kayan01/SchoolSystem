@@ -43,7 +43,6 @@ namespace AssessmentSvc.Core.EventHandlers
             catch (Exception e)
             {
                 _logger.LogError(e.Message, e);
-                throw;
             }
         }
 
@@ -57,7 +56,6 @@ namespace AssessmentSvc.Core.EventHandlers
             catch (Exception e)
             {
                 _logger.LogError(e.Message, e);
-                throw;
             }
         }
 
@@ -71,7 +69,6 @@ namespace AssessmentSvc.Core.EventHandlers
             catch (Exception e)
             {
                 _logger.LogError(e.Message, e);
-                throw;
             }
         }
 
@@ -85,10 +82,7 @@ namespace AssessmentSvc.Core.EventHandlers
             catch (Exception e)
             {
                 _logger.LogError(e.Message, e);
-                throw;
             }
         }
-
-
     }
 }

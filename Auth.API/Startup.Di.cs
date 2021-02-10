@@ -31,6 +31,7 @@ using Auth.Core.Services.Interfaces.Class;
 using Auth.Core.Services.Class;
 using Auth.Core.Interfaces.Setup;
 using Auth.Core.Services.Setup;
+using Microsoft.Extensions.Logging;
 
 namespace Auth.API
 {
@@ -52,7 +53,6 @@ namespace Auth.API
 
             services.AddSingleton<IProducerClient<BusMessage>>(service =>
             {
-                var topics = Configuration.GetSection("Kafka").GetValue<string>("Topics").ToString().Split(",");
                 var env = service.GetRequiredService<IWebHostEnvironment>();
                 var producerClient = new ProducerClient<BusMessage>(env, Configuration);
                 return producerClient;
@@ -60,7 +60,6 @@ namespace Auth.API
 
             services.AddSingleton<IConsumerClient<BusMessage>>(service =>
             {
-                var topics = Configuration.GetSection("Kafka").GetValue<string>("Topics").ToString().Split(",");
                 var env = service.GetRequiredService<IWebHostEnvironment>();
                 var consumerClient = new ConsumerClient<BusMessage>(env, Configuration);
                 return consumerClient;
@@ -72,20 +71,28 @@ namespace Auth.API
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<AuthHandler>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<AuthHandler>>();
                 handlers.Add((message) =>
                 {
-                    switch (message.BusMessageType)
+                    try
                     {
-                        case (int)BusMessageTypes.TEACHER:
-                            {
-                                handler.HandleTest(message);
-                                break;
-                            }
-                        case (int)BusMessageTypes.TEACHER_UPDATE:
-                            {
-                                handler.HandleTest(message);
-                                break;
-                            }
+                        switch (message.BusMessageType)
+                        {
+                            case (int)BusMessageTypes.TEACHER:
+                                {
+                                    handler.HandleTest(message);
+                                    break;
+                                }
+                            case (int)BusMessageTypes.TEACHER_UPDATE:
+                                {
+                                    handler.HandleTest(message);
+                                    break;
+                                }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError(e.Message, e);
                     }
                 });
                 return handlers;
