@@ -29,15 +29,12 @@ namespace Auth.Core.EventHandlers
                 var result = _testService.AddTest(test).Result;
                 if (result.HasError)
                 {
-                    //throw new Exception(string.Join(",", result.Select(x => x.ErrorMessage)));
                     _logger.LogError(string.Join(", ", result.ErrorMessages));
                 }
             }
             catch (Exception e)
             {
                 _logger.LogError(e.Message, e);
-                throw;
-                //Log Error
             }
         }
 

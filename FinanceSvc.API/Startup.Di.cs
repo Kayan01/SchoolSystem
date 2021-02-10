@@ -19,6 +19,7 @@ using Shared.PubSub.KafkaImpl;
 using FinanceSvc.Core.Services.Interfaces;
 using FinanceSvc.Core.Services;
 using Shared.Net.WorkerService;
+using Microsoft.Extensions.Logging;
 
 namespace FinanceSvc.API
 {
@@ -56,37 +57,39 @@ namespace FinanceSvc.API
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<FinanceHandler>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<FinanceHandler>>();
                 handlers.Add(async (message) =>
                 {
-                    switch (message.BusMessageType)
+                    try
                     {
-                        case (int)BusMessageTypes.NOTIFICATION:
-                            {
-                                handler.HandleTest(message);
-                                break;
-                            }
-                        case (int)BusMessageTypes.STUDENT:
-                        case (int)BusMessageTypes.STUDENT_UPDATE:
-                        case (int)BusMessageTypes.STUDENT_DELETE:
-                            {
-                                await handler.HandleAddOrUpdateStudentAsync(message);
-                                break;
-                            }
-                        case (int)BusMessageTypes.PARENT:
-                        case (int)BusMessageTypes.PARENT_UPDATE:
-                        case (int)BusMessageTypes.PARENT_DELETE:
-                            {
-                                await handler.HandleAddOrUpdateParentAsync(message);
-                                break;
-                            }
-                        case (int)BusMessageTypes.CLASS:
-                        case (int)BusMessageTypes.CLASS_UPDATE:
-                        case (int)BusMessageTypes.CLASS_DELETE:
-                            {
-                                await handler.HandleAddOrUpdateClassAsync(message);
-                                break;
-                            }
-
+                        switch (message.BusMessageType)
+                        {
+                            case (int)BusMessageTypes.STUDENT:
+                            case (int)BusMessageTypes.STUDENT_UPDATE:
+                            case (int)BusMessageTypes.STUDENT_DELETE:
+                                {
+                                    await handler.HandleAddOrUpdateStudentAsync(message);
+                                    break;
+                                }
+                            case (int)BusMessageTypes.PARENT:
+                            case (int)BusMessageTypes.PARENT_UPDATE:
+                            case (int)BusMessageTypes.PARENT_DELETE:
+                                {
+                                    await handler.HandleAddOrUpdateParentAsync(message);
+                                    break;
+                                }
+                            case (int)BusMessageTypes.CLASS:
+                            case (int)BusMessageTypes.CLASS_UPDATE:
+                            case (int)BusMessageTypes.CLASS_DELETE:
+                                {
+                                    await handler.HandleAddOrUpdateClassAsync(message);
+                                    break;
+                                }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError(e.Message, e);
                     }
                 });
                 return handlers;

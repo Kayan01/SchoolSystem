@@ -30,11 +30,6 @@ namespace FinanceSvc.Core.EventHandlers
             _schoolClassService = schoolClassService;
         }
 
-        public void HandleTest(BusMessage message)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task HandleAddOrUpdateStudentAsync(BusMessage message)
         {
             try
@@ -45,7 +40,6 @@ namespace FinanceSvc.Core.EventHandlers
             catch (Exception e)
             {
                 _logger.LogError(e.Message, e);
-                throw;
             }
         }
 
@@ -59,7 +53,6 @@ namespace FinanceSvc.Core.EventHandlers
             catch (Exception e)
             {
                 _logger.LogError(e.Message, e);
-                throw;
             }
         }
 
@@ -73,7 +66,6 @@ namespace FinanceSvc.Core.EventHandlers
             catch (Exception e)
             {
                 _logger.LogError(e.Message, e);
-                throw;
             }
         }
 

@@ -23,6 +23,7 @@ using Shared.PubSub.KafkaImpl;
 using FacilitySvc.Core.Services.Interfaces;
 using FacilitySvc.Core.Services;
 using Shared.Net.WorkerService;
+using Microsoft.Extensions.Logging;
 
 namespace FacilitySvc.API
 {
@@ -42,7 +43,6 @@ namespace FacilitySvc.API
 
             services.AddSingleton<IProducerClient<BusMessage>>(service =>
             {
-                var topics = Configuration.GetSection("Kafka").GetValue<string>("Topics").ToString().Split(",");
                 var env = service.GetRequiredService<IWebHostEnvironment>();
                 var producerClient = new ProducerClient<BusMessage>(env, Configuration);
                 return producerClient;
@@ -50,7 +50,6 @@ namespace FacilitySvc.API
 
             services.AddSingleton<IConsumerClient<BusMessage>>(service =>
             {
-                var topics = Configuration.GetSection("Kafka").GetValue<string>("Topics").ToString().Split(",");
                 var env = service.GetRequiredService<IWebHostEnvironment>();
                 var consumerClient = new ConsumerClient<BusMessage>(env, Configuration);
                 return consumerClient;
@@ -62,20 +61,28 @@ namespace FacilitySvc.API
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<NoticeHandler>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<NoticeHandler>>();
                 handlers.Add((message) =>
                 {
-                    switch (message.BusMessageType)
+                    try
                     {
-                        case (int)BusMessageTypes.NOTIFICATION:
-                            {
-                                handler.HandleTest(message);
-                                break;
-                            }
-                        case (int)BusMessageTypes.TEACHER:
-                            {
-                                handler.HandleTest(message);
-                                break;
-                            }
+                        switch (message.BusMessageType)
+                        {
+                            case (int)BusMessageTypes.NOTIFICATION:
+                                {
+                                    handler.HandleTest(message);
+                                    break;
+                                }
+                            case (int)BusMessageTypes.TEACHER:
+                                {
+                                    handler.HandleTest(message);
+                                    break;
+                                }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError(e.Message, e);
                     }
                 });
                 return handlers;
