@@ -17,7 +17,7 @@ namespace Auth.Core.Services.Interfaces
 
         Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInSchool(QueryModel model);
         Task<ResultModel<StudentDetailVM>> GetStudentById(long Id);
-        Task<ResultModel<StudentVM>> UpdateStudent(StudentUpdateVM model);
+        Task<ResultModel<StudentVM>> UpdateStudent(long Id, StudentUpdateVM model);
         Task<ResultModel<StudentDetailVM>> GetStudentProfileById(long Id);
     }
 }
