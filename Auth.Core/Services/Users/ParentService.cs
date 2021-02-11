@@ -452,6 +452,7 @@ namespace Auth.Core.Services.Users
                     resultModel.AddError("Some files could not be uploaded");
                     return resultModel;
                 }
+
             }
 
 
@@ -473,7 +474,10 @@ namespace Auth.Core.Services.Users
             parent.Status = vm.Status;
             parent.Title = vm.Title;
 
-            parent.FileUploads = new List<FileUpload> { file };
+            if (vm.File != null)
+            {
+                parent.FileUploads = new List<FileUpload> { file };
+            }
 
             await _parentRepo.UpdateAsync(parent);
 
