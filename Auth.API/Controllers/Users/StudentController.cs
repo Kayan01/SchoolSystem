@@ -114,17 +114,22 @@ namespace Auth.API.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut("{Id}")]
         [RequiresPermission(Permission.STUDENT_UPDATE)]
         [ProducesResponseType(typeof(ApiResponse<StudentVM>), 200)]
-        public async Task<IActionResult> UpdateStudent([FromForm]StudentUpdateVM vM)
+        public async Task<IActionResult> UpdateStudent([FromForm]StudentUpdateVM vM, [FromRoute] long Id)
         {
             if (!ModelState.IsValid)
-                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            if (Id < 1)
+            {
+                return ApiResponse<string>(errors: "Id is invalid", codes: ApiResponseCodes.INVALID_REQUEST);
+            }
 
             try
             {
-                var result = await _studentService.UpdateStudent(vM);
+                var result = await _studentService.UpdateStudent(Id, vM);
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

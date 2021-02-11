@@ -59,7 +59,6 @@ namespace Auth.Core.ViewModels.Staff
         public List<WorkExperienceVM> WorkExperienceVMs { get; set; }
         public List<EducationExperienceVM> EducationExperienceVMs { get; set; }
 
-        public int MyProperty { get; set; }
 
         public static implicit operator StaffDetailVM(Models.Staff model)
         {
