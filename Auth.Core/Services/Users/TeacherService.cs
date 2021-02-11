@@ -339,12 +339,12 @@ namespace Auth.Core.Services.Users
 
         }
 
-        public async Task<ResultModel<TeacherVM>> UpdateTeacher(UpdateTeacherVM model)
+        public async Task<ResultModel<TeacherVM>> UpdateTeacher(UpdateTeacherVM model, long Id)
         {
             var result = new ResultModel<TeacherVM>();
 
             var teacher = _teacherRepo.GetAll()
-                           .Where(x => x.Id == model.Id)
+                           .Where(x => x.Id == Id)
                            .Include(x => x.Staff)
                            .ThenInclude(m => m.User)
                            .Include(x => x.Staff)

@@ -58,7 +58,6 @@ namespace Auth.Core.ViewModels.Staff
 
     public class UpdateTeacherVM : AddTeacherVM
     {
-        public long Id { get; set; }
     }
 
     public class TeacherDetailVM : StaffDetailVM
