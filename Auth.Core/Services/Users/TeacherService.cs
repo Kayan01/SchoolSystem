@@ -491,8 +491,11 @@ namespace Auth.Core.Services.Users
             teacher.Staff.NextOfKin = nextOfKin;
             teacher.Staff.WorkExperiences = workExperiences;
             teacher.Staff.EducationExperiences = eduExperiences;
-            teacher.Staff.FileUploads = files;
 
+            if (model.Files != null)
+            {
+                teacher.Staff.FileUploads = files;
+            }
             _unitOfWork.SaveChanges();
             _unitOfWork.Commit();
 
