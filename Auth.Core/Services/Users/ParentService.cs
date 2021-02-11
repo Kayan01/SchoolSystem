@@ -66,139 +66,6 @@ namespace Auth.Core.Services.Users
             _authUserManagementService = authUserManagementService;
             _schoolPropertyService = schoolPropertyService;
         }
-        public async Task<ResultModel<ParentDetailVM>> AddNewParent(AddParentVM vm)
-        {
-            var resultModel = new ResultModel<ParentDetailVM>();
-
-            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
-            if (schoolProperty.HasError)
-            {
-                resultModel.AddError(schoolProperty.ValidationErrors);
-                return resultModel;
-            }
-
-            var file = new FileUpload();
-            //save filles
-            if (vm.File != null)
-            {
-
-                if (vm.DocumentType != DocumentType.ProfilePhoto)
-                {
-                    resultModel.AddError("Please send appropriate document type for profile photo");
-                    return resultModel;
-
-                }
-
-               
-                file = await _documentService.TryUploadSupportingDocument(vm.File, vm.DocumentType);
-                if (file == null)
-                {
-                    resultModel.AddError("Some files could not be uploaded");
-
-                    return resultModel;
-                }
-            }
-
-            _unitOfWork.BeginTransaction();
-
-            var user = new User
-            {
-                FirstName = vm.FirstName,
-                LastName = vm.LastName,
-                MiddleName = vm.OtherName,
-                Email = vm.EmailAddress,
-                UserName = vm.EmailAddress,
-                PhoneNumber = vm.PhoneNumber,
-                UserType = UserType.Parent,
-            };
-            var userResult = await _userManager.CreateAsync(user, vm.PhoneNumber);
-
-            if (!userResult.Succeeded)
-            {
-                resultModel.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
-                return resultModel;
-            }
-
-
-            var parent = new Parent
-            {
-                HomeAddress = vm.HomeAddress,
-                IdentificationNumber = vm.IdentificationNumber,
-                IdentificationType = vm.ModeOfIdentification,
-                Occupation = vm.Occupation,
-                OfficeAddress = vm.OfficeAddress,
-                SecondaryEmail = vm.SecondaryEmailAddress,
-                SecondaryPhoneNumber = vm.SecondaryPhoneNumber,
-                Sex = vm.Sex,
-                Status = vm.Status,
-                UserId = user.Id,
-                Title= vm.Title,
-                
-                FileUploads = new List<FileUpload> { file }
-            };
-
-            var lastRegNumber = await _parentRepo.GetAll().OrderBy(m => m.Id).Select(m=>m.RegNumber).LastAsync();
-            var lastNumber = 0;
-            var seperator = schoolProperty.Data.Seperator;
-            if (!string.IsNullOrWhiteSpace(lastRegNumber))
-            {
-                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
-            }
-            var nextNumber = lastNumber;
-
-            var saved = false;
-            while (!saved)
-            {
-                try
-                {
-                    nextNumber++;
-                    parent.RegNumber = $"PAT{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
-                    await _parentRepo.InsertAsync(parent);
-
-                    await _unitOfWork.SaveChangesAsync();
-                    saved = true;
-                }
-                // 2627 is unique constraint (includes primary key), 2601 is unique index
-                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
-                {
-                    saved = false;
-                }
-            }
-
-            //add stafftype to claims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
-
-
-            _unitOfWork.Commit();
-
-            //broadcast login detail to email
-            _ = await _authUserManagementService.SendRegistrationEmail(user);
-
-            
-            //PublishMessage
-            await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
-            {
-                Id = parent.Id,
-                SecondaryEmail = parent.SecondaryEmail,
-                IsActive = true,
-                SecondaryPhoneNumber = parent.SecondaryPhoneNumber,
-                HomeAddress = parent.HomeAddress,
-                UserId = parent.UserId,
-                IsDeleted = parent.IsDeleted,
-                OfficeAddress = parent.OfficeAddress,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Phone = user.PhoneNumber,
-                RegNumber = parent.RegNumber
-            });
-
-            parent.User = user;
-            var returnModel = (ParentDetailVM)parent;
-            resultModel.Data = returnModel;
-            return resultModel;
-        }
-
         public async Task<ResultModel<string>> DeleteParent(long Id)
         {
             var resultModel = new ResultModel<string>();
@@ -427,11 +294,141 @@ namespace Auth.Core.Services.Users
             return new ResultModel<List<SchoolParentViewModel>> { Data = schools };
         }
 
+        public async Task<ResultModel<ParentDetailVM>> AddNewParent(AddParentVM vm)
+        {
+            var resultModel = new ResultModel<ParentDetailVM>();
+
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
+            {
+                resultModel.AddError(schoolProperty.ValidationErrors);
+                return resultModel;
+            }
+
+            _unitOfWork.BeginTransaction();
+
+            var file = new FileUpload();
+            //save filles
+            if (vm.File != null)
+            {
+
+                if (vm.DocumentType != DocumentType.ProfilePhoto)
+                {
+                    resultModel.AddError("Please send appropriate document type for profile photo");
+                    return resultModel;
+
+                }
+
+               
+                file = await _documentService.TryUploadSupportingDocument(vm.File, vm.DocumentType);
+                if (file == null)
+                {
+                    resultModel.AddError("Some files could not be uploaded");
+
+                    return resultModel;
+                }
+            }
+
+            var user = new User
+            {
+                FirstName = vm.FirstName,
+                LastName = vm.LastName,
+                MiddleName = vm.OtherName,
+                Email = vm.EmailAddress,
+                UserName = vm.EmailAddress,
+                PhoneNumber = vm.PhoneNumber,
+                UserType = UserType.Parent,
+            };
+
+            var userResult = await _userManager.CreateAsync(user, vm.PhoneNumber);
+
+            if (!userResult.Succeeded)
+            {
+                resultModel.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                return resultModel;
+            }
+
+
+            var parent = new Parent
+            {
+                HomeAddress = vm.HomeAddress,
+                IdentificationNumber = vm.IdentificationNumber,
+                IdentificationType = vm.ModeOfIdentification,
+                Occupation = vm.Occupation,
+                OfficeAddress = vm.OfficeAddress,
+                SecondaryEmail = vm.SecondaryEmailAddress,
+                SecondaryPhoneNumber = vm.SecondaryPhoneNumber,
+                Sex = vm.Sex,
+                Status = vm.Status,
+                UserId = user.Id,
+                Title= vm.Title,
+                
+                FileUploads = new List<FileUpload> { file }
+            };
+
+            var lastRegNumber = await _parentRepo.GetAll().OrderBy(m => m.Id).Select(m=>m.RegNumber).LastAsync();
+            var lastNumber = 0;
+            var seperator = schoolProperty.Data.Seperator;
+            if (!string.IsNullOrWhiteSpace(lastRegNumber))
+            {
+                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
+            }
+            var nextNumber = lastNumber;
+
+            var saved = false;
+            while (!saved)
+            {
+                try
+                {
+                    nextNumber++;
+                    parent.RegNumber = $"PAT{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+                    await _parentRepo.InsertAsync(parent);
+
+                    await _unitOfWork.SaveChangesAsync();
+                    saved = true;
+                }
+                // 2627 is unique constraint (includes primary key), 2601 is unique index
+                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+                {
+                    saved = false;
+                }
+            }
+
+            //add stafftype to claims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
+
+
+            _unitOfWork.Commit();
+
+            //PublishMessage
+            await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
+            {
+                Id = parent.Id,
+                SecondaryEmail = parent.SecondaryEmail,
+                IsActive = true,
+                SecondaryPhoneNumber = parent.SecondaryPhoneNumber,
+                HomeAddress = parent.HomeAddress,
+                UserId = parent.UserId,
+                IsDeleted = parent.IsDeleted,
+                OfficeAddress = parent.OfficeAddress,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Phone = user.PhoneNumber,
+                RegNumber = parent.RegNumber
+            });
+
+            parent.User = user;
+            var returnModel = (ParentDetailVM)parent;
+            resultModel.Data = returnModel;
+            return resultModel;
+        }
+
         public async Task<ResultModel<ParentDetailVM>> UpdateParent(long Id, UpdateParentVM vm)
         {
             var resultModel = new ResultModel<ParentDetailVM>();
 
-            var parent = await _parentRepo.FirstOrDefaultAsync(Id);
+            var parent = await _parentRepo.GetAll().Include(m=>m.User).FirstOrDefaultAsync(m=>m.Id == Id);
 
             if (parent == null)
             {
@@ -439,29 +436,72 @@ namespace Auth.Core.Services.Users
                 return resultModel;
             }
 
-            //TODO: More props
+            var file = new FileUpload();
+            //save filles
+            if (vm.File != null)
+            {
+                if (vm.DocumentType != DocumentType.ProfilePhoto)
+                {
+                    resultModel.AddError("Please send appropriate document type for profile photo");
+                    return resultModel;
+                }
 
-           await _parentRepo.UpdateAsync(parent);
+                file = await _documentService.TryUploadSupportingDocument(vm.File, vm.DocumentType);
+                if (file == null)
+                {
+                    resultModel.AddError("Some files could not be uploaded");
+                    return resultModel;
+                }
+
+            }
+
+
+            parent.User.FirstName = vm.FirstName;
+            parent.User.LastName = vm.LastName;
+            parent.User.MiddleName = vm.OtherName;
+            parent.User.Email = vm.EmailAddress;
+            parent.User.UserName = vm.EmailAddress;
+            parent.User.PhoneNumber = vm.PhoneNumber;
+
+            parent.HomeAddress = vm.HomeAddress;
+            parent.IdentificationNumber = vm.IdentificationNumber;
+            parent.IdentificationType = vm.ModeOfIdentification;
+            parent.Occupation = vm.Occupation;
+            parent.OfficeAddress = vm.OfficeAddress;
+            parent.SecondaryEmail = vm.SecondaryEmailAddress;
+            parent.SecondaryPhoneNumber = vm.SecondaryPhoneNumber;
+            parent.Sex = vm.Sex;
+            parent.Status = vm.Status;
+            parent.Title = vm.Title;
+
+            if (vm.File != null)
+            {
+                parent.FileUploads = new List<FileUpload> { file };
+            }
+
+            await _parentRepo.UpdateAsync(parent);
 
             await _unitOfWork.SaveChangesAsync();
 
+            _unitOfWork.Commit();
+
             //PublishMessage
-            //await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT_UPDATE, new ParentSharedModel
-            //{
-            //    Id = parent.Id,
-            //    SecondaryEmail = parent.SecondaryEmail,
-            //    IsActive = true,
-            //    SecondaryPhoneNumber = parent.SecondaryPhoneNumber,
-            //    HomeAddress = parent.HomeAddress,
-            //    UserId = parent.UserId,
-            //    IsDeleted = parent.IsDeleted,
-            //    OfficeAddress = parent.OfficeAddress,
-            //    FirstName = user.FirstName,
-            //    LastName = user.LastName,
-            //    Email = user.Email,
-            //    Phone = user.PhoneNumber,
-            //    RegNumber = parent.RegNumber
-            //});
+            await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
+            {
+                Id = parent.Id,
+                SecondaryEmail = parent.SecondaryEmail,
+                IsActive = true,
+                SecondaryPhoneNumber = parent.SecondaryPhoneNumber,
+                HomeAddress = parent.HomeAddress,
+                UserId = parent.UserId,
+                IsDeleted = parent.IsDeleted,
+                OfficeAddress = parent.OfficeAddress,
+                FirstName = parent.User.FirstName,
+                LastName = parent.User.LastName,
+                Email = parent.User.Email,
+                Phone = parent.User.PhoneNumber,
+                RegNumber = parent.RegNumber
+            });
 
             resultModel.Data = (ParentDetailVM)parent;
 

@@ -14,5 +14,7 @@ namespace LearningSvc.Core.ViewModels.AssignmentAnswer
         public string ClassName { get; set; }
         public DateTime Date { get; set; }
         public double Score { get; set; }
+        public string FileType { get; set; }
+        public string File { get; set; }
     }
 }
