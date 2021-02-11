@@ -357,13 +357,19 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StaffVM>> UpdateStaff(StaffUpdateVM model)
+        public async Task<ResultModel<StaffVM>> UpdateStaff(StaffUpdateVM model, long Id)
         {
             var result = new ResultModel<StaffVM>();
 
             var staff = await _staffRepo.GetAll()
+                .Where(x => x.Id == Id)
                             .Include(x => x.User)
-                            .FirstOrDefaultAsync(x => x.UserId == model.Id);
+                            .Include(x => x.FileUploads)
+                            .Include(x => x.WorkExperiences)
+                            .Include(x => x.NextOfKin)
+                            .Include(x => x.EducationExperiences)
+                            .Include(x => x.Department)
+                            .FirstOrDefaultAsync();
 
             if (staff == null)
             {
@@ -371,18 +377,129 @@ namespace Auth.Core.Services
                 return result;
             }
 
-            _unitOfWork.BeginTransaction();
-
-            var user = await _userManager.FindByIdAsync(model.Id.ToString());
-            if (user == null)
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
             {
-                result.AddError("User not found");
+                _ = schoolProperty.ErrorMessages.Select(x => { result.AddError(x); return x; });
                 return result;
             }
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName;
 
-            await _userManager.UpdateAsync(user);
+            //save files
+            var files = new List<FileUpload>();
+
+            if (model.Files != null && model.Files.Any())
+            {
+                if (model.Files.Count != model.DocumentTypes.Count)
+                {
+                    result.AddError("Some document types are missing");
+                    return result;
+                }
+                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                if (files.Count() != model.Files.Count())
+                {
+                    result.AddError("Some files could not be uploaded");
+
+                    return result;
+                }
+            }
+
+            //check if department exist
+            var dept = await _departmentRepo.GetAll().
+                Where(x => x.Id == model.EmploymentDetails.DepartmentId).FirstOrDefaultAsync();
+
+            if (dept == null)
+            {
+                result.AddError("Department does not exist");
+
+                return result;
+            }
+
+            _unitOfWork.BeginTransaction();
+
+
+            staff.User.FirstName = model.FirstName;
+            staff.User.LastName = model.LastName;
+            staff.User.Email = model.ContactDetails.EmailAddress;
+            staff.User.UserName = model.ContactDetails.EmailAddress;
+            staff.User.PhoneNumber = model.ContactDetails.PhoneNumber;
+            staff.User.MiddleName = model.OtherNames;
+            await _userManager.UpdateAsync(staff.User);
+
+
+            //create next of kin
+            var nextOfKin = new NextOfKin
+            {
+                Address = model.NextOfKin.NextKinAddress,
+                Country = model.NextOfKin.NextKinCountry,
+                FirstName = model.NextOfKin.NextKinFirstName,
+                LastName = model.NextOfKin.NextKinLastName,
+                Occupation = model.NextOfKin.NextKinOccupation,
+                OtherName = model.NextOfKin.NextKinOtherName,
+                Phone = model.NextOfKin.NextKinPhone,
+                Relationship = model.NextOfKin.NextKinRelationship,
+                State = model.NextOfKin.NextKinState,
+                Town = model.NextOfKin.NextKinTown
+            };
+
+            //get all workexperiences
+            var workExperiences = new List<WorkExperience>();
+            foreach (var wk in model.WorkExperienceVMs)
+            {
+                workExperiences.Add(new WorkExperience
+                {
+                    EndTime = wk.EndTime,
+                    StartTime = wk.StartTime,
+                    WorkCompanyName = wk.WorkCompanyName,
+                    WorkRole = wk.WorkRole
+                });
+            }
+
+            //get all education experience
+            var eduExperiences = new List<EducationExperience>();
+            foreach (var edu in model.EducationExperienceVMs)
+            {
+                eduExperiences.Add(new EducationExperience
+                {
+                    EducationSchoolName = edu.EducationSchoolName,
+                    EducationQualification = edu.EducationSchoolQualification,
+                    StartDate = edu.StartDate,
+                    EndDate = edu.EndDate
+                });
+            }
+
+
+            staff.BloodGroup = model.BloodGroup;
+            staff.DateOfBirth = model.DateOfBirth;
+            staff.IsActive = model.IsActive;
+            staff.LocalGovernment = model.LocalGovernment;
+            staff.MaritalStatus = model.MaritalStatus;
+            staff.Nationality = model.Nationality;
+            staff.Religion = model.Religion;
+            staff.StateOfOrigin = model.StateOfOrigin;
+            staff.Sex = model.Sex;
+            staff.StaffType = StaffType.TeachingStaff;
+            staff.EmploymentDate = model.EmploymentDetails.EmploymentDate;
+            staff.ResumptionDate = model.EmploymentDetails.ResumptionDate;
+            staff.EmploymentStatus = model.EmploymentDetails.EmploymentStatus;
+            staff.DepartmentId = model.EmploymentDetails.DepartmentId;
+            staff.PayGrade = model.EmploymentDetails.PayGrade;
+            staff.HighestQualification = model.EmploymentDetails.HighestQualification;
+            staff.Town = model.ContactDetails.Town;
+            staff.State = model.ContactDetails.State;
+            staff.Address = model.ContactDetails.Address;
+            staff.AltEmailAddress = model.ContactDetails.AltEmailAddress;
+            staff.AltPhoneNumber = model.ContactDetails.AltPhoneNumber;
+            staff.Country = model.ContactDetails.Country;
+            staff.JobTitle = model.EmploymentDetails.JobTitle;
+            staff.NextOfKin = nextOfKin;
+            staff.WorkExperiences = workExperiences;
+            staff.EducationExperiences = eduExperiences;
+
+            if (model.Files != null)
+            {
+                staff.FileUploads = files;
+            }
+
             _unitOfWork.SaveChanges();
             _unitOfWork.Commit();
 
