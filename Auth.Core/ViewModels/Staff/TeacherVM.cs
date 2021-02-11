@@ -56,13 +56,9 @@ namespace Auth.Core.ViewModels.Staff
         public List<IFormFile> Files { get; set; }
     }
 
-    public class UpdateTeacherVM
+    public class UpdateTeacherVM : AddTeacherVM
     {
-        public long UserId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string PhoneNumber { get; set; }
-        public long? ClassId { get; set; }
+        public long Id { get; set; }
     }
 
     public class TeacherDetailVM : StaffDetailVM
