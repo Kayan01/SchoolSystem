@@ -98,7 +98,7 @@ namespace UserManagement.API.Controllers
         public async Task<IActionResult> UpdateStaff([FromForm]StaffUpdateVM vM, [FromRoute] long Id)
         {
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
