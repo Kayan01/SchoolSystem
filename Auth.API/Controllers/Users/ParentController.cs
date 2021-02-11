@@ -201,7 +201,7 @@ namespace Auth.API.Controllers.Users
         }
 
 
-        [HttpPost("{Id}")]
+        [HttpPut("{Id}")]
         [ProducesResponseType(typeof(ApiResponse<ResultModel<ParentDetailVM>>), 200)]
         public async Task<IActionResult> UpdateParent(long Id,[FromForm]UpdateParentVM vm)
         {
@@ -209,7 +209,6 @@ namespace Auth.API.Controllers.Users
             {
                 return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
             }
-
 
             try
             {
