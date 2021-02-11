@@ -303,6 +303,10 @@ namespace Auth.Core.Services.Users
 
             _unitOfWork.Commit();
 
+
+            //broadcast login detail to email
+            _ = await _authUserManagement.SendRegistrationEmail(user);
+
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
                 Id = teacher.Id,
@@ -437,6 +441,9 @@ namespace Auth.Core.Services.Users
 
             await _teacherRepo.UpdateAsync(teacher);
             _unitOfWork.SaveChanges();
+
+            //adds classID as a claim
+            await _userManager.AddClaimAsync(teacher.Staff.User, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {

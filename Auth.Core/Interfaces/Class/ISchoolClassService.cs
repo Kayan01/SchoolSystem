@@ -14,8 +14,6 @@ namespace Auth.Core.Services.Interfaces
 
         Task<ResultModel<bool>> AssignSubjectToClass(ClassSubjectVM vm);
 
-        Task<ResultModel<string>> AssignTeacherToClass(ClassTeacherVM vm);
-
         Task<ResultModel<bool>> DeleteClass(long Id);
 
         Task<ResultModel<PaginatedModel<ListClassVM>>> GetAllClasses(QueryModel vm);

@@ -145,37 +145,6 @@ namespace Auth.Core.Services
             throw new NotImplementedException();
         }
 
-        public async Task<ResultModel<string>> AssignTeacherToClass(ClassTeacherVM vm)
-        {
-            var result = new ResultModel<string>();
-
-            //get staff
-            var staff = await _teachingStaffRepo.FirstOrDefaultAsync(vm.TeacherId);
-
-            if (staff == null)
-            {
-                result.AddError("Staff not found");
-                return result;
-            }
-
-            //get class
-            var @class = await _classRepo.FirstOrDefaultAsync(vm.ClassId);
-
-            if (@class == null)
-            {
-                result.AddError("Class not found");
-                return result;
-            }
-
-            //assign student to class
-            staff.ClassId = vm.ClassId;
-
-            await _unitOfWork.SaveChangesAsync();
-
-            result.Message = "Staff assigned to class successfully";
-            return result;
-        }
-
         public async Task<ResultModel<bool>> DeleteClass(long Id)
         {
             var result = new ResultModel<bool> { Data = false };

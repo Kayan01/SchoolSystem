@@ -34,18 +34,21 @@ namespace Auth.Core.Services
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
         private readonly IDocumentService _documentService;
+        private readonly IAuthUserManagement _authUserManagement;
         public AdminService(
             IRepository<Admin, long> adminRepo,
              IUnitOfWork unitOfWork,
              UserManager<User> userManager,
               IPublishService publishService,
-              IDocumentService documentService
+              IDocumentService documentService,
+              IAuthUserManagement authUserManagement
             )
         {
             _adminRepo = adminRepo;
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _publishService = publishService;
+            _authUserManagement = authUserManagement;
             _documentService = documentService;
         }
 
@@ -114,6 +117,11 @@ namespace Auth.Core.Services
                 await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.GlobalAdmin.GetDescription()));
 
                 await _unitOfWork.SaveChangesAsync();
+
+
+                //broadcast login detail to email
+                _ = await _authUserManagement.SendRegistrationEmail(user);
+
                 await _publishService.PublishMessage(Topics.Admin, BusMessageTypes.ADMIN, new AdminSharedModel
                 {
                     Id = admin.Id,

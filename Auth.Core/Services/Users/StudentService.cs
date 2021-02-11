@@ -42,6 +42,7 @@ namespace Auth.Core.Services
         private readonly IHttpUserService _httpUserService;
         private readonly ISchoolPropertyService _schoolPropertyService;
 
+        private readonly IAuthUserManagement _authUserManagement;
         public StudentService(
             IRepository<Student, long> studentRepo,
             IRepository<Parent, long> parentRepo,
@@ -51,7 +52,8 @@ namespace Auth.Core.Services
             IPublishService publishService,
             IHttpUserService httpUserService,
             UserManager<User> userManager,
-            ISchoolPropertyService schoolPropertyService)
+            ISchoolPropertyService schoolPropertyService,
+            IAuthUserManagement authUserManagement)
         {
             _studentRepo = studentRepo;
             _classRepo = classRepo;
@@ -62,6 +64,7 @@ namespace Auth.Core.Services
             _userManager = userManager;
             _httpUserService = httpUserService;
             _schoolPropertyService = schoolPropertyService;
+            _authUserManagement = authUserManagement;
         }
 
         public async Task<ResultModel<StudentVM>> AddStudentToSchool(CreateStudentVM model)
@@ -218,6 +221,10 @@ namespace Auth.Core.Services
             }
 
             _unitOfWork.Commit();
+
+
+            //broadcast login detail to email
+            _ = await _authUserManagement.SendRegistrationEmail(user);
 
             //PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel

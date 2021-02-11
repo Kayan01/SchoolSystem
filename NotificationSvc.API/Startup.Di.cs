@@ -24,6 +24,7 @@ using NotificationSvc.Core.Services.Interfaces;
 using NotificationSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Shared.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace NotificationSvc.API
 {
@@ -44,7 +45,6 @@ namespace NotificationSvc.API
 
             services.AddSingleton<IProducerClient<BusMessage>>(service =>
             {
-                var topics = Configuration.GetSection("Kafka").GetValue<string>("Topics").ToString().Split(",");
                 var env = service.GetRequiredService<IWebHostEnvironment>();
                 var producerClient = new ProducerClient<BusMessage>(env, Configuration);
                 return producerClient;
@@ -52,7 +52,6 @@ namespace NotificationSvc.API
 
             services.AddSingleton<IConsumerClient<BusMessage>>(service =>
             {
-                var topics = Configuration.GetSection("Kafka").GetValue<string>("Topics").ToString().Split(",");
                 var env = service.GetRequiredService<IWebHostEnvironment>();
                 var consumerClient = new ConsumerClient<BusMessage>(env, Configuration);
                 return consumerClient;
@@ -64,15 +63,23 @@ namespace NotificationSvc.API
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<NotificationHandler>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<NotificationHandler>>();
                 handlers.Add((message) =>
                 {
-                    switch (message.BusMessageType)
+                    try
                     {
-                        case (int)BusMessageTypes.NOTIFICATION:
-                            {
-                                handler.HandleAddNotification(message);
-                                break;
-                            }
+                        switch (message.BusMessageType)
+                        {
+                            case (int)BusMessageTypes.NOTIFICATION:
+                                {
+                                    handler.HandleAddNotification(message);
+                                    break;
+                                }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError(e.Message, e);
                     }
                 });
                 return handlers;

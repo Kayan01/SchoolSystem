@@ -2,6 +2,7 @@
 using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
 using Auth.Core.Models.Users;
+using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Parent;
 using Auth.Core.ViewModels.School;
@@ -43,6 +44,7 @@ namespace Auth.Core.Services.Users
         private readonly IDocumentService _documentService;
         private readonly ISchoolPropertyService _schoolPropertyService;
 
+        private readonly IAuthUserManagement _authUserManagementService;
         public ParentService(
             IPublishService publishService,
             IRepository<Parent, long> parentRepo,
@@ -51,7 +53,8 @@ namespace Auth.Core.Services.Users
             IRepository<School, long> schoolRepo,
             UserManager<User> userManager,
             IDocumentService documentService,
-            ISchoolPropertyService schoolPropertyService)
+            ISchoolPropertyService schoolPropertyService,
+            IAuthUserManagement authUserManagementService)
         {
             _publishService = publishService;
             _parentRepo = parentRepo;
@@ -60,6 +63,7 @@ namespace Auth.Core.Services.Users
             _userManager = userManager;
             _documentService = documentService;
             _schoolRepo = schoolRepo;
+            _authUserManagementService = authUserManagementService;
             _schoolPropertyService = schoolPropertyService;
         }
         public async Task<ResultModel<string>> DeleteParent(long Id)
