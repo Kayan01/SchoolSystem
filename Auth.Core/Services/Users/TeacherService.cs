@@ -109,13 +109,23 @@ namespace Auth.Core.Services.Users
             return result;
         }
 
-        public async Task<ResultModel<TeacherVM>> GetTeacherById(long Id)
+        public async Task<ResultModel<TeacherDetailVM>> GetTeacherById(long Id)
         {
-            var result = new ResultModel<TeacherVM>();
+            var result = new ResultModel<TeacherDetailVM>();
             var query = _teacherRepo.GetAll()
-                            .Include(x => x.Staff).ThenInclude(m => m.User)
-                            .Include(x => x.Class)
                             .Where(x => x.Id == Id)
+                           .Include(x => x.Staff)
+                           .ThenInclude(m => m.User)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.FileUploads)
+                           .Include(x => x.Class)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.WorkExperiences)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.NextOfKin)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.EducationExperiences)
+                            .Include(x => x.Class)
                             .FirstOrDefault();
 
             result.Data = query;

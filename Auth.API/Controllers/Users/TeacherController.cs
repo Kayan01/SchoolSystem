@@ -56,7 +56,7 @@ namespace Auth.API.Controllers.Users
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
 
-                return ApiResponse<TeacherVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<TeacherDetailVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
