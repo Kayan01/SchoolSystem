@@ -306,5 +306,37 @@ namespace Auth.Core.Services
 
             return new ResultModel<bool>(true, "Deleted role successfully");
         }
+
+        public async Task<ResultModel<RoleVM>> UpdatePermissionsToRole(UpdatePermissionsToRoleVM model)
+        {
+            var schRole = _schoolRoleRepo.FirstOrDefault(model.RoleId);
+            if (schRole == null)
+                return new ResultModel<RoleVM>("School Role not found");
+
+            var role = await _roleManager.FindByNameAsync(schRole.RoleName);
+            if (role == null)
+                return new ResultModel<RoleVM>("Role not found");
+
+            var existingPermissions = (await _roleManager.GetClaimsAsync(role))
+                                .Where(x => Enum.IsDefined(typeof(Permission), x.Value))
+                                    .Select(x => (int)Enum.Parse<Permission>(x.Value));
+
+            //remove existing permissions
+            var removeResult = await RemovePermissionsFromRole(new RemovePermissionsFromRoleVM { PermissionIds = existingPermissions.ToList(), RoleId = model.RoleId });
+
+            if (removeResult.HasError)
+            {
+                return new ResultModel<RoleVM>(removeResult.ErrorMessages);
+            }
+
+            //update role with current permissions
+            var addPermissionResult = await AddPermissionToRole(role, model.PermissionIds.ToList());
+
+            if (addPermissionResult.HasError)
+                return new ResultModel<RoleVM>(addPermissionResult.ErrorMessages.FirstOrDefault());
+
+            return new ResultModel<RoleVM>(schRole);
+        }
+
     }
 }
