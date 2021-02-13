@@ -75,5 +75,7 @@ namespace LearningSvc.Core.Context
         public DbSet<Teacher> Teachers { get; set; }
         public DbSet<Period> Periods { get; set; }
         public DbSet<TimeTableCell> TimeTableCells { get; set; }
+        public DbSet<AttendanceSubject> SubjectAttendance { get; set; }
+        public DbSet<AttendanceClass> ClassAttendance { get; set; }
     }
 }
