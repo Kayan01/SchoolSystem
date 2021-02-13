@@ -308,7 +308,7 @@ namespace Auth.Core.Services
 
             var role = await _roleManager.FindByNameAsync(schRole.RoleName);
 
-            if (role != null)
+            if (role == null)
                 return new ResultModel<bool>("Role doesnt exists");
 
 
