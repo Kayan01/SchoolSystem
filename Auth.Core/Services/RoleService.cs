@@ -27,19 +27,17 @@ namespace Auth.Core.Services
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
         private readonly IRepository<SchoolTrackRole, long> _schoolRoleRepo;
-        private readonly ITenantResolutionStrategy _tenantResolutionStrategy;
         private readonly IUnitOfWork _unitOfWork;
 
-        public RoleService(UserManager<User> userManager, RoleManager<Role> roleManager,
+        public RoleService(UserManager<User> userManager,
+            RoleManager<Role> roleManager,
             IRepository<SchoolTrackRole, long> schoolRoleRepo,
-            ITenantResolutionStrategy tenantResolutionStrategy,
             IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _unitOfWork = unitOfWork;
             _schoolRoleRepo = schoolRoleRepo;
-            _tenantResolutionStrategy = tenantResolutionStrategy;
         }
 
         public async Task<ResultModel<IEnumerable<PermissionVM>>> GetAllPermissions()
@@ -74,11 +72,31 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<PaginatedModel<RoleVM>>> GetRoles(QueryModel model)
         {
+
             var query = _schoolRoleRepo.GetAll();
+
+
             var pagedData = await PaginatedList<SchoolTrackRole>.CreateAsync(query, model.PageIndex, model.PageSize);
 
+
+            List<RoleVM> data = new List<RoleVM>();
+
+            //find a better way to do this
+            foreach (var item in pagedData)
+            {
+                var schRole = pagedData.FirstOrDefault(y => y.Id == item.Id);
+                var count = (await _userManager.GetUsersInRoleAsync(schRole.RoleName)).Count;
+                
+                data.Add(new RoleVM
+                {
+                    Id = item.Id,
+                    Name = schRole.Name,
+                    usersCount = count
+                });
+            }
+
             return new ResultModel<PaginatedModel<RoleVM>>
-                (new PaginatedModel<RoleVM>(pagedData.Select(x => (RoleVM)x), model.PageIndex, model.PageSize, pagedData.TotalCount));
+                (new PaginatedModel<RoleVM>(data, model.PageIndex, model.PageSize, pagedData.TotalCount));
         }
 
         public async Task<ResultModel<IEnumerable<string>>> GetUserRoles(long userId)
@@ -181,9 +199,8 @@ namespace Auth.Core.Services
                 return new ResultModel<List<RoleVM>>("School Roles not found");
 
             //Remove existing role if any
-            var tenantId = _tenantResolutionStrategy.GetTenantIdentifier().ToString();
             var userRoles = await _userManager.GetRolesAsync(user);
-            var removeRoleResult = await _userManager.RemoveFromRolesAsync(user, userRoles);
+            _ = await _userManager.RemoveFromRolesAsync(user, userRoles);
 
 
             var rolenames = schRoles.Select(x => x.RoleName).ToList();
@@ -260,7 +277,7 @@ namespace Auth.Core.Services
                 .Where(x => x.Id == Id)
                 .FirstOrDefaultAsync();
 
-            if (schRole != null)
+            if (schRole == null)
             {
                 return new ResultModel<bool>($"No role exists with id : {Id}");
             }
