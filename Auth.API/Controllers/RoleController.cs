@@ -25,7 +25,7 @@ namespace Auth.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> Test([FromQuery]QueryModel model)
+        public async Task<IActionResult> Test([FromQuery] QueryModel model)
         {
             throw new Exception("Testing Shit");
         }
@@ -33,7 +33,7 @@ namespace Auth.API.Controllers
         //TODO Delete this Endpoint, It is for Teseting purpose
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        public async Task<IActionResult> GetClaims([FromQuery]QueryModel model)
+        public async Task<IActionResult> GetClaims([FromQuery] QueryModel model)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace Auth.API.Controllers
                     Permissions = claims.Where(x => x.Type == "Permission").Select(x => x.Value).ToList(),
                     Others = claims.Where(x => x.Type != "Permission").Select(x => new KeyValuePair<string, string>(x.Type, x.Value)).ToList(),
                 };
-                return ApiResponse<object>(message: "Ok", codes: ApiResponseCodes.OK, data: result );
+                return ApiResponse<object>(message: "Ok", codes: ApiResponseCodes.OK, data: result);
             }
             catch (Exception ex)
             {
@@ -53,7 +53,7 @@ namespace Auth.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<RoleVM>>), 200)]
-        public async Task<IActionResult> GetRoles([FromQuery]QueryModel model)
+        public async Task<IActionResult> GetRoles([FromQuery] QueryModel model)
         {
             try
             {
@@ -70,7 +70,7 @@ namespace Auth.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<UserListVM>>), 200)]
-        public async Task<IActionResult> GetUsersInRole([FromQuery]RoleRequestModel model)
+        public async Task<IActionResult> GetUsersInRole([FromQuery] RoleRequestModel model)
         {
             try
             {
@@ -250,5 +250,26 @@ namespace Auth.API.Controllers
                 return HandleError(ex);
             }
         }
+
+        [HttpDelete("{Id}")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        public async Task<IActionResult> RemoveRole(long Id)
+        {
+            if (Id < 1)
+                return ApiResponse<string>(errors: "Please use a valid Id");
+
+            try
+            {
+                var result = await _roleService.DeleteRole(Id);
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<bool>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
     }
 }
