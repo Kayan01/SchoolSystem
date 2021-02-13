@@ -22,6 +22,11 @@ namespace Auth.Core.ViewModels.RoleModels
         public List<int> PermissionIds { get; set; } = new List<int>();
     }
 
+    public class UpdatePermissionsToRoleVM
+    {
+        public long RoleId { get; set; }
+        public List<int> PermissionIds { get; set; } = new List<int>();
+    }
     public class RemovePermissionsFromRoleVM
     {
         public long RoleId { get; set; }
