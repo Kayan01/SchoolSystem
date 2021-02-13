@@ -18,6 +18,7 @@ using Shared.Pagination;
 using Auth.Core.Models;
 using Shared.DataAccess.Repository;
 using Shared.Tenancy;
+using Microsoft.EntityFrameworkCore;
 
 namespace Auth.Core.Services
 {
@@ -117,7 +118,6 @@ namespace Auth.Core.Services
 
             schoolRole = new SchoolTrackRole { Name = model.Name.ToUpper() };
             schoolRole = _schoolRoleRepo.Insert(schoolRole);
-            await _unitOfWork.SaveChangesAsync();
 
             var role = await _roleManager.FindByNameAsync(schoolRole.RoleName);
 
@@ -134,6 +134,8 @@ namespace Auth.Core.Services
 
             if (!createResult.Succeeded)
                 return new ResultModel<RoleVM>(createResult.Errors.ToString());
+
+            await _unitOfWork.SaveChangesAsync();
 
             var permissions = model.PermissionIds.Select(x => (Permission)x);
 
@@ -250,6 +252,59 @@ namespace Auth.Core.Services
             }
 
             return new ResultModel<Role>(role, "Success");
+        }
+
+        public async Task<ResultModel<bool>> DeleteRole(long Id)
+        {
+            var schRole = await _schoolRoleRepo.GetAll()
+                .Where(x => x.Id == Id)
+                .FirstOrDefaultAsync();
+
+            if (schRole != null)
+            {
+                return new ResultModel<bool>($"No role exists with id : {Id}");
+            }
+
+            //get permissions
+           var permissionResult = await GetRolePermissions(Id);
+
+            if (permissionResult.HasError)
+            {
+                return new ResultModel<bool>(permissionResult.ErrorMessages);
+            }
+            //remove permissions
+            var removePermissionsResult = await RemovePermissionsFromRole(
+                new RemovePermissionsFromRoleVM
+                {
+                    PermissionIds = permissionResult.Data.Select(x => x.Id).ToList(),
+                    RoleId = Id
+                });
+
+            if (removePermissionsResult.HasError)
+            {
+                return new ResultModel<bool>(removePermissionsResult.ErrorMessages);
+            }
+
+            //delete school role
+            await _schoolRoleRepo.DeleteAsync(schRole);
+
+
+            var role = await _roleManager.FindByNameAsync(schRole.RoleName);
+
+            if (role != null)
+                return new ResultModel<bool>("Role doesnt exists");
+
+
+           var deleteResult = await _roleManager.DeleteAsync(role);
+
+            if (!deleteResult.Succeeded)
+            {
+                return new ResultModel<bool>(deleteResult.Errors.Select(x=> x.Description).ToList());
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ResultModel<bool>(true, "Deleted role successfully");
         }
     }
 }

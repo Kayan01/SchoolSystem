@@ -54,10 +54,10 @@ namespace Shared.AspNetCore
             var rsp = new ApiResponse<string>();
             rsp.Code = ApiResponseCodes.ERROR;
 #if DEBUG
-            rsp.Description = $"Error: {(ex?.InnerException?.Message ?? ex.Message)} --> {ex?.StackTrace}";
+            rsp.Errors.Add($"Error: {ex?.InnerException?.Message ?? ex.Message} --> {ex?.StackTrace}");
             return Ok(rsp);
 #else
-            rsp.Description = customErrorMessage ?? "An error occurred while processing your request!";
+            rsp.Errors.Add(customErrorMessage ?? "An error occurred while processing your request!");
             return Ok(rsp);
 #endif
         }
