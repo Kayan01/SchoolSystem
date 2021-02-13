@@ -468,14 +468,15 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StudentVM>> UpdateStudent(StudentUpdateVM model)
+        public async Task<ResultModel<StudentVM>> UpdateStudent(long Id, StudentUpdateVM model)
         {
             var result = new ResultModel<StudentVM>();
 
             var stud = await _studentRepo.GetAll()
+                .Where(x => x.Id == Id)
                 .Include(x => x.User)
                 .Include(c => c.Class)
-                .FirstOrDefaultAsync(x => x.Id == model.UserId);
+                .FirstOrDefaultAsync();
 
             if (stud == null)
             {
@@ -483,24 +484,108 @@ namespace Auth.Core.Services
                 return result;
             }
 
-            _unitOfWork.BeginTransaction();
-            stud.ClassId = model.ClassId;
+            //check if parent exists
+            var parent = await _parentRepo.GetAll()
+                .Where(x => x.Id == model.ParentId)
+                .FirstOrDefaultAsync();
 
-            var user = await _userManager.FindByIdAsync(model.UserId.ToString());
-
-            if (user == null)
+            if (parent == null)
             {
-                result.AddError("user not found");
+                result.AddError("No parent exists");
                 return result;
             }
 
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName;
-            user.PhoneNumber = model.PhoneNumber;
-            //TODO: add more props
+            //check if class exists
+            var @class = await _classRepo.GetAll().Where(x => x.Id == model.ClassId).FirstOrDefaultAsync();
+            if (@class == null)
+            {
+                result.AddError("class does not exists");
+                return result;
+            }
+            //save filles
+            var files = new List<FileUpload>();
 
+            if (model.Files != null && model.Files.Any())
+            {
+                if (model.Files.Count != model.DocumentTypes.Count)
+                {
+                    result.AddError("Some document types are missing");
+                    return result;
+                }
+                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                if (files.Count() != model.Files.Count())
+                {
+                    result.AddError("Some files could not be uploaded");
+
+                    return result;
+                }
+            }
+            _unitOfWork.BeginTransaction();
+
+
+            stud.ClassId = model.ClassId;
+
+
+            stud.User.FirstName = model.FirstName;
+            stud.User.LastName = model.LastName;
+               stud.User.Email = model.ContactEmail.Trim();
+                stud.User.UserName = model.ContactEmail.Trim();
+            stud.User.PhoneNumber = model.ContactPhone;
+            stud.User.UserType = UserType.Student;
+
+            //TODO: add more props
+            var medicalHistory = new MedicalDetail
+            {
+                Allergies = model.Allergies,
+                BloodGroup = model.BloodGroup,
+                ConfidentialNotes = model.ConfidentialNotes,
+                Disability = model.Disability,
+                Genotype = model.Genotype
+            };
+            var immunizations = new List<ImmunizationHistory>();
+
+            foreach (var im in model.ImmunizationVms)
+            {
+                immunizations.Add(new ImmunizationHistory
+                {
+                    Age = im.Age,
+                    DateImmunized = im.DateImmunized,
+                    Vaccine = im.Vaccine
+                });
+            }
+
+            medicalHistory.ImmunizationHistories = immunizations;
+
+
+            stud. Address = model.ContactAddress;
+            stud. AdmissionDate = model.AdmissionDate;
+            stud.ClassId = model.ClassId;
+            stud.Country = model.ContactCountry;
+            stud.DateOfBirth = model.DateOfBirth;
+            stud.EntryType = model.EntryType;
+            stud.Level = model.Level;
+            stud.LocalGovernment = model.LocalGovt;
+            stud.MedicalDetail = medicalHistory;
+            stud.MothersMaidenName = model.MothersMaidenName;
+            stud.Nationality = model.Nationality;
+            stud.ParentId = model.ParentId;
+            stud.TransportRoute = model.TransportRoute;
+            stud.Religion = model.Religion;
+            stud.Sex = model.Sex;
+            stud.State = model.ContactState;
+            stud.StateOfOrigin = model.StateOfOrigin;
+            stud.StudentType = model.StudentType;
+            stud.Town = model.ContactTown;
+            stud.IsActive = model.IsActive;
+
+            if (model.Files != null)
+            {
+                stud.FileUploads = files;
+            }
+
+
+            await _userManager.UpdateAsync(stud.User);
             await _studentRepo.UpdateAsync(stud);
-            await _userManager.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync();
 
             ////PublishMessage
@@ -510,10 +595,10 @@ namespace Auth.Core.Services
                 ClassId = stud.ClassId,
                 TenantId = stud.TenantId,
                 UserId = stud.UserId,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Phone = user.PhoneNumber,
+                FirstName = stud.User.FirstName,
+                LastName = stud.User.LastName,
+                Email = stud.User.Email,
+                Phone = stud.User.PhoneNumber,
                 RegNumber= stud.RegNumber,
             });
 

@@ -92,17 +92,17 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut("{Id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<StaffVM>), 200)]
-        public async Task<IActionResult> UpdateStaff([FromForm]StaffUpdateVM vM)
+        public async Task<IActionResult> UpdateStaff([FromForm]StaffUpdateVM vM, [FromRoute] long Id)
         {
             if (!ModelState.IsValid)
-                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
-                var result = await _staffService.UpdateStaff(vM);
+                var result = await _staffService.UpdateStaff(vM, Id);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

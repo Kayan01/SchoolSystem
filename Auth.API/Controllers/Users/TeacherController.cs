@@ -56,7 +56,7 @@ namespace Auth.API.Controllers.Users
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
 
-                return ApiResponse<TeacherVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<TeacherDetailVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -107,9 +107,9 @@ namespace Auth.API.Controllers.Users
             }
         }
 
-        [HttpPut]
+        [HttpPut("Id")]
         [ProducesResponseType(typeof(ApiResponse<TeacherVM>), 200)]
-        public async Task<IActionResult> UpdateTeacher([FromForm]UpdateTeacherVM model)
+        public async Task<IActionResult> UpdateTeacher([FromForm]UpdateTeacherVM model, [FromRoute] long id)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
@@ -119,7 +119,7 @@ namespace Auth.API.Controllers.Users
 
             try
             {
-                var result = await _teacherService.UpdateTeacher(model);
+                var result = await _teacherService.UpdateTeacher(model, id);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

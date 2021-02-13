@@ -106,20 +106,30 @@ namespace Auth.Core.Services.Users
                 StaffNumber = x.RegNumber,
             }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
-            return result;            
+            return result;
         }
 
-        public async Task<ResultModel<TeacherVM>> GetTeacherById(long Id)
+        public async Task<ResultModel<TeacherDetailVM>> GetTeacherById(long Id)
         {
-            var result = new ResultModel<TeacherVM>();
+            var result = new ResultModel<TeacherDetailVM>();
             var query = _teacherRepo.GetAll()
-                            .Include(x => x.Staff).ThenInclude(m=>m.User)
-                            .Include(x => x.Class)
                             .Where(x => x.Id == Id)
+                           .Include(x => x.Staff)
+                           .ThenInclude(m => m.User)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.FileUploads)
+                           .Include(x => x.Class)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.WorkExperiences)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.NextOfKin)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.EducationExperiences)
+                            .Include(x => x.Class)
                             .FirstOrDefault();
 
             result.Data = query;
-            return result ;
+            return result;
         }
 
         public async Task<ResultModel<TeacherVM>> AddTeacher(AddStaffVM model)
@@ -177,7 +187,7 @@ namespace Auth.Core.Services.Users
                 UserType = UserType.Staff,
             };
 
-            var userResult = await _userManager.CreateAsync(user,model.ContactDetails.PhoneNumber);
+            var userResult = await _userManager.CreateAsync(user, model.ContactDetails.PhoneNumber);
 
             if (!userResult.Succeeded)
             {
@@ -217,7 +227,7 @@ namespace Auth.Core.Services.Users
                     WorkRole = wk.WorkRole
                 });
             }
-            
+
             //get all education experience
             var eduExperiences = new List<EducationExperience>();
             foreach (var edu in model.EducationExperienceVMs)
@@ -233,7 +243,7 @@ namespace Auth.Core.Services.Users
 
             var teacher = new TeachingStaff
             {
-                
+
                 Staff = new Staff
                 {
 
@@ -269,7 +279,7 @@ namespace Auth.Core.Services.Users
                 }
             };
 
-           teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
+            teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
 
             var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastAsync();
             var lastNumber = 0;
@@ -339,14 +349,24 @@ namespace Auth.Core.Services.Users
 
         }
 
-        public async Task<ResultModel<TeacherVM>> UpdateTeacher(UpdateTeacherVM model)
+        public async Task<ResultModel<TeacherVM>> UpdateTeacher(UpdateTeacherVM model, long Id)
         {
             var result = new ResultModel<TeacherVM>();
 
             var teacher = _teacherRepo.GetAll()
-                            .Include(x => x.Staff).ThenInclude(m=>m.User)
-                            .Include(x => x.Class)
-                            .FirstOrDefault(x => x.Staff.UserId == model.UserId);
+                           .Where(x => x.Id == Id)
+                           .Include(x => x.Staff)
+                           .ThenInclude(m => m.User)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.FileUploads)
+                           .Include(x => x.Class)
+                           .Include(x=> x.Staff)
+                           .ThenInclude(x=> x.WorkExperiences)
+                           .Include(x=> x.Staff)
+                           .ThenInclude(x=> x.NextOfKin)
+                           .Include(x=> x.Staff)
+                           .ThenInclude(x=> x.EducationExperiences)
+                           .FirstOrDefault();
 
             if (teacher == null)
             {
@@ -354,20 +374,138 @@ namespace Auth.Core.Services.Users
                 return result;
             }
 
-            _unitOfWork.BeginTransaction();
-            teacher.ClassId = model.ClassId;
 
-            var user = await _userManager.FindByIdAsync(model.UserId.ToString());
-            if (user == null)
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
             {
-                result.AddError("User not found");
+                _ = schoolProperty.ErrorMessages.Select(x => { result.AddError(x); return x; });
                 return result;
             }
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName;
-            user.PhoneNumber = model.PhoneNumber;
 
-            await _userManager.UpdateAsync(user);
+            _unitOfWork.BeginTransaction();
+
+            //check if department exist
+            var dept = await _departmentRepo.GetAll().
+                Where(x => x.Id == model.EmploymentDetails.DepartmentId).FirstOrDefaultAsync();
+
+            if (dept == null)
+            {
+                result.AddError("Department does not exist");
+
+                return result;
+            }
+
+            //save files
+            var files = new List<FileUpload>();
+
+            if (model.Files != null && model.Files.Any())
+            {
+                if (model.Files.Count != model.DocumentTypes.Count)
+                {
+                    result.AddError("Some document types are missing");
+                    return result;
+                }
+                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                if (files.Count() != model.Files.Count())
+                {
+                    result.AddError("Some files could not be uploaded");
+
+                    return result;
+                }
+            }
+
+            //update auth user
+            teacher.Staff.User.FirstName = model.FirstName;
+            teacher.Staff.User.LastName = model.LastName;
+            teacher.Staff.User.Email = model.ContactDetails.EmailAddress;
+            teacher.Staff.User.UserName = model.ContactDetails.EmailAddress;
+            teacher.Staff.User.PhoneNumber = model.ContactDetails.PhoneNumber;
+            teacher.Staff.User.MiddleName = model.OtherNames;
+            teacher.Staff.User.UserType = UserType.Staff;
+
+
+            var userResult = await _userManager.UpdateAsync(teacher.Staff.User);
+
+            if (!userResult.Succeeded)
+            {
+                result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                return result;
+            }
+
+            //create next of kin
+            var nextOfKin = new NextOfKin
+            {
+                Address = model.NextOfKin.NextKinAddress,
+                Country = model.NextOfKin.NextKinCountry,
+                FirstName = model.NextOfKin.NextKinFirstName,
+                LastName = model.NextOfKin.NextKinLastName,
+                Occupation = model.NextOfKin.NextKinOccupation,
+                OtherName = model.NextOfKin.NextKinOtherName,
+                Phone = model.NextOfKin.NextKinPhone,
+                Relationship = model.NextOfKin.NextKinRelationship,
+                State = model.NextOfKin.NextKinState,
+                Town = model.NextOfKin.NextKinTown
+            };
+
+            //get all workexperiences
+            var workExperiences = new List<WorkExperience>();
+            foreach (var wk in model.WorkExperienceVMs)
+            {
+                workExperiences.Add(new WorkExperience
+                {
+                    EndTime = wk.EndTime,
+                    StartTime = wk.StartTime,
+                    WorkCompanyName = wk.WorkCompanyName,
+                    WorkRole = wk.WorkRole
+                });
+            }
+
+            //get all education experience
+            var eduExperiences = new List<EducationExperience>();
+            foreach (var edu in model.EducationExperienceVMs)
+            {
+                eduExperiences.Add(new EducationExperience
+                {
+                    EducationSchoolName = edu.EducationSchoolName,
+                    EducationQualification = edu.EducationSchoolQualification,
+                    StartDate = edu.StartDate,
+                    EndDate = edu.EndDate
+                });
+            }
+
+
+
+            teacher.Staff.BloodGroup = model.BloodGroup;
+            teacher.Staff.DateOfBirth = model.DateOfBirth;
+            teacher.Staff.IsActive = model.IsActive;
+            teacher.Staff.LocalGovernment = model.LocalGovernment;
+            teacher.Staff.MaritalStatus = model.MaritalStatus;
+            teacher.Staff.Nationality = model.Nationality;
+            teacher.Staff.Religion = model.Religion;
+            teacher.Staff.StateOfOrigin = model.StateOfOrigin;
+            teacher.Staff.Sex = model.Sex;
+            teacher.Staff.StaffType = StaffType.TeachingStaff;
+            teacher.Staff.EmploymentDate = model.EmploymentDetails.EmploymentDate;
+            teacher.Staff.ResumptionDate = model.EmploymentDetails.ResumptionDate;
+            teacher.Staff.EmploymentStatus = model.EmploymentDetails.EmploymentStatus;
+            teacher.Staff.DepartmentId = model.EmploymentDetails.DepartmentId;
+            teacher.Staff.PayGrade = model.EmploymentDetails.PayGrade;
+            teacher.Staff.HighestQualification = model.EmploymentDetails.HighestQualification;
+            teacher.Staff.Town = model.ContactDetails.Town;
+            teacher.Staff.State = model.ContactDetails.State;
+            teacher.Staff.Address = model.ContactDetails.Address;
+            teacher.Staff.AltEmailAddress = model.ContactDetails.AltEmailAddress;
+            teacher.Staff.AltPhoneNumber = model.ContactDetails.AltPhoneNumber;
+            teacher.Staff.Country = model.ContactDetails.Country;
+            teacher.Staff.JobTitle = model.EmploymentDetails.JobTitle;
+            teacher.Staff.NextOfKin = nextOfKin;
+            teacher.Staff.WorkExperiences = workExperiences;
+            teacher.Staff.EducationExperiences = eduExperiences;
+
+            if (model.Files != null)
+            {
+                teacher.Staff.FileUploads = files;
+            }
             _unitOfWork.SaveChanges();
             _unitOfWork.Commit();
 
@@ -377,11 +515,11 @@ namespace Auth.Core.Services.Users
                 IsActive = true,
                 StaffType = StaffType.TeachingStaff,
                 TenantId = teacher.TenantId,
-                UserId = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Phone = user.PhoneNumber,
+                UserId = teacher.Staff.User.Id,
+                Email = teacher.Staff.User.Email,
+                FirstName = teacher.Staff.User.FirstName,
+                LastName = teacher.Staff.User.LastName,
+                Phone = teacher.Staff.User.PhoneNumber,
                 ClassId = teacher.ClassId,
                 RegNumber = teacher.Staff.RegNumber
             });
@@ -403,7 +541,7 @@ namespace Auth.Core.Services.Users
                 return result;
             }
             //TODO disable teacher
-            
+
             _unitOfWork.SaveChanges();
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER_DELETE, new TeacherSharedModel
             {
@@ -428,7 +566,7 @@ namespace Auth.Core.Services.Users
             var result = new ResultModel<string>();
 
             var teacher = await _teacherRepo.GetAll().Where(x => x.Id == model.TeacherId)
-                            .Include(x => x.Staff).ThenInclude(m=>m.User)
+                            .Include(x => x.Staff).ThenInclude(m => m.User)
                             .FirstOrDefaultAsync();
 
             if (teacher == null)
@@ -439,7 +577,7 @@ namespace Auth.Core.Services.Users
 
             teacher.ClassId = model.ClassId;
 
-            await _teacherRepo.UpdateAsync(teacher);
+            await _teacherRepo.InsertAsync(teacher);
             _unitOfWork.SaveChanges();
 
             //adds classID as a claim

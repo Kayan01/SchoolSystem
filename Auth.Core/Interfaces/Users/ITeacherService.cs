@@ -12,9 +12,9 @@ namespace Auth.Core.Interfaces.Users
     {
         Task<ResultModel<TeacherVM>> AddTeacher(AddStaffVM model);
         Task<ResultModel<PaginatedModel<TeacherVM>>> GetTeachers(QueryModel model);
-        Task<ResultModel<TeacherVM>> GetTeacherById(long Id);
+        Task<ResultModel<TeacherDetailVM>> GetTeacherById(long Id);
         Task<ResultModel<ClassTeacherVM>> GetTeacherClassById(long Id);
-        Task<ResultModel<TeacherVM>> UpdateTeacher(UpdateTeacherVM model);
+        Task<ResultModel<TeacherVM>> UpdateTeacher(UpdateTeacherVM model, long Id);
         Task<ResultModel<string>> MakeClassTeacher(ClassTeacherVM model);
         Task<ResultModel<bool>> DeleteTeacher(long userId);
     }

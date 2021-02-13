@@ -21,5 +21,6 @@ namespace Auth.Core.Interfaces
         Task<ResultModel<List<RoleVM>>> AddUserToRoles(AddUserToRolesVM model);
         Task<ResultModel<RoleVM>> RemovePermissionsFromRole(RemovePermissionsFromRoleVM model);
         Task<ResultModel<RoleVM>> RemoveUserFromRole(RemoveUserFromRoleVM model);
+        Task<ResultModel<bool>> DeleteRole(long Id);
     }
 }

@@ -41,6 +41,8 @@ namespace Auth.Core.ViewModels.Student
         public List<ImmunizationVm> ImmunizationVms { get; set; } = new List<ImmunizationVm>();
         [Required]
         public long ParentId { get; set; }
+        public bool IsActive { get; set; }
+
         public List<IFormFile> Files { get; set; }
         public List<DocumentType> DocumentTypes { get; set; }
     }
