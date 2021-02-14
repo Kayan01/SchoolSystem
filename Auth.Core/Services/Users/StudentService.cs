@@ -583,11 +583,10 @@ namespace Auth.Core.Services
                 stud.FileUploads = files;
             }
 
-
-            await _userManager.UpdateAsync(stud.User);
             await _studentRepo.UpdateAsync(stud);
             await _unitOfWork.SaveChangesAsync();
 
+             _unitOfWork.Commit();
             ////PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
             {

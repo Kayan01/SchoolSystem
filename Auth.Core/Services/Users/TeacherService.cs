@@ -506,6 +506,8 @@ namespace Auth.Core.Services.Users
             {
                 teacher.Staff.FileUploads = files;
             }
+
+            await _teacherRepo.UpdateAsync(teacher);
             _unitOfWork.SaveChanges();
             _unitOfWork.Commit();
 
