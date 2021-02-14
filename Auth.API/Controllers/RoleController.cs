@@ -120,7 +120,7 @@ namespace Auth.API.Controllers
         }
 
         [HttpGet("{roleId}")]
-        [ProducesResponseType(typeof(ApiResponse<IEnumerable<PermissionVM>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<RoleListPermissionVM>), 200)]
         public async Task<IActionResult> GetRolePermissions(long roleId)
         {
             try
@@ -128,7 +128,7 @@ namespace Auth.API.Controllers
                 var result = await _roleService.GetRolePermissions(roleId);
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<IEnumerable<PermissionVM>>(message: result.Message, codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<RoleListPermissionVM>(message: result.Message, codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
