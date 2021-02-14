@@ -500,6 +500,8 @@ namespace Auth.Core.Services
                 staff.FileUploads = files;
             }
 
+           await _staffRepo.UpdateAsync(staff);
+
             _unitOfWork.SaveChanges();
             _unitOfWork.Commit();
 

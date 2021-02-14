@@ -53,21 +53,21 @@ namespace Auth.Core.Services
             return new ResultModel<IEnumerable<PermissionVM>>(permissions, "Success");
         }
 
-        public async Task<ResultModel<IEnumerable<PermissionVM>>> GetRolePermissions(long roleId)
+        public async Task<ResultModel<RoleListPermissionVM>> GetRolePermissions(long roleId)
         {
             var schRole = _schoolRoleRepo.FirstOrDefault(roleId);
             if (schRole == null)
-                return new ResultModel<IEnumerable<PermissionVM>>("School Role not found");
+                return new ResultModel<RoleListPermissionVM>("School Role not found");
 
             var role = await _roleManager.FindByNameAsync(schRole.RoleName);
             if (role == null)
-                return new ResultModel<IEnumerable<PermissionVM>>("Role not found");
+                return new ResultModel<RoleListPermissionVM>("Role not found");
 
             var permissions = (await _roleManager.GetClaimsAsync(role))
                                 .Where(x => Enum.IsDefined(typeof(Permission), x.Value))
                                     .Select(x => Enum.Parse<Permission>(x.Value));
 
-            return new ResultModel<IEnumerable<PermissionVM>>(permissions.Select(x => (PermissionVM)x), "Success");
+            return new ResultModel<RoleListPermissionVM>(new RoleListPermissionVM { Permissions = permissions.Select(x => (PermissionVM)x) , RoleName = schRole.Name}, "Success");
         }
 
         public async Task<ResultModel<PaginatedModel<RoleVM>>> GetRoles(QueryModel model)
@@ -293,7 +293,7 @@ namespace Auth.Core.Services
             var removePermissionsResult = await RemovePermissionsFromRole(
                 new RemovePermissionsFromRoleVM
                 {
-                    PermissionIds = permissionResult.Data.Select(x => x.Id).ToList(),
+                    PermissionIds = permissionResult.Data.Permissions.Select(x => x.Id).ToList(),
                     RoleId = Id
                 });
 

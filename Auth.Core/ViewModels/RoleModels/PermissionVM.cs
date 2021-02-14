@@ -6,6 +6,12 @@ using System.Text;
 
 namespace Auth.Core.ViewModels.RoleModels
 {
+    public class RoleListPermissionVM
+    {
+        public string  RoleName { get; set; }
+        public IEnumerable<PermissionVM>  Permissions { get; set; }
+
+    }
     public class PermissionVM
     {
         public int Id { get; set; }
