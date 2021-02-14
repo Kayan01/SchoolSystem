@@ -24,6 +24,7 @@ using LearningSvc.Core.Interfaces;
 using LearningSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Shared.Tenancy;
+using Microsoft.Extensions.Logging;
 
 namespace LearningSvc.API
 {
@@ -45,7 +46,6 @@ namespace LearningSvc.API
 
             services.AddSingleton<IProducerClient<BusMessage>>(service =>
             {
-                var topics = Configuration.GetSection("Kafka").GetValue<string>("Topics").ToString().Split(",");
                 var env = service.GetRequiredService<IWebHostEnvironment>();
                 var producerClient = new ProducerClient<BusMessage>(env, Configuration);
                 return producerClient;
@@ -53,7 +53,6 @@ namespace LearningSvc.API
 
             services.AddSingleton<IConsumerClient<BusMessage>>(service =>
             {
-                var topics = Configuration.GetSection("Kafka").GetValue<string>("Topics").ToString().Split(",");
                 var env = service.GetRequiredService<IWebHostEnvironment>();
                 var consumerClient = new ConsumerClient<BusMessage>(env, Configuration);
                 return consumerClient;
@@ -65,32 +64,39 @@ namespace LearningSvc.API
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<LearningHandler>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<LearningHandler>>();
                 handlers.Add(async (message) =>
                 {
-                    switch (message.BusMessageType)
+                    try
                     {
-                        case (int)BusMessageTypes.STUDENT:
-                        case (int)BusMessageTypes.STUDENT_UPDATE:
-                        case (int)BusMessageTypes.STUDENT_DELETE:
-                            {
-                                await handler.HandleAddOrUpdateStudentAsync(message);
-                                break;
-                            }
-                        case (int)BusMessageTypes.TEACHER:
-                        case (int)BusMessageTypes.TEACHER_UPDATE:
-                        case (int)BusMessageTypes.TEACHER_DELETE:
-                            {
-                                await handler.HandleAddOrUpdateTeacherAsync(message);
-                                break;
-                            }
-                        case (int)BusMessageTypes.CLASS:
-                        case (int)BusMessageTypes.CLASS_UPDATE:
-                        case (int)BusMessageTypes.CLASS_DELETE:
-                            {
-                                await handler.HandleAddOrUpdateClassAsync(message);
-                                break;
-                            }
-                       
+                        switch (message.BusMessageType)
+                        {
+                            case (int)BusMessageTypes.STUDENT:
+                            case (int)BusMessageTypes.STUDENT_UPDATE:
+                            case (int)BusMessageTypes.STUDENT_DELETE:
+                                {
+                                    await handler.HandleAddOrUpdateStudentAsync(message);
+                                    break;
+                                }
+                            case (int)BusMessageTypes.TEACHER:
+                            case (int)BusMessageTypes.TEACHER_UPDATE:
+                            case (int)BusMessageTypes.TEACHER_DELETE:
+                                {
+                                    await handler.HandleAddOrUpdateTeacherAsync(message);
+                                    break;
+                                }
+                            case (int)BusMessageTypes.CLASS:
+                            case (int)BusMessageTypes.CLASS_UPDATE:
+                            case (int)BusMessageTypes.CLASS_DELETE:
+                                {
+                                    await handler.HandleAddOrUpdateClassAsync(message);
+                                    break;
+                                }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError(e.Message, e);
                     }
                 });
                 return handlers;

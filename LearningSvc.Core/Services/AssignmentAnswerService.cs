@@ -44,8 +44,12 @@ namespace LearningSvc.Core.Services
                     StudentNumber = x.Student.UserId.ToString(),
                     StudentName = $"{x.Student.LastName} {x.Student.FirstName}",
                     Score = x.Score,
+                    FileType = x.Attachment.ContentType,
+                    File = x.Attachment.Path
                 })
                 .ToListAsync();
+
+            assignmentAnswer.ForEach(m => m.File = _documentService.TryGetUploadedFile(m.File));
 
             var result = new ResultModel<List<AssignmentAnswerListVM>>
             {

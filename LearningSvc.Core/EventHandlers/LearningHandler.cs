@@ -1,16 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using LearningSvc.Core.Interfaces;
-using LearningSvc.Core.ViewModels;
 using Shared.PubSub;
 using System;
 using Shared.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
-using LearningSvc.Core.Models;
-using Shared.DataAccess.Repository;
-using Shared.DataAccess.EfCore.UnitOfWork;
-using System.Linq;
-using LearningSvc.Core.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
