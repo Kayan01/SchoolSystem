@@ -225,5 +225,26 @@ namespace AssessmentSvc.API.Controllers
                 return HandleError(ex);
             }
         }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<StudentReportSheetVM>), 200)]
+        public async Task<IActionResult> GetApprovedStudentReportSheet(long studId, long classId, long? sessionId = null, int? termSequenceNumber = null)
+        {
+            if (studId < 1 || classId < 1)
+                return ApiResponse<StudentReportSheetVM>(errors: "Please provide valid Id", codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _approvedResultService.GetApprovedResultForStudent(classId, studId, sessionId, termSequenceNumber);
+
+                if (result.HasError)
+                    return ApiResponse<StudentReportSheetVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }
