@@ -13,5 +13,6 @@ namespace AssessmentSvc.Core.Interfaces
         Task<ResultModel<string>> SubmitClassResultForApproval(UpdateApprovedClassResultViewModel vm);
         Task<ResultModel<GetApprovedStudentResultViewModel>> GetStudentResultForApproval(GetStudentResultForApproval vm);
         Task<ResultModel<List<ResultBroadSheet>>> GetClassTeacherApprovedClassBroadSheet(long classId);
+        Task<ResultModel<StudentReportSheetVM>> GetApprovedResultForStudent(long classId, long studentId, long? curSessionId = null, int? termSequenceNumber = null);
     }
 }

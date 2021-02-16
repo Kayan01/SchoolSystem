@@ -102,6 +102,30 @@ namespace AssessmentSvc.Core.Services
                 .ToList()
             };
 
+            if (result.Data.Terms.Count == 1)
+            {
+                result.Data.Terms[0].IsCurrent = true;
+            }
+            else if(result.Data.Terms.Count > 1)
+            {
+                var todayDate = DateTime.Now.Date;
+                var curFound = false;
+
+                for (int i = 1; i < result.Data.Terms.Count; i++)
+                {
+                    if (result.Data.Terms[i-1].StartDate.Date <= todayDate && result.Data.Terms[i].StartDate.Date > todayDate)
+                    {
+                        result.Data.Terms[i-1].IsCurrent = true;
+                        curFound = true;
+                    }
+                }
+
+                if (!curFound)
+                {
+                    result.Data.Terms[result.Data.Terms.Count - 1].IsCurrent = true;
+                }
+            }
+
             return result;
         }
 
@@ -116,21 +140,61 @@ namespace AssessmentSvc.Core.Services
                 result.AddError("No current session exists");
                 return result;
             }
-            var now = DateTime.Now;
-            var currentTerm = session.Terms.Where(m => m.StartDate < now && m.EndDate > now).FirstOrDefault();
+            Term currentTerm = new Term();
 
-            if (currentTerm == null)
+            if (session.Terms.Count == 1)
             {
-                result.AddError("Today's date does not fall within any term. Please adjust term dates and try again.");
-                return result;
+                currentTerm = session.Terms[0];
+            }
+            else if (session.Terms.Count > 1)
+            {
+                var todayDate = DateTime.Now.Date;
+
+                for (int i = 1; i < session.Terms.Count; i++)
+                {
+                    if (session.Terms[i - 1].StartDate.Date <= todayDate && session.Terms[i].StartDate.Date > todayDate)
+                    {
+                        currentTerm = session.Terms[i - 1];
+                        break;
+                    }
+                }
+
+                if (currentTerm?.SequenceNumber is null)
+                {
+                    currentTerm = session.Terms[session.Terms.Count - 1];
+                }
             }
 
             result.Data = new CurrentSessionAndTermVM
             {
                 sessionId = session.Id,
                 SessionName = session.SessionName,
-                TermName=currentTerm.Name,
-                TermSequence=currentTerm.SequenceNumber,
+                TermName=currentTerm?.Name,
+                TermSequence=currentTerm?.SequenceNumber ?? 0,
+            };
+
+            return result;
+        }
+
+        public async Task<ResultModel<CurrentSessionAndTermVM>> GetSessionAndTerm(long sessionId, int termSequenceNumber)
+        {
+            var result = new ResultModel<CurrentSessionAndTermVM>();
+
+            var session = await _sessionRepo.GetAll().Where(x => x.Id == sessionId).FirstOrDefaultAsync();
+
+            if (session == null)
+            {
+                result.AddError("No current session exists");
+                return result;
+            }
+            Term currentTerm = session.Terms.FirstOrDefault(m=>m.SequenceNumber == termSequenceNumber);
+
+            result.Data = new CurrentSessionAndTermVM
+            {
+                sessionId = session.Id,
+                SessionName = session.SessionName,
+                TermName = currentTerm?.Name,
+                TermSequence = currentTerm?.SequenceNumber ?? 0,
             };
 
             return result;
