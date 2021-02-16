@@ -353,8 +353,7 @@ namespace AssessmentSvc.Core.Services
 
             if (gradeSetupResult.HasError || gradeSetupResult.Data.Count < 1)
             {
-                result.AddError("Grade has not setup");
-                return result;
+                return new ResultModel<StudentReportSheetVM>("Grade has not setup");
             }
 
             result.Data.GradeSetup = gradeSetupResult.Data;
@@ -372,12 +371,7 @@ namespace AssessmentSvc.Core.Services
 
             if (sessionAndTermResult.HasError)
             {
-                foreach (string err in sessionAndTermResult.ErrorMessages)
-                {
-                    result.AddError(err);
-                }
-
-                return result;
+                return new ResultModel<StudentReportSheetVM>(sessionAndTermResult.ErrorMessages);
             }
 
             var currSessionAndTerm = sessionAndTermResult.Data;
@@ -397,8 +391,7 @@ namespace AssessmentSvc.Core.Services
 
             if (classApprovedResults.Count < 1)
             {
-                result.AddError("No result found in current term and session");
-                return result;
+                return new ResultModel<StudentReportSheetVM>(errorMessage: "No result found in current term and session");
             }
 
             var resultsBySubjects = classApprovedResults.GroupBy(x => x.SubjectId);
@@ -464,10 +457,9 @@ namespace AssessmentSvc.Core.Services
                 })
                 .FirstOrDefaultAsync();
 
-            if (classApprovedResults.Count < 1)
+            if (ApprovedResultInfo is null)
             {
-                result.AddError("No result found in current term and session");
-                return result;
+                return new ResultModel<StudentReportSheetVM>("Result not found");
             }
 
             result.Data.SubjectOffered = resultsBySubjects.Count();
