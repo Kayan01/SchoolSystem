@@ -379,7 +379,7 @@ namespace AssessmentSvc.Core.Services
             result.Data.Session = currSessionAndTerm.SessionName;
             result.Data.Term = currSessionAndTerm.TermName;
 
-            var classApprovedResults = await _resultRepo.GetAll()
+            var studentApprovedResults = await _resultRepo.GetAll()
                 .Where(x => x.SessionSetupId == currSessionAndTerm.sessionId &&
                     x.SchoolClassId == classId &&
                     x.TermSequenceNumber == currSessionAndTerm.TermSequence &&
@@ -389,12 +389,12 @@ namespace AssessmentSvc.Core.Services
                 .Include(x => x.Subject)
                 .ToListAsync();
 
-            if (classApprovedResults.Count < 1)
+            if (studentApprovedResults.Count < 1)
             {
                 return new ResultModel<StudentReportSheetVM>(errorMessage: "No result found in current term and session");
             }
 
-            var resultsBySubjects = classApprovedResults.GroupBy(x => x.SubjectId);
+            var resultsBySubjects = studentApprovedResults.GroupBy(x => x.SubjectId);
 
             var studResult = new List<SubjectResultBreakdown>();
 
