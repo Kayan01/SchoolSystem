@@ -206,7 +206,7 @@ namespace Auth.Core.Services
                 try
                 {
                     nextNumber++;
-                    stud.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STT{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+                    stud.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STT{seperator}{DateTime.Now.Year}{seperator}{nextNumber:00000}";
 
                     _studentRepo.Insert(stud);
                     await _unitOfWork.SaveChangesAsync();
@@ -329,7 +329,7 @@ namespace Auth.Core.Services
                             x.MedicalDetail.Genotype,
                             x.MedicalDetail.Allergies,
                             x.MedicalDetail.ConfidentialNotes,
-                            Immunization = x.MedicalDetail.ImmunizationHistories.Select(x => new { x.DateImmunized, x.Vaccine }),
+                            Immunization = x.MedicalDetail.ImmunizationHistories.Select(history => new { history.DateImmunized, history.Vaccine }),
                             x.User.PhoneNumber,
                             x.User.Email,
                             x.Country,

@@ -11,5 +11,11 @@ namespace LearningSvc.Core.Interfaces
     {
         Task<ResultModel<string>> AddAttendanceForClass(AddClassAttendanceVM model);
         Task<ResultModel<string>> AddAttendanceForSubject(AddSubjectAttendanceVM model);
+
+        Task<ResultModel<List<GetStudentAttendanceSubjectVm>>> GetStudentAttendanceForSubject(
+            GetStudentAttendanceSubjectQueryVm vm);
+
+        Task<ResultModel<List<GetStudentAttendanceClassVm>>> GetStudentAttendanceForClass(
+            GetStudentAttendanceClassQueryVm vm);
     }
 }
