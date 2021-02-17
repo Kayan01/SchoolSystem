@@ -283,7 +283,7 @@ namespace AssessmentSvc.Core.Services
                     return result;
                 }
 
-                if (student.Name.ToLowerInvariant() != row.GetCell(row.FirstCellNum + 2).ToString().ToLowerInvariant())
+                if (!string.Equals(student.Name, row.GetCell(row.FirstCellNum + 2).ToString(), StringComparison.InvariantCultureIgnoreCase))
                 {
                     result.AddError("Encountered invalid data. Student Id does not match name.");
                     return result;
