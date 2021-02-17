@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Shared.Enums;
 
 namespace LearningSvc.Core.Services
 {
@@ -20,7 +21,7 @@ namespace LearningSvc.Core.Services
         private readonly IUnitOfWork _unitOfWork;
 
         public AttendanceService(
-            IRepository<AttendanceSubject, long> subjectAttendanceRepo, 
+            IRepository<AttendanceSubject, long> subjectAttendanceRepo,
             IRepository<AttendanceClass, long> classAttendanceRepo,
             IUnitOfWork unitOfWork
             )
@@ -45,7 +46,7 @@ namespace LearningSvc.Core.Services
 
                     if (currAtt != null)
                     {
-                        _classAttendanceRepo.Insert(new AttendanceClass
+                        await _classAttendanceRepo.InsertAsync(new AttendanceClass
                         {
                             Id = currAtt.Id,
                             AttendanceDate = model.Date,
@@ -57,7 +58,7 @@ namespace LearningSvc.Core.Services
                     }
                     else
                     {
-                        _classAttendanceRepo.Insert(new AttendanceClass
+                        await _classAttendanceRepo.InsertAsync(new AttendanceClass
                         {
                             AttendanceDate = model.Date,
                             AttendanceStatus = item.AttendanceStatus,
@@ -71,23 +72,23 @@ namespace LearningSvc.Core.Services
             {
                 foreach (var item in model.StudentAttendanceVMs)
                 {
-                       _classAttendanceRepo.Insert(new AttendanceClass
-                        {
-                            AttendanceDate = model.Date,
-                            AttendanceStatus = item.AttendanceStatus,
-                            ClassId = model.ClassId,
-                            StudentId = item.StudentId
-                        });
-                    
+                    await _classAttendanceRepo.InsertAsync(new AttendanceClass
+                    {
+                        AttendanceDate = model.Date,
+                        AttendanceStatus = item.AttendanceStatus,
+                        ClassId = model.ClassId,
+                        StudentId = item.StudentId
+                    });
+
                 }
             }
 
-           await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
-            return new ResultModel<string>(data : "Attendance saved");   
+            return new ResultModel<string>(data: "Attendance saved");
         }
 
-        public async  Task<ResultModel<string>> AddAttendanceForSubject(AddSubjectAttendanceVM model)
+        public async Task<ResultModel<string>> AddAttendanceForSubject(AddSubjectAttendanceVM model)
         {
             var currAttendance = await _subjectAttendanceRepo.GetAll()
                   .Where(x => x.AttendanceDate == model.Date && x.SubjectId == model.SubjectId)
@@ -143,6 +144,76 @@ namespace LearningSvc.Core.Services
             await _unitOfWork.SaveChangesAsync();
 
             return new ResultModel<string>(data: "Attendance saved");
+        }
+
+        public async Task<ResultModel<List<GetStudentAttendanceSubjectVm>>> GetStudentAttendanceForSubject(GetStudentAttendanceSubjectQueryVm vm)
+        {
+            var query = _subjectAttendanceRepo.GetAll()
+                .Where(x =>
+                    x.StudentId == vm.StudentId &&
+                    x.SubjectId == vm.SubjectId);
+
+            //adds date query if provided
+            if (vm.Date.HasValue)
+            {
+                query = query.Where(x => x.AttendanceDate == vm.Date.Value);
+            }
+
+            var data = await query.Select(x => new
+            {
+                x.SubjectId,
+                SubjectName = x.SchoolClassSubject.Subject.Name,
+                x.AttendanceStatus
+            }).ToListAsync();
+
+            if (!data.Any())
+            {
+                return new ResultModel<List<GetStudentAttendanceSubjectVm>>("No attendance for student found");
+            }
+
+            //group the data by subject
+            var groupBySubjects = data.GroupBy(x => new { x.SubjectId, x.SubjectName });
+
+            var result = new ResultModel<List<GetStudentAttendanceSubjectVm>>();
+            foreach (var subjectGroup in groupBySubjects)
+            {
+                result.Data.Add(new GetStudentAttendanceSubjectVm
+                {
+                    NoOfTImesHeld = subjectGroup.Count(),
+                    NoOfTimesAttended = subjectGroup.Count(x => x.AttendanceStatus == AttendanceState.Present),
+                    SubjectName = subjectGroup.Key.SubjectName
+                });
+            }
+
+            return result;
+        }
+
+        public async Task<ResultModel<List<GetStudentAttendanceClassVm>>> GetStudentAttendanceForClass(GetStudentAttendanceClassQueryVm vm)
+        {
+            var query = _classAttendanceRepo.GetAll()
+                .Where(x =>
+                    x.StudentId == vm.StudentId &&
+                    x.ClassId == vm.ClassId);
+
+            //adds date query if provided
+            if (vm.FromDate.HasValue && vm.ToDate.HasValue)
+            {
+                query = query.Where(x => x.AttendanceDate >= vm.FromDate.Value && x.AttendanceDate <= vm.ToDate);
+            }
+
+
+
+            var data = await query.Select(x => new
+                GetStudentAttendanceClassVm
+            {
+                AttendanceDate = x.AttendanceDate,
+                AttendanceStatus = x.AttendanceStatus
+            }).ToListAsync();
+
+            return new ResultModel<List<GetStudentAttendanceClassVm>>
+            {
+                Data = data
+            };
         }
     }
 }
