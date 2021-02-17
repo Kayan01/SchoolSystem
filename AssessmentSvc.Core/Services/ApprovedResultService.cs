@@ -1,6 +1,7 @@
 ﻿using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Models;
 using AssessmentSvc.Core.ViewModels.Result;
+using AssessmentSvc.Core.ViewModels.SessionSetup;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Shared.DataAccess.EfCore.UnitOfWork;
@@ -22,11 +23,13 @@ namespace AssessmentSvc.Core.Services
         private readonly IRepository<Result, long> _resultRepo;
         private readonly ISessionSetup _sessionService;
         private readonly IResultService _resultService;
+        public readonly IGradeSetupService _gradeService;
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
             IRepository<Result, long> resultRepo,
             ISessionSetup sessionService, 
             IResultService resultService,
+            IGradeSetupService gradeService,
             IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -34,6 +37,7 @@ namespace AssessmentSvc.Core.Services
             _sessionService = sessionService;
             _approvedResultRepo = approvedResultRepo;
             _resultRepo = resultRepo;
+            _gradeService = gradeService;
         }
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
         {
@@ -259,7 +263,6 @@ namespace AssessmentSvc.Core.Services
             }
         }
 
-
         public async Task<ResultModel<List<ResultBroadSheet>>> GetClassTeacherApprovedClassBroadSheet(long classId)
         {
             //get current term
@@ -339,5 +342,136 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<StudentReportSheetVM>> GetApprovedResultForStudent(long classId, long studentId, long? curSessionId = null, int? termSequenceNumber = null)
+        {
+
+            var result = new ResultModel<StudentReportSheetVM>();
+            result.Data = new StudentReportSheetVM();
+
+            //get grade setup for school
+            var gradeSetupResult = await _gradeService.GetAllGradeForSchoolSetup();
+
+            if (gradeSetupResult.HasError || gradeSetupResult.Data.Count < 1)
+            {
+                return new ResultModel<StudentReportSheetVM>("Grade has not setup");
+            }
+
+            result.Data.GradeSetup = gradeSetupResult.Data;
+
+            var sessionAndTermResult = new ResultModel<CurrentSessionAndTermVM>();
+
+            if (curSessionId != null && termSequenceNumber != null)
+            {
+                sessionAndTermResult = await _sessionService.GetSessionAndTerm(curSessionId.Value, termSequenceNumber.Value);
+            }
+            else
+            {
+                sessionAndTermResult = await _sessionService.GetCurrentSessionAndTerm();
+            }
+
+            if (sessionAndTermResult.HasError)
+            {
+                return new ResultModel<StudentReportSheetVM>(sessionAndTermResult.ErrorMessages);
+            }
+
+            var currSessionAndTerm = sessionAndTermResult.Data;
+
+            result.Data.Session = currSessionAndTerm.SessionName;
+            result.Data.Term = currSessionAndTerm.TermName;
+
+            var studentApprovedResults = await _resultRepo.GetAll()
+                .Where(x => x.SessionSetupId == currSessionAndTerm.sessionId &&
+                    x.SchoolClassId == classId &&
+                    x.TermSequenceNumber == currSessionAndTerm.TermSequence &&
+                    x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
+                    x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved &&
+                    x.StudentId == studentId)
+                .Include(x => x.Subject)
+                .ToListAsync();
+
+            if (studentApprovedResults.Count < 1)
+            {
+                return new ResultModel<StudentReportSheetVM>(errorMessage: "No result found in current term and session");
+            }
+
+            var resultsBySubjects = studentApprovedResults.GroupBy(x => x.SubjectId);
+
+            var studResult = new List<SubjectResultBreakdown>();
+
+
+            foreach (var resultGroup in resultsBySubjects)
+            {
+                var breakdown = new SubjectResultBreakdown
+                {
+                    SubjectName = resultGroup.FirstOrDefault(x => x.SubjectId == resultGroup.Key)?.Subject.Name,
+
+                    AssesmentAndScores = resultGroup
+                    .Where(x => x.StudentId == studentId)
+                    .SelectMany(x => x.Scores)
+                    .Select(x => new AssesmentAndScoreViewModel
+                    {
+                        AssessmentName = x.AssessmentName,
+                        StudentScore = x.StudentScore
+                    }).ToList()
+                };
+
+                //calculate position
+                var orderedResults = resultGroup.OrderByDescending(x => x.Scores.Sum(x => x.StudentScore)).ToList();
+                var position = orderedResults.IndexOf(orderedResults.Where(x => x.StudentId == studentId).FirstOrDefault());
+
+                breakdown.Position = position + 1;
+
+                //get interpretation
+                foreach (var setup in gradeSetupResult.Data)
+                {
+                    if (breakdown.CummulativeScore >= setup.LowerBound
+                        && breakdown.CummulativeScore <= setup.UpperBound)
+                    {
+
+                        breakdown.Interpretation = setup.Interpretation;
+                        breakdown.Grade = setup.Grade;
+                        break;
+                    }
+                }
+
+                studResult.Add(breakdown);
+            }
+
+            result.Data.Breakdowns = studResult;
+
+
+            var ApprovedResultInfo = await _resultRepo.GetAll()
+                .Where(x => x.SessionSetupId == currSessionAndTerm.sessionId &&
+                    x.SchoolClassId == classId &&
+                    x.TermSequenceNumber == currSessionAndTerm.TermSequence &&
+                    x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
+                    x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved &&
+                    x.StudentId == studentId)
+                .Select( m=> new { 
+                    m.Student.RegNumber,
+                    studentName = $"{m.Student.FirstName} {m.Student.LastName}",
+                    classs = $"{m.SchoolClass.Name} {m.SchoolClass.ClassArm}",
+                    studentsInClass = m.SchoolClass.Students.Count(),
+                    m.ApprovedResult.ClassTeacherComment,
+                    m.ApprovedResult.HeadTeacherComment,
+                })
+                .FirstOrDefaultAsync();
+
+            if (ApprovedResultInfo is null)
+            {
+                return new ResultModel<StudentReportSheetVM>("Result not found");
+            }
+
+            result.Data.SubjectOffered = resultsBySubjects.Count();
+
+            result.Data.RegNumber = ApprovedResultInfo.RegNumber;
+            result.Data.StudentName = ApprovedResultInfo.studentName;
+            result.Data.Class = ApprovedResultInfo.classs;
+            result.Data.TotalInClass = ApprovedResultInfo.studentsInClass;
+            result.Data.ClassTeacherComment = ApprovedResultInfo.ClassTeacherComment;
+            result.Data.HeadTeacherComment = ApprovedResultInfo.HeadTeacherComment;
+
+            return result;
+        }
     }
 }
