@@ -51,6 +51,6 @@ These are the functionalities that have been implemented, this would be updated 
 - ### Assessment Service port:58105
 
 
-![img](docs/img/financeDbDiagram.png)
-
 **Diagram:** Finance Database Diagram.
+
+![img](docs/img/financeDbDiagram.png)
