@@ -14,6 +14,10 @@ Components Diagram
 
 **Diagram:** Components Diagram.
 
+![img](docs/img/financeDbDiagram.png)
+
+**Diagram:** Finance Database Diagram.
+
 ## Proposed Features
 
 These are the functionalities that the system is supposed to have

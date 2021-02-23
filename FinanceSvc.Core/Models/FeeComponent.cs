@@ -12,7 +12,7 @@ namespace FinanceSvc.Core.Models
         public long FeeId { get; set; }
         public long ComponentId { get; set; }
 
-        public int Amount { get; set; }
+        public decimal Amount { get; set; }
 
         public bool IsCompulsory { get; set; }
 
