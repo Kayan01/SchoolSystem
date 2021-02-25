@@ -52,7 +52,8 @@ namespace LearningSvc.Core.Services
                             AttendanceDate = model.Date,
                             AttendanceStatus = item.AttendanceStatus,
                             ClassId = model.ClassId,
-                            StudentId = currAtt.StudentId
+                            StudentId = currAtt.StudentId,
+                            Remark =  item.Remark
 
                         });
                     }
@@ -63,7 +64,9 @@ namespace LearningSvc.Core.Services
                             AttendanceDate = model.Date,
                             AttendanceStatus = item.AttendanceStatus,
                             ClassId = model.ClassId,
-                            StudentId = item.StudentId
+                            StudentId = item.StudentId,
+
+                            Remark = item.Remark
                         });
                     }
                 }
@@ -77,7 +80,8 @@ namespace LearningSvc.Core.Services
                         AttendanceDate = model.Date,
                         AttendanceStatus = item.AttendanceStatus,
                         ClassId = model.ClassId,
-                        StudentId = item.StudentId
+                        StudentId = item.StudentId,
+                        Remark =  item.Remark
                     });
 
                 }
@@ -104,24 +108,26 @@ namespace LearningSvc.Core.Services
 
                     if (currAtt != null)
                     {
-                        _subjectAttendanceRepo.Insert(new AttendanceSubject
+                        await _subjectAttendanceRepo.InsertAsync(new AttendanceSubject
                         {
                             Id = currAtt.Id,
                             AttendanceDate = model.Date,
                             AttendanceStatus = item.AttendanceStatus,
                             SubjectId = model.SubjectId,
-                            StudentId = currAtt.StudentId
+                            StudentId = currAtt.StudentId,
+                            Remark = item.Remark
 
                         });
                     }
                     else
                     {
-                        _subjectAttendanceRepo.Insert(new AttendanceSubject
+                        await _subjectAttendanceRepo.InsertAsync(new AttendanceSubject
                         {
                             AttendanceDate = model.Date,
                             AttendanceStatus = item.AttendanceStatus,
                             SubjectId = model.SubjectId,
-                            StudentId = item.StudentId
+                            StudentId = item.StudentId,
+                            Remark = item.Remark
                         });
                     }
                 }
@@ -135,7 +141,8 @@ namespace LearningSvc.Core.Services
                         AttendanceDate = model.Date,
                         AttendanceStatus = item.AttendanceStatus,
                         SubjectId = model.SubjectId,
-                        StudentId = item.StudentId
+                        StudentId = item.StudentId,
+                        Remark = item.Remark
                     });
 
                 }

@@ -126,6 +126,7 @@ namespace AssessmentSvc.API
             services.AddScoped<IResultService, ResultService>();
             services.AddScoped<IGradeSetupService, GradeSetupService>();
             services.AddScoped<IApprovedResultService, ApprovedResultService>();
+            services.AddScoped<IIncidenceService, IncidenceService>();
         }
     }
 }
