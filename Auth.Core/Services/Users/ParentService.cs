@@ -394,13 +394,17 @@ namespace Auth.Core.Services.Users
                 }
             }
 
-            //add stafftype to claims
+            //add usertype to claims
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
 
 
             _unitOfWork.Commit();
 
-            //PublishMessage
+
+            //broadcast login detail to email
+            _ = await _authUserManagementService.SendRegistrationEmail(user);
+
+            //Publish to services
             await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
             {
                 Id = parent.Id,
