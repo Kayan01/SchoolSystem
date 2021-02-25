@@ -12,7 +12,7 @@ namespace FinanceSvc.Core.ViewModels.FeeComponent
         public string Fee { get; set; }
         public string Component { get; set; }
 
-        public int Amount { get; set; }
+        public decimal Amount { get; set; }
 
         public bool IsCompulsory { get; set; }
 

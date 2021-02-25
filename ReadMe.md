@@ -14,6 +14,8 @@ Components Diagram
 
 **Diagram:** Components Diagram.
 
+
+
 ## Proposed Features
 
 These are the functionalities that the system is supposed to have
@@ -47,3 +49,8 @@ These are the functionalities that have been implemented, this would be updated 
 - ### Facility Service port:58103
 - ### Learning Service port:58104
 - ### Assessment Service port:58105
+
+
+**Diagram:** Finance Database Diagram.
+
+![img](docs/img/financeDbDiagram.png)
