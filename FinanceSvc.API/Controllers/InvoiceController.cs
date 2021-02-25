@@ -25,13 +25,30 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<InvoiceVM>>), 200)]
-        public async Task<IActionResult> GetInvoices(string session, string term)
+        public async Task<IActionResult> GetAllInvoices(string session, string term)
         {
             try
             {
-                var result = await _invoiceService.GetInvoices(session, term);
+                var result = await _invoiceService.GetAllInvoices(session, term);
                 if (result.HasError)
                     return ApiResponse<List<InvoiceVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<InvoicePaymentVM>>), 200)]
+        public async Task<IActionResult> GetInvoices([FromQuery]InvoiceRequestVM vm)
+        {
+            try
+            {
+                var result = await _invoiceService.GetInvoices(vm);
+                if (result.HasError)
+                    return ApiResponse<List<InvoicePaymentVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
             }
             catch (Exception ex)

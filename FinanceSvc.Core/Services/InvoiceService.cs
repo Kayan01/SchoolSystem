@@ -134,7 +134,49 @@ namespace FinanceSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<InvoiceVM>>> GetInvoices(string session, string term)
+        public async Task<ResultModel<List<InvoicePaymentVM>>> GetInvoices(InvoiceRequestVM model)
+        {
+            var invoiceQuery = _invoiceRepo.GetAll();
+
+            if (!(model.ClassId is null))
+            {
+                invoiceQuery = invoiceQuery.Where(m => m.Fee.SchoolClassId == model.ClassId);
+            }
+            if (!(model.PaymentStatus is null))
+            {
+                invoiceQuery = invoiceQuery.Where(m => m.PaymentStatus == model.PaymentStatus);
+            }
+            if (!string.IsNullOrWhiteSpace(model.Session))
+            {
+                invoiceQuery = invoiceQuery.Where(m => m.Session == model.Session);
+            }
+            if (!string.IsNullOrWhiteSpace(model.Term))
+            {
+                invoiceQuery = invoiceQuery.Where(m => m.Term == model.Term);
+            }
+            if (!(model.StudentId is null))
+            {
+                invoiceQuery = invoiceQuery.Where(m => m.StudentId == model.StudentId);
+            }
+
+
+            var result = new ResultModel<List<InvoicePaymentVM>>();
+
+            result.Data = await invoiceQuery.Select(m => new InvoicePaymentVM()
+            {
+                DueDate = m.PaymentDate,
+                FeeGroup = m.Fee.FeeGroup.Name,
+                StudentRegNumber = m.Student.RegNumber,
+                InvoiceId = m.Id,
+                Total = m.Fee.FeeComponents.Sum(n => n.Amount),
+                PaymentStatus = m.PaymentStatus,
+                Paid = m.Payments.Sum(m=> m.AmountPaid),
+            }).ToListAsync();
+
+            return result;
+        }
+
+        public async Task<ResultModel<List<InvoiceVM>>> GetAllInvoices(string session, string term)
         {
             var result = new ResultModel<List<InvoiceVM>>();
 
