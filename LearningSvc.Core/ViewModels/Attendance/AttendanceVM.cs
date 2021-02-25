@@ -5,9 +5,6 @@ using System.Text;
 
 namespace LearningSvc.Core.ViewModels.Attendance
 {
-    public class ClassAttendanceVM
-    {
-    }
     public class AddSubjectAttendanceVM
     {
         public long SubjectId { get; set; }
@@ -25,5 +22,6 @@ namespace LearningSvc.Core.ViewModels.Attendance
     {
         public long StudentId { get; set; }
         public AttendanceState AttendanceStatus { get; set; }
+        public string Remark { get; set; }
     }
 }
