@@ -32,7 +32,7 @@ namespace NotificationSvc.Core.EventHandlers
             }
             catch (Exception e)
             {
-                _logger.LogError(e.Message, e);
+                _logger.LogError(e.StackTrace, e);
             }
         }
 
