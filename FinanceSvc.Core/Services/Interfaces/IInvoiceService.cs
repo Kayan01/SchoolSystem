@@ -11,7 +11,8 @@ namespace FinanceSvc.Core.Services.Interfaces
     {
         Task<ResultModel<List<InvoicePaymentVM>>> GetPaymentInvoices(string session, string term);
         Task<ResultModel<List<InvoicePaymentHistoryVM>>> GetPaymentHistoryInvoices(string session, string term);
-        Task<ResultModel<List<InvoiceVM>>> GetInvoices(string session, string term);
+        Task<ResultModel<List<InvoiceVM>>> GetAllInvoices(string session, string term);
+        Task<ResultModel<List<InvoicePaymentVM>>> GetInvoices(InvoiceRequestVM model);
         Task<ResultModel<List<InvoicePendingPaymentVM>>> GetPendingPaymentInvoices(string session, string term);
         Task<ResultModel<InvoiceDetailVM>> GetInvoice(long id);
         Task<ResultModel<string>> AddInvoice(InvoicePostVM model);
