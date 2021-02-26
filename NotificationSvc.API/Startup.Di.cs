@@ -64,7 +64,7 @@ namespace NotificationSvc.API
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<NotificationHandler>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<NotificationHandler>>();
-                handlers.Add((message) =>
+                handlers.Add(async (message) =>
                 {
                     try
                     {
@@ -72,7 +72,7 @@ namespace NotificationSvc.API
                         {
                             case (int)BusMessageTypes.NOTIFICATION:
                                 {
-                                    handler.HandleAddNotification(message);
+                                   await handler.HandleAddNotification(message);
                                     break;
                                 }
                         }
