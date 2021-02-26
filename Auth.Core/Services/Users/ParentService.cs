@@ -231,7 +231,7 @@ namespace Auth.Core.Services.Users
         public async Task<ResultModel<List<StudentParentVM>>> GetStudentsInSchool(long parentId)
         {
             var query = await _studentRepo.GetAll()
-                .Where(x => x.ParentId == parentId)
+                .Where(x => x.Parent.UserId == parentId)
                 .Select(x => new
                 {
                     x.Id,
@@ -251,7 +251,7 @@ namespace Auth.Core.Services.Users
                 {
                     FullName = st.FullName,
                     Id = st.Id,
-                    ClassID = st.ClassId.Value,
+                    ClassID = st.ClassId,
                     Image = _documentService.TryGetUploadedFile(st.ImageId),
                     RegNo = st.RegNumber
                 });
