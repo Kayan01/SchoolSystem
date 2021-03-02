@@ -252,6 +252,7 @@ namespace Auth.Core.Services.Users
                     FullName = st.FullName,
                     Id = st.Id,
                     ClassID = st.ClassId,
+                   // ImageId = st.ImageId,
                     Image = _documentService.TryGetUploadedFile(st.ImageId),
                     RegNo = st.RegNumber
                 });
