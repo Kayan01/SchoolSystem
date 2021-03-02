@@ -10,6 +10,7 @@ namespace LearningSvc.Core.Interfaces
     public interface IAssignmentAnswerService
     {
         Task<ResultModel<List<AssignmentAnswerListVM>>> GetAllAnswer(long assignmentId);
+        Task<ResultModel<List<AssignmentAnswerSubmissionList>>> GetAssignmentSubmissions(long studentId);
         Task<ResultModel<AssignmentAnswerVM>> GetAssignmentAnswer(long answerId);
         Task<ResultModel<string>> UpdateScore(AssignmentAnswerUpdateScoreVM model);
         Task<ResultModel<string>> UpdateComment(AssignmentAnswerUpdateCommentVM model);

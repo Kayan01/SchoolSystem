@@ -28,11 +28,19 @@ namespace FinanceSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var check = await _accountRepo.GetAll().Where(m => m.Name == model.Name.ToUpper()).FirstOrDefaultAsync();
+            var check = await _accountRepo.GetAll().Where(m => m.Name == model.Name.ToUpper() || m.AccountNumber == model.AccountNumber).FirstOrDefaultAsync();
 
             if (check != null)
             {
-                result.AddError("Account with this name already exist!");
+                result.AddError("Account with this Name or Account Number already exist!");
+                return result;
+            }
+
+            check = await _accountRepo.GetAll().Where(m => m.AccountType.AccountClass.MaxNumberValue >= model.AccountNumber && m.AccountType.AccountClass.MinNumberValue <= model.AccountNumber).FirstOrDefaultAsync();
+
+            if (check != null)
+            {
+                result.AddError("Account Number is out of range of the Account Class!");
                 return result;
             }
 

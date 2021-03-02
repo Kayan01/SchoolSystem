@@ -43,7 +43,7 @@ namespace FinanceSvc.API.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<InvoicePaymentVM>>), 200)]
         public async Task<IActionResult> GetInvoices([FromQuery]InvoiceRequestVM vm)
-        {
+        { 
             try
             {
                 var result = await _invoiceService.GetInvoices(vm);
