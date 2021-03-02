@@ -114,6 +114,27 @@ namespace Auth.API.Controllers
             }
         }
 
+        [HttpGet("{classId}")]
+        [RequiresPermission(Permission.STUDENT_READ)]
+        [ProducesResponseType(typeof(ApiResponse<StudentVM>), 200)]
+        public async Task<IActionResult> GetStudentInClass([FromQuery] QueryModel vM, long classId)
+        {
+            if (classId < 1)
+                return ApiResponse<string>(errors: "Please provide valid class Id");
+
+            try
+            {
+                var result = await _studentService.GetAllStudentsInClass(vM,classId);
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPut("{Id}")]
         [RequiresPermission(Permission.STUDENT_UPDATE)]
         [ProducesResponseType(typeof(ApiResponse<StudentVM>), 200)]
