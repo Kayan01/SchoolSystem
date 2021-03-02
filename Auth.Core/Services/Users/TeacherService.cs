@@ -82,6 +82,7 @@ namespace Auth.Core.Services.Users
                           .Select(x => new
                           {
                               x.Id,
+                              x.Staff.UserId,
                               x.Staff.User.Email,
                               x.Staff.User.LastName,
                               x.Staff.User.PhoneNumber,
@@ -101,6 +102,7 @@ namespace Auth.Core.Services.Users
                 PhoneNumber = x.PhoneNumber,
                 LastName = x.LastName,
                 Id = x.Id,
+                UserId = x.UserId,
                 FirstName = x.FirstName,
                 StaffType = x.StaffType.GetDescription(),
                 StaffNumber = x.RegNumber,
