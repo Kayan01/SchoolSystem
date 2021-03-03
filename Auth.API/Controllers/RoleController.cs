@@ -120,7 +120,7 @@ namespace Auth.API.Controllers
         }
 
         [HttpGet("{roleId}")]
-        [ProducesResponseType(typeof(ApiResponse<IEnumerable<PermissionVM>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<RoleListPermissionVM>), 200)]
         public async Task<IActionResult> GetRolePermissions(long roleId)
         {
             try
@@ -128,7 +128,7 @@ namespace Auth.API.Controllers
                 var result = await _roleService.GetRolePermissions(roleId);
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<IEnumerable<PermissionVM>>(message: result.Message, codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse<RoleListPermissionVM>(message: result.Message, codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {
@@ -144,7 +144,7 @@ namespace Auth.API.Controllers
                 return ApiResponse<string>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
-                return ApiResponse<List<string>>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+                return ApiResponse<List<string>>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
@@ -175,6 +175,30 @@ namespace Auth.API.Controllers
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<RoleVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<RoleVM>), 200)]
+        public async Task<IActionResult> UpdatePermissionsToRole(UpdatePermissionsToRoleVM model)
+        {
+            if (model == null)
+                return ApiResponse<string>(errors: "Empty payload");
+
+            if (!ModelState.IsValid)
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _roleService.UpdatePermissionsToRole(model);
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {

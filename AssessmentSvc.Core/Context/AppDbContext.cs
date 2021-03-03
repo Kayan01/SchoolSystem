@@ -41,6 +41,8 @@ namespace AssessmentSvc.Core.Context
         public DbSet<Teacher> Teachers { get; set; }
         public DbSet<GradeSetup> GradeSetups { get; set; }
         public DbSet<ApprovedResult> ApprovedResults { get; set; }
+        public DbSet<BehaviourResult> BehaviourResults { get; set; }
+        public DbSet<StudentIncidence> StudentIncidence { get; set; }
 
         public async Task AddSampleData()
         {

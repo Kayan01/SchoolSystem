@@ -18,8 +18,8 @@ namespace AssessmentSvc.Core.Models
         public long SubjectId { get; set; }
         public int TermSequenceNumber { get; set; }
         public long? ApprovedResultId { get; set; }
-
-        public string ScoresJSON { get; private set; } //will contain List of Term object as JSON string
+        //will contain List of Scores for a course  as JSON string
+        public string ScoresJSON { get; private set; }
 
         public ApprovedResult  ApprovedResult { get; set; }
         public Subject Subject { get; set; }

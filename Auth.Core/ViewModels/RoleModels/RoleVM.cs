@@ -10,6 +10,7 @@ namespace Auth.Core.ViewModels.RoleModels
     {
         public long Id { get; set; }
         public string Name { get; set; }
+        public int usersCount { get;  set; }
 
         public static implicit operator RoleVM(SchoolTrackRole model)
         {

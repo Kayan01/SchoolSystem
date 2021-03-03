@@ -4,6 +4,7 @@ using NotificationSvc.Core.Services.Interfaces;
 using Shared.PubSub;
 using Shared.ViewModels;
 using System;
+using System.Threading.Tasks;
 
 namespace NotificationSvc.Core.EventHandlers
 {
@@ -18,13 +19,13 @@ namespace NotificationSvc.Core.EventHandlers
             _logger = logger;
         }
 
-        public void HandleAddNotification(BusMessage message)
+        public async Task HandleAddNotification(BusMessage message)
         {
             try
             {
                 var notificationMsg = JsonConvert.DeserializeObject<CreateNotificationModel>(message.Data);
 
-                var result = _notificationService.CreateNotification(notificationMsg).Result;
+                var result = await _notificationService.CreateNotification(notificationMsg);
                 if (result.HasError)
                 {
                     _logger.LogError(string.Join(", ", result.ErrorMessages));
@@ -32,7 +33,7 @@ namespace NotificationSvc.Core.EventHandlers
             }
             catch (Exception e)
             {
-                _logger.LogError(e.Message, e);
+                _logger.LogError(e.StackTrace, e);
             }
         }
 

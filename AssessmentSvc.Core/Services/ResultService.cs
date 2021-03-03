@@ -18,12 +18,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
+using NPOI.SS.Formula.Functions;
 
 namespace AssessmentSvc.Core.Services
 {
     public class ResultService : IResultService
     {
         private readonly IRepository<Result, long> _resultRepo;
+        private readonly IRepository<BehaviourResult, long> _behaviourRepository;
         private readonly IAssessmentSetupService _assessmentService;
         private readonly IStudentService _studentServive;
         public readonly IGradeSetupService _gradeService;
@@ -36,7 +38,8 @@ namespace AssessmentSvc.Core.Services
             IAssessmentSetupService assessmentService,
             IStudentService studentServive,
             ISessionSetup sessionService,
-            IGradeSetupService gradeService)
+            IGradeSetupService gradeService,
+            IRepository<BehaviourResult, long> behaviourRepository)
         {
             _unitOfWork = unitOfWork;
             _resultRepo = resultRepo;
@@ -44,6 +47,7 @@ namespace AssessmentSvc.Core.Services
             _studentServive = studentServive;
             _gradeService = gradeService;
             _sessionService = sessionService;
+            _behaviourRepository = behaviourRepository;
         }
 
         public async Task<ResultModel<ResultUploadFormData>> FetchResultUploadFormData(long SchoolClassId)
@@ -72,6 +76,8 @@ namespace AssessmentSvc.Core.Services
 
             return result;
         }
+
+       
 
         public async Task<ResultModel<byte[]>> GenerateResultUploadExcel(long SchoolClassId)
         {
@@ -283,7 +289,7 @@ namespace AssessmentSvc.Core.Services
                     return result;
                 }
 
-                if (student.Name.ToLowerInvariant() != row.GetCell(row.FirstCellNum + 2).ToString().ToLowerInvariant())
+                if (!string.Equals(student.Name, row.GetCell(row.FirstCellNum + 2).ToString(), StringComparison.InvariantCultureIgnoreCase))
                 {
                     result.AddError("Encountered invalid data. Student Id does not match name.");
                     return result;
@@ -322,6 +328,8 @@ namespace AssessmentSvc.Core.Services
 
         private bool validateWorksheet(ISheet sheet, List<AssessmentSetupVM> assessments, int studentCount)
         {
+            var g = "";
+            
             var headerValues = new List<string>() { "S/N", "UUID", "Student Name", "Reg Number" };
 
             foreach (var item in assessments)
@@ -569,6 +577,101 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<string>> InsertBehaviouralResult(AddBehaviourResultVM model)
+        {
+            var behaviourResult = await _behaviourRepository.GetAll().Where(x =>
+                x.SchoolClassId == model.ClassId &&
+                x.SessionId == model.SessionId &&
+                x.TermSequenceNumber == model.TermSequence &&
+                x.StudentId == model.StudentId
+                ).ToListAsync();
 
+            if (behaviourResult.Any())
+            {
+                var data = new List<BehaviourResult>();
+                foreach (var resultTypeAndValue in model.ResultTypeAndValues)
+                {
+                    data.AddRange(resultTypeAndValue.Value.Select(x => new BehaviourResult
+                    {
+                        Type = resultTypeAndValue.Key,
+                        Name = x.BehaviourName,
+                        Grade = x.Grade,
+                        StudentId = model.StudentId,
+                        SchoolClassId = model.ClassId,
+                        SessionId = model.SessionId,
+                        TermSequenceNumber = model.TermSequence,
+
+                    }).ToList());
+                }
+
+
+                foreach (var result in data)
+                {
+                    await _behaviourRepository.InsertAsync(result);
+                }
+            }
+            else
+            {
+                var data = new List<BehaviourResult>();
+
+                //delete old behaviour result.
+                foreach (var br in behaviourResult)
+                {
+                   await _behaviourRepository.DeleteAsync(br);
+                }
+
+
+                foreach (var resultTypeAndValue in model.ResultTypeAndValues)
+                {
+                    data.AddRange(resultTypeAndValue.Value.Select(x => new BehaviourResult
+                    {
+                        Type = resultTypeAndValue.Key,
+                        Name = x.BehaviourName,
+                        Grade = x.Grade,
+                        StudentId = model.StudentId,
+                        SchoolClassId = model.ClassId,
+                        SessionId = model.SessionId,
+                        TermSequenceNumber = model.TermSequence,
+
+                    }).ToList());
+                }
+
+                foreach (var result in data)
+                {
+                    await _behaviourRepository.InsertAsync(result);
+                }
+
+
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+
+            return new ResultModel<string>(data: "Behaviour result saved");
+
+        }
+        public async Task<ResultModel<GetBehaviourResultVM>> GetBehaviouralResult(GetBehaviourResultQueryVm model)
+        {
+            var query = await _behaviourRepository.GetAll().Where(x =>
+                x.SchoolClassId == model.ClassId &&
+                x.SessionId == model.SessionId &&
+                x.TermSequenceNumber == model.TermSequence &&
+                x.StudentId == model.StudentId
+            ).ToListAsync();
+
+
+          
+            
+           var data = query.GroupBy(x=>x.Type).ToDictionary(g => g.Key, g => g.Select(x=> new BehaviourValuesAndGrade
+           {
+               BehaviourName = x.Name, 
+               Grade = x.Grade
+           }).ToList());
+
+            return new ResultModel<GetBehaviourResultVM>(data: new GetBehaviourResultVM
+            {
+                ResultTypeAndValues = data
+            });
+        }
     }
 }

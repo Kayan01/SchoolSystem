@@ -206,7 +206,7 @@ namespace Auth.Core.Services
                 try
                 {
                     nextNumber++;
-                    stud.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STT{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+                    stud.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STT{seperator}{DateTime.Now.Year}{seperator}{nextNumber:00000}";
 
                     _studentRepo.Insert(stud);
                     await _unitOfWork.SaveChangesAsync();
@@ -301,6 +301,30 @@ namespace Auth.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInClass(QueryModel model, long classId)
+        {
+            var query = _studentRepo.GetAll()
+                .Where(x => x.ClassId == classId)
+                .Select(x=> new StudentVM
+            {
+                Id = x.Id,
+                Class = x.Class.FullName,
+                DateOfBirth = x.DateOfBirth,
+                FirstName = x.User.FirstName,
+                LastName = x.User.LastName,
+                StudentNumber = x.RegNumber,
+                Sex = x.Sex,
+                Section = x.Class.SchoolSection.Name,
+                IsActive = x.IsActive,
+                ImagePath = x.FileUploads.Where(fileUpload => fileUpload.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
+            });
+
+            var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+           
+
+            return new ResultModel<PaginatedModel<StudentVM>>(data: new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount));
+        }
+
         public async Task<ResultModel<StudentDetailVM>> GetStudentById(long Id)
         {
             var result = new ResultModel<StudentDetailVM>();
@@ -329,7 +353,7 @@ namespace Auth.Core.Services
                             x.MedicalDetail.Genotype,
                             x.MedicalDetail.Allergies,
                             x.MedicalDetail.ConfidentialNotes,
-                            Immunization = x.MedicalDetail.ImmunizationHistories.Select(x => new { x.DateImmunized, x.Vaccine }),
+                            Immunization = x.MedicalDetail.ImmunizationHistories.Select(history => new { history.DateImmunized, history.Vaccine }),
                             x.User.PhoneNumber,
                             x.User.Email,
                             x.Country,
@@ -583,11 +607,10 @@ namespace Auth.Core.Services
                 stud.FileUploads = files;
             }
 
-
-            await _userManager.UpdateAsync(stud.User);
             await _studentRepo.UpdateAsync(stud);
             await _unitOfWork.SaveChangesAsync();
 
+             _unitOfWork.Commit();
             ////PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
             {

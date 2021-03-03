@@ -231,7 +231,7 @@ namespace Auth.Core.Services.Users
         public async Task<ResultModel<List<StudentParentVM>>> GetStudentsInSchool(long parentId)
         {
             var query = await _studentRepo.GetAll()
-                .Where(x => x.ParentId == parentId)
+                .Where(x => x.Parent.UserId == parentId)
                 .Select(x => new
                 {
                     x.Id,
@@ -251,7 +251,8 @@ namespace Auth.Core.Services.Users
                 {
                     FullName = st.FullName,
                     Id = st.Id,
-                    ClassID = st.ClassId.Value,
+                    ClassID = st.ClassId,
+                   // ImageId = st.ImageId,
                     Image = _documentService.TryGetUploadedFile(st.ImageId),
                     RegNo = st.RegNumber
                 });
@@ -394,13 +395,17 @@ namespace Auth.Core.Services.Users
                 }
             }
 
-            //add stafftype to claims
+            //add usertype to claims
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
 
 
             _unitOfWork.Commit();
 
-            //PublishMessage
+
+            //broadcast login detail to email
+            _ = await _authUserManagementService.SendRegistrationEmail(user);
+
+            //Publish to services
             await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
             {
                 Id = parent.Id,

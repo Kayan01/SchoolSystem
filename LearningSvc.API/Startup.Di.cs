@@ -134,6 +134,7 @@ namespace LearningSvc.API
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ITeacherService, TeacherService>();
             services.AddScoped<IFileStore, FileStore>();
+            services.AddScoped<IAttendanceService, AttendanceService>();
             services.AddScoped<ZoomService>();
         }
     }
