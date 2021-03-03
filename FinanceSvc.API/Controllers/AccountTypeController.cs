@@ -39,13 +39,13 @@ namespace FinanceSvc.API.Controllers
             }
         }
 
-        [HttpGet("{accountTypeId}")]
+        [HttpGet("{accountClassId}")]
         [ProducesResponseType(typeof(ApiResponse<List<AccountTypeVM>>), 200)]
-        public async Task<IActionResult> GetAccountTypees(long accountTypeId)
+        public async Task<IActionResult> GetAccountTypes(long accountClassId)
         {
             try
             {
-                var result = await _accountTypeService.GetAccountTypesByAccountClass(accountTypeId);
+                var result = await _accountTypeService.GetAccountTypesByAccountClass(accountClassId);
                 if (result.HasError)
                     return ApiResponse<List<AccountTypeVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
