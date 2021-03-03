@@ -127,7 +127,7 @@ namespace Auth.API.Controllers
                 var result = await _studentService.GetAllStudentsInClass(vM,classId);
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items);
             }
             catch (Exception ex)
             {

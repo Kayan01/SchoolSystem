@@ -281,8 +281,6 @@ namespace Auth.Core.Services.Users
                 }
             };
 
-            teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
-
             var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastAsync();
             var lastNumber = 0;
             var seperator = schoolProperty.Data.Seperator;
@@ -302,6 +300,9 @@ namespace Auth.Core.Services.Users
                     teacher.Staff.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STF{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
 
                     _teacherRepo.Insert(teacher);
+
+
+                    teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
                     await _unitOfWork.SaveChangesAsync();
 
                     saved = true;
