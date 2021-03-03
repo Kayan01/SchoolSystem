@@ -11,5 +11,6 @@ namespace LearningSvc.Core.Interfaces
     {
         void AddOrUpdateStudentFromBroadcast(StudentSharedModel model);
         Task<long> GetStudentClassIdByUserId(long userId);
+        Task<long> GetStudentIdByUserId(long userId);
     }
 }

@@ -43,6 +43,29 @@ namespace LearningSvc.API.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<AssignmentAnswerSubmissionList>>), 200)]
+        public async Task<IActionResult> GetAssignmentSubmissionForStudent(long? studentId)
+        {
+            try
+            {
+                if (studentId==null)
+                {
+                    studentId = await _studentService.GetStudentIdByUserId(CurrentUser.UserId);
+                }
+
+                var result = await _assignmentAnswerService.GetAssignmentSubmissions(studentId.Value);
+                if (result.HasError)
+                    return ApiResponse<List<AssignmentAnswerSubmissionList>>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<List<AssignmentAnswerSubmissionList>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<AssignmentAnswerVM>), 200)]
         public async Task<IActionResult> GetAssignmentAnswer(long answerId)
         {

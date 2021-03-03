@@ -55,5 +55,14 @@ namespace LearningSvc.Core.Services
             }
             return student.ClassId.Value;
         }
+        public async Task<long> GetStudentIdByUserId(long userId)
+        {
+            var student = await _studentRepo.GetAll().Where(m => m.UserId == userId).FirstOrDefaultAsync();
+            if (student == null)
+            {
+                return 0;
+            }
+            return student.Id;
+        }
     }
 }
