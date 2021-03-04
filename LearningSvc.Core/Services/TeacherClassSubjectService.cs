@@ -59,8 +59,9 @@ namespace LearningSvc.Core.Services
                 .Select(x => new TeacherClassSubjectListVM()
                 {
                     Id = x.Id,
+                    ClassId = x.SchoolClassSubject.SchoolClass.Id,
                     ClassSubjectId = x.SchoolClassSubjectId,
-                    Class = x.SchoolClassSubject.SchoolClass.Name,
+                    Class = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
                     Subject = x.SchoolClassSubject.Subject.Name,
                     Teacher = x.Teacher.FirstName + " " + x.Teacher.LastName
                 }).ToListAsync()

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace FinanceSvc.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]/[action]")]
     [ApiController]
     public class FeeGroupController : BaseController
     {

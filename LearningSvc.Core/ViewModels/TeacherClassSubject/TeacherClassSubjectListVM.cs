@@ -11,5 +11,6 @@ namespace LearningSvc.Core.ViewModels.TeacherClassSubject
         public string Subject { get; set; }
         public string Teacher { get; set; }
         public long ClassSubjectId { get; set; }
+        public long ClassId { get; set; }
     }
 }
