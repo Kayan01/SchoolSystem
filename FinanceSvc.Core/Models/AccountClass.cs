@@ -2,6 +2,7 @@
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace FinanceSvc.Core.Models
@@ -16,6 +17,7 @@ namespace FinanceSvc.Core.Models
 
         public bool IsActive { get; set; }
 
+        [NotMapped]
         public ICollection<AccountType> AccountTypes { get; set; } = new List<AccountType>();
 
     }
