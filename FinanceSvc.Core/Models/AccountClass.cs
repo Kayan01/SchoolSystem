@@ -17,7 +17,6 @@ namespace FinanceSvc.Core.Models
 
         public bool IsActive { get; set; }
 
-        [NotMapped]
         public ICollection<AccountType> AccountTypes { get; set; } = new List<AccountType>();
 
     }
