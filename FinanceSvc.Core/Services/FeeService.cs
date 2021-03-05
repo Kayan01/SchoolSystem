@@ -17,12 +17,14 @@ namespace FinanceSvc.Core.Services
     public class FeeService : IFeeService
     {
         private readonly IRepository<Fee, long> _feeRepo;
+        private readonly IRepository<SchoolClass, long> _classRepo;
         private readonly IUnitOfWork _unitOfWork;
 
-        public FeeService(IUnitOfWork unitOfWork, IRepository<Fee, long> feeRepo)
+        public FeeService(IUnitOfWork unitOfWork, IRepository<Fee, long> feeRepo, IRepository<SchoolClass, long> classRepo)
         {
             _unitOfWork = unitOfWork;
             _feeRepo = feeRepo;
+            _classRepo = classRepo;
         }
 
         public async Task<ResultModel<string>> AddFee(FeePostVM model)
@@ -34,6 +36,14 @@ namespace FinanceSvc.Core.Services
             if (check != null)
             {
                 result.AddError("Fee with this name already exist!");
+                return result;
+            }
+
+            var checkClass = await _classRepo.GetAll().Where(m => m.Id == model.SchoolClassId).FirstOrDefaultAsync();
+
+            if (checkClass != null)
+            {
+                result.AddError("Class not found!");
                 return result;
             }
 
