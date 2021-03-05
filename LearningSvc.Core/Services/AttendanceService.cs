@@ -46,16 +46,12 @@ namespace LearningSvc.Core.Services
 
                     if (currAtt != null)
                     {
-                        await _classAttendanceRepo.InsertAsync(new AttendanceClass
-                        {
-                            Id = currAtt.Id,
-                            AttendanceDate = model.Date,
-                            AttendanceStatus = item.AttendanceStatus,
-                            ClassId = model.ClassId,
-                            StudentId = currAtt.StudentId,
-                            Remark =  item.Remark
+                        currAtt.AttendanceDate = model.Date;
+                        currAtt.AttendanceStatus = item.AttendanceStatus;
+                        currAtt.Remark = item.Remark;
+                        currAtt.ClassId = model.ClassId;
 
-                        });
+                       
                     }
                     else
                     {
