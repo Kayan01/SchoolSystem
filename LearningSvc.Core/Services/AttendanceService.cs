@@ -46,16 +46,12 @@ namespace LearningSvc.Core.Services
 
                     if (currAtt != null)
                     {
-                        await _classAttendanceRepo.InsertAsync(new AttendanceClass
-                        {
-                            Id = currAtt.Id,
-                            AttendanceDate = model.Date,
-                            AttendanceStatus = item.AttendanceStatus,
-                            ClassId = model.ClassId,
-                            StudentId = currAtt.StudentId,
-                            Remark =  item.Remark
+                        currAtt.AttendanceDate = model.Date;
+                        currAtt.AttendanceStatus = item.AttendanceStatus;
+                        currAtt.Remark = item.Remark;
+                        currAtt.ClassId = model.ClassId;
 
-                        });
+                       
                     }
                     else
                     {
@@ -96,6 +92,7 @@ namespace LearningSvc.Core.Services
         {
             var currAttendance = await _subjectAttendanceRepo.GetAll()
                   .Where(x => x.AttendanceDate == model.Date && x.SubjectId == model.SubjectId)
+                  
                   .ToListAsync();
 
             //update existing attendance
@@ -108,16 +105,10 @@ namespace LearningSvc.Core.Services
 
                     if (currAtt != null)
                     {
-                        await _subjectAttendanceRepo.InsertAsync(new AttendanceSubject
-                        {
-                            Id = currAtt.Id,
-                            AttendanceDate = model.Date,
-                            AttendanceStatus = item.AttendanceStatus,
-                            SubjectId = model.SubjectId,
-                            StudentId = currAtt.StudentId,
-                            Remark = item.Remark
-
-                        });
+                        currAtt.AttendanceDate = model.Date;
+                        currAtt.AttendanceStatus = item.AttendanceStatus;
+                        currAtt.SubjectId = model.SubjectId;
+                        currAtt.Remark = item.Remark;
                     }
                     else
                     {
@@ -136,7 +127,7 @@ namespace LearningSvc.Core.Services
             {
                 foreach (var item in model.StudentAttendanceVMs)
                 {
-                    _subjectAttendanceRepo.Insert(new AttendanceSubject
+                    await _subjectAttendanceRepo.InsertAsync(new AttendanceSubject
                     {
                         AttendanceDate = model.Date,
                         AttendanceStatus = item.AttendanceStatus,
@@ -205,6 +196,12 @@ namespace LearningSvc.Core.Services
                 .Where(x =>
                     x.StudentId == vm.StudentId &&
                     x.ClassId == vm.ClassId);
+
+            //adds student query if provided
+            if (vm.StudentId.HasValue)
+            {
+                query = query.Where(x => x.StudentId >= vm.StudentId);
+            }
 
             //adds date query if provided
             if (vm.FromDate.HasValue && vm.ToDate.HasValue)
