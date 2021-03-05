@@ -157,9 +157,13 @@ namespace LearningSvc.Core.Services
         {
             var query = _subjectAttendanceRepo.GetAll()
                 .Where(x =>
-                    x.StudentId == vm.StudentId &&
-                    x.SubjectId == vm.SubjectId);
+                    x.StudentId == vm.StudentId);
 
+            //add subject query if provided
+            if (vm.SubjectId.HasValue)
+            {
+                query = query.Where(x => x.SubjectId == vm.SubjectId);
+            }
             //adds date query if provided
             if (vm.Date.HasValue)
             {
