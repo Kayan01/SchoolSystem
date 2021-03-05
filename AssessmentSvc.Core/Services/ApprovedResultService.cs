@@ -2,16 +2,19 @@
 using AssessmentSvc.Core.Models;
 using AssessmentSvc.Core.ViewModels.Result;
 using AssessmentSvc.Core.ViewModels.SessionSetup;
+using AssessmentSvc.Core.ViewModels.Student;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.PubSub;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Shared.Utils.CoreConstants;
 
 namespace AssessmentSvc.Core.Services
 {
@@ -23,13 +26,16 @@ namespace AssessmentSvc.Core.Services
         private readonly IRepository<Result, long> _resultRepo;
         private readonly ISessionSetup _sessionService;
         private readonly IResultService _resultService;
-        public readonly IGradeSetupService _gradeService;
+        private readonly IGradeSetupService _gradeService;
+        private readonly IPublishService _publishService;
+
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
             IRepository<Result, long> resultRepo,
             ISessionSetup sessionService, 
             IResultService resultService,
             IGradeSetupService gradeService,
+            IPublishService publishService,
             IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -38,6 +44,7 @@ namespace AssessmentSvc.Core.Services
             _approvedResultRepo = approvedResultRepo;
             _resultRepo = resultRepo;
             _gradeService = gradeService;
+            _publishService = publishService;
         }
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
         {
@@ -473,5 +480,86 @@ namespace AssessmentSvc.Core.Services
 
             return result;
         }
+
+        public async Task<ResultModel<List<StudentVM>>> GetStudentsWithApprovedResult(long classId, long? curSessionId = null, int? termSequenceNumber = null)
+        {
+
+            var result = new ResultModel<List<StudentVM>>();
+
+            var sessionAndTermResult = new ResultModel<CurrentSessionAndTermVM>();
+
+            if (curSessionId != null && termSequenceNumber != null)
+            {
+                sessionAndTermResult = await _sessionService.GetSessionAndTerm(curSessionId.Value, termSequenceNumber.Value);
+            }
+            else
+            {
+                sessionAndTermResult = await _sessionService.GetCurrentSessionAndTerm();
+            }
+
+            if (sessionAndTermResult.HasError)
+            {
+                return new ResultModel<List<StudentVM>>(sessionAndTermResult.ErrorMessages);
+            }
+
+            var currSessionAndTerm = sessionAndTermResult.Data;
+
+            var studentWithApprovedResults = await _resultRepo.GetAll()
+                .Where(x => x.SessionSetupId == currSessionAndTerm.sessionId &&
+                    x.SchoolClassId == classId &&
+                    x.TermSequenceNumber == currSessionAndTerm.TermSequence &&
+                    x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
+                    x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved
+                ).Select(m=> new StudentVM()
+                {
+                    Id = m.Student.Id,
+                    Name = $"{m.Student.LastName} {m.Student.FirstName}",
+                    RegNumber = m.Student.RegNumber,
+                })
+                .ToListAsync();
+
+            if (studentWithApprovedResults.Count < 1)
+            {
+                return new ResultModel<List<StudentVM>>(errorMessage: "No Approved result found in current term and session");
+            }
+
+            List<StudentVM> eachStudent = studentWithApprovedResults.GroupBy(x => x.Id).Select(m=>m.First()).ToList();
+            result.Data = eachStudent;
+
+            return result;
+        }
+
+        //public async Task<ResultModel<string>> MailResult(MailResultVM vm)
+        //{
+        //    var result = new ResultModel<string>();
+
+        //    var sessionAndTermResult = new ResultModel<CurrentSessionAndTermVM>();
+
+        //    if (vm.curSessionId != null && vm.termSequenceNumber != null)
+        //    {
+        //        sessionAndTermResult = await _sessionService.GetSessionAndTerm(vm.curSessionId.Value, vm.termSequenceNumber.Value);
+        //    }
+        //    else
+        //    {
+        //        sessionAndTermResult = await _sessionService.GetCurrentSessionAndTerm();
+        //    }
+
+        //    if (sessionAndTermResult.HasError)
+        //    {
+        //        return new ResultModel<string>(sessionAndTermResult.ErrorMessages);
+        //    }
+
+        //    var currSessionAndTerm = sessionAndTermResult.Data;
+
+        //    await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
+        //    {
+        //        Emails = new List<CreateEmailModel>
+        //        {
+        //        }
+        //    });
+
+        //    return result;
+        //}
+
     }
 }

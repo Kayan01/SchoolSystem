@@ -1,5 +1,6 @@
 ﻿using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.ViewModels.Result;
+using AssessmentSvc.Core.ViewModels.Student;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -239,6 +240,27 @@ namespace AssessmentSvc.API.Controllers
 
                 if (result.HasError)
                     return ApiResponse<StudentReportSheetVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<StudentVM>>), 200)]
+        public async Task<IActionResult> GetStudentsWithApprovedResult(long classId, long? sessionId = null, int? termSequenceNumber = null)
+        {
+            if (classId < 1)
+                return ApiResponse<List<StudentVM>>(errors: "Please provide valid Id", codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _approvedResultService.GetStudentsWithApprovedResult(classId, sessionId, termSequenceNumber);
+
+                if (result.HasError)
+                    return ApiResponse<List<StudentVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
