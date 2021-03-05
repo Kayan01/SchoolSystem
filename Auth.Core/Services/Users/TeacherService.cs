@@ -582,7 +582,7 @@ namespace Auth.Core.Services.Users
 
             teacher.ClassId = model.ClassId;
 
-            await _teacherRepo.InsertAsync(teacher);
+            await _teacherRepo.UpdateAsync(teacher);
             _unitOfWork.SaveChanges();
 
             //adds classID as a claim
