@@ -170,7 +170,7 @@ namespace Auth.Core.Services
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 Email = model.ContactDetails.EmailAddress,
-                UserName = model.ContactDetails.EmailAddress,
+               UserName = model.ContactDetails.EmailAddress,
                 PhoneNumber = model.ContactDetails.PhoneNumber,
                 MiddleName = model.OtherNames,
                 UserType = UserType.Staff,
@@ -279,9 +279,9 @@ namespace Auth.Core.Services
                 try
                 {
                     nextNumber++;
-                    staff.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STF{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+                    staff.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STF{seperator}{DateTime.Now.Year}{seperator}{nextNumber:00000}";
 
-                    _staffRepo.Insert(staff);
+                    await _staffRepo.InsertAsync(staff);
                     await _unitOfWork.SaveChangesAsync();
 
                     saved = true;
@@ -292,6 +292,11 @@ namespace Auth.Core.Services
                     saved = false;
                 }
             }
+
+            //change user's username to reg number
+            user.UserName = staff.RegNumber;
+            user.NormalizedUserName = staff.RegNumber.ToUpper();
+           await _userManager.UpdateAsync(user);
 
             _unitOfWork.Commit();
 
@@ -309,9 +314,7 @@ namespace Auth.Core.Services
             //broadcast login detail to email
             _ = await _authUserManagement.SendRegistrationEmail(user);
 
-
-            //TODO Refactor, and Move teachers logic to TeachersService
-
+            
             //Publish Message
             await _publishService.PublishMessage(Topics.Staff, BusMessageTypes.STAFF, new StaffSharedModel
                 {

@@ -314,6 +314,11 @@ namespace Auth.Core.Services.Users
                 }
             }
 
+            //change user's username to reg number
+            user.UserName = teacher.Staff.RegNumber;
+            user.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
+            await _userManager.UpdateAsync(user);
+
             _unitOfWork.Commit();
 
 
@@ -335,10 +340,10 @@ namespace Auth.Core.Services.Users
             });
 
             //Email and Notifications
-            var notificationResult = await NewTeacherNotification(teacher, user.Email);
+            //var notificationResult = await NewTeacherNotification(teacher, user.Email);
 
-            if (notificationResult.HasError)
-                _logger.LogError($"Failed to send notifications for: {teacher.Staff.User.FullName} - {teacher.Staff.User.Email}, Reason: {string.Join(';', notificationResult.ErrorMessages)}");
+            //if (notificationResult.HasError)
+            //    _logger.LogError($"Failed to send notifications for: {teacher.Staff.User.FullName} - {teacher.Staff.User.Email}, Reason: {string.Join(';', notificationResult.ErrorMessages)}");
 
             result.Data = new TeacherVM
             {
@@ -586,7 +591,8 @@ namespace Auth.Core.Services.Users
             _unitOfWork.SaveChanges();
 
             //adds classID as a claim
-            await _userManager.AddClaimAsync(teacher.Staff.User, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
+            var user = await _userManager.FindByIdAsync(teacher.Staff.UserId.ToString());
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
@@ -601,7 +607,7 @@ namespace Auth.Core.Services.Users
                 Phone = teacher.Staff.User.PhoneNumber
             });
 
-            result.Data = "Saved";
+            result.Data = "Teacher made class teacher successfully";
             return result;
         }
 
