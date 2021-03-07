@@ -8,7 +8,8 @@ namespace Shared.ViewModels
     {
         public long TenantId { get; set; }
         public long Id { get; set; }
-        public string RegNumber { get; set; }
+        public string ParentName { get; set; }
+        public string ParentEmail { get; set; }
         public long? ClassId { get; set; }
     }
 }

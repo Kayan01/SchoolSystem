@@ -17,6 +17,7 @@ namespace Shared.Utils
             public const string NewUser = nameof(NewUser);
             public const string NewTeacher = nameof(NewTeacher);
             public const string NewSchool = nameof(NewSchool);
+            public const string StudentResult = nameof(StudentResult);
         }
 
         public static class EntityType
@@ -49,6 +50,7 @@ namespace Shared.Utils
             new EmailTemplate(EmailTemplateType.NewUser, "New User", "newuser.htm"),
             new EmailTemplate(EmailTemplateType.NewTeacher, "New Teacher", "newteacher.htm"),
             new EmailTemplate(EmailTemplateType.NewSchool, "New School", "newschool.htm"),
+            new EmailTemplate(EmailTemplateType.StudentResult, "Student Result", "result.htm"),
         };
 
         public class PaginationConsts

@@ -28,6 +28,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IResultService _resultService;
         private readonly IGradeSetupService _gradeService;
         private readonly IPublishService _publishService;
+        private readonly IStudentService _studentService;
 
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
@@ -35,7 +36,8 @@ namespace AssessmentSvc.Core.Services
             ISessionSetup sessionService, 
             IResultService resultService,
             IGradeSetupService gradeService,
-            IPublishService publishService,
+            IPublishService publishService, 
+            IStudentService studentService,
             IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -45,6 +47,7 @@ namespace AssessmentSvc.Core.Services
             _resultRepo = resultRepo;
             _gradeService = gradeService;
             _publishService = publishService;
+            _studentService = studentService;
         }
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
         {
@@ -529,37 +532,50 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
-        //public async Task<ResultModel<string>> MailResult(MailResultVM vm)
-        //{
-        //    var result = new ResultModel<string>();
+        public async Task<ResultModel<string>> MailResult(MailResultVM vm)
+        {
+            var result = new ResultModel<string>();
 
-        //    var sessionAndTermResult = new ResultModel<CurrentSessionAndTermVM>();
+            var sessionAndTermResult = new ResultModel<CurrentSessionAndTermVM>();
 
-        //    if (vm.curSessionId != null && vm.termSequenceNumber != null)
-        //    {
-        //        sessionAndTermResult = await _sessionService.GetSessionAndTerm(vm.curSessionId.Value, vm.termSequenceNumber.Value);
-        //    }
-        //    else
-        //    {
-        //        sessionAndTermResult = await _sessionService.GetCurrentSessionAndTerm();
-        //    }
+            if (vm.curSessionId != null && vm.termSequenceNumber != null)
+            {
+                sessionAndTermResult = await _sessionService.GetSessionAndTerm(vm.curSessionId.Value, vm.termSequenceNumber.Value);
+            }
+            else
+            {
+                sessionAndTermResult = await _sessionService.GetCurrentSessionAndTerm();
+            }
 
-        //    if (sessionAndTermResult.HasError)
-        //    {
-        //        return new ResultModel<string>(sessionAndTermResult.ErrorMessages);
-        //    }
+            if (sessionAndTermResult.HasError)
+            {
+                return new ResultModel<string>(sessionAndTermResult.ErrorMessages);
+            }
 
-        //    var currSessionAndTerm = sessionAndTermResult.Data;
+            var currSessionAndTerm = sessionAndTermResult.Data;
 
-        //    await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
-        //    {
-        //        Emails = new List<CreateEmailModel>
-        //        {
-        //        }
-        //    });
+            var mailInfos = await _studentService.GetParentsMailInfo(vm.StudentIds);
+            if (mailInfos.HasError)
+            {
+                return new ResultModel<string>(mailInfos.ErrorMessages);
+            }
 
-        //    return result;
-        //}
+
+            await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
+            {
+                Emails = mailInfos.Data.Select(m => new CreateEmailModel(
+                   EmailTemplateType.StudentResult,
+                   new Dictionary<string, string>{
+                            { "link", $"{vm.ResultPageURL}?stuId={m.StudentId}&sessionId={currSessionAndTerm.sessionId}&termSeq={currSessionAndTerm.TermSequence}" },
+                            { "ParentName", m.ParentName },
+                            {"Studentname", m.StudentName}
+                   },
+                   new UserVM() { FullName = m.ParentName, Email = m.Email })).ToList()
+            });
+
+            result.Data = "Successful";
+            return result;
+        }
 
     }
 }
