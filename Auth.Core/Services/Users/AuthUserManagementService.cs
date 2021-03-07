@@ -14,6 +14,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Shared.Enums;
 using static Shared.Utils.CoreConstants;
 
@@ -25,18 +26,21 @@ namespace Auth.Core.Services
         private readonly IDataProtector _protector;
         private readonly IPublishService _publishService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<AuthUserManagementService> _logger;
 
 
         public AuthUserManagementService(
             UserManager<User> userManager,
             IDataProtectionProvider provider,
             IPublishService publishService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<AuthUserManagementService> logger)
         {
             _userManager = userManager;
             _protector = provider.CreateProtector("Auth");
             _publishService = publishService;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
         readonly string  baseUrl = "http://school-track-1.vercel.app";
         public async Task<long?> AddUserAsync(AuthUserModel model)
@@ -93,7 +97,8 @@ namespace Auth.Core.Services
             //should handle multi tenant frontend urls
             var baseUri =_httpContextAccessor.HttpContext.Request.GetTypedHeaders().Referer;
            
-            
+            //test
+            _logger.LogError($"Url Referer value : {baseUri}");
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
