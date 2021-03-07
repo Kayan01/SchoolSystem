@@ -81,7 +81,7 @@ namespace Auth.Core.Services
             _unitOfWork.BeginTransaction();
 
             //check if parent exists
-            var parent = await _parentRepo.GetAll()
+            var parent = await _parentRepo.GetAll().Include(m=>m.User)
                 .Where(x => x.Id == model.ParentId)
                 .FirstOrDefaultAsync();
 
@@ -238,7 +238,9 @@ namespace Auth.Core.Services
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 Email = model.ContactEmail,
-                Phone = model.ContactPhone
+                Phone = model.ContactPhone,
+                ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
+                ParentEmail = parent.User.Email
             });
 
             result.Data = new StudentVM
@@ -509,7 +511,7 @@ namespace Auth.Core.Services
             }
 
             //check if parent exists
-            var parent = await _parentRepo.GetAll()
+            var parent = await _parentRepo.GetAll().Include(m=>m.User)
                 .Where(x => x.Id == model.ParentId)
                 .FirstOrDefaultAsync();
 
@@ -623,6 +625,8 @@ namespace Auth.Core.Services
                 Email = stud.User.Email,
                 Phone = stud.User.PhoneNumber,
                 RegNumber= stud.RegNumber,
+                ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
+                ParentEmail = parent.User.Email
             });
 
             result.Data = stud;

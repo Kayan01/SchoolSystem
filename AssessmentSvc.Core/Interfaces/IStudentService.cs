@@ -12,5 +12,6 @@ namespace AssessmentSvc.Core.Interfaces
         void AddOrUpdateStudentFromBroadcast(StudentSharedModel model);
         Task<long> GetStudentClassIdByUserId(long userId);
         Task<ResultModel<List<StudentVM>>> GetStudentsByClass(long classId);
+        Task<ResultModel<List<StudentParentMailingInfo>>> GetParentsMailInfo(long[] ids);
     }
 }
