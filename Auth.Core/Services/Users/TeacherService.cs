@@ -591,7 +591,8 @@ namespace Auth.Core.Services.Users
             _unitOfWork.SaveChanges();
 
             //adds classID as a claim
-            await _userManager.AddClaimAsync(teacher.Staff.User, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
+            var user = await _userManager.FindByIdAsync(teacher.Staff.UserId.ToString());
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
@@ -606,7 +607,7 @@ namespace Auth.Core.Services.Users
                 Phone = teacher.Staff.User.PhoneNumber
             });
 
-            result.Data = "Saved";
+            result.Data = "Teacher made class teacher successfully";
             return result;
         }
 
