@@ -314,6 +314,11 @@ namespace Auth.Core.Services.Users
                 }
             }
 
+            //change user's username to reg number
+            user.UserName = teacher.Staff.RegNumber;
+            user.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
+            await _userManager.UpdateAsync(user);
+
             _unitOfWork.Commit();
 
 
@@ -335,10 +340,10 @@ namespace Auth.Core.Services.Users
             });
 
             //Email and Notifications
-            var notificationResult = await NewTeacherNotification(teacher, user.Email);
+            //var notificationResult = await NewTeacherNotification(teacher, user.Email);
 
-            if (notificationResult.HasError)
-                _logger.LogError($"Failed to send notifications for: {teacher.Staff.User.FullName} - {teacher.Staff.User.Email}, Reason: {string.Join(';', notificationResult.ErrorMessages)}");
+            //if (notificationResult.HasError)
+            //    _logger.LogError($"Failed to send notifications for: {teacher.Staff.User.FullName} - {teacher.Staff.User.Email}, Reason: {string.Join(';', notificationResult.ErrorMessages)}");
 
             result.Data = new TeacherVM
             {

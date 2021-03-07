@@ -220,6 +220,12 @@ namespace Auth.Core.Services
                 }
             }
 
+
+            //change user's username to reg number
+            user.UserName = stud.RegNumber;
+            user.NormalizedUserName = stud.RegNumber.ToUpper();
+            await _userManager.UpdateAsync(user);
+
             _unitOfWork.Commit();
 
 
