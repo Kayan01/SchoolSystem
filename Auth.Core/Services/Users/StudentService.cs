@@ -314,6 +314,8 @@ namespace Auth.Core.Services
                 LastName = x.User.LastName,
                 StudentNumber = x.RegNumber,
                 Sex = x.Sex,
+                Email = x.User.Email,
+                PhoneNumber =  x.User.PhoneNumber  ,
                 Section = x.Class.SchoolSection.Name,
                 IsActive = x.IsActive,
                 ImagePath = x.FileUploads.Where(fileUpload => fileUpload.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
