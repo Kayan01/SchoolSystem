@@ -85,6 +85,13 @@ namespace FinanceSvc.API
                                     await handler.HandleAddOrUpdateClassAsync(message);
                                     break;
                                 }
+                            case (int)BusMessageTypes.SESSION:
+                            case (int)BusMessageTypes.SESSION_DELETE:
+                            case (int)BusMessageTypes.SESSION_UPDATE:
+                                {
+                                    await handler.HandleAddOrUpdateSessionAsync(message);
+                                    break;
+                                }
                         }
                     }
                     catch (Exception e)
@@ -120,6 +127,7 @@ namespace FinanceSvc.API
             services.AddScoped<IFeeComponentService, FeeComponentService>();
             services.AddScoped<IFeeService, FeeService>();
             services.AddScoped<IInvoiceService, InvoiceService>();
+            services.AddScoped<ISessionSetupService, SessionSetupService>();
 
             //services.AddTransient<IFileUploadService, FileUploadService>();
             services.AddScoped<IFinanceService, FinanceService>();

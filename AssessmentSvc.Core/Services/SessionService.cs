@@ -4,6 +4,7 @@ using AssessmentSvc.Core.ViewModels.SessionSetup;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.PubSub;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -15,13 +16,16 @@ namespace AssessmentSvc.Core.Services
 {
     public class SessionService : ISessionSetup
     {
+        private readonly IPublishService _publishService;
         public readonly IRepository<SessionSetup, long> _sessionRepo;
-
         private readonly IUnitOfWork _unitOfWork;
+
         public SessionService(
             IRepository<SessionSetup, long> sessionRepo,
+            IPublishService publishService,
              IUnitOfWork unitOfWork)
         {
+            _publishService = publishService;
             _sessionRepo = sessionRepo;
             _unitOfWork = unitOfWork;
         }
@@ -54,7 +58,7 @@ namespace AssessmentSvc.Core.Services
                 }
             }
 
-            await _sessionRepo.InsertAsync(session);
+            session = await _sessionRepo.InsertAsync(session);
 
            await _unitOfWork.SaveChangesAsync();
 
@@ -70,6 +74,16 @@ namespace AssessmentSvc.Core.Services
                     StartDate = x.StartDate })
                 .ToList()
             };
+
+            //Publish to services
+            await _publishService.PublishMessage(Topics.Session, BusMessageTypes.SESSION, new SessionSharedModel
+            {
+                Id = session.Id,
+                SessionName = session.SessionName,
+                IsCurrent = session.IsCurrent,
+                TenantId = session.TenantId,
+                TermsJSON = session.TermsJSON
+            });
 
             return result;
 

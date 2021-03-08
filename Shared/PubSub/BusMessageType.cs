@@ -29,5 +29,8 @@ namespace Shared.PubSub
         PARENT,
         PARENT_UPDATE,
         PARENT_DELETE,
+        SESSION,
+        SESSION_UPDATE,
+        SESSION_DELETE,
     }
 }
