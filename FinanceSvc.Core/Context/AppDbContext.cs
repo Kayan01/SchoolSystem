@@ -43,6 +43,7 @@ namespace FinanceSvc.Core.Context
         public DbSet<AccountClass> AccountClasses { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoicePayment> InvoicePayments { get; set; }
+        public DbSet<SessionSetup> SessionSetups { get; set; }
 
 
         public async Task AddSampleData()

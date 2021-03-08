@@ -18,17 +18,20 @@ namespace FinanceSvc.Core.Services
         private readonly IRepository<Invoice, long> _invoiceRepo;
         private readonly IRepository<Student, long> _studentRepo;
         private readonly IRepository<Fee, long> _feeRepo;
+        private readonly ISessionSetupService _sessionService;
         private readonly IUnitOfWork _unitOfWork;
 
         public InvoiceService(IUnitOfWork unitOfWork, 
             IRepository<Invoice, long> invoiceRepo, 
             IRepository<Fee, long> feeRepo,
-            IRepository<Student, long> studentRepo)
+            IRepository<Student, long> studentRepo,
+            ISessionSetupService sessionService)
         {
             _unitOfWork = unitOfWork;
             _invoiceRepo = invoiceRepo;
             _feeRepo = feeRepo;
             _studentRepo = studentRepo;
+            _sessionService = sessionService;
         }
 
         public async Task<ResultModel<string>> AddInvoice(InvoicePostVM model)
@@ -38,8 +41,8 @@ namespace FinanceSvc.Core.Services
             var check = await _invoiceRepo.GetAll().Where(m => 
                 m.Student.ClassId == model.ClassId && 
                 m.Fee.FeeGroupId == model.FeeGroupId && 
-                m.Session == model.Session &&
-                m.Term == model.Term
+                m.SessionSetupId == model.SessionId &&
+                m.TermSequenceNumber == model.TermSequence
                 ).FirstOrDefaultAsync();
 
             if (check != null)
@@ -57,11 +60,11 @@ namespace FinanceSvc.Core.Services
                 {
                     ApprovalStatus = Enumerations.InvoiceApprovalStatus.Approved,
                     FeeId = fee.Id,
-                    Session = model.Session,
+                    SessionSetupId = model.SessionId,
                     PaymentDate = model.PaymentDate,
                     StudentId = studentId,
                     PaymentStatus = Enumerations.InvoicePaymentStatus.Unpaid,
-                    Term = model.Term
+                    TermSequenceNumber = model.TermSequence
                 };
 
                 _invoiceRepo.Insert(invoice);
@@ -81,7 +84,7 @@ namespace FinanceSvc.Core.Services
             {
                 InvoiceId = m.Id,
                 StudentName = $"{m.Student.FirstName} {m.Student.LastName}",
-                Session = m.Session,
+                Session = m.SessionSetup.SessionName,
                 StudentRegNumber = m.Student.RegNumber,
                 approvalStatus = m.ApprovalStatus,
                 paymentStatus = m.PaymentStatus,
@@ -98,11 +101,12 @@ namespace FinanceSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<InvoicePaymentVM>>> GetPaymentInvoices(string session, string term)
+        public async Task<ResultModel<List<InvoicePaymentVM>>> GetPaymentInvoices(long sessionId, int termSequence)
         {
             var result = new ResultModel<List<InvoicePaymentVM>>();
 
-            result.Data = await _invoiceRepo.GetAll().Where(n=>n.Session == session && n.Term == term).Select(m => new InvoicePaymentVM()
+            result.Data = await _invoiceRepo.GetAll().Where(n=>n.SessionSetupId == sessionId && n.TermSequenceNumber == termSequence)
+                .Select(m => new InvoicePaymentVM()
             {
                 DueDate = m.PaymentDate,
                 FeeGroup = m.Fee.FeeGroup.Name,
@@ -116,20 +120,34 @@ namespace FinanceSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<InvoicePaymentHistoryVM>>> GetPaymentHistoryInvoices(string session, string term)
+        public async Task<ResultModel<List<InvoicePaymentHistoryVM>>> GetPaymentHistoryInvoices(long sessionId, int termSequence)
         {
             var result = new ResultModel<List<InvoicePaymentHistoryVM>>();
+            
+            var sessionInfoResult = await _sessionService.GetSessionAndTerm(sessionId, termSequence);
+            if (sessionInfoResult.HasError)
+            {
+                return new ResultModel<List<InvoicePaymentHistoryVM>>(sessionInfoResult.ErrorMessages);
+            }
 
-            result.Data = await _invoiceRepo.GetAll().Where(n => n.Session == session && n.Term == term).Select(m => new InvoicePaymentHistoryVM()
+            var invoices = await _invoiceRepo.GetAll().Where(n => n.SessionSetupId == sessionId && n.TermSequenceNumber == termSequence).Select(m => new InvoicePaymentHistoryVM()
             {
                 DueDate = m.PaymentDate,
                 FeeGroup = m.Fee.FeeGroup.Name,
                 StudentRegNumber = m.Student.RegNumber,
                 InvoiceId = m.Id,
                 Total = m.Fee.FeeComponents.Sum(n => n.Amount),
-                Session = m.Session,
-                Term = m.Term
             }).ToListAsync();
+
+            var sessionInfo = sessionInfoResult.Data;
+
+            for (int i = 0; i < invoices.Count; i++)
+            {
+                invoices[i].Term = sessionInfo.TermName;
+                invoices[i].Session = sessionInfo.SessionName;
+            }
+
+            result.Data = invoices;
 
             return result;
         }
@@ -146,13 +164,13 @@ namespace FinanceSvc.Core.Services
             {
                 invoiceQuery = invoiceQuery.Where(m => m.PaymentStatus == model.PaymentStatus);
             }
-            if (!string.IsNullOrWhiteSpace(model.Session))
+            if (!(model.SessionId is null))
             {
-                invoiceQuery = invoiceQuery.Where(m => m.Session == model.Session);
+                invoiceQuery = invoiceQuery.Where(m => m.SessionSetupId == model.SessionId);
             }
-            if (!string.IsNullOrWhiteSpace(model.Term))
+            if (!(model.TermSequence is null))
             {
-                invoiceQuery = invoiceQuery.Where(m => m.Term == model.Term);
+                invoiceQuery = invoiceQuery.Where(m => m.TermSequenceNumber == model.TermSequence);
             }
             if (!(model.StudentId is null))
             {
@@ -176,43 +194,74 @@ namespace FinanceSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<InvoiceVM>>> GetAllInvoices(string session, string term)
+        public async Task<ResultModel<List<InvoiceVM>>> GetAllInvoices(long sessionId, int termSequence)
         {
             var result = new ResultModel<List<InvoiceVM>>();
 
-            result.Data = await _invoiceRepo.GetAll().Where(n => n.Session == session && n.Term == term).Select(m => new InvoiceVM()
+            var sessionInfoResult = await _sessionService.GetSessionAndTerm(sessionId, termSequence);
+            if (sessionInfoResult.HasError)
+            {
+                return new ResultModel<List<InvoiceVM>>(sessionInfoResult.ErrorMessages);
+            }
+
+            var invoices = await _invoiceRepo.GetAll().Where(n => n.SessionSetupId == sessionId && n.TermSequenceNumber == termSequence).Select(m => new InvoiceVM()
             {
                 DueDate = m.PaymentDate,
                 FeeGroup = m.Fee.FeeGroup.Name,
                 StudentRegNumber = m.Student.RegNumber,
                 InvoiceId = m.Id,
                 Total = m.Fee.FeeComponents.Sum(n => n.Amount),
-                Session = m.Session,
-                Term = m.Term,
                 Class = $"{m.Student.Class.Name} {m.Student.Class.ClassArm}",
                 ApprovalStatus = m.ApprovalStatus,
             }).ToListAsync();
 
+            var sessionInfo = sessionInfoResult.Data;
+
+            for (int i = 0; i < invoices.Count; i++)
+            {
+                invoices[i].Term = sessionInfo.TermName;
+                invoices[i].Session = sessionInfo.SessionName;
+            }
+
+            result.Data = invoices;
+
             return result;
         }
 
-        public async Task<ResultModel<List<InvoicePendingPaymentVM>>> GetPendingPaymentInvoices(string session, string term)
+        public async Task<ResultModel<List<InvoicePendingPaymentVM>>> GetPendingPaymentInvoices(long sessionId, int termSequence)
         {
             var result = new ResultModel<List<InvoicePendingPaymentVM>>();
 
-            result.Data = await _invoiceRepo.GetAll().Where(n => n.Session == session && n.Term == term && 
-                n.ApprovalStatus == Enumerations.InvoiceApprovalStatus.Approved && n.PaymentStatus != Enumerations.InvoicePaymentStatus.Paid)
-                .Select(m => new InvoicePendingPaymentVM()
+            var sessionInfoResult = await _sessionService.GetSessionAndTerm(sessionId, termSequence);
+            if (sessionInfoResult.HasError)
+            {
+                return new ResultModel<List<InvoicePendingPaymentVM>>(sessionInfoResult.ErrorMessages);
+            }
+
+            var invoices = await _invoiceRepo.GetAll().Where(n => 
+                n.SessionSetupId == sessionId && 
+                n.TermSequenceNumber == termSequence && 
+                n.ApprovalStatus == Enumerations.InvoiceApprovalStatus.Approved && 
+                n.PaymentStatus != Enumerations.InvoicePaymentStatus.Paid)
+            .Select(m => new InvoicePendingPaymentVM()
             {
                 DueDate = m.PaymentDate,
                 FeeGroup = m.Fee.FeeGroup.Name,
                 StudentRegNumber = m.Student.RegNumber,
                 InvoiceId = m.Id,
                 Total = m.Fee.FeeComponents.Sum(n => n.Amount),
-                Session = m.Session,
-                Term = m.Term,
                 ApprovalStatus = m.ApprovalStatus,
             }).ToListAsync();
+
+            var sessionInfo = sessionInfoResult.Data;
+
+            for (int i = 0; i < invoices.Count; i++)
+            {
+                invoices[i].Term = sessionInfo.TermName;
+                invoices[i].Session = sessionInfo.SessionName;
+            }
+
+            result.Data = invoices;
 
             return result;
         }
