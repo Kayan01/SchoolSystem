@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LearningSvc.API.Controllers
 {
@@ -70,7 +71,7 @@ namespace LearningSvc.API.Controllers
             }
         }
 
-
+        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<GetStudentAttendanceSubjectVm>>), 200)]
         public async Task<IActionResult> GetStudentAttendanceForSubject([FromQuery] GetStudentAttendanceSubjectQueryVm model)
@@ -95,6 +96,7 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<GetStudentAttendanceClassVm>>), 200)]
         public async Task<IActionResult> GetStudentAttendanceForClass([FromQuery] GetStudentAttendanceClassQueryVm model)

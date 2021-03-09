@@ -176,10 +176,10 @@ namespace LearningSvc.Core.Services
             //group the data by subject
             var groupBySubjects = data.GroupBy(x => new { x.SubjectId, x.SubjectName });
 
-            var result = new ResultModel<List<GetStudentAttendanceSubjectVm>>();
+            var result = new List<GetStudentAttendanceSubjectVm>();
             foreach (var subjectGroup in groupBySubjects)
             {
-                result.Data.Add(new GetStudentAttendanceSubjectVm
+                result.Add(new GetStudentAttendanceSubjectVm
                 {
                     NoOfTImesHeld = subjectGroup.Count(),
                     NoOfTimesAttended = subjectGroup.Count(x => x.AttendanceStatus == AttendanceState.Present),
@@ -187,20 +187,19 @@ namespace LearningSvc.Core.Services
                 });
             }
 
-            return result;
+            return new ResultModel<List<GetStudentAttendanceSubjectVm>>(data: result);
         }
 
         public async Task<ResultModel<List<GetStudentAttendanceClassVm>>> GetStudentAttendanceForClass(GetStudentAttendanceClassQueryVm vm)
         {
             var query = _classAttendanceRepo.GetAll()
                 .Where(x =>
-                    x.StudentId == vm.StudentId &&
                     x.ClassId == vm.ClassId);
 
             //adds student query if provided
             if (vm.StudentId.HasValue)
             {
-                query = query.Where(x => x.StudentId >= vm.StudentId);
+                query = query.Where(x => x.StudentId == vm.StudentId);
             }
 
             //adds date query if provided
