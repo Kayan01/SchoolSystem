@@ -70,8 +70,7 @@ namespace LearningSvc.API.Controllers
                 return HandleError(ex);
             }
         }
-
-        [AllowAnonymous]
+        
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<GetStudentAttendanceSubjectVm>>), 200)]
         public async Task<IActionResult> GetStudentAttendanceForSubject([FromQuery] GetStudentAttendanceSubjectQueryVm model)
@@ -95,8 +94,7 @@ namespace LearningSvc.API.Controllers
                 return HandleError(ex);
             }
         }
-
-        [AllowAnonymous]
+        
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<GetStudentAttendanceClassVm>>), 200)]
         public async Task<IActionResult> GetStudentAttendanceForClass([FromQuery] GetStudentAttendanceClassQueryVm model)
