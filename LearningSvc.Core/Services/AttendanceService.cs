@@ -146,9 +146,21 @@ namespace LearningSvc.Core.Services
 
         public async Task<ResultModel<List<GetStudentAttendanceSubjectVm>>> GetStudentAttendanceForSubject(GetStudentAttendanceSubjectQueryVm vm)
         {
-            var query = _subjectAttendanceRepo.GetAll()
-                .Where(x =>
-                    x.StudentId == vm.StudentId);
+            var query = _subjectAttendanceRepo.GetAll();
+
+
+            //use student id to query if provided
+            if (vm.StudentId.HasValue)
+            {
+                query = query.Where(x => x.StudentId == vm.StudentId);
+            }
+
+            //use student auth id to query if provided
+            if (vm.StudentUserId.HasValue)
+            {
+                query = query.Where(x => x.Student.UserId == vm.StudentUserId);
+            }
+
 
             //add subject query if provided
             if (vm.SubjectId.HasValue)
