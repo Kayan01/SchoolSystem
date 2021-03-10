@@ -214,6 +214,12 @@ namespace LearningSvc.Core.Services
                 query = query.Where(x => x.StudentId == vm.StudentId);
             }
 
+            //adds student user id query if provided
+            if (vm.StudentUserId.HasValue)
+            {
+                query = query.Where(x => x.Student.UserId == vm.StudentUserId);
+            }
+
             //adds date query if provided
             if (vm.FromDate.HasValue && vm.ToDate.HasValue)
             {
