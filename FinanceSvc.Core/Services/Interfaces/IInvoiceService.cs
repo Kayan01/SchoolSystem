@@ -16,5 +16,6 @@ namespace FinanceSvc.Core.Services.Interfaces
         Task<ResultModel<List<InvoicePendingPaymentVM>>> GetPendingPaymentInvoices(long sessionId, int termSequence);
         Task<ResultModel<InvoiceDetailVM>> GetInvoice(long id);
         Task<ResultModel<string>> AddInvoice(InvoicePostVM model);
+        Task<ResultModel<string>> UpdateInvoiceComponentSelection(InvoiceComponentSelectionUpdateVM vm);
     }
 }
