@@ -22,6 +22,7 @@ namespace FinanceSvc.Core.ViewModels.Invoice
         public string Term { get; set; }
         public decimal Total { get; set; }
         public string FeeGroup { get; set; }
+        public bool ComponentSelected { get; set; }
 
         [System.Text.Json.Serialization.JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]

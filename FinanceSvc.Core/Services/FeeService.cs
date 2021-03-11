@@ -41,7 +41,7 @@ namespace FinanceSvc.Core.Services
 
             var checkClass = await _classRepo.GetAll().Where(m => m.Id == model.SchoolClassId).FirstOrDefaultAsync();
 
-            if (checkClass != null)
+            if (checkClass == null)
             {
                 result.AddError("Class not found!");
                 return result;

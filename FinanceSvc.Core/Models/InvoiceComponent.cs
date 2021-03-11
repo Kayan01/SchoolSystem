@@ -1,16 +1,17 @@
 ﻿using Shared.Entities.Auditing;
-using Shared.Tenancy;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace FinanceSvc.Core.Models
 {
-    public class InvoicePayment : AuditedEntity<long>, ITenantModelType
+    public class InvoiceComponent : AuditedEntity<long>
     {
-        public long TenantId { get; set; }
         public long InvoiceId { get; set; }
-        public decimal AmountPaid { get; set; }
+        public string ComponentName { get; set; }
+        public decimal Amount { get; set; }
+        public bool IsCompulsory { get; set; }
+        public bool IsSelected { get; set; }
 
         public Invoice Invoice { get; set; }
     }

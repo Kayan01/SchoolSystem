@@ -51,7 +51,7 @@ namespace FinanceSvc.Core.Services
                 return result;
             }
 
-            var fee = await _feeRepo.GetAll().Where(m => m.FeeGroupId == model.FeeGroupId && m.SchoolClassId == model.ClassId).FirstOrDefaultAsync();
+            var fee = await _feeRepo.GetAll().Include(m=>m.FeeComponents).ThenInclude(n=>n.Component).Where(m => m.FeeGroupId == model.FeeGroupId && m.SchoolClassId == model.ClassId).FirstOrDefaultAsync();
             var studentIds = await _studentRepo.GetAll().Where(m => m.ClassId == model.ClassId).Select(m=>m.Id).ToListAsync();
 
             foreach (var studentId in studentIds)
@@ -64,7 +64,15 @@ namespace FinanceSvc.Core.Services
                     PaymentDate = model.PaymentDate,
                     StudentId = studentId,
                     PaymentStatus = Enumerations.InvoicePaymentStatus.Unpaid,
-                    TermSequenceNumber = model.TermSequence
+                    TermSequenceNumber = model.TermSequence,
+                    ComponentSelected = false,
+                    InvoiceComponents = fee.FeeComponents.Select(m=> new InvoiceComponent() 
+                    { 
+                        Amount = m.Amount,
+                        ComponentName = m.Component.Name,
+                        IsSelected=true,
+                        IsCompulsory = m.IsCompulsory,
+                    }).ToList(),
                 };
 
                 _invoiceRepo.Insert(invoice);
@@ -91,14 +99,64 @@ namespace FinanceSvc.Core.Services
                 DueDate = m.PaymentDate,
                 Class = $"{m.Fee.SchoolClass.Name} {m.Fee.SchoolClass.ClassArm}",
                 FeeGroup = m.Fee.FeeGroup.Name,
-                InvoiceItems = m.Fee.FeeComponents.Select(n => new InvoiceItemVM()
+                ComponentSelected = m.ComponentSelected,
+                InvoiceItems = m.InvoiceComponents.Select(n => new InvoiceItemVM()
                 {
+                    Id = n.Id,
                     Amount = n.Amount,
-                    Name = n.Component.Name,
+                    Name = n.ComponentName,
+                    IsCompulsory = n.IsCompulsory,
+                    IsSelected = n.IsSelected
                 }).ToList(),
             }).FirstOrDefaultAsync();
 
             return result;
+        }
+
+        public async Task<ResultModel<string>> UpdateInvoiceComponentSelection(InvoiceComponentSelectionUpdateVM vm)
+        {
+            var invoice = await _invoiceRepo.GetAll().Include(m=>m.InvoiceComponents)
+                .Where(m => m.Id == vm.InvoiceId).FirstOrDefaultAsync();
+
+            if (invoice is null)
+            {
+                return new ResultModel<string>(errorMessage: "Invoice not found");
+            }
+
+            if (invoice.ComponentSelected)
+            {
+                return new ResultModel<string>(errorMessage: "Components can only be selected once.");
+            }
+
+            if (invoice is null)
+            {
+                return new ResultModel<string>(errorMessage: "Invoice not found");
+            }
+
+            if (invoice.InvoiceComponents.Count != vm.ComponentSelections.Count)
+            {
+                return new ResultModel<string>(errorMessage: "Component count mis-match. Please check that you are sending all the invoice components.");
+            }
+
+            foreach (var item in invoice.InvoiceComponents)
+            {
+                var vmComponent = vm.ComponentSelections.FirstOrDefault(m => m.ComponentId == item.Id);
+                if (vmComponent is null)
+                {
+                    return new ResultModel<string>(errorMessage: "One or more invoice is missing.");
+                }
+
+                if (!item.IsCompulsory)
+                {
+                    item.IsSelected = vmComponent.IsSelected;
+                }
+            }
+
+            invoice.ComponentSelected = true;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ResultModel<string>(data: "Updated Successfully.");
         }
 
         public async Task<ResultModel<List<InvoicePaymentVM>>> GetPaymentInvoices(long sessionId, int termSequence)
@@ -113,8 +171,8 @@ namespace FinanceSvc.Core.Services
                 StudentRegNumber=m.Student.RegNumber,
                 PaymentStatus=m.PaymentStatus,
                 InvoiceId = m.Id,
-                Total = m.Fee.FeeComponents.Sum(n=>n.Amount),
-                Paid = m.Payments.Sum(n=> n.AmountPaid),
+                Total = m.InvoiceComponents.Where(m=>m.IsSelected).Sum(n=>n.Amount),
+                Paid = m.Transactions.Sum(n=> n.Amount),
             }).ToListAsync();
 
             return result;
@@ -136,7 +194,7 @@ namespace FinanceSvc.Core.Services
                 FeeGroup = m.Fee.FeeGroup.Name,
                 StudentRegNumber = m.Student.RegNumber,
                 InvoiceId = m.Id,
-                Total = m.Fee.FeeComponents.Sum(n => n.Amount),
+                Total = m.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount),
             }).ToListAsync();
 
             var sessionInfo = sessionInfoResult.Data;
@@ -186,9 +244,9 @@ namespace FinanceSvc.Core.Services
                 FeeGroup = m.Fee.FeeGroup.Name,
                 StudentRegNumber = m.Student.RegNumber,
                 InvoiceId = m.Id,
-                Total = m.Fee.FeeComponents.Sum(n => n.Amount),
-                PaymentStatus = m.PaymentStatus,
-                Paid = m.Payments.Sum(m=> m.AmountPaid),
+                Total = m.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount),
+                Paid = m.Transactions.Where(m => m.Status == Enumerations.TransactionStatus.Paid).Sum(n => n.Amount),
+                PaymentStatus = m.PaymentStatus
             }).ToListAsync();
 
             return result;
@@ -210,7 +268,7 @@ namespace FinanceSvc.Core.Services
                 FeeGroup = m.Fee.FeeGroup.Name,
                 StudentRegNumber = m.Student.RegNumber,
                 InvoiceId = m.Id,
-                Total = m.Fee.FeeComponents.Sum(n => n.Amount),
+                Total = m.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount),
                 Class = $"{m.Student.Class.Name} {m.Student.Class.ClassArm}",
                 ApprovalStatus = m.ApprovalStatus,
             }).ToListAsync();
@@ -249,7 +307,7 @@ namespace FinanceSvc.Core.Services
                 FeeGroup = m.Fee.FeeGroup.Name,
                 StudentRegNumber = m.Student.RegNumber,
                 InvoiceId = m.Id,
-                Total = m.Fee.FeeComponents.Sum(n => n.Amount),
+                Total = m.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount),
                 ApprovalStatus = m.ApprovalStatus,
             }).ToListAsync();
 

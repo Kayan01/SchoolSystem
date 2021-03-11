@@ -566,7 +566,7 @@ namespace AssessmentSvc.Core.Services
                 Emails = mailInfos.Data.Select(m => new CreateEmailModel(
                    EmailTemplateType.StudentResult,
                    new Dictionary<string, string>{
-                            { "link", $"{vm.ResultPageURL}?stuId={m.StudentId}&sessionId={currSessionAndTerm.sessionId}&termSeq={currSessionAndTerm.TermSequence}" },
+                            { "link", $"{vm.ResultPageURL}?studId={m.StudentId}&classId={vm.classId}&sessionId={currSessionAndTerm.sessionId}&termSequenceNumber={currSessionAndTerm.TermSequence}" },
                             { "ParentName", m.ParentName },
                             {"Studentname", m.StudentName}
                    },
