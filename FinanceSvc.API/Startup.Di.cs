@@ -115,6 +115,8 @@ namespace FinanceSvc.API
                           HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath"))));
 
             services.AddScoped<IFileStorageService, FileStorageService>();
+            services.AddScoped<IDocumentService, DocumentService>();
+
             services.AddScoped<IParentService, ParentService>();
             services.AddScoped<ISchoolClassService, SchoolClassService>();
             services.AddScoped<IStudentService, StudentService>();
@@ -128,6 +130,7 @@ namespace FinanceSvc.API
             services.AddScoped<IFeeService, FeeService>();
             services.AddScoped<IInvoiceService, InvoiceService>();
             services.AddScoped<ISessionSetupService, SessionSetupService>();
+            services.AddScoped<ITransactionService, TransactionService>();
 
             //services.AddTransient<IFileUploadService, FileUploadService>();
             services.AddScoped<IFinanceService, FinanceService>();

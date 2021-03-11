@@ -29,6 +29,7 @@ namespace FinanceSvc.Core.Context
         }
 
         public DbSet<TestModel> TestModels { get; set; }
+        public DbSet<FileUpload> FileUploads { get; set; }
         public DbSet<Parent> Parents { get; set; }
         public DbSet<SchoolClass> Classes { get; set; }
         public DbSet<Student> Students { get; set; }
@@ -42,7 +43,8 @@ namespace FinanceSvc.Core.Context
         public DbSet<AccountType> AccountTypes { get; set; }
         public DbSet<AccountClass> AccountClasses { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
-        public DbSet<InvoicePayment> InvoicePayments { get; set; }
+        public DbSet<InvoiceComponent> InvoiceComponents { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
         public DbSet<SessionSetup> SessionSetups { get; set; }
 
 
