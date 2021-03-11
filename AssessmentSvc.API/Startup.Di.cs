@@ -116,6 +116,8 @@ namespace AssessmentSvc.API
 
             services.AddTransient<AssessmentHandler>();
 
+            services.AddScoped<IPublishService, PublishService>();
+
             services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();

@@ -252,7 +252,8 @@ namespace Auth.Core.Services.Users
                     FullName = st.FullName,
                     Id = st.Id,
                     ClassID = st.ClassId,
-                    //Image = _documentService.TryGetUploadedFile(st.ImageId),
+                   // ImageId = st.ImageId,
+                    Image = _documentService.TryGetUploadedFile(st.ImageId),
                     RegNo = st.RegNumber
                 });
             }
@@ -397,6 +398,11 @@ namespace Auth.Core.Services.Users
             //add usertype to claims
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
 
+
+            //change user's username to reg number
+            user.UserName = parent.RegNumber;
+            user.NormalizedUserName = parent.RegNumber.ToUpper();
+            await _userManager.UpdateAsync(user);
 
             _unitOfWork.Commit();
 

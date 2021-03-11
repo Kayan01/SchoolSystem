@@ -82,12 +82,7 @@ namespace FinanceSvc.Core.Services
                 return result;
             }
 
-            if (check.Name == model.Name.ToUpper())
-            {
-                result.AddError("Account name can not be changed!");
-                return result;
-            }
-
+            check.Name = model.Name.ToUpper();
             check.IsActive = model.IsActive;
             check.MaxNumberValue = model.MaxNumberValue;
             check.MinNumberValue = model.MinNumberValue;

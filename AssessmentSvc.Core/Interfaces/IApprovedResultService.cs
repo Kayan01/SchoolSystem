@@ -1,4 +1,5 @@
 ﻿using AssessmentSvc.Core.ViewModels.Result;
+using AssessmentSvc.Core.ViewModels.Student;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -14,5 +15,7 @@ namespace AssessmentSvc.Core.Interfaces
         Task<ResultModel<GetApprovedStudentResultViewModel>> GetStudentResultForApproval(GetStudentResultForApproval vm);
         Task<ResultModel<List<ResultBroadSheet>>> GetClassTeacherApprovedClassBroadSheet(long classId);
         Task<ResultModel<StudentReportSheetVM>> GetApprovedResultForStudent(long classId, long studentId, long? curSessionId = null, int? termSequenceNumber = null);
+        Task<ResultModel<List<StudentVM>>> GetStudentsWithApprovedResult(long classId, long? curSessionId = null, int? termSequenceNumber = null);
+        Task<ResultModel<string>> MailResult(MailResultVM vm);
     }
 }

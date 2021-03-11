@@ -25,11 +25,11 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<InvoiceVM>>), 200)]
-        public async Task<IActionResult> GetInvoices(string session, string term)
+        public async Task<IActionResult> GetAllInvoices(long sessionId, int termSequence)
         {
             try
             {
-                var result = await _invoiceService.GetInvoices(session, term);
+                var result = await _invoiceService.GetAllInvoices(sessionId, termSequence);
                 if (result.HasError)
                     return ApiResponse<List<InvoiceVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
@@ -41,12 +41,29 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<InvoicePaymentVM>>), 200)]
+        public async Task<IActionResult> GetInvoices([FromQuery]InvoiceRequestVM vm)
+        { 
+            try
+            {
+                var result = await _invoiceService.GetInvoices(vm);
+                if (result.HasError)
+                    return ApiResponse<List<InvoicePaymentVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<InvoicePaymentHistoryVM>>), 200)]
-        public async Task<IActionResult> GetPaymentHistoryInvoices(string session, string term)
+        public async Task<IActionResult> GetPaymentHistoryInvoices(long sessionId, int termSequence)
         {
             try
             {
-                var result = await _invoiceService.GetPaymentHistoryInvoices(session, term);
+                var result = await _invoiceService.GetPaymentHistoryInvoices(sessionId, termSequence);
                 if (result.HasError)
                     return ApiResponse<List<InvoicePaymentHistoryVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
@@ -59,11 +76,11 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<InvoicePaymentVM>>), 200)]
-        public async Task<IActionResult> GetPaymentInvoices(string session, string term)
+        public async Task<IActionResult> GetPaymentInvoices(long sessionId, int termSequence)
         {
             try
             {
-                var result = await _invoiceService.GetPaymentInvoices(session, term);
+                var result = await _invoiceService.GetPaymentInvoices(sessionId, termSequence);
                 if (result.HasError)
                     return ApiResponse<List<InvoicePaymentVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
@@ -76,11 +93,11 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<InvoicePendingPaymentVM>>), 200)]
-        public async Task<IActionResult> GetPendingPaymentInvoices(string session, string term)
+        public async Task<IActionResult> GetPendingPaymentInvoices(long sessionId, int termSequence)
         {
             try
             {
-                var result = await _invoiceService.GetPendingPaymentInvoices(session, term);
+                var result = await _invoiceService.GetPendingPaymentInvoices(sessionId, termSequence);
                 if (result.HasError)
                     return ApiResponse<List<InvoicePendingPaymentVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);

@@ -72,6 +72,9 @@ namespace Auth.API
                 options.SignIn.RequireConfirmedAccount = true;
                 options.Password.RequiredLength = 6;
 
+                //allow unicode characters for regnumbers
+                var allowedUserNameCharacters = options.User.AllowedUserNameCharacters + @"\/,.";
+                options.User.AllowedUserNameCharacters = allowedUserNameCharacters;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
                 options.Lockout.MaxFailedAccessAttempts = 3;
             });

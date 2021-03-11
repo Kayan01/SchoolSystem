@@ -82,6 +82,7 @@ namespace Auth.Core.Services.Users
                           .Select(x => new
                           {
                               x.Id,
+                              x.Staff.UserId,
                               x.Staff.User.Email,
                               x.Staff.User.LastName,
                               x.Staff.User.PhoneNumber,
@@ -101,6 +102,7 @@ namespace Auth.Core.Services.Users
                 PhoneNumber = x.PhoneNumber,
                 LastName = x.LastName,
                 Id = x.Id,
+                UserId = x.UserId,
                 FirstName = x.FirstName,
                 StaffType = x.StaffType.GetDescription(),
                 StaffNumber = x.RegNumber,
@@ -279,8 +281,6 @@ namespace Auth.Core.Services.Users
                 }
             };
 
-            teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
-
             var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastAsync();
             var lastNumber = 0;
             var seperator = schoolProperty.Data.Seperator;
@@ -300,6 +300,9 @@ namespace Auth.Core.Services.Users
                     teacher.Staff.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STF{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
 
                     _teacherRepo.Insert(teacher);
+
+
+                    teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
                     await _unitOfWork.SaveChangesAsync();
 
                     saved = true;
@@ -310,6 +313,11 @@ namespace Auth.Core.Services.Users
                     saved = false;
                 }
             }
+
+            //change user's username to reg number
+            user.UserName = teacher.Staff.RegNumber;
+            user.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
+            await _userManager.UpdateAsync(user);
 
             _unitOfWork.Commit();
 
@@ -332,10 +340,10 @@ namespace Auth.Core.Services.Users
             });
 
             //Email and Notifications
-            var notificationResult = await NewTeacherNotification(teacher, user.Email);
+            //var notificationResult = await NewTeacherNotification(teacher, user.Email);
 
-            if (notificationResult.HasError)
-                _logger.LogError($"Failed to send notifications for: {teacher.Staff.User.FullName} - {teacher.Staff.User.Email}, Reason: {string.Join(';', notificationResult.ErrorMessages)}");
+            //if (notificationResult.HasError)
+            //    _logger.LogError($"Failed to send notifications for: {teacher.Staff.User.FullName} - {teacher.Staff.User.Email}, Reason: {string.Join(';', notificationResult.ErrorMessages)}");
 
             result.Data = new TeacherVM
             {
@@ -579,11 +587,12 @@ namespace Auth.Core.Services.Users
 
             teacher.ClassId = model.ClassId;
 
-            await _teacherRepo.InsertAsync(teacher);
+            await _teacherRepo.UpdateAsync(teacher);
             _unitOfWork.SaveChanges();
 
             //adds classID as a claim
-            await _userManager.AddClaimAsync(teacher.Staff.User, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
+            var user = await _userManager.FindByIdAsync(teacher.Staff.UserId.ToString());
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
@@ -598,7 +607,7 @@ namespace Auth.Core.Services.Users
                 Phone = teacher.Staff.User.PhoneNumber
             });
 
-            result.Data = "Saved";
+            result.Data = "Teacher made class teacher successfully";
             return result;
         }
 

@@ -16,18 +16,21 @@ namespace FinanceSvc.Core.EventHandlers
         private readonly IStudentService _studentService;
         private readonly IParentService _parentService;
         private readonly ISchoolClassService _schoolClassService;
+        private readonly ISessionSetupService _sessionSetupService;
 
         public FinanceHandler(IFinanceService financeService, 
             ILogger<FinanceHandler> logger,
             IStudentService studentService,
             IParentService parentService,
-            ISchoolClassService schoolClassService)
+            ISchoolClassService schoolClassService,
+            ISessionSetupService sessionSetupService)
         {
             _financeService = financeService;
             _logger = logger;
             _studentService = studentService;
             _parentService = parentService;
             _schoolClassService = schoolClassService;
+            _sessionSetupService = sessionSetupService;
         }
 
         public async Task HandleAddOrUpdateStudentAsync(BusMessage message)
@@ -62,6 +65,19 @@ namespace FinanceSvc.Core.EventHandlers
             {
                 var data = JsonConvert.DeserializeObject<List<ClassSharedModel>>(message.Data);
                 _schoolClassService.AddOrUpdateClassFromBroadcast(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+            }
+        }
+
+        public async Task HandleAddOrUpdateSessionAsync(BusMessage message)
+        {
+            try
+            {
+                var data = JsonConvert.DeserializeObject<SessionSharedModel>(message.Data);
+                _sessionSetupService.AddOrUpdateSessionFromBroadcast(data);
             }
             catch (Exception e)
             {

@@ -1,5 +1,6 @@
 ﻿using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.ViewModels.Result;
+using AssessmentSvc.Core.ViewModels.Student;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -247,6 +248,27 @@ namespace AssessmentSvc.API.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<StudentVM>>), 200)]
+        public async Task<IActionResult> GetStudentsWithApprovedResult(long classId, long? sessionId = null, int? termSequenceNumber = null)
+        {
+            if (classId < 1)
+                return ApiResponse<List<StudentVM>>(errors: "Please provide valid Id", codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _approvedResultService.GetStudentsWithApprovedResult(classId, sessionId, termSequenceNumber);
+
+                if (result.HasError)
+                    return ApiResponse<List<StudentVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> PostBehaviourResult([FromBody] AddBehaviourResultVM model)
@@ -288,5 +310,27 @@ namespace AssessmentSvc.API.Controllers
                 return HandleError(ex);
             }
         }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> PostMailResult([FromBody] MailResultVM model)
+        {
+            if (!ModelState.IsValid)
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _approvedResultService.MailResult(model);
+
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
     }
 }

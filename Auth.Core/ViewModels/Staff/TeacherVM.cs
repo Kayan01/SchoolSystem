@@ -17,6 +17,7 @@ namespace Auth.Core.ViewModels.Staff
             return model == null ? null : new TeacherVM
             {
                 Id = model.Id,
+                UserId = model.Staff.UserId,
                 Email = model.Staff?.User?.Email,
                 FirstName = model.Staff?.User?.FirstName,
                 LastName = model.Staff?.User?.LastName,

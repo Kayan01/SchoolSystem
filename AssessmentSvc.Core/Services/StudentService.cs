@@ -46,7 +46,8 @@ namespace AssessmentSvc.Core.Services
             student.RegNumber = model.RegNumber;
             student.IsActive = model.IsActive;
             student.IsDeleted = model.IsDeleted;
-            student.RegNumber = model.RegNumber;
+            student.ParentEmail = model.ParentEmail;
+            student.ParentName = model.ParentName;
 
             _unitOfWork.SaveChanges();
         }
@@ -72,5 +73,24 @@ namespace AssessmentSvc.Core.Services
                 Data = students
             };
         }
+
+        public async Task<ResultModel<List<StudentParentMailingInfo>>> GetParentsMailInfo(long[] ids)
+        {
+            var info = await _studentRepo.GetAll()
+                .Where(m => ids.Any(n=>n == m.Id))
+                .Select(m => new StudentParentMailingInfo()
+                {
+                    Email= m.Email,
+                    ParentName = m.ParentName,
+                    StudentId = m.Id,
+                    StudentName = $"{m.FirstName} {m.LastName}"
+                }).ToListAsync();
+
+            return new ResultModel<List<StudentParentMailingInfo>>()
+            {
+                Data = info
+            };
+        }
+
     }
 }

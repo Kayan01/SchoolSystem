@@ -81,7 +81,7 @@ namespace Auth.Core.Services
             _unitOfWork.BeginTransaction();
 
             //check if parent exists
-            var parent = await _parentRepo.GetAll()
+            var parent = await _parentRepo.GetAll().Include(m=>m.User)
                 .Where(x => x.Id == model.ParentId)
                 .FirstOrDefaultAsync();
 
@@ -220,6 +220,12 @@ namespace Auth.Core.Services
                 }
             }
 
+
+            //change user's username to reg number
+            user.UserName = stud.RegNumber;
+            user.NormalizedUserName = stud.RegNumber.ToUpper();
+            await _userManager.UpdateAsync(user);
+
             _unitOfWork.Commit();
 
 
@@ -238,7 +244,9 @@ namespace Auth.Core.Services
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 Email = model.ContactEmail,
-                Phone = model.ContactPhone
+                Phone = model.ContactPhone,
+                ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
+                ParentEmail = parent.User.Email
             });
 
             result.Data = new StudentVM
@@ -299,6 +307,32 @@ namespace Auth.Core.Services
             result.Data = new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
+        }
+
+        public async Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInClass(QueryModel model, long classId)
+        {
+            var query = _studentRepo.GetAll()
+                .Where(x => x.ClassId == classId)
+                .Select(x=> new StudentVM
+            {
+                Id = x.Id,
+                Class = x.Class.FullName,
+                DateOfBirth = x.DateOfBirth,
+                FirstName = x.User.FirstName,
+                LastName = x.User.LastName,
+                StudentNumber = x.RegNumber,
+                Sex = x.Sex,
+                Email = x.User.Email,
+                PhoneNumber =  x.User.PhoneNumber  ,
+                Section = x.Class.SchoolSection.Name,
+                IsActive = x.IsActive,
+                ImagePath = x.FileUploads.Where(fileUpload => fileUpload.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
+            });
+
+            var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+           
+
+            return new ResultModel<PaginatedModel<StudentVM>>(data: new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount));
         }
 
         public async Task<ResultModel<StudentDetailVM>> GetStudentById(long Id)
@@ -485,7 +519,7 @@ namespace Auth.Core.Services
             }
 
             //check if parent exists
-            var parent = await _parentRepo.GetAll()
+            var parent = await _parentRepo.GetAll().Include(m=>m.User)
                 .Where(x => x.Id == model.ParentId)
                 .FirstOrDefaultAsync();
 
@@ -599,6 +633,8 @@ namespace Auth.Core.Services
                 Email = stud.User.Email,
                 Phone = stud.User.PhoneNumber,
                 RegNumber= stud.RegNumber,
+                ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
+                ParentEmail = parent.User.Email
             });
 
             result.Data = stud;

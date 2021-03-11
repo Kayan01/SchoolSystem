@@ -59,6 +59,28 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<List<AssignmentAnswerSubmissionList>>> GetAssignmentSubmissions(long studentId)
+        {
+            
+            var assignmentAnswer = await _assignmentAnswerRepo.GetAll()
+                .Where(m => m.StudentId == studentId).Select(x => new AssignmentAnswerSubmissionList()
+                {
+                    Id = x.Id,
+                    SubmissionDate = x.CreationTime,
+                    Title = x.Assignment.Title,
+                    score = x.Score,
+                    over = x.Assignment.TotalScore,
+                })
+                .ToListAsync();
+
+            var result = new ResultModel<List<AssignmentAnswerSubmissionList>>
+            {
+                Data = assignmentAnswer
+            };
+
+            return result;
+        }
+
         public async Task<ResultModel<AssignmentAnswerVM>> GetAssignmentAnswer(long answerId)
         {
             var result = new ResultModel<AssignmentAnswerVM>
@@ -164,6 +186,7 @@ namespace LearningSvc.Core.Services
                     AssignmentId = assignmentAnswer.AssignmentId,
                     Attachment = file,
                     StudentId = student.Id,
+                    Score= -1,
                 };
 
                 _assignmentAnswerRepo.Insert(answer);
