@@ -9,8 +9,8 @@ namespace LearningSvc.Core.ViewModels.Attendance
     {
         public long? StudentId { get; set; }
         public long? StudentUserId { get; set; }
-        [Required]
-        public long ClassId { get; set; }
+       
+        public long? ClassId { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
     }

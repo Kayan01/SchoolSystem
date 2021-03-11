@@ -18,16 +18,19 @@ namespace LearningSvc.Core.Services
     {
         private readonly IRepository<AttendanceSubject, long> _subjectAttendanceRepo;
         private readonly IRepository<AttendanceClass, long> _classAttendanceRepo;
+        private readonly IRepository<Student, long> _studentRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public AttendanceService(
             IRepository<AttendanceSubject, long> subjectAttendanceRepo,
             IRepository<AttendanceClass, long> classAttendanceRepo,
+            IRepository<Student, long> studentRepository,
             IUnitOfWork unitOfWork
             )
         {
             _classAttendanceRepo = classAttendanceRepo;
             _subjectAttendanceRepo = subjectAttendanceRepo;
+            _studentRepository = studentRepository;
             _unitOfWork = unitOfWork;
         }
         public async Task<ResultModel<string>> AddAttendanceForClass(AddClassAttendanceVM model)
@@ -204,20 +207,33 @@ namespace LearningSvc.Core.Services
 
         public async Task<ResultModel<List<GetStudentAttendanceClassVm>>> GetStudentAttendanceForClass(GetStudentAttendanceClassQueryVm vm)
         {
-            var query = _classAttendanceRepo.GetAll()
-                .Where(x =>
-                    x.ClassId == vm.ClassId);
+            var query = _classAttendanceRepo.GetAll();
+
+            //adds class id to query if availabale
+            if (vm.ClassId.HasValue)
+            {
+                query = query.Where(x => x.ClassId == vm.ClassId);
+            }
+           
+            //uses student user id to make query
+            if (vm.StudentUserId.HasValue)
+            {
+                //get students class
+                var student = await _studentRepository.GetAll().Where(x => x.UserId == vm.StudentUserId).FirstOrDefaultAsync();
+                if (student == null)
+                {
+                    return new ResultModel<List<GetStudentAttendanceClassVm>>("Student doesnt exist");
+                }
+
+                query = query.Where(x => x.ClassId == student.ClassId);
+                query = query.Where(x => x.Student.UserId == vm.StudentUserId);
+
+            }
 
             //adds student query if provided
             if (vm.StudentId.HasValue)
             {
                 query = query.Where(x => x.StudentId == vm.StudentId);
-            }
-
-            //adds student user id query if provided
-            if (vm.StudentUserId.HasValue)
-            {
-                query = query.Where(x => x.Student.UserId == vm.StudentUserId);
             }
 
             //adds date query if provided
