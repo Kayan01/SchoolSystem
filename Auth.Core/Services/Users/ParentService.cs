@@ -367,7 +367,7 @@ namespace Auth.Core.Services.Users
                 FileUploads = new List<FileUpload> { file }
             };
 
-            var lastRegNumber = await _parentRepo.GetAll().OrderBy(m => m.Id).Select(m=>m.RegNumber).LastAsync();
+            var lastRegNumber = await _parentRepo.GetAll().OrderBy(m => m.Id).Select(m=>m.RegNumber).LastOrDefaultAsync();
             var lastNumber = 0;
             var seperator = schoolProperty.Data.Seperator;
             if (!string.IsNullOrWhiteSpace(lastRegNumber))
