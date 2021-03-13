@@ -89,7 +89,7 @@ namespace FinanceSvc.API.Controllers
                 var result = await _transactionService.GetAllTransactions(query);
                 if (result.HasError)
                     return ApiResponse<List<TransactionVM>>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {

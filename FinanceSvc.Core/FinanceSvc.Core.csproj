@@ -11,13 +11,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Migrations\20210223110457_update.cs" />
-	  <Compile Remove="Migrations\20210223110457_update.Designer.cs" />
-	  <Compile Remove="Migrations\20210304101817_testingNotMapped.cs" />
-	  <Compile Remove="Migrations\20210304101817_testingNotMapped.Designer.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="IdentityModel" Version="4.1.1" />
 		<PackageReference Include="log4net" Version="2.0.8" />
 		<PackageReference Include="MailKit" Version="2.5.2" />
