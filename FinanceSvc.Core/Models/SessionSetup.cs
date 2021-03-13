@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Text;
 
 namespace FinanceSvc.Core.Models
@@ -36,5 +37,19 @@ namespace FinanceSvc.Core.Models
         public DateTime StartDate { get; set; }
         [Required]
         public DateTime EndDate { get; set; }
+
+
+        public static string GetTermFromString (string json, int sequence)
+        {
+            try
+            {
+                var terms = JsonConvert.DeserializeObject<List<Term>>(json, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                return terms?.FirstOrDefault(m => m.SequenceNumber == sequence)?.Name;
+            }
+            catch (Exception)
+            {
+                return "";
+            }
+        }
     }
 }
