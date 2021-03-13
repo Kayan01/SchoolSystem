@@ -280,7 +280,9 @@ namespace LearningSvc.Core.Services
             }
 
             var checkTeacherHasOtherClassForPeriod = await _timeTableRepo.GetAll()
-                .Where(m => m.TeacherClassSubject.TeacherId == checkTeacherClassSubjectExists.TeacherId && m.PeriodId == checkPeriodExists.Id)
+                .Where(m => m.TeacherClassSubject.TeacherId == checkTeacherClassSubjectExists.TeacherId && 
+                m.PeriodId == checkPeriodExists.Id &&
+                m.Day == model.Day)
                 .FirstOrDefaultAsync();
             if (checkTeacherHasOtherClassForPeriod != null)
             {
