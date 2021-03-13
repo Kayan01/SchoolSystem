@@ -11,5 +11,6 @@ namespace Shared.ViewModels
         public string ParentName { get; set; }
         public string ParentEmail { get; set; }
         public long? ClassId { get; set; }
+        public long ParentId { get; set; }
     }
 }

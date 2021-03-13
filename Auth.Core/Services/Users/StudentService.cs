@@ -240,7 +240,8 @@ namespace Auth.Core.Services
                 Email = model.ContactEmail,
                 Phone = model.ContactPhone,
                 ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
-                ParentEmail = parent.User.Email
+                ParentEmail = parent.User.Email,
+                ParentId = parent.Id,
             });
 
             result.Data = new StudentVM
@@ -626,7 +627,8 @@ namespace Auth.Core.Services
                 Phone = stud.User.PhoneNumber,
                 RegNumber= stud.RegNumber,
                 ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
-                ParentEmail = parent.User.Email
+                ParentEmail = parent.User.Email,
+                ParentId = parent.Id,
             });
 
             result.Data = stud;

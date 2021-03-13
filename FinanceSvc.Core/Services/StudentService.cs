@@ -43,6 +43,7 @@ namespace FinanceSvc.Core.Services
             student.IsActive = model.IsActive;
             student.IsDeleted = model.IsDeleted;
             student.RegNumber = model.RegNumber;
+            student.ParentId = model.ParentId;
 
             _unitOfWork.SaveChanges();
         }
