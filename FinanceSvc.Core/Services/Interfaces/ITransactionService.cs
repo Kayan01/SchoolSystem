@@ -14,6 +14,7 @@ namespace FinanceSvc.Core.Services.Interfaces
         Task<ResultModel<List<TransactionVM>>> GetAllPendingTransactions(long studentId);
         Task<ResultModel<List<TransactionVM>>> GetTransactionHistory(long studentId);
         Task<ResultModel<PaginatedModel<TransactionVM>>> GetAllTransactions(QueryModel queryModel);
+        Task<ResultModel<TransactionDetailsVM>> GetTransaction(long transactionId);
         Task<ResultModel<List<TransactionVM>>> GetAllAwaitingApprovalTransactions();
         Task<ResultModel<string>> UploadTransactionReceipt(TransactionReceiptVM model);
         Task<ResultModel<string>> ApproveRejectTransaction(TransactionApprovalVM model);

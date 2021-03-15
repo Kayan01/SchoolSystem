@@ -46,6 +46,23 @@ namespace FinanceSvc.API.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<TransactionDetailsVM>), 200)]
+        public async Task<IActionResult> GetTransaction(int id)
+        {
+            try
+            {
+                var result = await _transactionService.GetTransaction(id);
+                if (result.HasError)
+                    return ApiResponse<TransactionDetailsVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TransactionVM>>), 200)]
         public async Task<IActionResult> GetAllAwaitingApprovalTransactions()

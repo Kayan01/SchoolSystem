@@ -35,5 +35,13 @@ namespace FinanceSvc.Core.ViewModels.Transaction
             {
                 return status.ToString("G");
             } }
+
+        public string StudentRegNumber { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal TotalPaid { get; set; }
+        public decimal Outstanding { get 
+            {
+                return TotalAmount - TotalPaid;
+            } }
     }
 }
