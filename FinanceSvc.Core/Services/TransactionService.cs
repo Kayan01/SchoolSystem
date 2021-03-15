@@ -186,6 +186,7 @@ namespace FinanceSvc.Core.Services
                             TransactionId = m.Id,
                             DueDate = m.Invoice.PaymentDate,
                             FeeType = m.Invoice.Fee.Name,
+                            FileId = m.FileUploadId.ToString(),
                         }
                     ).ToListAsync()
                 );
