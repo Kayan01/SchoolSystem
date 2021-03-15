@@ -97,7 +97,7 @@ namespace FinanceSvc.API.Controllers
             }
         }
 
-        [HttpPut("id")]
+        [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UpdateAccount(long id, [FromBody] AccountPostVM model)
         {

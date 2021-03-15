@@ -107,7 +107,7 @@ namespace Auth.API.Controllers.Users
             }
         }
 
-        [HttpPut("Id")]
+        [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<TeacherVM>), 200)]
         public async Task<IActionResult> UpdateTeacher([FromForm]UpdateTeacherVM model, [FromRoute] long id)
         {
