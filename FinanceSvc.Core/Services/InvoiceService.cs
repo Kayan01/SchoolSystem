@@ -110,6 +110,10 @@ namespace FinanceSvc.Core.Services
                     IsCompulsory = n.IsCompulsory,
                     IsSelected = n.IsSelected
                 }).ToList(),
+                TotalPaid = m.Transactions.Where(m => 
+                    m.Status == Enumerations.TransactionStatus.Paid ||
+                    m.Status == Enumerations.TransactionStatus.Awaiting_Approval
+                    ).Sum(n => n.Amount),
             }).FirstOrDefaultAsync();
 
             return result;
