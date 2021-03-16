@@ -131,6 +131,7 @@ namespace FinanceSvc.API
             services.AddScoped<IInvoiceService, InvoiceService>();
             services.AddScoped<ISessionSetupService, SessionSetupService>();
             services.AddScoped<ITransactionService, TransactionService>();
+            services.AddScoped<IFileStore, FileStore>();
 
             //services.AddTransient<IFileUploadService, FileUploadService>();
             services.AddScoped<IFinanceService, FinanceService>();
