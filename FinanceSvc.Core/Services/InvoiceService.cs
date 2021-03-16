@@ -54,7 +54,20 @@ namespace FinanceSvc.Core.Services
             }
 
             var fee = await _feeRepo.GetAll().Include(m=>m.FeeComponents).ThenInclude(n=>n.Component).Where(m => m.FeeGroupId == model.FeeGroupId && m.SchoolClassId == model.ClassId).FirstOrDefaultAsync();
+
+            if (fee != null)
+            {
+                result.AddError("No Fee has been created for this Fee Group and Class");
+                return result;
+            }
+
             var studentIds = await _studentRepo.GetAll().Where(m => m.ClassId == model.ClassId).Select(m=>m.Id).ToListAsync();
+
+            if (studentIds?.Count < 1)
+            {
+                result.AddError("No Student was found in this Class.");
+                return result;
+            }
 
             foreach (var studentId in studentIds)
             {
