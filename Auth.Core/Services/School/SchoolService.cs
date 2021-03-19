@@ -194,6 +194,29 @@ namespace Auth.Core.Services
 
             return result;
         }
+        public async Task<ResultModel<string>> GetSchoolLogoById(long Id)
+        {
+            var schoolFilePath = await _schoolRepo
+                .GetAll()
+                .Where(y => y.Id == Id)
+                .Select(x => x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrWhiteSpace(schoolFilePath))
+            {
+                return new ResultModel<string>(errorMessage: "Logo not found.");
+            }
+
+            var logo = _documentService.TryGetUploadedFile(schoolFilePath);
+
+            if (string.IsNullOrWhiteSpace(logo))
+            {
+                return new ResultModel<string>(errorMessage: "Logo not found.");
+            }
+
+            return new ResultModel<string>(data: logo);
+        }
+
         public async Task<ResultModel<SchoolDetailVM>> GetSchoolById(long Id)
         {
             var result = new ResultModel<SchoolDetailVM>();
