@@ -114,20 +114,19 @@ namespace UserManagement.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        public async Task<IActionResult> GetSchoolLogo(long id)
+        [ProducesResponseType(typeof(ApiResponse<SchoolNameAndLogoVM>), 200)]
+        public async Task<IActionResult> GetSchoolNameAndLogo(long id)
         {
             if (id <= 0)
             {
-                return ApiResponse<string>(errors: "Please provide valid school Id");
+                return ApiResponse<SchoolNameAndLogoVM>(errors: "Please provide valid school Id");
             }
-
             try
             {
-                var result = await _schoolService.GetSchoolLogoById(id);
+                var result = await _schoolService.GetSchoolNameAndLogoById(id);
                 if (result.HasError)
-                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                    return ApiResponse<SchoolNameAndLogoVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
             }
             catch (Exception ex)
             {

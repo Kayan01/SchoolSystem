@@ -194,27 +194,31 @@ namespace Auth.Core.Services
 
             return result;
         }
-        public async Task<ResultModel<string>> GetSchoolLogoById(long Id)
+
+        public async Task<ResultModel<SchoolNameAndLogoVM>> GetSchoolNameAndLogoById(long Id)
         {
-            var schoolFilePath = await _schoolRepo
+            var schoolInfo = await _schoolRepo
                 .GetAll()
                 .Where(y => y.Id == Id)
-                .Select(x => x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path)
-                .FirstOrDefaultAsync();
+                .Select(x => new
+                {
+                    path = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path,
+                    name = x.Name,
+                }) .FirstOrDefaultAsync();
 
-            if (string.IsNullOrWhiteSpace(schoolFilePath))
+            if (schoolInfo is null)
             {
-                return new ResultModel<string>(errorMessage: "Logo not found.");
+                return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
             }
 
-            var logo = _documentService.TryGetUploadedFile(schoolFilePath);
+            var logo = _documentService.TryGetUploadedFile(schoolInfo.path);
 
             if (string.IsNullOrWhiteSpace(logo))
             {
-                return new ResultModel<string>(errorMessage: "Logo not found.");
+                return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
             }
 
-            return new ResultModel<string>(data: logo);
+            return new ResultModel<SchoolNameAndLogoVM>(data: new SchoolNameAndLogoVM() { SchoolName = schoolInfo.name, Logo = logo});
         }
 
         public async Task<ResultModel<SchoolDetailVM>> GetSchoolById(long Id)
