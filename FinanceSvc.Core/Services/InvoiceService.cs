@@ -55,7 +55,7 @@ namespace FinanceSvc.Core.Services
 
             var fee = await _feeRepo.GetAll().Include(m=>m.FeeComponents).ThenInclude(n=>n.Component).Where(m => m.FeeGroupId == model.FeeGroupId && m.SchoolClassId == model.ClassId).FirstOrDefaultAsync();
 
-            if (fee != null)
+            if (fee is null)
             {
                 result.AddError("No Fee has been created for this Fee Group and Class");
                 return result;
