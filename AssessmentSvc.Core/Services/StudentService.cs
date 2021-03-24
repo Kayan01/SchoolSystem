@@ -80,7 +80,7 @@ namespace AssessmentSvc.Core.Services
                 .Where(m => ids.Any(n=>n == m.Id))
                 .Select(m => new StudentParentMailingInfo()
                 {
-                    Email= m.Email,
+                    Email= m.ParentEmail,
                     ParentName = m.ParentName,
                     StudentId = m.Id,
                     StudentName = $"{m.FirstName} {m.LastName}"

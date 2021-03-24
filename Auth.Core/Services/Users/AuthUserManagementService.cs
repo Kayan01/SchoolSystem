@@ -14,6 +14,8 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Shared.Enums;
 using static Shared.Utils.CoreConstants;
 
 namespace Auth.Core.Services
@@ -23,15 +25,22 @@ namespace Auth.Core.Services
         private readonly UserManager<User> _userManager;
         private readonly IDataProtector _protector;
         private readonly IPublishService _publishService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<AuthUserManagementService> _logger;
+
 
         public AuthUserManagementService(
             UserManager<User> userManager,
             IDataProtectionProvider provider,
-            IPublishService publishService)
+            IPublishService publishService,
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<AuthUserManagementService> logger)
         {
             _userManager = userManager;
             _protector = provider.CreateProtector("Auth");
             _publishService = publishService;
+            _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
         readonly string  baseUrl = "http://school-track-1.vercel.app";
         public async Task<long?> AddUserAsync(AuthUserModel model)
@@ -85,9 +94,11 @@ namespace Auth.Core.Services
         }
         public async Task<ResultModel<bool>> SendRegistrationEmail(User user, string emailTitle = "Confirm your email")
         {
-
-            //var baseUrl = $"{_context.HttpContext.Request.Scheme}://{_context.HttpContext.Request.Host}";
+            //should handle multi tenant frontend urls
+            var baseUri =_httpContextAccessor.HttpContext.Request.GetTypedHeaders().Referer;
            
+            //test
+            _logger.LogError($"Url Referer value : {baseUri}");
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -95,16 +106,32 @@ namespace Auth.Core.Services
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
 
-            var callbackUrl = $"{baseUrl}/#/email-verified?userId={user.Id}&code={code}";
+            var callbackUrl = $"{baseUri ?? new Uri(baseUrl)}#/email-verified?userId={user.Id}&code={code}";
 
+            CreateEmailModel emailModel;
+
+            if (user.UserType == UserType.SchoolAdmin)
+            {
+                emailModel = new CreateEmailModel(EmailTemplateType.NewSchool, new Dictionary<string, string>
+                {
+                    {"link", callbackUrl},
+                }, user);
+            }
+            else
+            {
+                emailModel = new CreateEmailModel(EmailTemplateType.NewUser, new Dictionary<string, string>
+                {
+                    {"link", callbackUrl},
+                    {"FullName", user.FullName },
+                    {"Username", user.UserName }
+                }, user);
+            }
 
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
             {
                 Emails = new List<CreateEmailModel>
                 {
-                    new CreateEmailModel(EmailTemplateType.NewSchool, new Dictionary<string, string>{
-                        { "link", callbackUrl },
-                    }, user)
+                    emailModel
                 },
                 Notifications = new List<InAppNotificationModel>
                 {

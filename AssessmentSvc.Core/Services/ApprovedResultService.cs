@@ -103,7 +103,7 @@ namespace AssessmentSvc.Core.Services
                 oldApprovedResult.SchoolAdminApprovalStatus = vm.AdminApprovalStatus;
                 oldApprovedResult.HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus;
 
-                await _approvedResultRepo.InsertAsync(oldApprovedResult);
+                await _approvedResultRepo.UpdateAsync(oldApprovedResult);
             }
             else
             {

@@ -220,6 +220,12 @@ namespace Auth.Core.Services
                 }
             }
 
+
+            //change user's username to reg number
+            user.UserName = stud.RegNumber;
+            user.NormalizedUserName = stud.RegNumber.ToUpper();
+            await _userManager.UpdateAsync(user);
+
             _unitOfWork.Commit();
 
 
@@ -317,6 +323,8 @@ namespace Auth.Core.Services
                 LastName = x.User.LastName,
                 StudentNumber = x.RegNumber,
                 Sex = x.Sex,
+                Email = x.User.Email,
+                PhoneNumber =  x.User.PhoneNumber  ,
                 Section = x.Class.SchoolSection.Name,
                 IsActive = x.IsActive,
                 ImagePath = x.FileUploads.Where(fileUpload => fileUpload.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()

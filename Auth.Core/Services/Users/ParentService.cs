@@ -399,6 +399,11 @@ namespace Auth.Core.Services.Users
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
 
 
+            //change user's username to reg number
+            user.UserName = parent.RegNumber;
+            user.NormalizedUserName = parent.RegNumber.ToUpper();
+            await _userManager.UpdateAsync(user);
+
             _unitOfWork.Commit();
 
 

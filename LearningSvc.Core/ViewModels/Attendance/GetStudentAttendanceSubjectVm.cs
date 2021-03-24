@@ -9,6 +9,7 @@ namespace LearningSvc.Core.ViewModels.Attendance
         public string SubjectName { get; set; }
         public int NoOfTImesHeld { get; set; }
         public int NoOfTimesAttended { get; set; }
-        public double Percentage { get; set; }
+
+        public int Percentage => NoOfTimesAttended / NoOfTImesHeld * 100;
     }
 }
