@@ -16,12 +16,14 @@ namespace FinanceSvc.Core.Services
     public class AccountService : IAccountService
     {
         private readonly IRepository<Account, long> _accountRepo;
+        private readonly IRepository<AccountType, long> _accountTypeRepo;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AccountService(IUnitOfWork unitOfWork, IRepository<Account, long> accountRepo)
+        public AccountService(IUnitOfWork unitOfWork, IRepository<Account, long> accountRepo, IRepository<AccountType, long> accountTypeRepo)
         {
             _unitOfWork = unitOfWork;
             _accountRepo = accountRepo;
+            _accountTypeRepo = accountTypeRepo;
         }
 
         public async Task<ResultModel<string>> AddAccount(AccountPostVM model)
@@ -36,9 +38,9 @@ namespace FinanceSvc.Core.Services
                 return result;
             }
 
-            check = await _accountRepo.GetAll().Where(m => m.AccountType.AccountClass.MaxNumberValue >= model.AccountNumber && m.AccountType.AccountClass.MinNumberValue <= model.AccountNumber).FirstOrDefaultAsync();
+            var check2 = await _accountTypeRepo.GetAll().Where(m =>m.Id == model.AccountTypeId && m.AccountClass.MaxNumberValue >= model.AccountNumber && m.AccountClass.MinNumberValue <= model.AccountNumber).FirstOrDefaultAsync();
 
-            if (check != null)
+            if (check2 == null)
             {
                 result.AddError("Account Number is out of range of the Account Class!");
                 return result;
