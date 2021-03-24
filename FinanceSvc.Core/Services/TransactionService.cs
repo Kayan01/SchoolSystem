@@ -71,13 +71,18 @@ namespace FinanceSvc.Core.Services
             return new ResultModel<string>(data: "Saved successfully");
         }
 
-        public async Task<ResultModel<List<TransactionVM>>> GetAllPendingTransactions(long studentId)
+        public async Task<ResultModel<List<TransactionVM>>> GetAllPendingTransactions(long? studentId)
         {
+            var pendingTransactions = _transactionRepo.GetAll()
+                        .Where(n => n.Status == Enumerations.TransactionStatus.Pending);
+            if (!(studentId is null))
+            {
+                pendingTransactions = pendingTransactions.Where(n => n.Invoice.StudentId == studentId);
+            }
+
             return new ResultModel<List<TransactionVM>>
                 (
-                    data: await _transactionRepo.GetAll()
-                        .Where(n => n.Invoice.StudentId == studentId && n.Status == Enumerations.TransactionStatus.Pending)
-                        .Select(m => new TransactionVM()
+                    data: await pendingTransactions.Select(m => new TransactionVM()
                         {
                             Description = m.Description,
                             Amount = m.Amount,
