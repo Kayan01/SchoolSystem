@@ -80,9 +80,9 @@ namespace FinanceSvc.API.Controllers
             }
         }
 
-        [HttpGet("{studentId}")]
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TransactionVM>>), 200)]
-        public async Task<IActionResult> GetAllPendingTransactions(long studentId)
+        public async Task<IActionResult> GetAllPendingTransactions([FromQuery]long? studentId)
         {
             try
             {
