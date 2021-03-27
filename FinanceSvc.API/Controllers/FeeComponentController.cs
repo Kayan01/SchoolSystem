@@ -23,7 +23,7 @@ namespace FinanceSvc.API.Controllers
             _feeComponentService = feeComponentService;
         }
 
-        [HttpPut("id")]
+        [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UpdateFeeComponent(long id, [FromBody] FeeComponentPostVM model)
         {

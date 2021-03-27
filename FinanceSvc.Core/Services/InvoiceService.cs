@@ -54,7 +54,20 @@ namespace FinanceSvc.Core.Services
             }
 
             var fee = await _feeRepo.GetAll().Include(m=>m.FeeComponents).ThenInclude(n=>n.Component).Where(m => m.FeeGroupId == model.FeeGroupId && m.SchoolClassId == model.ClassId).FirstOrDefaultAsync();
+
+            if (fee is null)
+            {
+                result.AddError("No Fee has been created for this Fee Group and Class");
+                return result;
+            }
+
             var studentIds = await _studentRepo.GetAll().Where(m => m.ClassId == model.ClassId).Select(m=>m.Id).ToListAsync();
+
+            if (studentIds?.Count < 1)
+            {
+                result.AddError("No Student was found in this Class.");
+                return result;
+            }
 
             foreach (var studentId in studentIds)
             {
@@ -110,6 +123,10 @@ namespace FinanceSvc.Core.Services
                     IsCompulsory = n.IsCompulsory,
                     IsSelected = n.IsSelected
                 }).ToList(),
+                TotalPaid = m.Transactions.Where(m => 
+                    m.Status == Enumerations.TransactionStatus.Paid ||
+                    m.Status == Enumerations.TransactionStatus.Awaiting_Approval
+                    ).Sum(n => n.Amount),
             }).FirstOrDefaultAsync();
 
             return result;

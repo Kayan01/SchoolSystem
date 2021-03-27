@@ -10,6 +10,9 @@ namespace Shared.Utils
 
         public static readonly string[] validExcels = new[] { ".xls", ".xlsx" };
 
+        public const string TestPdfTemplatePath1 = @"filestore\pdftemplate\TestPdfTemplate1.html";
+        public const string TestPdfTemplatePath2 = @"filestore\pdftemplate\TestPdfTemplate2.html";
+
         public static class EmailTemplateType
         {
             public const string PasswordReset = nameof(PasswordReset);

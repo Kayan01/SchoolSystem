@@ -35,17 +35,16 @@ namespace FinanceSvc.Core.ViewModels.Invoice
         {
             get
             {
-                if (PaymentStatus == InvoicePaymentStatus.Unpaid)
+                if (Outstanding <= 0)
                 {
-                    var now = DateTime.Now;
-                    if (DueDate > now)
-                    {
-                        return "Outstanding";
-                    }
+                    return "Completed";
+                }
+                var now = DateTime.Now;
+                if (DueDate <= now)
+                {
                     return "Overdue";
                 }
-
-                return PaymentStatus.ToString("F");
+                return "Outstanding";
             }
         }
         public DateTime DueDate { get; set; }
