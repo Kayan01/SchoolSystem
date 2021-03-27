@@ -347,10 +347,16 @@ namespace Auth.Core.Services.Users
 
             result.Data = new TeacherVM
             {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
+                Id = teacher.Id,
+                UserId = teacher.Staff.UserId,
+                Email = teacher.Staff?.User?.Email,
+                FirstName = teacher.Staff?.User?.FirstName,
+                LastName = teacher.Staff?.User?.LastName,
+                PhoneNumber = teacher.Staff?.User?.PhoneNumber,
+                StaffNumber = teacher.Staff?.RegNumber,
+                StaffType = teacher.Staff?.StaffType.ToString(),
+                Sex = teacher.Staff?.Sex,
+                EmploymentStatus = teacher.Staff?.EmploymentStatus
             };
 
             return result;

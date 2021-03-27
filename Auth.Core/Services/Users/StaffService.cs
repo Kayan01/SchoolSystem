@@ -306,9 +306,13 @@ namespace Auth.Core.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                PhoneNumber = user.PhoneNumber, 
+                PhoneNumber = user.PhoneNumber,
                 StaffType = staff.StaffType.GetDisplayName(),
                 StaffNumber = staff.RegNumber,
+                EmploymentStatus = staff.EmploymentStatus,
+                Id = staff.Id,
+                Sex = staff.Sex,
+                UserId = staff.UserId
             };
 
             //broadcast login detail to email
