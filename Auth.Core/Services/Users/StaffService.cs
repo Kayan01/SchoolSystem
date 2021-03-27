@@ -419,15 +419,13 @@ namespace Auth.Core.Services
 
             _unitOfWork.BeginTransaction();
 
-
+            //update auth details
             staff.User.FirstName = model.FirstName;
             staff.User.LastName = model.LastName;
             staff.User.Email = model.ContactDetails.EmailAddress;
             staff.User.UserName = model.ContactDetails.EmailAddress;
             staff.User.PhoneNumber = model.ContactDetails.PhoneNumber;
             staff.User.MiddleName = model.OtherNames;
-            await _userManager.UpdateAsync(staff.User);
-
 
             //create next of kin
             var nextOfKin = new NextOfKin

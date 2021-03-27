@@ -432,13 +432,13 @@ namespace Auth.Core.Services.Users
             teacher.Staff.User.UserType = UserType.Staff;
 
 
-            var userResult = await _userManager.UpdateAsync(teacher.Staff.User);
+            //var userResult = await _userManager.UpdateAsync(teacher.Staff.User);
 
-            if (!userResult.Succeeded)
-            {
-                result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
-                return result;
-            }
+            //if (!userResult.Succeeded)
+            //{
+            //    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+            //    return result;
+            //}
 
             //create next of kin
             var nextOfKin = new NextOfKin
