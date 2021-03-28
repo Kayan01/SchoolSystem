@@ -306,9 +306,13 @@ namespace Auth.Core.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                PhoneNumber = user.PhoneNumber, 
+                PhoneNumber = user.PhoneNumber,
                 StaffType = staff.StaffType.GetDisplayName(),
                 StaffNumber = staff.RegNumber,
+                EmploymentStatus = staff.EmploymentStatus,
+                Id = staff.Id,
+                Sex = staff.Sex,
+                UserId = staff.UserId
             };
 
             //broadcast login detail to email
@@ -419,15 +423,13 @@ namespace Auth.Core.Services
 
             _unitOfWork.BeginTransaction();
 
-
+            //update auth details
             staff.User.FirstName = model.FirstName;
             staff.User.LastName = model.LastName;
             staff.User.Email = model.ContactDetails.EmailAddress;
             staff.User.UserName = model.ContactDetails.EmailAddress;
             staff.User.PhoneNumber = model.ContactDetails.PhoneNumber;
             staff.User.MiddleName = model.OtherNames;
-            await _userManager.UpdateAsync(staff.User);
-
 
             //create next of kin
             var nextOfKin = new NextOfKin
