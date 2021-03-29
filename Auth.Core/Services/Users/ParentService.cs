@@ -438,6 +438,8 @@ namespace Auth.Core.Services.Users
         {
             var resultModel = new ResultModel<ParentDetailVM>();
 
+            _unitOfWork.BeginTransaction();
+
             var parent = await _parentRepo.GetAll().Include(m=>m.User).FirstOrDefaultAsync(m=>m.Id == Id);
 
             if (parent == null)
