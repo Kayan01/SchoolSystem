@@ -15,6 +15,9 @@ namespace FinanceSvc.Core.Models
         public decimal Amount { get; set; }
         public string Description { get; set; }
         public string Comment { get; set; }
+        public string PaymentReference { get; set; }
+        public string PaymentDescription { get; set; }
+        public PaymentChannel PaymentChannel { get; set; }
         public TransactionStatus Status { get; set; }
         public Guid? FileUploadId { get; set; }
 

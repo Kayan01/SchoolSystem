@@ -61,6 +61,7 @@ namespace FinanceSvc.Core.Services
                 Status = Enumerations.TransactionStatus.Pending,
                 Amount = model.Amount,
                 Description = model.Description,
+                PaymentChannel = Enumerations.PaymentChannel.Bank_Deposit
             };
 
             _transactionRepo.Insert(transaction);
@@ -70,13 +71,18 @@ namespace FinanceSvc.Core.Services
             return new ResultModel<string>(data: "Saved successfully");
         }
 
-        public async Task<ResultModel<List<TransactionVM>>> GetAllPendingTransactions(long studentId)
+        public async Task<ResultModel<List<TransactionVM>>> GetAllPendingTransactions(long? studentId)
         {
+            var pendingTransactions = _transactionRepo.GetAll()
+                        .Where(n => n.Status == Enumerations.TransactionStatus.Pending);
+            if (!(studentId is null))
+            {
+                pendingTransactions = pendingTransactions.Where(n => n.Invoice.StudentId == studentId);
+            }
+
             return new ResultModel<List<TransactionVM>>
                 (
-                    data: await _transactionRepo.GetAll()
-                        .Where(n => n.Invoice.StudentId == studentId && n.Status == Enumerations.TransactionStatus.Pending)
-                        .Select(m => new TransactionVM()
+                    data: await pendingTransactions.Select(m => new TransactionVM()
                         {
                             Description = m.Description,
                             Amount = m.Amount,
@@ -113,8 +119,7 @@ namespace FinanceSvc.Core.Services
 
         public async Task<ResultModel<PaginatedModel<TransactionVM>>> GetAllTransactions(QueryModel queryModel)
         {
-            var query = await _transactionRepo.GetAll()
-                        .Where(n => n.Status == Enumerations.TransactionStatus.Awaiting_Approval)
+            var query = await _transactionRepo.GetAll().OrderByDescending(m=>m.Id)
                         .Select(m => new TransactionVM()
                         {
                             Description = m.Description,
@@ -125,6 +130,11 @@ namespace FinanceSvc.Core.Services
                             DueDate = m.Invoice.PaymentDate,
                             FeeType = m.Invoice.Fee.Name,
                             FileId = m.FileUploadId.ToString(),
+                            StudentRegNumber = m.Invoice.Student.RegNumber,
+                            TotalAmount = m.Invoice.InvoiceComponents.Where(m=>m.IsSelected).Sum(n=>n.Amount),
+                            TotalPaid = m.Invoice.Transactions.Where(m=>
+                                m.Status == Enumerations.TransactionStatus.Awaiting_Approval || 
+                                m.Status == Enumerations.TransactionStatus.Paid).Sum(n=>n.Amount),
                         }
                     )
                     .ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
@@ -133,6 +143,31 @@ namespace FinanceSvc.Core.Services
                 {
                     Data = new PaginatedModel<TransactionVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
                 };
+        }
+
+        public async Task<ResultModel<TransactionDetailsVM>> GetTransaction(long transactionId)
+        {
+            return new ResultModel<TransactionDetailsVM>
+                (
+                    data: await _transactionRepo.GetAll()
+                        .Where(n => n.Id == transactionId)
+                        .Select(m => new TransactionDetailsVM()
+                        {
+                            Description = m.Description,
+                            Amount = m.Amount,
+                            InvoiceId = m.InvoiceId,
+                            status = m.Status,
+                            TransactionId = m.Id,
+                            DueDate = m.Invoice.PaymentDate,
+                            FeeType = m.Invoice.Fee.Name,
+                            FileId = m.FileUploadId.ToString(),
+                            StudentRegNumber = m.Invoice.Student.RegNumber,
+                            PaymentDescription = m.PaymentDescription,
+                            PaymentReference = m.PaymentReference,
+                            channel = m.PaymentChannel,
+                        }
+                    ).FirstOrDefaultAsync()
+                );
         }
 
         public async Task<ResultModel<List<TransactionVM>>> GetTransactionHistory(long studentId)
@@ -156,6 +191,7 @@ namespace FinanceSvc.Core.Services
                             TransactionId = m.Id,
                             DueDate = m.Invoice.PaymentDate,
                             FeeType = m.Invoice.Fee.Name,
+                            FileId = m.FileUploadId.ToString(),
                         }
                     ).ToListAsync()
                 );
@@ -185,6 +221,8 @@ namespace FinanceSvc.Core.Services
 
             transaction.FileUpload = file;
             transaction.Status = Enumerations.TransactionStatus.Awaiting_Approval;
+            transaction.PaymentDescription = model.PaymentDescription;
+            transaction.PaymentReference = model.PaymentReference;
 
             await _unitOfWork.SaveChangesAsync();
 

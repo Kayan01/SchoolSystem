@@ -1,6 +1,7 @@
 ﻿using FinanceSvc.Core.Enumerations;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace FinanceSvc.Core.ViewModels.Invoice
@@ -20,7 +21,17 @@ namespace FinanceSvc.Core.ViewModels.Invoice
         public string Class { get; set; }
         public string Session { get; set; }
         public string Term { get; set; }
-        public decimal Total { get; set; }
+        public decimal TotalPayable { get
+            {
+                return InvoiceItems?.Where(m => m.IsSelected).Sum(n => n.Amount) ?? 0;
+            }
+        }
+        public decimal Outstanding { get
+            {
+                return TotalPayable - TotalPaid;
+            }
+        }
+        public decimal TotalPaid { get; set; }
         public string FeeGroup { get; set; }
         public bool ComponentSelected { get; set; }
 

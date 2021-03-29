@@ -46,6 +46,23 @@ namespace FinanceSvc.API.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<TransactionDetailsVM>), 200)]
+        public async Task<IActionResult> GetTransaction(int id)
+        {
+            try
+            {
+                var result = await _transactionService.GetTransaction(id);
+                if (result.HasError)
+                    return ApiResponse<TransactionDetailsVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TransactionVM>>), 200)]
         public async Task<IActionResult> GetAllAwaitingApprovalTransactions()
@@ -63,9 +80,9 @@ namespace FinanceSvc.API.Controllers
             }
         }
 
-        [HttpGet("{studentId}")]
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TransactionVM>>), 200)]
-        public async Task<IActionResult> GetAllPendingTransactions(long studentId)
+        public async Task<IActionResult> GetAllPendingTransactions([FromQuery]long? studentId)
         {
             try
             {
@@ -82,14 +99,14 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TransactionVM>>), 200)]
-        public async Task<IActionResult> GetAllTransactions(QueryModel query)
+        public async Task<IActionResult> GetAllTransactions([FromQuery]QueryModel query)
         {
             try
             {
                 var result = await _transactionService.GetAllTransactions(query);
                 if (result.HasError)
                     return ApiResponse<List<TransactionVM>>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {

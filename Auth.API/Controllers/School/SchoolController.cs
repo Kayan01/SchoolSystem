@@ -113,6 +113,27 @@ namespace UserManagement.API.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<SchoolNameAndLogoVM>), 200)]
+        public async Task<IActionResult> GetSchoolNameAndLogo(long id)
+        {
+            if (id <= 0)
+            {
+                return ApiResponse<SchoolNameAndLogoVM>(errors: "Please provide valid school Id");
+            }
+            try
+            {
+                var result = await _schoolService.GetSchoolNameAndLogoById(id);
+                if (result.HasError)
+                    return ApiResponse<SchoolNameAndLogoVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPut("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<SchoolVM>), 200)]

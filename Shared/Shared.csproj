@@ -6,6 +6,11 @@
 
   <ItemGroup>
     <PackageReference Include="Confluent.Kafka" Version="1.4.4" />
+    <PackageReference Include="coverlet.msbuild" Version="3.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="DinkToPdf" Version="1.0.8" />
     <PackageReference Include="IdentityModel" Version="4.1.1" />
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="log4net.ElasticSearch" Version="2.5.0" />
@@ -37,6 +42,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.5.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUi" Version="5.5.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
+    <PackageReference Include="ValueGetter" Version="1.0.4" />
   </ItemGroup>
 
   <ItemGroup>

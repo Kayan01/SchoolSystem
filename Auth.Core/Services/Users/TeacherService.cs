@@ -281,7 +281,7 @@ namespace Auth.Core.Services.Users
                 }
             };
 
-            var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastAsync();
+            var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
             var lastNumber = 0;
             var seperator = schoolProperty.Data.Seperator;
             if (!string.IsNullOrWhiteSpace(lastRegNumber))
@@ -347,10 +347,16 @@ namespace Auth.Core.Services.Users
 
             result.Data = new TeacherVM
             {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
+                Id = teacher.Id,
+                UserId = teacher.Staff.UserId,
+                Email = teacher.Staff?.User?.Email,
+                FirstName = teacher.Staff?.User?.FirstName,
+                LastName = teacher.Staff?.User?.LastName,
+                PhoneNumber = teacher.Staff?.User?.PhoneNumber,
+                StaffNumber = teacher.Staff?.RegNumber,
+                StaffType = teacher.Staff?.StaffType.ToString(),
+                Sex = teacher.Staff?.Sex,
+                EmploymentStatus = teacher.Staff?.EmploymentStatus
             };
 
             return result;
@@ -432,13 +438,13 @@ namespace Auth.Core.Services.Users
             teacher.Staff.User.UserType = UserType.Staff;
 
 
-            var userResult = await _userManager.UpdateAsync(teacher.Staff.User);
+            //var userResult = await _userManager.UpdateAsync(teacher.Staff.User);
 
-            if (!userResult.Succeeded)
-            {
-                result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
-                return result;
-            }
+            //if (!userResult.Succeeded)
+            //{
+            //    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+            //    return result;
+            //}
 
             //create next of kin
             var nextOfKin = new NextOfKin

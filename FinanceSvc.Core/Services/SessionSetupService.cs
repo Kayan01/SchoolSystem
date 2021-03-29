@@ -46,6 +46,7 @@ namespace FinanceSvc.Core.Services
                 });
             }
 
+            session.TenantId = model.TenantId;
             session.IsCurrent = model.IsCurrent;
             session.SessionName = model.SessionName;
             session.TermsJSON = model.TermsJSON;

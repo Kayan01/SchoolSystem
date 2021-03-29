@@ -367,7 +367,7 @@ namespace Auth.Core.Services.Users
                 FileUploads = new List<FileUpload> { file }
             };
 
-            var lastRegNumber = await _parentRepo.GetAll().OrderBy(m => m.Id).Select(m=>m.RegNumber).LastAsync();
+            var lastRegNumber = await _parentRepo.GetAll().OrderBy(m => m.Id).Select(m=>m.RegNumber).LastOrDefaultAsync();
             var lastNumber = 0;
             var seperator = schoolProperty.Data.Seperator;
             if (!string.IsNullOrWhiteSpace(lastRegNumber))
@@ -437,6 +437,8 @@ namespace Auth.Core.Services.Users
         public async Task<ResultModel<ParentDetailVM>> UpdateParent(long Id, UpdateParentVM vm)
         {
             var resultModel = new ResultModel<ParentDetailVM>();
+
+            _unitOfWork.BeginTransaction();
 
             var parent = await _parentRepo.GetAll().Include(m=>m.User).FirstOrDefaultAsync(m=>m.Id == Id);
 

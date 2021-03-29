@@ -18,7 +18,8 @@ namespace Auth.Core.ViewModels.Staff
         public string PhoneNumber { get; set; }
         public string StaffType { get; set; }
         public string StaffNumber { get; set; }
-
+        public string Sex { get; set; }
+        public string EmploymentStatus { get; set; }
         public static implicit operator StaffVM(Models.Staff model)
         {
             return model == null ? null : new StaffVM

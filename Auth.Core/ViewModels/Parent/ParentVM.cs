@@ -27,6 +27,9 @@ namespace Auth.Core.ViewModels.Parent
         public string ContactEmail { get; set; }
         public string ContactHomeAddress { get; set; }
         public string OfficeHomeAddress { get; set; }
+        public string SecondaryPhoneNumber { get; set; }
+        public string SecondaryEmailAddress { get; set; }
+        public bool IsActive { get; set; }
         public List<ChildView> Children { get; set; }
 
         public static implicit operator ParentDetailVM(Models.Users.Parent model)
@@ -44,6 +47,9 @@ namespace Auth.Core.ViewModels.Parent
                 OfficeHomeAddress = model.OfficeAddress,
                 Sex = model.Sex,
                 Title = model.Title,
+                SecondaryEmailAddress = model.SecondaryEmail,
+                SecondaryPhoneNumber = model.SecondaryPhoneNumber,
+                IsActive = model.Status,
                 Children = model.Students?.Select(x => new ChildView
                 {
                     Id = x.Id,

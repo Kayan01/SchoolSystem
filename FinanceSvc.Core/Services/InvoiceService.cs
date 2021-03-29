@@ -1,9 +1,11 @@
 ﻿using FinanceSvc.Core.Models;
 using FinanceSvc.Core.Services.Interfaces;
 using FinanceSvc.Core.ViewModels.Invoice;
+using IPagedList;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.Pagination;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -52,7 +54,20 @@ namespace FinanceSvc.Core.Services
             }
 
             var fee = await _feeRepo.GetAll().Include(m=>m.FeeComponents).ThenInclude(n=>n.Component).Where(m => m.FeeGroupId == model.FeeGroupId && m.SchoolClassId == model.ClassId).FirstOrDefaultAsync();
+
+            if (fee is null)
+            {
+                result.AddError("No Fee has been created for this Fee Group and Class");
+                return result;
+            }
+
             var studentIds = await _studentRepo.GetAll().Where(m => m.ClassId == model.ClassId).Select(m=>m.Id).ToListAsync();
+
+            if (studentIds?.Count < 1)
+            {
+                result.AddError("No Student was found in this Class.");
+                return result;
+            }
 
             foreach (var studentId in studentIds)
             {
@@ -108,6 +123,10 @@ namespace FinanceSvc.Core.Services
                     IsCompulsory = n.IsCompulsory,
                     IsSelected = n.IsSelected
                 }).ToList(),
+                TotalPaid = m.Transactions.Where(m => 
+                    m.Status == Enumerations.TransactionStatus.Paid ||
+                    m.Status == Enumerations.TransactionStatus.Awaiting_Approval
+                    ).Sum(n => n.Amount),
             }).FirstOrDefaultAsync();
 
             return result;
@@ -159,12 +178,16 @@ namespace FinanceSvc.Core.Services
             return new ResultModel<string>(data: "Updated Successfully.");
         }
 
-        public async Task<ResultModel<List<InvoicePaymentVM>>> GetPaymentInvoices(long sessionId, int termSequence)
+        public async Task<ResultModel<PaginatedModel<InvoicePaymentVM>>> GetPaymentInvoices(long? sessionId, int? termSequence, QueryModel queryModel)
         {
-            var result = new ResultModel<List<InvoicePaymentVM>>();
+            var all = _invoiceRepo.GetAll();
 
-            result.Data = await _invoiceRepo.GetAll().Where(n=>n.SessionSetupId == sessionId && n.TermSequenceNumber == termSequence)
-                .Select(m => new InvoicePaymentVM()
+            if (!(sessionId is null || termSequence is null))
+            {
+                all = all.Where(n => n.SessionSetupId == sessionId && n.TermSequenceNumber == termSequence);
+            }
+
+            var query = await all.Select(m => new InvoicePaymentVM()
             {
                 DueDate = m.PaymentDate,
                 FeeGroup = m.Fee.FeeGroup.Name,
@@ -173,44 +196,44 @@ namespace FinanceSvc.Core.Services
                 InvoiceId = m.Id,
                 Total = m.InvoiceComponents.Where(m=>m.IsSelected).Sum(n=>n.Amount),
                 Paid = m.Transactions.Sum(n=> n.Amount),
-            }).ToListAsync();
+            })
+                .ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
-            return result;
+            return new ResultModel<PaginatedModel<InvoicePaymentVM>>
+            {
+                Data = new PaginatedModel<InvoicePaymentVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
+            };
         }
 
-        public async Task<ResultModel<List<InvoicePaymentHistoryVM>>> GetPaymentHistoryInvoices(long sessionId, int termSequence)
+        public async Task<ResultModel<PaginatedModel<InvoicePaymentHistoryVM>>> GetPaymentHistoryInvoices(long? sessionId, int? termSequence, QueryModel queryModel)
         {
-            var result = new ResultModel<List<InvoicePaymentHistoryVM>>();
-            
-            var sessionInfoResult = await _sessionService.GetSessionAndTerm(sessionId, termSequence);
-            if (sessionInfoResult.HasError)
+            var all = _invoiceRepo.GetAll();
+
+            if (!(sessionId is null || termSequence is null))
             {
-                return new ResultModel<List<InvoicePaymentHistoryVM>>(sessionInfoResult.ErrorMessages);
+                all = all.Where(n => n.SessionSetupId == sessionId && n.TermSequenceNumber == termSequence);
             }
 
-            var invoices = await _invoiceRepo.GetAll().Where(n => n.SessionSetupId == sessionId && n.TermSequenceNumber == termSequence).Select(m => new InvoicePaymentHistoryVM()
+            var query = await all.Select(m => new InvoicePaymentHistoryVM()
             {
                 DueDate = m.PaymentDate,
                 FeeGroup = m.Fee.FeeGroup.Name,
                 StudentRegNumber = m.Student.RegNumber,
                 InvoiceId = m.Id,
                 Total = m.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount),
-            }).ToListAsync();
+                Session = m.SessionSetup.SessionName,
+                TermSequence=m.TermSequenceNumber,
+                TermsJSON=m.SessionSetup.TermsJSON,
+            })
+                .ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
-            var sessionInfo = sessionInfoResult.Data;
-
-            for (int i = 0; i < invoices.Count; i++)
+            return new ResultModel<PaginatedModel<InvoicePaymentHistoryVM>>
             {
-                invoices[i].Term = sessionInfo.TermName;
-                invoices[i].Session = sessionInfo.SessionName;
-            }
-
-            result.Data = invoices;
-
-            return result;
+                Data = new PaginatedModel<InvoicePaymentHistoryVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
+            };
         }
 
-        public async Task<ResultModel<List<InvoicePaymentVM>>> GetInvoices(InvoiceRequestVM model)
+        public async Task<ResultModel<PaginatedModel<InvoicePaymentVM>>> GetInvoices(InvoiceRequestVM model, QueryModel queryModel)
         {
             var invoiceQuery = _invoiceRepo.GetAll();
 
@@ -236,9 +259,7 @@ namespace FinanceSvc.Core.Services
             }
 
 
-            var result = new ResultModel<List<InvoicePaymentVM>>();
-
-            result.Data = await invoiceQuery.Select(m => new InvoicePaymentVM()
+            var query = await invoiceQuery.Select(m => new InvoicePaymentVM()
             {
                 DueDate = m.PaymentDate,
                 FeeGroup = m.Fee.FeeGroup.Name,
@@ -247,22 +268,25 @@ namespace FinanceSvc.Core.Services
                 Total = m.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount),
                 Paid = m.Transactions.Where(m => m.Status == Enumerations.TransactionStatus.Paid).Sum(n => n.Amount),
                 PaymentStatus = m.PaymentStatus
-            }).ToListAsync();
+            })
+                .ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
-            return result;
+            return new ResultModel<PaginatedModel<InvoicePaymentVM>>
+            {
+                Data = new PaginatedModel<InvoicePaymentVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
+            };
         }
 
-        public async Task<ResultModel<List<InvoiceVM>>> GetAllInvoices(long sessionId, int termSequence)
+        public async Task<ResultModel<PaginatedModel<InvoiceVM>>> GetAllInvoices(long? sessionId, int? termSequence, QueryModel queryModel)
         {
-            var result = new ResultModel<List<InvoiceVM>>();
+            var all = _invoiceRepo.GetAll();
 
-            var sessionInfoResult = await _sessionService.GetSessionAndTerm(sessionId, termSequence);
-            if (sessionInfoResult.HasError)
+            if (!(sessionId is null || termSequence is null))
             {
-                return new ResultModel<List<InvoiceVM>>(sessionInfoResult.ErrorMessages);
+                all = all.Where(n => n.SessionSetupId == sessionId && n.TermSequenceNumber == termSequence);
             }
 
-            var invoices = await _invoiceRepo.GetAll().Where(n => n.SessionSetupId == sessionId && n.TermSequenceNumber == termSequence).Select(m => new InvoiceVM()
+            var query = await all.Select(m => new InvoiceVM()
             {
                 DueDate = m.PaymentDate,
                 FeeGroup = m.Fee.FeeGroup.Name,
@@ -271,32 +295,28 @@ namespace FinanceSvc.Core.Services
                 Total = m.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount),
                 Class = $"{m.Student.Class.Name} {m.Student.Class.ClassArm}",
                 ApprovalStatus = m.ApprovalStatus,
-            }).ToListAsync();
+                Session = m.SessionSetup.SessionName,
+                TermsJSON = m.SessionSetup.TermsJSON,
+                TermSequence= m.TermSequenceNumber,
+            })
+                .ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
-            var sessionInfo = sessionInfoResult.Data;
-
-            for (int i = 0; i < invoices.Count; i++)
+            return new ResultModel<PaginatedModel<InvoiceVM>>
             {
-                invoices[i].Term = sessionInfo.TermName;
-                invoices[i].Session = sessionInfo.SessionName;
-            }
-
-            result.Data = invoices;
-
-            return result;
+                Data = new PaginatedModel<InvoiceVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
+            };
         }
 
-        public async Task<ResultModel<List<InvoicePendingPaymentVM>>> GetPendingPaymentInvoices(long sessionId, int termSequence)
+        public async Task<ResultModel<PaginatedModel<InvoicePendingPaymentVM>>> GetPendingPaymentInvoices(long? sessionId, int? termSequence, QueryModel queryModel)
         {
-            var result = new ResultModel<List<InvoicePendingPaymentVM>>();
+            var all = _invoiceRepo.GetAll();
 
-            var sessionInfoResult = await _sessionService.GetSessionAndTerm(sessionId, termSequence);
-            if (sessionInfoResult.HasError)
+            if (!(sessionId is null || termSequence is null))
             {
-                return new ResultModel<List<InvoicePendingPaymentVM>>(sessionInfoResult.ErrorMessages);
+                all = all.Where(n => n.SessionSetupId == sessionId && n.TermSequenceNumber == termSequence);
             }
 
-            var invoices = await _invoiceRepo.GetAll().Where(n => 
+            var query = await _invoiceRepo.GetAll().Where(n => 
                 n.SessionSetupId == sessionId && 
                 n.TermSequenceNumber == termSequence && 
                 n.ApprovalStatus == Enumerations.InvoiceApprovalStatus.Approved && 
@@ -309,19 +329,16 @@ namespace FinanceSvc.Core.Services
                 InvoiceId = m.Id,
                 Total = m.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount),
                 ApprovalStatus = m.ApprovalStatus,
-            }).ToListAsync();
+                Session = m.SessionSetup.SessionName,
+                TermsJSON = m.SessionSetup.TermsJSON,
+                TermSequence = m.TermSequenceNumber,
+            })
+                .ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
-            var sessionInfo = sessionInfoResult.Data;
-
-            for (int i = 0; i < invoices.Count; i++)
+            return new ResultModel<PaginatedModel<InvoicePendingPaymentVM>>
             {
-                invoices[i].Term = sessionInfo.TermName;
-                invoices[i].Session = sessionInfo.SessionName;
-            }
-
-            result.Data = invoices;
-
-            return result;
+                Data = new PaginatedModel<InvoicePendingPaymentVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
+            };
         }
     }
 }

@@ -190,7 +190,7 @@ namespace Auth.Core.Services
                  IsActive = true
             };
 
-            var lastRegNumber = await _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastAsync();
+            var lastRegNumber = await _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
             var lastNumber = 0;
             var seperator = schoolProperty.Data.Seperator;
             if (!string.IsNullOrWhiteSpace(lastRegNumber))
@@ -246,7 +246,8 @@ namespace Auth.Core.Services
                 Email = model.ContactEmail,
                 Phone = model.ContactPhone,
                 ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
-                ParentEmail = parent.User.Email
+                ParentEmail = parent.User.Email,
+                ParentId = parent.Id,
             });
 
             result.Data = new StudentVM
@@ -634,7 +635,8 @@ namespace Auth.Core.Services
                 Phone = stud.User.PhoneNumber,
                 RegNumber= stud.RegNumber,
                 ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
-                ParentEmail = parent.User.Email
+                ParentEmail = parent.User.Email,
+                ParentId = parent.Id,
             });
 
             result.Data = stud;
