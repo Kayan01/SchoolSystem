@@ -482,7 +482,7 @@ namespace Auth.Core.Services
             staff.Religion = model.Religion;
             staff.StateOfOrigin = model.StateOfOrigin;
             staff.Sex = model.Sex;
-            staff.StaffType = StaffType.TeachingStaff;
+            staff.StaffType = StaffType.NonTeachingStaff;
             staff.EmploymentDate = model.EmploymentDetails.EmploymentDate;
             staff.ResumptionDate = model.EmploymentDetails.ResumptionDate;
             staff.EmploymentStatus = model.EmploymentDetails.EmploymentStatus;
