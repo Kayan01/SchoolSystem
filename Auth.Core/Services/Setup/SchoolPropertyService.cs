@@ -7,6 +7,7 @@ using Shared.DataAccess.Repository;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -52,6 +53,20 @@ namespace Auth.Core.Services.Setup
         public async Task<ResultModel<SchoolPropertyVM>> SetSchoolProperty(SchoolPropertyVM model)
         {
             var result = new ResultModel<SchoolPropertyVM>();
+
+
+            //check if prefix and seperator has been setup for any other school
+            var check = await _schoolPropRepo.GetAll()
+                .Where(x => !x.IsDeleted && 
+                x.Prefix == model.Prefix && 
+                x.Seperator == model.Seperator)
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync();
+
+            if (check != null)
+            {
+                return new ResultModel<SchoolPropertyVM>("A different school has been setup with same prefix and seperator");
+            }
 
             //check if setting has been setup before
             var schprop =  await _schoolPropRepo.GetAll().FirstOrDefaultAsync();
