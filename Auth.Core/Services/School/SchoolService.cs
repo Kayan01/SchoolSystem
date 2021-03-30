@@ -223,22 +223,66 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<SchoolDetailVM>> GetSchoolById(long Id)
         {
-            var result = new ResultModel<SchoolDetailVM>();
-            var school = await  _schoolRepo
+            var school = await _schoolRepo
                 .GetAll()
                 .Where(y => y.Id == Id)
                 .Include(h => h.SchoolContactDetails)
                 .Include(h => h.FileUploads)
-                .Select(x => (SchoolDetailVM)x)                
+                .Select(x => new
+                {
+                    x.Address,
+                    x.City,
+                    x.ClientCode,
+                    x.Country,
+                    x.DomainName,
+                    x.Id,
+                    x.IsActive,
+                    x.Name,
+                    x.State,
+                    staffCount = x.Staffs.Count,
+                    studentCount = x.Students.Count,
+                    teachingStaffCount = x.TeachingStaffs.Count,
+                    x.WebsiteAddress,
+                    contactDetails = x.SchoolContactDetails.FirstOrDefault(x => x.IsPrimaryContact),
+                    logo = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()),
+                    icon = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Icon.GetDisplayName()),
+                     x.CreationTime
+                })
                 .FirstOrDefaultAsync();
 
             if (school == null)
             {
-                return result;
+                return new ResultModel<SchoolDetailVM>("No school found");
             }
 
-            result.Data = school;
-            return result;
+            return new ResultModel<SchoolDetailVM>
+            {
+                Data = new SchoolDetailVM
+                {
+                    WebsiteAddress = school.WebsiteAddress,
+                    Address = school.Address,
+                    City = school.City,
+                    ClientCode = school.ClientCode,
+                    ContactEmail = school.contactDetails.Email,
+                    ContactFirstName = school.contactDetails.FirstName,
+                    ContactLastName = school.contactDetails.LastName,
+                    ContactPhone = school.contactDetails.PhoneNumber,
+                    Country = school.Country,
+                    DateCreated = school.CreationTime,
+                    DomainName = school.DomainName,
+                    Icon = school.icon == null ? null : _documentService.TryGetUploadedFile(school.icon.Path),
+                    Id = school.Id,
+                    Logo = school.logo == null ? null : _documentService.TryGetUploadedFile(school.logo.Path),
+                    Name = school.Name,
+                    StaffCount = school.staffCount,
+                    State = school.State,
+                    Status = school.IsActive,
+                    StudentsCount = school.studentCount,
+                    TeachersCount = school.teachingStaffCount,
+                    TotalUsersCount = school.teachingStaffCount + school.staffCount + school.studentCount,
+                    
+                }
+            };
         }
 
         public async Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model, long  id)

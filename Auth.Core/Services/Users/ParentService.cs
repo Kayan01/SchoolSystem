@@ -113,7 +113,7 @@ namespace Auth.Core.Services.Users
                 .Select(x => new
                 {
                     Email = x.Parent.User.Email,
-                    FullName = x.User.FullName,
+                    FullName = x.Parent.User.FullName,
                     Id = x.ParentId,
                     ParentCode = $"PRT/{x.Parent.CreationTime.Year}/{x.Parent.Id}",
                     PhoneNumber = x.Parent.User.PhoneNumber,
