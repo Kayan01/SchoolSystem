@@ -23,48 +23,48 @@ namespace Auth.Core.ViewModels
         public string ContactEmail { get; set; }
         public bool Status { get; set; }
         public DateTime DateCreated { get; set; }
-        public byte[] Icon { get; set; }
-        public byte[] Logo { get; set; }
+        public string Icon { get; set; }
+        public string Logo { get; set; }
 
         public long? TotalUsersCount { get; set; }
         public long? StaffCount { get; set; }
         public long? StudentsCount { get; set; }
         public long? TeachersCount { get; set; }
 
-        public static explicit operator SchoolDetailVM(Models.School model)
-        {
-            var ct = model.SchoolContactDetails?.FirstOrDefault(x => x.IsPrimaryContact);
-            var logoId = model.FileUploads?.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName());
-            var iconId = model.FileUploads?.FirstOrDefault(x => x.Name == DocumentType.Icon.GetDisplayName());
-            var staffCount = model.Staffs?.Count();
-            var studentCount = model.Students?.Count();
-            var teachersCount = model.TeachingStaffs?.Count();
+        //public static explicit operator SchoolDetailVM(Models.School model)
+        //{
+        //    var ct = model.SchoolContactDetails?.FirstOrDefault(x => x.IsPrimaryContact);
+        //    var logoId = model.FileUploads?.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName());
+        //    var iconId = model.FileUploads?.FirstOrDefault(x => x.Name == DocumentType.Icon.GetDisplayName());
+        //    var staffCount = model.Staffs?.Count();
+        //    var studentCount = model.Students?.Count();
+        //    var teachersCount = model.TeachingStaffs?.Count();
 
-            return model == null ? null : new SchoolDetailVM
-            {
-                Id = model.Id,
-                Name = model.Name,
-                DateCreated = model.CreationTime,
-                Status = true, //TODO    
-                ClientCode = model.ClientCode,
-                Address = model.Address,
-                City = model.City,
-                ContactEmail = ct?.Email,
-                ContactFirstName = ct?.FirstName,
-                ContactLastName = ct?.LastName,
-                ContactPhone = ct?.PhoneNumber,
-                Country = model.Country,
-                DomainName = model.DomainName,
-                State = model.State,
-                WebsiteAddress = model.WebsiteAddress,
-                TotalUsersCount = staffCount + studentCount + teachersCount,
-                StudentsCount = studentCount,
-                StaffCount = staffCount,
-                TeachersCount = teachersCount,
-                Logo = logoId?.Path?.GetBase64StringFromImage(),
-                Icon = iconId?.Path?.GetBase64StringFromImage()
+        //    return model == null ? null : new SchoolDetailVM
+        //    {
+        //        Id = model.Id,
+        //        Name = model.Name,
+        //        DateCreated = model.CreationTime,
+        //        Status = true, //TODO    
+        //        ClientCode = model.ClientCode,
+        //        Address = model.Address,
+        //        City = model.City,
+        //        ContactEmail = ct?.Email,
+        //        ContactFirstName = ct?.FirstName,
+        //        ContactLastName = ct?.LastName,
+        //        ContactPhone = ct?.PhoneNumber,
+        //        Country = model.Country,
+        //        DomainName = model.DomainName,
+        //        State = model.State,
+        //        WebsiteAddress = model.WebsiteAddress,
+        //        TotalUsersCount = staffCount + studentCount + teachersCount,
+        //        StudentsCount = studentCount,
+        //        StaffCount = staffCount,
+        //        TeachersCount = teachersCount,
+        //        Logo = logoId?.Path?.GetBase64StringFromImage(),
+        //        Icon = iconId?.Path?.GetBase64StringFromImage()
 
-            };
-        }
+        //    };
+        //}
     }
 }
