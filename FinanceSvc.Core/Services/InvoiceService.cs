@@ -108,6 +108,8 @@ namespace FinanceSvc.Core.Services
                 InvoiceId = m.Id,
                 StudentName = $"{m.Student.FirstName} {m.Student.LastName}",
                 Session = m.SessionSetup.SessionName,
+                TermSequence = m.TermSequenceNumber,
+                TermsJSON = m.SessionSetup.TermsJSON,
                 StudentRegNumber = m.Student.RegNumber,
                 approvalStatus = m.ApprovalStatus,
                 paymentStatus = m.PaymentStatus,
@@ -115,6 +117,7 @@ namespace FinanceSvc.Core.Services
                 Class = $"{m.Fee.SchoolClass.Name} {m.Fee.SchoolClass.ClassArm}",
                 FeeGroup = m.Fee.FeeGroup.Name,
                 ComponentSelected = m.ComponentSelected,
+                CreationDate = m.CreationTime,
                 InvoiceItems = m.InvoiceComponents.Select(n => new InvoiceItemVM()
                 {
                     Id = n.Id,
