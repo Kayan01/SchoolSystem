@@ -522,7 +522,7 @@ namespace AssessmentSvc.Core.Services
 
             var classResults = await _resultRepo.GetAll()
                 .Where(x => x.SessionSetupId == currSession.Id && x.SchoolClassId == classId && x.TermSequenceNumber == currTermSequence)
-                .Include(x=> x.Subject)
+                .Include(x=> x.Subject).Include(m=>m.ApprovedResult)
                 .ToListAsync();
 
             if (classResults.Count < 1)
@@ -572,7 +572,7 @@ namespace AssessmentSvc.Core.Services
 
                 studResult.Breakdowns.Add(breakdown);
             }
-
+            studResult.ClassTeacherComment = classResults.FirstOrDefault(x => x.StudentId == studentId)?.ApprovedResult?.ClassTeacherComment;
             result.Data = studResult;
             return result;
         }

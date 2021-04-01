@@ -86,7 +86,7 @@ namespace AssessmentSvc.API.Controllers
 
         [HttpGet("{classId}")]
         [ProducesResponseType(typeof(ApiResponse<List<ResultBroadSheet>>), 200)]
-        public async Task<IActionResult> GetClassResultForApproval(long classId)
+        public async Task<IActionResult> GetClassBroadSheetApprovedByClassTeacher(long classId)
         {
             if (classId < 1)
                 return ApiResponse<List<ResultBroadSheet>>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
