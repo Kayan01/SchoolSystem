@@ -287,7 +287,11 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model, long  id)
         {
-            var sch = await _schoolRepo.FirstOrDefaultAsync(id);
+            var sch = await _schoolRepo.GetAll()
+                .Include(x => x.FileUploads)
+                .Include(x => x.SchoolContactDetails)
+                .Where(x => x.Id == id)
+                .FirstOrDefaultAsync();
             var result = new ResultModel<SchoolVM>();
 
             if (sch == null)
@@ -295,13 +299,55 @@ namespace Auth.Core.Services
                 result.AddError("School does not exist");
                 return result;
             }
+            
+            _unitOfWork.BeginTransaction();
 
-            //TODO: add more props
-            sch.Name = model.Name;
+
+            var files = new List<FileUpload>();
+            //save filles
+            if (model.Files != null && model.Files.Any())
+            {
+                if (model.Files.Count != model.DocumentTypes.Count)
+                {
+                    result.AddError("Some document types are missing");
+                    return result;
+                }
+                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                if (files.Count != model.Files.Count)
+                {
+                    result.AddError("Some files could not be uploaded");
+
+                    return result;
+                }
+            }
+
+            var contactDetails = new SchoolContactDetails
+            {
+                Id = sch.SchoolContactDetails.FirstOrDefault() != null ? sch.SchoolContactDetails.FirstOrDefault().Id : 0,
+                Email = model.ContactEmail,
+                FirstName = model.ContactFirstName,
+                LastName = model.ContactLastName,
+                PhoneNumber = model.ContactPhoneNo,
+                IsPrimaryContact = true
+            };
+           
+                   sch. Name = model.Name;
+                   sch.DomainName = model.DomainName;
+                  sch.Address = model.Address;
+                  sch.City = model.City;
+                  sch.Country = model.Country;
+                  sch.State = model.State;
+                  sch.WebsiteAddress = model.WebsiteAddress;
+                  sch.FileUploads = files;
+                  sch.IsActive = model.IsActive;
+        
+            sch.SchoolContactDetails = new List<SchoolContactDetails> { contactDetails };
+            sch.FileUploads = files;
+
 
             await _schoolRepo.UpdateAsync(sch);
             await _unitOfWork.SaveChangesAsync();
-            result.Data = model;
+            result.Data = sch;
             return result;
         }
 
