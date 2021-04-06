@@ -42,10 +42,6 @@ namespace Auth.Core.ViewModels
                // Logo = fileId.GetBase64StringFromImage(),
             };
         }
-
-        public static implicit operator SchoolVM(UpdateSchoolVM v)
-        {
-            throw new NotImplementedException();
-        }
+       
     }
 }
