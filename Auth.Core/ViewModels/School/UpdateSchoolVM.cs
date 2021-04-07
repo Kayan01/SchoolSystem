@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Auth.Core.Models;
+using Auth.Core.ViewModels.School;
 
 namespace Auth.Core.ViewModels
 {
-   public class UpdateSchoolVM
+   public class UpdateSchoolVM : CreateSchoolVM
     {   
-        public string Name { get; set; }
 
         public static implicit operator UpdateSchoolVM(Models.School model)
         {

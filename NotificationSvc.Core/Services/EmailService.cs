@@ -68,7 +68,7 @@ namespace NotificationSvc.Core.Services
             var template = CoreConstants.EmailTemplates.FirstOrDefault(x => x.Name.Equals(emailTemplate, StringComparison.InvariantCultureIgnoreCase));
 
             if (template == null)
-                throw new NullReferenceException($"Email Template not found for {emailTemplate}");
+                throw new FileNotFoundException($"Email Template not found for {emailTemplate}");
 
             _logger.LogInformation($"email template {template.Name} {template.TemplatePath}");
 
