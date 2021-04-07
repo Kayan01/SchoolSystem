@@ -142,7 +142,7 @@ namespace Auth.Core.Services
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
-
+            
             var medicalHistory = new MedicalDetail {
                 Allergies = model.Allergies,
                 BloodGroup = model.BloodGroup,
@@ -198,7 +198,6 @@ namespace Auth.Core.Services
                 lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
             }
             var nextNumber = lastNumber;
-
             var saved = false;
 
             while (!saved)
@@ -225,6 +224,9 @@ namespace Auth.Core.Services
             user.UserName = stud.RegNumber;
             user.NormalizedUserName = stud.RegNumber.ToUpper();
             await _userManager.UpdateAsync(user);
+
+            //add classId to claims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString()));
 
             _unitOfWork.Commit();
 
@@ -557,6 +559,7 @@ namespace Auth.Core.Services
             }
             _unitOfWork.BeginTransaction();
 
+            var oldClass = stud.ClassId;
 
             stud.ClassId = model.ClassId;
 
@@ -621,7 +624,14 @@ namespace Auth.Core.Services
             await _studentRepo.UpdateAsync(stud);
             await _unitOfWork.SaveChangesAsync();
 
-             _unitOfWork.Commit();
+            //add classId to claims
+            await _userManager.ReplaceClaimAsync(
+                stud.User, 
+                new System.Security.Claims.Claim(ClaimsKey.StudentClassId, oldClass.ToString()),
+                new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString())
+                );
+
+            _unitOfWork.Commit();
             ////PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
             {
