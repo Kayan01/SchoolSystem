@@ -9,5 +9,7 @@ namespace LearningSvc.Core.ViewModels.Attendance
     {
         public DateTime AttendanceDate { get; set; }
         public  AttendanceState AttendanceStatus { get; set; }
+        public string Reason { get; set; }
+
     }
 }

@@ -248,7 +248,8 @@ namespace LearningSvc.Core.Services
                 GetStudentAttendanceClassVm
             {
                 AttendanceDate = x.AttendanceDate,
-                AttendanceStatus = x.AttendanceStatus
+                AttendanceStatus = x.AttendanceStatus,
+                Reason = x.Remark,
             }).ToListAsync();
 
             return new ResultModel<List<GetStudentAttendanceClassVm>>
