@@ -84,8 +84,7 @@ namespace Auth.Core.Services
                 PhoneNumber = model.ContactPhoneNo,
                 IsPrimaryContact = true
             };
-            var school =
-                new School
+            var school = new School
                 {
                     Name = model.Name,
                     DomainName = model.DomainName,
@@ -95,7 +94,9 @@ namespace Auth.Core.Services
                     State = model.State,
                     WebsiteAddress = model.WebsiteAddress,
                     FileUploads = files,
-                    IsActive = model.IsActive
+                    IsActive = model.IsActive,
+                    PrimaryColor = model.PrimaryColor,
+                    SecondaryColor = model.SecondaryColor
                 };
 
             school.SchoolContactDetails.Add(contactDetails);
@@ -111,7 +112,7 @@ namespace Auth.Core.Services
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
                 Email = model.ContactEmail,
-                UserName = model.ContactEmail,
+                UserName = model.Username,
                 PhoneNumber = model.ContactPhoneNo,
                 UserType = UserType.SchoolAdmin,
             };
@@ -204,6 +205,8 @@ namespace Auth.Core.Services
                 {
                     path = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path,
                     name = x.Name,
+                    x.PrimaryColor,
+                    x.SecondaryColor
                 }) .FirstOrDefaultAsync();
 
             if (schoolInfo is null)
@@ -218,7 +221,12 @@ namespace Auth.Core.Services
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
             }
 
-            return new ResultModel<SchoolNameAndLogoVM>(data: new SchoolNameAndLogoVM() { SchoolName = schoolInfo.name, Logo = logo});
+            return new ResultModel<SchoolNameAndLogoVM>(data: new SchoolNameAndLogoVM() { 
+                SchoolName = schoolInfo.name, 
+                Logo = logo, 
+                PrimaryColor= schoolInfo.PrimaryColor, 
+                SecondaryColor = schoolInfo.SecondaryColor
+            });
         }
 
         public async Task<ResultModel<SchoolDetailVM>> GetSchoolById(long Id)
@@ -411,7 +419,7 @@ namespace Auth.Core.Services
                     FirstName = model.ContactFirstName,
                     LastName = model.ContactLastName,
                     Email = model.ContactEmail,
-                    UserName = model.ContactEmail,
+                    UserName = model.Username,
                     PhoneNumber = model.ContactPhoneNo,
                     UserType = UserType.SchoolAdmin,
                 };
@@ -423,7 +431,6 @@ namespace Auth.Core.Services
                     return result;
                 }
 
-
                 //todo: add more props
                 var contactDetails = new SchoolContactDetails
                 {
@@ -433,8 +440,7 @@ namespace Auth.Core.Services
                     PhoneNumber = model.ContactPhoneNo,
                     IsPrimaryContact = true
                 };
-                var school =
-                    new School
+                var school = new School
                     {
                         Name = model.Name,
                         DomainName = model.DomainName,

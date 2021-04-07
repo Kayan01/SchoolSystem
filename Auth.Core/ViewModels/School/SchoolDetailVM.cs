@@ -21,6 +21,8 @@ namespace Auth.Core.ViewModels
         public string ContactLastName { get; set; }
         public string ContactPhone { get; set; }
         public string ContactEmail { get; set; }
+        public string PrimaryColor { get; set; }
+        public string SecondaryColor { get; set; }
         public bool Status { get; set; }
         public DateTime DateCreated { get; set; }
         public string Icon { get; set; }

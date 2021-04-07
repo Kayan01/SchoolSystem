@@ -68,6 +68,7 @@ namespace Shared.Utils
             public const string TenantId = nameof(TenantId);
             public const string UserType = nameof(UserType);
             public const string TeacherClassId = nameof(TeacherClassId);
+            public const string StudentClassId = nameof(StudentClassId);
             public const string Permissions = nameof(Permissions);
         }
 

@@ -8,5 +8,7 @@ namespace Auth.Core.ViewModels.School
     {
         public string SchoolName { get; set; }
         public string Logo { get; set; }
+        public string PrimaryColor { get; set; }
+        public string SecondaryColor { get; set; }
     }
 }
