@@ -254,7 +254,9 @@ namespace Auth.Core.Services
                     contactDetails = x.SchoolContactDetails.FirstOrDefault(x => x.IsPrimaryContact),
                     logo = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()),
                     icon = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Icon.GetDisplayName()),
-                     x.CreationTime
+                     x.CreationTime,
+                     x.PrimaryColor,
+                     x.SecondaryColor
                 })
                 .FirstOrDefaultAsync();
 
@@ -288,7 +290,8 @@ namespace Auth.Core.Services
                     StudentsCount = school.studentCount,
                     TeachersCount = school.teachingStaffCount,
                     TotalUsersCount = school.teachingStaffCount + school.staffCount + school.studentCount,
-                    
+                    PrimaryColor=school.PrimaryColor,
+                    SecondaryColor = school.SecondaryColor
                 }
             };
         }
@@ -351,7 +354,8 @@ namespace Auth.Core.Services
         
             sch.SchoolContactDetails = new List<SchoolContactDetails> { contactDetails };
             sch.FileUploads = files;
-
+            sch.SecondaryColor = model.SecondaryColor;
+            sch.PrimaryColor = model.PrimaryColor;
 
             await _schoolRepo.UpdateAsync(sch);
             await _unitOfWork.SaveChangesAsync();
