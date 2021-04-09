@@ -103,7 +103,7 @@ namespace Shared.AspNetCore
 #if DEBUG
                 apiResponse.Description = $"Error: {(ex?.InnerException?.Message ?? ex.Message)} --> {ex?.StackTrace}";
 #else
-                apiResponse.Description = "An error occurred while processing your request!";
+                apiResponse.Description = "System error occurred. Please contact application support!";
 #endif
                 apiResponse.Errors.Add(apiResponse.Description);
                 return apiResponse;
