@@ -247,6 +247,25 @@ namespace AssessmentSvc.API.Controllers
                 return HandleError(ex);
             }
         }
+        
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<StudentReportSheetVM>), 200)]
+        public async Task<IActionResult> GetApprovedResultForMultipleStudents(long[] studId, long classId, long? sessionId = null, int? termSequenceNumber = null)
+        {
+           
+            try
+            {
+                var result = await _approvedResultService.GetApprovedResultForMultipleStudents(classId, studId, sessionId, termSequenceNumber);
+
+                if (result.HasError)
+                    return ApiResponse<StudentReportSheetVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<StudentVM>>), 200)]
