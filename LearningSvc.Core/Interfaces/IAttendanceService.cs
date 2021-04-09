@@ -2,6 +2,7 @@
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<List<GetStudentAttendanceSubjectVm>>> GetStudentAttendanceForSubject(
             GetStudentAttendanceSubjectQueryVm vm);
 
-        Task<ResultModel<List<GetStudentAttendanceClassVm>>> GetStudentAttendanceForClass(
+        Task<ResultModel<IEnumerable<ListStudentAttendanceClassVm>>> GetStudentAttendanceForClass(
             GetStudentAttendanceClassQueryVm vm);
     }
 }

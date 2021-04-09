@@ -205,7 +205,7 @@ namespace LearningSvc.Core.Services
             return new ResultModel<List<GetStudentAttendanceSubjectVm>>(data: result);
         }
 
-        public async Task<ResultModel<List<GetStudentAttendanceClassVm>>> GetStudentAttendanceForClass(GetStudentAttendanceClassQueryVm vm)
+        public async Task<ResultModel<IEnumerable<ListStudentAttendanceClassVm>>> GetStudentAttendanceForClass(GetStudentAttendanceClassQueryVm vm)
         {
             var query = _classAttendanceRepo.GetAll();
 
@@ -222,7 +222,7 @@ namespace LearningSvc.Core.Services
                 var student = await _studentRepository.GetAll().Where(x => x.UserId == vm.StudentUserId).FirstOrDefaultAsync();
                 if (student == null)
                 {
-                    return new ResultModel<List<GetStudentAttendanceClassVm>>("Student doesnt exist");
+                    return new ResultModel<IEnumerable<ListStudentAttendanceClassVm>>("Student doesnt exist");
                 }
 
                 query = query.Where(x => x.ClassId == student.ClassId);
@@ -245,17 +245,32 @@ namespace LearningSvc.Core.Services
 
 
             var data = await query.Select(x => new
-                GetStudentAttendanceClassVm
             {
+                StudentId = x.StudentId,
                 AttendanceDate = x.AttendanceDate,
                 AttendanceStatus = x.AttendanceStatus,
                 Reason = x.Remark,
             }).ToListAsync();
 
-            return new ResultModel<List<GetStudentAttendanceClassVm>>
+            var groupedData = data.GroupBy(x => x.StudentId).Select(x => new ListStudentAttendanceClassVm
             {
-                Data = data
+                StudentId = x.Key,
+                AttendanceClassVms = x.Select(c => new GetStudentAttendanceClassVm
+                {
+                    AttendanceDate = c.AttendanceDate,
+                    AttendanceStatus = c.AttendanceStatus,
+                    Reason = c.Reason
+                })
+
+            });
+
+            return new ResultModel<IEnumerable<ListStudentAttendanceClassVm>>
+            {
+                Data = groupedData
             };
         }
+
+
+
     }
 }
