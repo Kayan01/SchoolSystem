@@ -17,6 +17,8 @@ namespace FinanceSvc.Core.ViewModels.Invoice
             }
         }
         public string StudentRegNumber { get; set; }
+        public string StudentName { get; set; }
+        public DateTime CreationDate { get; set; }
         public decimal Total { get; set; }
         public string FeeGroup { get; set; }
         public string Session { get; set; }
@@ -48,5 +50,8 @@ namespace FinanceSvc.Core.ViewModels.Invoice
             }
         }
         public DateTime DueDate { get; set; }
+
+
+        public List<InvoiceItemVM> InvoiceItems { get; set; }
     }
 }

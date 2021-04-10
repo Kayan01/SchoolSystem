@@ -296,11 +296,21 @@ namespace FinanceSvc.Core.Services
                 StudentRegNumber = m.Student.RegNumber,
                 InvoiceId = m.Id,
                 Total = m.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount),
-                Class = $"{m.Student.Class.Name} {m.Student.Class.ClassArm}",
+                Class = $"{m.Fee.SchoolClass.Name} {m.Fee.SchoolClass.ClassArm}",
                 ApprovalStatus = m.ApprovalStatus,
                 Session = m.SessionSetup.SessionName,
                 TermsJSON = m.SessionSetup.TermsJSON,
                 TermSequence= m.TermSequenceNumber,
+                CreationDate = m.CreationTime,
+                InvoiceItems = m.InvoiceComponents.Select(n => new InvoiceItemVM()
+                {
+                    Id = n.Id,
+                    Amount = n.Amount,
+                    Name = n.ComponentName,
+                    IsCompulsory = n.IsCompulsory,
+                    IsSelected = n.IsSelected
+                }).ToList(),
+                StudentName = $"{m.Student.FirstName} {m.Student.LastName}",
             })
                 .ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
 
