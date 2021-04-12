@@ -229,14 +229,14 @@ namespace AssessmentSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<StudentReportSheetVM>), 200)]
-        public async Task<IActionResult> GetApprovedStudentReportSheet(long studId, long classId, long? sessionId = null, int? termSequenceNumber = null)
+        public async Task<IActionResult> GetApprovedStudentReportSheet(long? studId, long? studUserId, long classId, long? sessionId = null, int? termSequenceNumber = null)
         {
             if (studId < 1 || classId < 1)
                 return ApiResponse<StudentReportSheetVM>(errors: "Please provide valid Id", codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
-                var result = await _approvedResultService.GetApprovedResultForStudent(classId, studId, sessionId, termSequenceNumber);
+                var result = await _approvedResultService.GetApprovedResultForStudent(classId, studId, studUserId, sessionId, termSequenceNumber);
 
                 if (result.HasError)
                     return ApiResponse<StudentReportSheetVM>(errors: result.ErrorMessages.ToArray());
