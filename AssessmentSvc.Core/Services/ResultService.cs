@@ -25,6 +25,7 @@ namespace AssessmentSvc.Core.Services
     public class ResultService : IResultService
     {
         private readonly IRepository<Result, long> _resultRepo;
+        private readonly IRepository<Student, long> _studentRepository;
         private readonly IRepository<BehaviourResult, long> _behaviourRepository;
         private readonly IAssessmentSetupService _assessmentService;
         private readonly IStudentService _studentServive;
@@ -652,17 +653,38 @@ namespace AssessmentSvc.Core.Services
         }
         public async Task<ResultModel<GetBehaviourResultVM>> GetBehaviouralResult(GetBehaviourResultQueryVm model)
         {
-            var query = await _behaviourRepository.GetAll().Where(x =>
-                x.SchoolClassId == model.ClassId &&
-                x.SessionId == model.SessionId &&
-                x.TermSequenceNumber == model.TermSequence &&
-                x.StudentId == model.StudentId
-            ).ToListAsync();
+            var query =  _behaviourRepository.GetAll();
+
+            if (model.StudentId.HasValue)
+            {
+               query = query.Where(x => x.StudentId == model.StudentId);
+            }
+
+            if (model.StudentUserId.HasValue)
+            {
+                var stud = await _studentRepository.GetAll().Where(x => x.UserId == model.StudentUserId).FirstOrDefaultAsync();
+
+                if (stud is null)
+                {
+                    return new ResultModel<GetBehaviourResultVM>("Student does not exist");
+
+                }
+
+                query = query.Where(x => x.StudentId == stud.Id);
+            }
+
+
+
+            var queryResult = await query.Where(x =>
+             x.SchoolClassId == model.ClassId &&
+             x.SessionId == model.SessionId &&
+             x.TermSequenceNumber == model.TermSequence
+         ).ToListAsync();
 
 
           
             
-           var data = query.GroupBy(x=>x.Type).ToDictionary(g => g.Key, g => g.Select(x=> new BehaviourValuesAndGrade
+           var data = queryResult.GroupBy(x=>x.Type).ToDictionary(g => g.Key, g => g.Select(x=> new BehaviourValuesAndGrade
            {
                BehaviourName = x.Name, 
                Grade = x.Grade
