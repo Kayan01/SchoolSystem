@@ -20,7 +20,7 @@ namespace AssessmentSvc.Core.ViewModels.Result
         public int TermSequence { get; set; }
         [Required]
         public long ClassId { get; set; }
-        [Required]
-        public long StudentId { get; set; }
+        public long? StudentId { get; set; }
+        public long? StudentUserId { get; set; }
     }
 }
