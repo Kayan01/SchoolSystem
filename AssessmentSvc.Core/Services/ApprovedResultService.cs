@@ -24,6 +24,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRepository<ApprovedResult, long> _approvedResultRepo;
         private readonly IRepository<Result, long> _resultRepo;
+        private readonly IRepository<Student, long> _studentRepo;
         private readonly ISessionSetup _sessionService;
         private readonly IResultService _resultService;
         private readonly IGradeSetupService _gradeService;
@@ -38,6 +39,7 @@ namespace AssessmentSvc.Core.Services
             IGradeSetupService gradeService,
             IPublishService publishService, 
             IStudentService studentService,
+            IRepository<Student, long> studentRepo,
             IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -48,6 +50,7 @@ namespace AssessmentSvc.Core.Services
             _gradeService = gradeService;
             _publishService = publishService;
             _studentService = studentService;
+            _studentRepo = studentRepo;
         }
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
         {
@@ -352,7 +355,7 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StudentReportSheetVM>> GetApprovedResultForStudent(long classId, long studentId, long? curSessionId = null, int? termSequenceNumber = null)
+        public async Task<ResultModel<StudentReportSheetVM>> GetApprovedResultForStudent(long classId, long? studentId, long? studentUserId, long? curSessionId = null, int? termSequenceNumber = null)
         {
 
             var result = new ResultModel<StudentReportSheetVM>();
@@ -382,6 +385,18 @@ namespace AssessmentSvc.Core.Services
             if (sessionAndTermResult.HasError)
             {
                 return new ResultModel<StudentReportSheetVM>(sessionAndTermResult.ErrorMessages);
+            }
+
+            if (!studentId.HasValue && studentUserId.HasValue)
+            {
+                var student  = await _studentRepo.GetAll().FirstOrDefaultAsync(x => x.UserId == studentUserId.Value);
+
+                if (student ==null)
+                {
+                    return new ResultModel<StudentReportSheetVM>("Student not found");
+                }
+
+                studentId = student.Id;
             }
 
             var currSessionAndTerm = sessionAndTermResult.Data;
