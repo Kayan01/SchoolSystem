@@ -589,7 +589,20 @@ namespace Auth.Core.Services.Users
 
             //adds classID as a claim
             var user = await _userManager.FindByIdAsync(teacher.Staff.UserId.ToString());
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
+            var claims = await _userManager.GetClaimsAsync(user);
+
+            if (claims.Any(m=> m.Type == ClaimsKey.TeacherClassId))
+            {
+                await _userManager.ReplaceClaimAsync(
+                    user, 
+                    new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, claims.Single(m=>m.Type == ClaimsKey.TeacherClassId).Value),
+                    new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString())
+                    );
+            }
+            else
+            {
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
+            }
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
