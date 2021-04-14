@@ -33,10 +33,10 @@ namespace AssessmentSvc.Core.Services
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
             IRepository<Result, long> resultRepo,
-            ISessionSetup sessionService, 
+            ISessionSetup sessionService,
             IResultService resultService,
             IGradeSetupService gradeService,
-            IPublishService publishService, 
+            IPublishService publishService,
             IStudentService studentService,
             IUnitOfWork unitOfWork)
         {
@@ -102,6 +102,8 @@ namespace AssessmentSvc.Core.Services
                 oldApprovedResult.ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus;
                 oldApprovedResult.SchoolAdminApprovalStatus = vm.AdminApprovalStatus;
                 oldApprovedResult.HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus;
+                oldApprovedResult.ClassTeacherId = vm.ClassTeacherId;
+                oldApprovedResult.HeadTeacherId = vm.HeadTeacherId;
 
                 await _approvedResultRepo.UpdateAsync(oldApprovedResult);
             }
@@ -118,7 +120,9 @@ namespace AssessmentSvc.Core.Services
                     StudentId = vm.StudentId,
                     ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus,
                     SchoolAdminApprovalStatus = vm.AdminApprovalStatus,
-                     HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus
+                    HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus,
+                    ClassTeacherId = vm.ClassTeacherId,
+                    HeadTeacherId = vm.HeadTeacherId,
                 };
 
                 await _approvedResultRepo.InsertAsync(newApprovedResult);
@@ -158,7 +162,7 @@ namespace AssessmentSvc.Core.Services
 
 
             //fetch results
-            var classResults = await _resultRepo.GetAll().Include(m=>m.ApprovedResult)
+            var classResults = await _resultRepo.GetAll().Include(m => m.ApprovedResult)
                 .Where(x => x.SessionSetupId == currSession.Id && x.TermSequenceNumber == currTermSequence && x.SchoolClassId == vm.ClassId)
                 .ToListAsync();
 
@@ -177,6 +181,8 @@ namespace AssessmentSvc.Core.Services
                     classResult.ApprovedResult.ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus;
                     classResult.ApprovedResult.SchoolAdminApprovalStatus = vm.AdminApprovalStatus;
                     classResult.ApprovedResult.HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus;
+                    classResult.ApprovedResult.ClassTeacherId = vm.ClassTeacherId;
+                    classResult.ApprovedResult.HeadTeacherId = vm.HeadTeacherId;
                 }
                 else
                 {
@@ -190,13 +196,15 @@ namespace AssessmentSvc.Core.Services
                         StudentId = classResult.StudentId,
                         ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus,
                         SchoolAdminApprovalStatus = vm.AdminApprovalStatus,
-                        HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus
+                        HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus,
+                        ClassTeacherId = vm.ClassTeacherId,
+                        HeadTeacherId = vm.HeadTeacherId,
                     };
                 }
 
                 await _resultRepo.UpdateAsync(classResult);
             }
-            
+
             await _unitOfWork.SaveChangesAsync();
 
             result.Data = "Record updated";
@@ -257,8 +265,10 @@ namespace AssessmentSvc.Core.Services
                     StudentId = vm.StudentId,
                     ClassTeacherApprovalStatus = oldApprovedResult.ClassTeacherApprovalStatus,
                     AdminApprovalStatus = oldApprovedResult.SchoolAdminApprovalStatus,
-                     HeadTeacherApprovalStatus = oldApprovedResult.HeadTeacherApprovedStatus,
+                    HeadTeacherApprovalStatus = oldApprovedResult.HeadTeacherApprovedStatus,
                     StudentBroadSheet = resultsModel.Data,
+                    ClassTeacherId = oldApprovedResult.ClassTeacherId,
+                    HeadTeacherId=oldApprovedResult.HeadTeacherId,
                 };
 
 
@@ -457,13 +467,16 @@ namespace AssessmentSvc.Core.Services
                     x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
                     x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved &&
                     x.StudentId == studentId)
-                .Select( m=> new { 
+                .Select(m => new
+                {
                     m.Student.RegNumber,
                     studentName = $"{m.Student.FirstName} {m.Student.LastName}",
                     classs = $"{m.SchoolClass.Name} {m.SchoolClass.ClassArm}",
                     studentsInClass = m.SchoolClass.Students.Count(),
                     m.ApprovedResult.ClassTeacherComment,
                     m.ApprovedResult.HeadTeacherComment,
+                    m.ApprovedResult.ClassTeacherId,
+                    m.ApprovedResult.HeadTeacherId,
                 })
                 .FirstOrDefaultAsync();
 
@@ -480,6 +493,8 @@ namespace AssessmentSvc.Core.Services
             result.Data.TotalInClass = ApprovedResultInfo.studentsInClass;
             result.Data.ClassTeacherComment = ApprovedResultInfo.ClassTeacherComment;
             result.Data.HeadTeacherComment = ApprovedResultInfo.HeadTeacherComment;
+            result.Data.ClassTeacherId = ApprovedResultInfo.ClassTeacherId;
+            result.Data.HeadTeacherId = ApprovedResultInfo.HeadTeacherId;
 
             return result;
         }
@@ -513,7 +528,7 @@ namespace AssessmentSvc.Core.Services
                     x.TermSequenceNumber == currSessionAndTerm.TermSequence &&
                     x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
                     x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved
-                ).Select(m=> new StudentVM()
+                ).Select(m => new StudentVM()
                 {
                     Id = m.Student.Id,
                     Name = $"{m.Student.LastName} {m.Student.FirstName}",
@@ -526,7 +541,7 @@ namespace AssessmentSvc.Core.Services
                 return new ResultModel<List<StudentVM>>(errorMessage: "No Approved result found in current term and session");
             }
 
-            List<StudentVM> eachStudent = studentWithApprovedResults.GroupBy(x => x.Id).Select(m=>m.First()).ToList();
+            List<StudentVM> eachStudent = studentWithApprovedResults.GroupBy(x => x.Id).Select(m => m.First()).ToList();
             result.Data = eachStudent;
 
             return result;
