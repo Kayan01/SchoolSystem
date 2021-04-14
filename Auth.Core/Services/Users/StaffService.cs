@@ -122,6 +122,30 @@ namespace Auth.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<StaffNameAndSignatureVM>> GetStaffNameAndSignatureById(long Id)
+        {
+            var result = new ResultModel<StaffNameAndSignatureVM>();
+            var staff = await _staffRepo.GetAll()
+                            .Where(x=> x.Id == Id)
+                            .Select(n=> new StaffNameAndSignatureVM()
+                            {
+                                FirstName = n.User.FirstName,
+                                LastName = n.User.LastName,
+                                Signature = n.FileUploads.Where(m=>m.Name == DocumentType.Signature.GetDisplayName()).FirstOrDefault().Path
+                            })
+                            .FirstOrDefaultAsync();
+            if (staff == null)
+            {
+                return new ResultModel<StaffNameAndSignatureVM>(errorMessage: "Staff not found");
+            }
+
+            var sign = _documentService.TryGetUploadedFile(staff.Signature);
+
+            staff.Signature = sign;
+            result.Data = staff;
+            return result;
+        }
+
         public async Task<ResultModel<StaffVM>> AddStaff(AddStaffVM model)
         {
             var result = new ResultModel<StaffVM>();

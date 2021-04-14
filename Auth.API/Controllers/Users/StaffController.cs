@@ -92,6 +92,27 @@ namespace UserManagement.API.Controllers
             }
         }
 
+        [HttpGet("{staffId}")]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<StaffNameAndSignatureVM>), 200)]
+        public async Task<IActionResult> GetStaffNameAndSignatureById(long staffId)
+        {
+            if (staffId < 1)
+                return ApiResponse<string>(errors: "Please provide Staff Id");
+
+            try
+            {
+                var result = await _staffService.GetStaffNameAndSignatureById(staffId);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPut("{Id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<StaffVM>), 200)]
