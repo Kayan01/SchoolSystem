@@ -122,11 +122,11 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StaffNameAndSignatureVM>> GetStaffNameAndSignatureById(long Id)
+        public async Task<ResultModel<StaffNameAndSignatureVM>> GetStaffNameAndSignatureByUserId(long userId)
         {
             var result = new ResultModel<StaffNameAndSignatureVM>();
             var staff = await _staffRepo.GetAll()
-                            .Where(x=> x.Id == Id)
+                            .Where(x=> x.UserId == userId)
                             .Select(n=> new StaffNameAndSignatureVM()
                             {
                                 FirstName = n.User.FirstName,
