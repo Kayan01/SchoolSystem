@@ -574,6 +574,7 @@ namespace AssessmentSvc.Core.Services
                 studResult.Breakdowns.Add(breakdown);
             }
             studResult.ClassTeacherComment = classResults.FirstOrDefault(x => x.StudentId == studentId)?.ApprovedResult?.ClassTeacherComment;
+            studResult.ClassTeacherId = classResults.FirstOrDefault(x => x.StudentId == studentId)?.ApprovedResult?.ClassTeacherId;
             result.Data = studResult;
             return result;
         }
