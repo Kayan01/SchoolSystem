@@ -486,6 +486,8 @@ namespace AssessmentSvc.Core.Services
                     m.Student.RegNumber,
                     studentName = $"{m.Student.FirstName} {m.Student.LastName}",
                     classs = $"{m.SchoolClass.Name} {m.SchoolClass.ClassArm}",
+                    m.Student.DateOfBirth,
+                    m.Student.Sex,
                     studentsInClass = m.SchoolClass.Students.Count(),
                     m.ApprovedResult.ClassTeacherComment,
                     m.ApprovedResult.HeadTeacherComment,
@@ -509,6 +511,8 @@ namespace AssessmentSvc.Core.Services
             result.Data.HeadTeacherComment = ApprovedResultInfo.HeadTeacherComment;
             result.Data.ClassTeacherId = ApprovedResultInfo.ClassTeacherId;
             result.Data.HeadTeacherId = ApprovedResultInfo.HeadTeacherId;
+            result.Data.Sex = ApprovedResultInfo.Sex;
+            result.Data.Age = DateTime.Now.Year - ApprovedResultInfo.DateOfBirth.Year;
 
             return result;
         }

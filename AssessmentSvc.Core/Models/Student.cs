@@ -10,6 +10,8 @@ namespace AssessmentSvc.Core.Models
     {
         public long TenantId { get; set; }
         public long? ClassId { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public string Sex { get; set; }
         public string ParentName { get; set; }
         public string ParentEmail { get; set; }
 
