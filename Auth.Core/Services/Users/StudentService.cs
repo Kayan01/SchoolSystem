@@ -250,6 +250,8 @@ namespace Auth.Core.Services
                 ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
                 ParentEmail = parent.User.Email,
                 ParentId = parent.Id,
+                Sex = model.Sex,
+                DoB = model.DateOfBirth,
             });
 
             result.Data = new StudentVM
@@ -647,6 +649,8 @@ namespace Auth.Core.Services
                 ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
                 ParentEmail = parent.User.Email,
                 ParentId = parent.Id,
+                Sex = stud.Sex,
+                DoB = stud.DateOfBirth,
             });
 
             result.Data = stud;
