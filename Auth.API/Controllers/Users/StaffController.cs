@@ -92,17 +92,17 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        [HttpGet("{staffId}")]
+        [HttpGet("{userId}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<StaffNameAndSignatureVM>), 200)]
-        public async Task<IActionResult> GetStaffNameAndSignatureById(long staffId)
+        public async Task<IActionResult> GetStaffNameAndSignatureByUserId(long userId)
         {
-            if (staffId < 1)
-                return ApiResponse<string>(errors: "Please provide Staff Id");
+            if (userId < 1)
+                return ApiResponse<string>(errors: "Please provide Staff's User Id");
 
             try
             {
-                var result = await _staffService.GetStaffNameAndSignatureById(staffId);
+                var result = await _staffService.GetStaffNameAndSignatureByUserId(userId);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

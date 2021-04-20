@@ -12,5 +12,7 @@ namespace Shared.ViewModels
         public string ParentEmail { get; set; }
         public long? ClassId { get; set; }
         public long ParentId { get; set; }
+        public string Sex { get; set; }
+        public DateTime DoB { get; set; }
     }
 }
