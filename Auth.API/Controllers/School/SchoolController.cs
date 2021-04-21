@@ -134,6 +134,27 @@ namespace UserManagement.API.Controllers
             }
         }
 
+        [HttpGet("{domain}")]
+        [ProducesResponseType(typeof(ApiResponse<SchoolNameAndLogoVM>), 200)]
+        public async Task<IActionResult> GetSchoolNameAndLogoByDomain(string domain)
+        {
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return ApiResponse<SchoolNameAndLogoVM>(errors: "Please provide valid school Domain");
+            }
+            try
+            {
+                var result = await _schoolService.GetSchoolNameAndLogoByDomain(domain);
+                if (result.HasError)
+                    return ApiResponse<SchoolNameAndLogoVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPut("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<SchoolVM>), 200)]

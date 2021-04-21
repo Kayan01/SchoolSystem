@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Shared.Enums;
 using static Shared.Utils.CoreConstants;
+using Microsoft.Extensions.Configuration;
 
 namespace Auth.Core.Services
 {
@@ -27,6 +28,7 @@ namespace Auth.Core.Services
         private readonly IPublishService _publishService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<AuthUserManagementService> _logger;
+        private readonly IConfiguration _config;
 
 
         public AuthUserManagementService(
@@ -34,15 +36,18 @@ namespace Auth.Core.Services
             IDataProtectionProvider provider,
             IPublishService publishService,
             IHttpContextAccessor httpContextAccessor,
-            ILogger<AuthUserManagementService> logger)
+            IConfiguration config,
+        ILogger<AuthUserManagementService> logger)
         {
             _userManager = userManager;
             _protector = provider.CreateProtector("Auth");
             _publishService = publishService;
             _httpContextAccessor = httpContextAccessor;
+            _config = config;
             _logger = logger;
         }
-        readonly string  baseUrl = "http://school-track-1.vercel.app";
+
+
         public async Task<long?> AddUserAsync(AuthUserModel model)
         {
             var user = new User { Email = model.Email, UserName = model.Email, FirstName = model.FirstName, LastName = model.LastName, PhoneNumber = model.PhoneNumber };
@@ -92,21 +97,17 @@ namespace Auth.Core.Services
 
             return false;
         }
-        public async Task<ResultModel<bool>> SendRegistrationEmail(User user, string emailTitle = "Confirm your email")
+        public async Task<ResultModel<bool>> SendRegistrationEmail(User user, string subdomain, string emailTitle = "Confirm your email")
         {
-            //should handle multi tenant frontend urls
-            var baseUri =_httpContextAccessor.HttpContext.Request.GetTypedHeaders().Referer;
-           
-            //test
-            _logger.LogError($"Url Referer value : {baseUri}");
-
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
 
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
+            var sub = string.IsNullOrWhiteSpace(subdomain) ? "" : subdomain + ".";
+            var clientURL = $"http://{sub}{_config["ClientURL"]}";
 
-            var callbackUrl = $"{baseUri ?? new Uri(baseUrl)}#/email-verified?userId={user.Id}&code={code}";
+            var callbackUrl = $"{new Uri(clientURL)}#/email-verified?userId={user.Id}&code={code}";
 
             CreateEmailModel emailModel;
 
@@ -212,7 +213,7 @@ namespace Auth.Core.Services
 
         private async Task SendPasswordResetEmail(User user, string code)
         {
-            var link = $"{baseUrl}/#/reset-password?code={code}";
+            var link = $"https://{_config["ClientURL"]}/#/reset-password?code={code}";
 
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
             {

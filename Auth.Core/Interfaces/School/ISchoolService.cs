@@ -19,6 +19,7 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model);
         Task<ResultModel<SchoolDetailVM>> GetSchoolById(long Id);
         Task<ResultModel<SchoolNameAndLogoVM>> GetSchoolNameAndLogoById(long Id);
+        Task<ResultModel<SchoolNameAndLogoVM>> GetSchoolNameAndLogoByDomain(string domain);
         Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model, long Id);
         Task<ResultModel<bool>> DeleteSchool(long Id);
     }
