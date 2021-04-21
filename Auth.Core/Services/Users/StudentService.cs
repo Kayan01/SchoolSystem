@@ -378,7 +378,8 @@ namespace Auth.Core.Services
                             x.Address,
                             x.Town,
                             x.State,
-                            files = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
+                            x.IsActive,
+                            image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
                         }).FirstOrDefaultAsync();
 
             if (std == null)
@@ -413,7 +414,7 @@ namespace Auth.Core.Services
                 Genotype = std.Genotype,
                 HomeAddress = std.Address,
                 Id = std.Id,
-                ImagePath = std.files?.Path,
+                Image = _documentService.TryGetUploadedFile(std.image?.Path),
                 Immunization = sb.ToString(),
                 LastName = std.LastName,
                 LocalGovernment = std.LocalGovernment,
@@ -422,6 +423,7 @@ namespace Auth.Core.Services
                 ParentName = std.ParentName,
                 PhoneNumber = std.PhoneNumber,
                 Religion = std.Religion,
+                IsActive = std.IsActive
 
             };
             return result;
@@ -462,7 +464,8 @@ namespace Auth.Core.Services
                             x.Address,
                             x.Town,
                             x.State,
-                            files = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
+                            x.IsActive,
+                            image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
                         }).FirstOrDefaultAsync();
 
             if (std == null)
@@ -496,7 +499,7 @@ namespace Auth.Core.Services
                 Genotype = std.Genotype,
                 HomeAddress = std.Address,
                 Id = std.Id,
-                ImagePath = std.files?.Path,
+                Image = _documentService.TryGetUploadedFile(std.image?.Path),
                 Immunization = sb.ToString(),
                 LastName = std.LastName,
                 LocalGovernment = std.LocalGovernment,
@@ -505,7 +508,8 @@ namespace Auth.Core.Services
                 ParentName = std.ParentName,
                 PhoneNumber = std.PhoneNumber,
                 Religion = std.Religion,
-                RegNumber = std.RegNumber
+                RegNumber = std.RegNumber,
+                IsActive = std.IsActive
             };
             return result;
         }
