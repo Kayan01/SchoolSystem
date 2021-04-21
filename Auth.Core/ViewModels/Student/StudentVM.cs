@@ -35,13 +35,10 @@ namespace Auth.Core.ViewModels.Student
         public string HomeAddress { get; set; }
         public string City { get; set; }
         public string State { get; set; }
-        public byte[] Image => ImagePath?.GetBase64StringFromImage();
+        public string Image { get; set; }
         public long Id { get; set; }
-
-        [System.Text.Json.Serialization.JsonIgnore]
-        [Newtonsoft.Json.JsonIgnore]
-        public string ImagePath { get; set; }
         public string RegNumber { get; internal set; }
+        public bool IsActive { get; set; }
     }
     public class StudentVM
     {
