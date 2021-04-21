@@ -105,7 +105,7 @@ namespace Auth.Core.Services
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
             var sub = string.IsNullOrWhiteSpace(subdomain) ? "" : subdomain + ".";
-            var clientURL = $"http://{sub}{_config["ClientURL"]}";
+            var clientURL = $"https://{sub}{_config["ClientURL"]}";
 
             var callbackUrl = $"{new Uri(clientURL)}#/email-verified?userId={user.Id}&code={code}";
 
