@@ -91,5 +91,23 @@ namespace FinanceSvc.API.Controllers
                 return HandleError(ex);
             }
         }
+
+        [HttpGet()]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<byte[]>), 200)]
+        public async Task<IActionResult> TestSinglePagePdf2()
+        {
+            try
+            {
+                var data = new { Name = "Test PDF School", City = "Ikeja", State="Lagos" };
+                var result = PdfHelper.BuildPdfFile(_converter, _hostingEnvironment, CoreConstants.InvoicePdfTemplatePath, data, true);
+
+                return File(result, "application/octet-stream", "TestSinglePage.pdf");
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }

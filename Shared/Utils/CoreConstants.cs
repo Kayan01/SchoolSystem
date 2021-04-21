@@ -12,6 +12,8 @@ namespace Shared.Utils
 
         public const string TestPdfTemplatePath1 = @"filestore\pdftemplate\TestPdfTemplate1.html";
         public const string TestPdfTemplatePath2 = @"filestore\pdftemplate\TestPdfTemplate2.html";
+        public const string ResultPdfTemplatePath = @"filestore\pdftemplate\ResultTemplate.html";
+        public const string InvoicePdfTemplatePath = @"filestore\pdftemplate\invoice-email-template.html";
 
         public static class EmailTemplateType
         {

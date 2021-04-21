@@ -405,7 +405,7 @@ namespace Auth.Core.Services.Users
 
 
             //broadcast login detail to email
-            _ = await _authUserManagementService.SendRegistrationEmail(user);
+            _ = await _authUserManagementService.SendRegistrationEmail(user, "");
 
             //Publish to services
             await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
