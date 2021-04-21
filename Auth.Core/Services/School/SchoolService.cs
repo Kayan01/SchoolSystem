@@ -87,7 +87,7 @@ namespace Auth.Core.Services
             var school = new School
                 {
                     Name = model.Name,
-                    DomainName = model.DomainName,
+                    DomainName = model.DomainName.ToLower(),
                     Address = model.Address,
                     City = model.City,
                     Country = model.Country,
@@ -131,7 +131,7 @@ namespace Auth.Core.Services
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.SchoolAdmin.GetDescription()));
 
             //broadcast login detail to email
-            var emailResult = await _authUserManagement.SendRegistrationEmail(user);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
             if (emailResult.HasError)
             {
@@ -211,7 +211,40 @@ namespace Auth.Core.Services
 
             if (schoolInfo is null)
             {
+                return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "School not found.");
+            }
+
+            var logo = _documentService.TryGetUploadedFile(schoolInfo.path);
+
+            if (string.IsNullOrWhiteSpace(logo))
+            {
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
+            }
+
+            return new ResultModel<SchoolNameAndLogoVM>(data: new SchoolNameAndLogoVM() { 
+                SchoolName = schoolInfo.name, 
+                Logo = logo, 
+                PrimaryColor= schoolInfo.PrimaryColor, 
+                SecondaryColor = schoolInfo.SecondaryColor
+            });
+        }
+
+        public async Task<ResultModel<SchoolNameAndLogoVM>> GetSchoolNameAndLogoByDomain(string domain)
+        {
+            var schoolInfo = await _schoolRepo
+                .GetAll()
+                .Where(y => y.DomainName == domain.ToLower())
+                .Select(x => new
+                {
+                    path = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path,
+                    name = x.Name,
+                    x.PrimaryColor,
+                    x.SecondaryColor
+                }) .FirstOrDefaultAsync();
+
+            if (schoolInfo is null)
+            {
+                return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "School not found.");
             }
 
             var logo = _documentService.TryGetUploadedFile(schoolInfo.path);

@@ -37,6 +37,7 @@ namespace Auth.Core.Services.Users
     {
         private readonly IRepository<TeachingStaff, long> _teacherRepo;
         private readonly IRepository<Staff, long> _staffRepo;
+        private readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
@@ -51,6 +52,7 @@ namespace Auth.Core.Services.Users
         public TeacherService(UserManager<User> userManager,
             IRepository<TeachingStaff, long> teacherRepo,
             IRepository<Staff, long> staffRepo,
+            IRepository<School, long> schoolRepo,
             IUnitOfWork unitOfWork,
             IDocumentService documentService,
             IRepository<Department, long> departmentRepo,
@@ -63,6 +65,7 @@ namespace Auth.Core.Services.Users
         {
             _userManager = userManager;
             _staffRepo = staffRepo;
+            _schoolRepo = schoolRepo;
             _unitOfWork = unitOfWork;
             _teacherRepo = teacherRepo;
             _publishService = publishService;
@@ -322,8 +325,9 @@ namespace Auth.Core.Services.Users
             _unitOfWork.Commit();
 
 
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == teacher.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user);
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {

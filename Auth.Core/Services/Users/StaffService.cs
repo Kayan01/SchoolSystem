@@ -37,6 +37,7 @@ namespace Auth.Core.Services
     {
         private readonly IRepository<Staff, long> _staffRepo;
         private readonly IRepository<Department, long> _departmentRepo;
+        private readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
@@ -47,6 +48,7 @@ namespace Auth.Core.Services
 
         public StaffService(
             IRepository<Staff, long> staffRepo,
+            IRepository<School, long> schoolRepo,
             IUnitOfWork unitOfWork,
             UserManager<User> userManagement,
             IPublishService publishService,
@@ -57,6 +59,7 @@ namespace Auth.Core.Services
             IAuthUserManagement authUserManagement)
         {
             _staffRepo = staffRepo;
+            _schoolRepo = schoolRepo;
             _unitOfWork = unitOfWork;
             _userManager = userManagement;
             _departmentRepo = departmentRepo;
@@ -339,8 +342,9 @@ namespace Auth.Core.Services
                 UserId = staff.UserId
             };
 
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == staff.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user);
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
             
             //Publish Message
