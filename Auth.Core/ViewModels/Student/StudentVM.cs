@@ -29,7 +29,7 @@ namespace Auth.Core.ViewModels.Student
         public string Genotype { get; set; }
         public string Allergies { get; set; }
         public string ConfidentialNote { get; set; }
-        public string Immunization { get; set; }
+        public List<ImmunizationHistoryVM>  ImmunizationHistoryVMs { get; set; }
         public string PhoneNumber { get; set; }
         public string EmailAddress { get; set; }
         public string Country { get; set; }
@@ -40,6 +40,14 @@ namespace Auth.Core.ViewModels.Student
         public long Id { get; set; }
         public string RegNumber { get; internal set; }
         public bool IsActive { get; set; }
+    }
+
+    public class ImmunizationHistoryVM
+    {
+        public DateTime DateImmunized { get; set; }
+        public int Age { get; set; }
+        public string Vaccine { get; set; }
+
     }
     public class StudentVM
     {
