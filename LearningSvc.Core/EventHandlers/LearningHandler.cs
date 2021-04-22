@@ -6,6 +6,7 @@ using System;
 using Shared.ViewModels;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using LearningSvc.Core.Services.Interfaces;
 
 namespace LearningSvc.Core.EventHandlers
 {
@@ -16,15 +17,17 @@ namespace LearningSvc.Core.EventHandlers
         private readonly IStudentService _studentService;
         private readonly ITeacherService _teacherService;
 
+        private readonly IParentService _parentService;
         public LearningHandler(ILogger<LearningHandler> logger,
             ISchoolClassService schoolClassService,
             IStudentService studentService,
-            ITeacherService teacherService)
+            ITeacherService teacherService, IParentService parentService)
         {
             _logger = logger;
             _studentService = studentService;
             _teacherService = teacherService;
             _schoolClassService = schoolClassService;
+            _parentService = parentService;
         }
 
         public async Task HandleAddOrUpdateStudentAsync(BusMessage message)
@@ -65,7 +68,19 @@ namespace LearningSvc.Core.EventHandlers
                 _logger.LogError(e.Message, e);
             }
         }
-      
+        public async Task HandleAddOrUpdateParentAsync(BusMessage message)
+        {
+            try
+            {
+                var data = JsonConvert.DeserializeObject<ParentSharedModel>(message.Data);
+                _parentService.AddOrUpdateParentFromBroadcast(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+            }
+        }
+
 
     }
 }

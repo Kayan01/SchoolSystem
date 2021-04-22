@@ -25,6 +25,7 @@ using LearningSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Shared.Tenancy;
 using Microsoft.Extensions.Logging;
+using LearningSvc.Core.Services.Interfaces;
 
 namespace LearningSvc.API
 {
@@ -131,6 +132,7 @@ namespace LearningSvc.API
             services.AddScoped<IClassSubjectService, ClassSubjectService>();
             services.AddScoped<ISchoolClassService, SchoolClassService>();
             services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IParentService, ParentService>();
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ITeacherService, TeacherService>();
             services.AddScoped<IFileStore, FileStore>();
