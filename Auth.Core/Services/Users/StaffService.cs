@@ -112,16 +112,17 @@ namespace Auth.Core.Services
             var result = new ResultModel<StaffDetailVM>();
             var staff = await _staffRepo.GetAll()
                             .Include(x => x.User)
-                            .Include(x=> x.FileUploads)
                             .Include(x=> x.WorkExperiences)
                             .Include(x=> x.EducationExperiences)
                             .Include(x=> x.NextOfKin)
                             .Include(x=> x.Department)
                             .Where(x=> x.Id == Id && x.StaffType == StaffType.NonTeachingStaff)
+                            .Select(x=> new {x , image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path })
                             .FirstOrDefaultAsync();
 
 
-            result.Data = staff;
+            result.Data = staff.x;
+            result.Data.Image = _documentService.TryGetUploadedFile(staff.image);
             return result;
         }
 
