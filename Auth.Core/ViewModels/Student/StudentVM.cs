@@ -16,6 +16,7 @@ namespace Auth.Core.ViewModels.Student
         public string Sex { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string ParentName { get; set; }
+        public long ParentId { get; set; }
         public string Nationality { get; set; }
         public string Religion { get; set; }
         public string LocalGovernment { get; set; }
