@@ -444,6 +444,7 @@ namespace AssessmentSvc.Core.Services
                     .SelectMany(x => x.Scores)
                     .Select(x => new AssesmentAndScoreViewModel
                     {
+                        IsExam = x.IsExam,
                         AssessmentName = x.AssessmentName,
                         StudentScore = x.StudentScore
                     }).ToList()
@@ -610,6 +611,7 @@ namespace AssessmentSvc.Core.Services
                         .SelectMany(x => x.Results.Scores)
                         .Select(x => new AssesmentAndScoreViewModel
                         {
+                            IsExam = x.IsExam,
                             AssessmentName = x.AssessmentName,
                             StudentScore = x.StudentScore
                         }).ToList()

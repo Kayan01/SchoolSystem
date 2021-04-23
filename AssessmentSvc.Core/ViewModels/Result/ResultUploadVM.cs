@@ -20,6 +20,7 @@ namespace AssessmentSvc.Core.ViewModels.Result
     public class AssessmentAndScore
     {
         public long AssessmentId { get; set; }
+        public bool IsExam { get; set; }
         public string AssessmentName { get; set; }
         public int Score { get; set; }
     }
