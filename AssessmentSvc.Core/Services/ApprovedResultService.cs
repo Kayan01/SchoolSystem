@@ -90,7 +90,7 @@ namespace AssessmentSvc.Core.Services
 
             var currSession = sessionResult.Data;
 
-            var currTermSequence = currSession.Terms.Where(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now).FirstOrDefault()?.SequenceNumber;
+            var currTermSequence = currSession.Terms.FirstOrDefault(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now)?.SequenceNumber;
 
             if (currTermSequence == null)
             {
@@ -464,6 +464,7 @@ namespace AssessmentSvc.Core.Services
                     .SelectMany(x => x.Scores)
                     .Select(x => new AssesmentAndScoreViewModel
                     {
+                        IsExam = x.IsExam,
                         AssessmentName = x.AssessmentName,
                         StudentScore = x.StudentScore
                     }).ToList()
@@ -630,6 +631,7 @@ namespace AssessmentSvc.Core.Services
                         .SelectMany(x => x.Results.Scores)
                         .Select(x => new AssesmentAndScoreViewModel
                         {
+                            IsExam = x.IsExam,
                             AssessmentName = x.AssessmentName,
                             StudentScore = x.StudentScore
                         }).ToList()

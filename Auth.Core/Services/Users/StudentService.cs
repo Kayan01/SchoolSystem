@@ -357,6 +357,7 @@ namespace Auth.Core.Services
                             x.RegNumber,
                             x.DateOfBirth,
                             ParentName =  x.Parent.User.FullName,
+                            x.ParentId,
                             x.Nationality,
                             x.Religion,
                             x.LocalGovernment,
@@ -371,7 +372,7 @@ namespace Auth.Core.Services
                             x.MedicalDetail.Genotype,
                             x.MedicalDetail.Allergies,
                             x.MedicalDetail.ConfidentialNotes,
-                            Immunization = x.MedicalDetail.ImmunizationHistories.Select(history => new { history.DateImmunized, history.Vaccine }),
+                            Immunization = x.MedicalDetail.ImmunizationHistories,
                             x.User.PhoneNumber,
                             x.User.Email,
                             x.Country,
@@ -414,8 +415,9 @@ namespace Auth.Core.Services
                 Genotype = std.Genotype,
                 HomeAddress = std.Address,
                 Id = std.Id,
+                ParentId = std.ParentId,
                 Image = _documentService.TryGetUploadedFile(std.image?.Path),
-                Immunization = sb.ToString(),
+                ImmunizationHistoryVMs = std.Immunization.Select(x=> new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine}).ToList(),
                 LastName = std.LastName,
                 LocalGovernment = std.LocalGovernment,
                 MothersMaidenName = std.MothersMaidenName,
@@ -457,7 +459,7 @@ namespace Auth.Core.Services
                             x.MedicalDetail.Genotype,
                             x.MedicalDetail.Allergies,
                             x.MedicalDetail.ConfidentialNotes,
-                            Immunization = x.MedicalDetail.ImmunizationHistories.Select(x => new { x.DateImmunized, x.Vaccine }),
+                            Immunization = x.MedicalDetail.ImmunizationHistories,
                             x.User.PhoneNumber,
                             x.User.Email,
                             x.Country,
@@ -474,11 +476,7 @@ namespace Auth.Core.Services
                 return result;
             }
 
-            StringBuilder sb = new StringBuilder();
-            foreach (var item in std.Immunization)
-            {
-                sb.AppendLine($"{item.DateImmunized} {item.Vaccine}");
-            }
+           
             result.Data = new StudentDetailVM
             {
                 StudentType = std.StudentType.GetDisplayName(),
@@ -500,7 +498,7 @@ namespace Auth.Core.Services
                 HomeAddress = std.Address,
                 Id = std.Id,
                 Image = _documentService.TryGetUploadedFile(std.image?.Path),
-                Immunization = sb.ToString(),
+                ImmunizationHistoryVMs = std.Immunization.Select(x => new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine }).ToList(),
                 LastName = std.LastName,
                 LocalGovernment = std.LocalGovernment,
                 MothersMaidenName = std.MothersMaidenName,

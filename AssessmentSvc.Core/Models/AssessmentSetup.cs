@@ -13,5 +13,7 @@ namespace AssessmentSvc.Core.Models
         public int SequenceNumber { get; set; }
         public string Name { get; set; }
         public int MaxScore { get; set; }
+
+        public bool IsExam { get; set; }
     }
 }

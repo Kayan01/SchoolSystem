@@ -171,18 +171,14 @@ namespace AssessmentSvc.Core.Services
 
             if (currentSessionResult.HasError)
             {
-                foreach (var error in currentSessionResult.ErrorMessages)
-                {
-                    result.AddError(error);
-                }
-                return result;
+                return new ResultModel<string>(currentSessionResult.ErrorMessages);
             }
 
             var oldResults = _resultRepo.GetAll()
                 .Where(m => m.SchoolClassId == model.ClassId &&
                     m.SubjectId == model.SubjectId &&
                     m.SessionSetupId == currentSessionResult.Data.sessionId &&
-                    m.TermSequenceNumber == currentSessionResult.Data.TermSequence).AsNoTracking().ToList(); 
+                    m.TermSequenceNumber == currentSessionResult.Data.TermSequence).ToList(); 
 
             foreach (var studentresult in model.StudentResults)
             {
@@ -202,6 +198,7 @@ namespace AssessmentSvc.Core.Services
 
                 resultObject.Scores = studentresult.AssessmentAndScores.Select(m => new Score()
                 {
+                    IsExam = m.IsExam,
                     AssessmentName = m.AssessmentName,
                     StudentScore = m.Score,
                 }).ToList();
@@ -548,6 +545,7 @@ namespace AssessmentSvc.Core.Services
                     .SelectMany(x => x.Scores)
                     .Select(x => new AssesmentAndScoreViewModel
                     {
+                        IsExam = x.IsExam,
                         AssessmentName = x.AssessmentName,
                         StudentScore = x.StudentScore
                     }).ToList()

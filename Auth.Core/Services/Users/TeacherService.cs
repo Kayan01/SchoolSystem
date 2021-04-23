@@ -123,7 +123,6 @@ namespace Auth.Core.Services.Users
                            .Include(x => x.Staff)
                            .ThenInclude(m => m.User)
                            .Include(x => x.Staff)
-                           .ThenInclude(x => x.FileUploads)
                            .Include(x => x.Class)
                            .Include(x => x.Staff)
                            .ThenInclude(x => x.WorkExperiences)
@@ -132,9 +131,11 @@ namespace Auth.Core.Services.Users
                            .Include(x => x.Staff)
                            .ThenInclude(x => x.EducationExperiences)
                             .Include(x => x.Class)
+                            .Select(x=> new {x, ImagePath = x.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path })
                             .FirstOrDefault();
 
-            result.Data = query;
+            result.Data = query.x;
+            result.Data.Image = _documentService.TryGetUploadedFile(query.ImagePath);
             return result;
         }
 

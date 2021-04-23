@@ -25,6 +25,7 @@ using LearningSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Shared.Tenancy;
 using Microsoft.Extensions.Logging;
+using LearningSvc.Core.Services.Interfaces;
 
 namespace LearningSvc.API
 {
@@ -92,6 +93,13 @@ namespace LearningSvc.API
                                     await handler.HandleAddOrUpdateClassAsync(message);
                                     break;
                                 }
+                            case (int)BusMessageTypes.PARENT:
+                            case (int)BusMessageTypes.PARENT_UPDATE:
+                            case (int)BusMessageTypes.PARENT_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateParentAsync(message);
+                                break;
+                            }
                         }
                     }
                     catch (Exception e)
@@ -131,6 +139,7 @@ namespace LearningSvc.API
             services.AddScoped<IClassSubjectService, ClassSubjectService>();
             services.AddScoped<ISchoolClassService, SchoolClassService>();
             services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IParentService, ParentService>();
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ITeacherService, TeacherService>();
             services.AddScoped<IFileStore, FileStore>();
