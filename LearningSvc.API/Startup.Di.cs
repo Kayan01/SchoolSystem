@@ -93,6 +93,13 @@ namespace LearningSvc.API
                                     await handler.HandleAddOrUpdateClassAsync(message);
                                     break;
                                 }
+                            case (int)BusMessageTypes.PARENT:
+                            case (int)BusMessageTypes.PARENT_UPDATE:
+                            case (int)BusMessageTypes.PARENT_DELETE:
+                            {
+                                await handler.HandleAddOrUpdateParentAsync(message);
+                                break;
+                            }
                         }
                     }
                     catch (Exception e)
