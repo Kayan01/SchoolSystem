@@ -52,7 +52,7 @@ namespace Auth.Core.ViewModels.Staff
         public string AltPhoneNumber { get; set; }
         public string AltEmailAddress { get; set; }
         public bool IsActive { get; set; }
-
+        public string Image { get; set; }
         public NextOfKinVM NextOfKin { get; set; }
         public ContactDetailsVM ContactDetails { get; set; }
 

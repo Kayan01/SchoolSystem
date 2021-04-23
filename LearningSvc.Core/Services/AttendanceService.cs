@@ -11,6 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Shared.Enums;
+using Shared.PubSub;
+using static Shared.Utils.CoreConstants;
 
 namespace LearningSvc.Core.Services
 {
@@ -19,18 +21,24 @@ namespace LearningSvc.Core.Services
         private readonly IRepository<AttendanceSubject, long> _subjectAttendanceRepo;
         private readonly IRepository<AttendanceClass, long> _classAttendanceRepo;
         private readonly IRepository<Student, long> _studentRepository;
+        private readonly IRepository<Parent, long> _parentRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPublishService _publishService;
 
         public AttendanceService(
             IRepository<AttendanceSubject, long> subjectAttendanceRepo,
             IRepository<AttendanceClass, long> classAttendanceRepo,
             IRepository<Student, long> studentRepository,
+            IRepository<Parent, long> parentRepository,
+            IPublishService publishService,
             IUnitOfWork unitOfWork
             )
         {
             _classAttendanceRepo = classAttendanceRepo;
             _subjectAttendanceRepo = subjectAttendanceRepo;
             _studentRepository = studentRepository;
+            _publishService = publishService;
+            _parentRepository = parentRepository;
             _unitOfWork = unitOfWork;
         }
         public async Task<ResultModel<string>> AddAttendanceForClass(AddClassAttendanceVM model)
@@ -39,24 +47,15 @@ namespace LearningSvc.Core.Services
                 .Where(x => x.AttendanceDate == model.Date && x.ClassId == model.ClassId)
                 .ToListAsync();
 
+            var absentStudentsIds = new List<long>();
             //update existing attendance
             if (currAttendance.Count > 0)
             {
-
                 foreach (var item in model.StudentAttendanceVMs)
                 {
                     var currAtt = currAttendance.FirstOrDefault(x => x.StudentId == item.StudentId);
 
-                    if (currAtt != null)
-                    {
-                        currAtt.AttendanceDate = model.Date;
-                        currAtt.AttendanceStatus = item.AttendanceStatus;
-                        currAtt.Remark = item.Remark;
-                        currAtt.ClassId = model.ClassId;
-
-                       
-                    }
-                    else
+                    if (currAtt == null)
                     {
                         await _classAttendanceRepo.InsertAsync(new AttendanceClass
                         {
@@ -67,7 +66,13 @@ namespace LearningSvc.Core.Services
 
                             Remark = item.Remark
                         });
-                    }
+
+                        if (item.AttendanceStatus == AttendanceState.Absent)
+                        {
+                            absentStudentsIds.Add(item.StudentId);
+                        }
+
+                    }                   
                 }
             }
             else
@@ -82,12 +87,17 @@ namespace LearningSvc.Core.Services
                         StudentId = item.StudentId,
                         Remark =  item.Remark
                     });
-
+                   
+                    if (item.AttendanceStatus == AttendanceState.Absent)
+                    {
+                        absentStudentsIds.Add(item.StudentId);
+                    }
                 }
             }
 
             await _unitOfWork.SaveChangesAsync();
 
+            SendAttendanceEmails(absentStudentsIds);
             return new ResultModel<string>(data: "Attendance saved");
         }
 
@@ -271,6 +281,34 @@ namespace LearningSvc.Core.Services
         }
 
 
+        private async Task SendAttendanceEmails(List<long> studentIds)
+        {
+            var data = await _studentRepository.GetAll()
+                .Where(x => studentIds.Contains(x.Id))
+                .Select(x => new { ParentFullName = x.Parent.FullName, StudentFullName = x.FirstName + x.LastName, x.RegNumber })
+                .ToListAsync();
+
+            var emaildata = new List<CreateEmailModel>();
+            foreach (var item in data)
+            {
+                emaildata.Add(new CreateEmailModel
+                {
+                    EmailTemplateType = EmailTemplateType.AttendanceReport,
+                    ReplacementData = new Dictionary<string, string>
+                    {
+                        {"ParentName", item.ParentFullName},
+                        {"STUDENT_NAME", item.StudentFullName },
+                        {"STUDENT_ID", item.RegNumber }
+                    }
+                });
+            }
+            
+            await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
+            {
+                Emails = emaildata                
+            });
+        }
 
     }
+
 }
