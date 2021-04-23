@@ -21,5 +21,10 @@ namespace Shared.Utils
         {
             return converter.ConvertToPDFBytesToList(mainData, tableData, tableConfig, Path.Combine(hostingEnvironment.ContentRootPath, pdfTemplatePath), isLandscape);
         }
+
+        public static byte[] BuildPdfFile(IConverter converter, IWebHostEnvironment hostingEnvironment, string pdfTemplatePath, object mainData, IEnumerable<TableObject<object>> tableObj, IEnumerable<KeyValuePair<string, IEnumerable<TableObject<object>>>> tableArrays, bool isLandscape = false)
+        {
+            return converter.ConvertToPDFBytesToList(mainData, tableObj, tableArrays, Path.Combine(hostingEnvironment.ContentRootPath, pdfTemplatePath), isLandscape);
+        }
     }
 }

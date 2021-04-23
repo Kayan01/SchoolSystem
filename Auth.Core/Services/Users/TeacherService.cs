@@ -11,6 +11,7 @@ using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Extensions;
 using Shared.AspNetCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
@@ -341,6 +342,7 @@ namespace Auth.Core.Services.Users
                 LastName = user.LastName,
                 Phone = user.PhoneNumber,
                 RegNumber = teacher.Staff.RegNumber,
+                Signature = teacher.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Signature.GetDisplayName()).Path
             });
 
             //Email and Notifications
@@ -532,7 +534,8 @@ namespace Auth.Core.Services.Users
                 LastName = teacher.Staff.User.LastName,
                 Phone = teacher.Staff.User.PhoneNumber,
                 ClassId = teacher.ClassId,
-                RegNumber = teacher.Staff.RegNumber
+                RegNumber = teacher.Staff.RegNumber,
+                Signature = teacher.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Signature.GetDisplayName()).Path
             });
 
             result.Data = teacher;

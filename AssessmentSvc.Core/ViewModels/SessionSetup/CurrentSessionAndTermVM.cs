@@ -10,5 +10,6 @@ namespace AssessmentSvc.Core.ViewModels.SessionSetup
         public string SessionName { get; set; }
         public int TermSequence { get; set; }
         public string TermName { get; set; }
+        public long TenantId { get; internal set; }
     }
 }

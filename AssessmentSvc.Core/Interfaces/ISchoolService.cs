@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace AssessmentSvc.Core.Interfaces
 {
-    public interface ITeacherService
+    public interface ISchoolService
     {
-        void AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model);
-        Task<List<Teacher>> GetTeachersAsync(List<long> ids);
+        void AddOrUpdateSchoolFromBroadcast(SchoolSharedModel model);
+        Task<School> GetSchool(long id);
     }
 }

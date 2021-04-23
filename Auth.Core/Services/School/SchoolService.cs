@@ -140,6 +140,24 @@ namespace Auth.Core.Services
 
                 result.Message = sb.ToString();
             }
+
+            //Publish to services
+            await _publishService.PublishMessage(Topics.School, BusMessageTypes.SCHOOL, new SchoolSharedModel
+            {
+                Id = school.Id,
+                IsActive = school.IsActive,
+                Email = contactDetails.Email,
+                PhoneNumber = contactDetails.PhoneNumber,
+                Address = school.Address,
+                WebsiteAddress = school.WebsiteAddress,
+                City = school.City,
+                DomainName = school.DomainName,
+                Name = school.Name,
+                State = school.State,
+                Logo = school.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path
+            });
+
+
             result.Data = school;
             return result;
         }
@@ -392,6 +410,24 @@ namespace Auth.Core.Services
 
             await _schoolRepo.UpdateAsync(sch);
             await _unitOfWork.SaveChangesAsync();
+
+
+            //Publish to services
+            await _publishService.PublishMessage(Topics.School, BusMessageTypes.SCHOOL, new SchoolSharedModel
+            {
+                Id = sch.Id,
+                IsActive = sch.IsActive,
+                Email = contactDetails.Email,
+                PhoneNumber = contactDetails.PhoneNumber,
+                Address = sch.Address,
+                WebsiteAddress = sch.WebsiteAddress,
+                City = sch.City,
+                DomainName = sch.DomainName,
+                Name = sch.Name,
+                State = sch.State,
+                Logo = sch.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path
+            });
+
             result.Data = sch;
             return result;
         }
@@ -445,6 +481,7 @@ namespace Auth.Core.Services
                 return result;
             }
 
+            var schools = new List<School>();
 
             _unitOfWork.BeginTransaction();
 
@@ -491,11 +528,32 @@ namespace Auth.Core.Services
                 school.SchoolContactDetails.Add(contactDetails);
                 
                 _schoolRepo.Insert(school);
+
+                schools.Add(school);
             }
 
             await _unitOfWork.SaveChangesAsync();
 
             _unitOfWork.Commit();
+
+            foreach (var school in schools)
+            {
+                //Publish to services
+                await _publishService.PublishMessage(Topics.School, BusMessageTypes.SCHOOL, new SchoolSharedModel
+                {
+                    Id = school.Id,
+                    IsActive = school.IsActive,
+                    Email = school.SchoolContactDetails[0].Email,
+                    PhoneNumber = school.SchoolContactDetails[0].PhoneNumber,
+                    Address = school.Address,
+                    WebsiteAddress = school.WebsiteAddress,
+                    City = school.City,
+                    DomainName = school.DomainName,
+                    Name = school.Name,
+                    State = school.State,
+                    Logo = school.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path
+                });
+            }
 
             result.Data = true;
 

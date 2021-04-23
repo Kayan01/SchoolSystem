@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Shared.Entities.Auditing;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Shared.ViewModels
+namespace AssessmentSvc.Core.Models
 {
-    public class SchoolSharedModel
+    public class School : FullAuditedEntity<long>
     {
-        public long Id { get; set; }
         public string Name { get; set; }
         public string DomainName { get; set; }
         public string WebsiteAddress { get; set; }

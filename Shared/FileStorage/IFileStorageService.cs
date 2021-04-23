@@ -38,6 +38,7 @@ namespace Shared.FileStorage
         string ReadAllText(string path);
 
         bool TrySaveBytes(string path, byte[] raw);
+        string MapStorage(string path);
 
         string RenameDuplicateFile(string filepath);
 

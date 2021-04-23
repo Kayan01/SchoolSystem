@@ -3,14 +3,19 @@ using AssessmentSvc.Core.Models;
 using AssessmentSvc.Core.ViewModels.Result;
 using AssessmentSvc.Core.ViewModels.SessionSetup;
 using AssessmentSvc.Core.ViewModels.Student;
+using DinkToPdf.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.FileStorage;
 using Shared.PubSub;
+using Shared.Utils;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,8 +33,13 @@ namespace AssessmentSvc.Core.Services
         private readonly ISessionSetup _sessionService;
         private readonly IResultService _resultService;
         private readonly IGradeSetupService _gradeService;
+        private readonly IAssessmentSetupService _assessmentSetupService;
         private readonly IPublishService _publishService;
         private readonly IStudentService _studentService;
+        private readonly ISchoolService _schoolService;
+        private readonly ITeacherService _teacherService;
+        private readonly IFileStorageService _fileStorageService;
+        private readonly IConverter _converter;
 
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
@@ -39,8 +49,13 @@ namespace AssessmentSvc.Core.Services
             IGradeSetupService gradeService,
             IPublishService publishService,
             IStudentService studentService,
+            IAssessmentSetupService assessmentSetupService,
             IRepository<Student, long> studentRepo,
-            IUnitOfWork unitOfWork)
+            ISchoolService schoolService,
+            ITeacherService teacherService,
+            IFileStorageService fileStorageService,
+            IConverter converter,
+        IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
             _resultService = resultService;
@@ -48,9 +63,14 @@ namespace AssessmentSvc.Core.Services
             _approvedResultRepo = approvedResultRepo;
             _resultRepo = resultRepo;
             _gradeService = gradeService;
+            _assessmentSetupService = assessmentSetupService;
             _publishService = publishService;
             _studentService = studentService;
             _studentRepo = studentRepo;
+            _schoolService = schoolService;
+            _teacherService = teacherService;
+            _fileStorageService = fileStorageService;
+            _converter = converter;
         }
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
         {
@@ -640,6 +660,7 @@ namespace AssessmentSvc.Core.Services
                 var t = studentsApprovedResults.FirstOrDefault(n => n.StudentId == studentApprovedResults.Key);
                 result.Data.Add(new StudentReportSheetVM
                 {
+                    StudentId = studentApprovedResults.Key,
                     Breakdowns = studResult,
                     SubjectOffered = resultsBySubjects.Count(),
                     RegNumber = t.RegNumber,
@@ -702,9 +723,143 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
-        private async Task GetStudentsResultPDFS(List<StudentReportSheetVM> vm)
+        private async Task<Dictionary<long, string>> GetStudentsResultPDFS(List<StudentReportSheetVM> vm, long classId, long curSessionId, int termSequenceNumber, long tenantId)
         {
+            var assessmentSetup = await _assessmentSetupService.GetAllAssessmentSetup();
 
+            var totalScore = assessmentSetup.Data.Sum(m => m.MaxScore);
+            var totalExamScore = assessmentSetup.Data.Where(m => m.Name.Contains("xam")).Sum(m => m.MaxScore);
+            var totalCAScore = assessmentSetup.Data.Where(m => !m.Name.Contains("xam")).Sum(m => m.MaxScore);
+
+            var school = await _schoolService.GetSchool(tenantId) ?? new School() ;
+
+            var behaviours = await _resultService.GetBehaviouralResults(new GetBehaviourResultQueryVm() { ClassId = classId, SessionId = curSessionId, TermSequence = termSequenceNumber });
+
+            var classTeachers = await _teacherService.GetTeachersAsync(vm.Select(m => m.ClassTeacherId).Distinct().ToList());
+            var templatePath = _fileStorageService.MapStorage(CoreConstants.ResultPdfTemplatePath);
+
+            var studentFilePaths = new Dictionary<long, string> ();
+
+            foreach (var result in vm)
+            {
+                var tableObjects = new List<TableObject<object>>();
+
+
+                dynamic dictionaryToObject = new ExpandoObject();
+                var dictionary = dictionaryToObject as IDictionary<string, string>;
+                var totalExanScoreObtained = 0d;
+                var totalCAScoreObtained = 0d;
+
+                foreach (var bd in result.Breakdowns)
+                {
+                    dictionary.Add(new KeyValuePair<string, string>("Subject", bd.SubjectName));
+                    foreach (var assessment in bd.AssesmentAndScores)
+                    {
+                        if (assessment.AssessmentName.Contains("xam"))
+                        {
+                            totalExanScoreObtained += assessment.StudentScore;
+                        }
+                        else
+                        {
+                            totalCAScoreObtained += assessment.StudentScore;
+                        }
+
+                        dictionary.Add(new KeyValuePair<string, string>(assessment.AssessmentName, assessment.StudentScore.ToString()));
+                    }
+                    dictionary.Add(new KeyValuePair<string, string>("Cumulative", bd.CummulativeScore.ToString()));
+                    dictionary.Add(new KeyValuePair<string, string>("Grade", bd.Grade.ToString()));
+                    dictionary.Add(new KeyValuePair<string, string>("Interpretation", bd.Interpretation.ToString()));
+                }
+
+                var scoresTable = new TableObject<object>()
+                {
+                    TableConfig = new TableAttributeConfig
+                    {
+                        TableAttributes = new { @class = "tContent" },
+                    },
+                    TemplatePropertyName = "ScoresTable",
+                    TableData = dictionaryToObject
+            };
+
+                var gradeSetupTable = new TableObject<object>()
+                {
+                    TableConfig = new TableAttributeConfig
+                    {
+                        TableAttributes = new { @class = "tContent" },
+                    },
+                    TemplatePropertyName = "GradeSetupTable",
+                    TableData = result.GradeSetup.Select(m=> new { Grade_Scale = $"{m.UpperBound}-{m.LowerBound}", Grade = m.Grade, Interpretation = m.Interpretation})
+                };
+
+                tableObjects = new List<TableObject<object>> { scoresTable, gradeSetupTable };
+
+                var studBehaviours = behaviours.FirstOrDefault(m => m.Key == result.StudentId);
+                var tableArrays = new List<KeyValuePair<string, IEnumerable<TableObject<object>>>>();
+
+                var BehaviourTables = new List<TableObject<object>>();
+
+                foreach (var item in studBehaviours.Value.ResultTypeAndValues)
+                {
+                    var tableData = new List<object>();
+
+                    foreach (var behavior in item.Value)
+                    {
+                        dynamic behahiourObject = new ExpandoObject();
+                        var behaviourDictionary = behahiourObject as IDictionary<string, string>;
+
+                        behaviourDictionary.Add(item.Key, behavior.BehaviourName);
+                        behaviourDictionary.Add("Grade", behavior.Grade);
+
+                        tableData.Add(behahiourObject);
+                    }
+
+                    BehaviourTables.Add(new TableObject<object>()
+                    {
+                        TableConfig = new TableAttributeConfig
+                        {
+                            TableAttributes = new { @class = "tContent" },
+                        },
+                        TableData = tableData
+                    }
+                    );
+                }
+
+                tableArrays.Add(new KeyValuePair<string, IEnumerable<TableObject<object>>>( "Behaviours", BehaviourTables));
+                var classTeacher = classTeachers.FirstOrDefault(m => m.Id == result.ClassTeacherId)?? new Teacher();
+
+                var mainData = new
+                {
+                    Class = result.Class,
+                    Session = result.Session,
+                    Term = result.Term,
+                    StudentName = result.StudentName,
+                    StudentRegNum = result.StudentName,
+                    StudentAge = result.Age,
+                    StudentSex = result.Sex,
+                    ClassTeacherComment = result.ClassTeacherComment,
+                    Total_Exam = totalExamScore * result.SubjectOffered,
+                    Total_CA = totalCAScore * result.SubjectOffered,
+                    Total_Score = totalScore * result.SubjectOffered,
+                    Total_Score_Obtained = Math.Round(totalCAScoreObtained + totalExanScoreObtained, 2),
+                    Total_CA_Score = Math.Round(totalCAScoreObtained, 2),
+                    Total_Exam_Score = Math.Round(totalExanScoreObtained, 2),
+                    SchoolName = school.Name,
+                    SchoolCity = school.City,
+                    SchoolState = school.State,
+                    SchoolPhone = school.PhoneNumber,
+                    SchoolEmail = school.Email,
+                    SchoolWebsite = school.WebsiteAddress,
+                    ImgPath = school.Logo,
+                    ClassTeacherName = $"{classTeacher.LastName} {classTeacher.FirstName}",
+                    ClassTeacherSignature = _fileStorageService.MapStorage(classTeacher.Signature),
+                };
+                var pdf = _converter.ConvertToPDFBytesToList(mainData, tableObjects, tableArrays, templatePath, false);
+                var path = $"filestore\\{Guid.NewGuid().ToString()}.pdf";
+                _fileStorageService.SaveBytes(path, pdf);
+                studentFilePaths.Add(result.StudentId, path);
+            }
+
+            return studentFilePaths;
         }
 
         public async Task<ResultModel<string>> MailResult(MailResultVM vm)
@@ -735,7 +890,14 @@ namespace AssessmentSvc.Core.Services
                 return new ResultModel<string>(mailInfos.ErrorMessages);
             }
 
+            var resultData = await GetApprovedResultForMultipleStudents(vm.classId, vm.StudentIds, currSessionAndTerm.sessionId, currSessionAndTerm.TermSequence);
+
+            if (resultData.HasError)
+            {
+                return new ResultModel<string>(resultData.ErrorMessages);
+            }
             //generate pdf
+            var pdfPaths = await GetStudentsResultPDFS(resultData.Data, vm.classId, currSessionAndTerm.sessionId, currSessionAndTerm.TermSequence, currSessionAndTerm.TenantId);
 
 
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
@@ -745,10 +907,12 @@ namespace AssessmentSvc.Core.Services
                    new Dictionary<string, string>{
                             { "link", $"{vm.ResultPageURL}?studId={m.StudentId}&classId={vm.classId}&sessionId={currSessionAndTerm.sessionId}&termSequenceNumber={currSessionAndTerm.TermSequence}" },
                             { "ParentName", m.ParentName },
-                            {"Studentname", m.StudentName}
+                            {"Studentname", m.StudentName},
                    },
-                   new UserVM() { FullName = m.ParentName, Email = m.Email })).ToList()
-            });
+                   new UserVM() { FullName = m.ParentName, Email = m.Email },
+                   new List<string> { pdfPaths[m.StudentId] }
+                )).ToList()
+            }); ;
 
             result.Data = "Successful";
             return result;

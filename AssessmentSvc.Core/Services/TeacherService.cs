@@ -44,9 +44,15 @@ namespace AssessmentSvc.Core.Services
             teacher.IsActive = model.IsActive;
             teacher.IsDeleted = model.IsDeleted;
             teacher.RegNumber = model.RegNumber;
+            teacher.Signature = model.Signature;
 
             _unitOfWork.SaveChanges();
         }
-        
+
+        public async Task<List<Teacher>> GetTeachersAsync (List<long> ids)
+        {
+            return await _teacherRepo.GetAll().Where(x => ids.Contains(x.Id)).ToListAsync();
+        }
+
     }
 }

@@ -26,5 +26,6 @@ namespace AssessmentSvc.Core.ViewModels.Result
         public string HeadTeacherSignature { get; set; }
         public List<SubjectResultBreakdown> Breakdowns { get; set; } = new List<SubjectResultBreakdown>();
         public List<GradeSetupListVM> GradeSetup { get; set; }
+        public long StudentId { get; internal set; }
     }
 }
