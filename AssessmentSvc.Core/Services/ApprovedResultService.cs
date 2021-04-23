@@ -70,7 +70,7 @@ namespace AssessmentSvc.Core.Services
 
             var currSession = sessionResult.Data;
 
-            var currTermSequence = currSession.Terms.Where(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now).FirstOrDefault()?.SequenceNumber;
+            var currTermSequence = currSession.Terms.FirstOrDefault(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now)?.SequenceNumber;
 
             if (currTermSequence == null)
             {
