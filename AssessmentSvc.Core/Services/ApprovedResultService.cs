@@ -730,8 +730,8 @@ namespace AssessmentSvc.Core.Services
             var assessmentSetup = await _assessmentSetupService.GetAllAssessmentSetup();
 
             var totalScore = assessmentSetup.Data.Sum(m => m.MaxScore);
-            var totalExamScore = assessmentSetup.Data.Where(m => m.Name.Contains("xam")).Sum(m => m.MaxScore);
-            var totalCAScore = assessmentSetup.Data.Where(m => !m.Name.Contains("xam")).Sum(m => m.MaxScore);
+            var totalExamScore = assessmentSetup.Data.Where(m => m.IsExam).Sum(m => m.MaxScore);
+            var totalCAScore = assessmentSetup.Data.Where(m => !m.IsExam).Sum(m => m.MaxScore);
 
             var school = await _schoolService.GetSchool(tenantId) ?? new School() ;
 
@@ -749,7 +749,7 @@ namespace AssessmentSvc.Core.Services
 
                 dynamic dictionaryToObject = new ExpandoObject();
                 var dictionary = dictionaryToObject as IDictionary<string, string>;
-                var totalExanScoreObtained = 0d;
+                var totalExamScoreObtained = 0d;
                 var totalCAScoreObtained = 0d;
 
                 foreach (var bd in result.Breakdowns)
@@ -757,9 +757,9 @@ namespace AssessmentSvc.Core.Services
                     dictionary.Add(new KeyValuePair<string, string>("Subject", bd.SubjectName));
                     foreach (var assessment in bd.AssesmentAndScores)
                     {
-                        if (assessment.AssessmentName.Contains("xam"))
+                        if (assessment.IsExam)
                         {
-                            totalExanScoreObtained += assessment.StudentScore;
+                            totalExamScoreObtained += assessment.StudentScore;
                         }
                         else
                         {
@@ -842,9 +842,9 @@ namespace AssessmentSvc.Core.Services
                     Total_Exam = totalExamScore * result.SubjectOffered,
                     Total_CA = totalCAScore * result.SubjectOffered,
                     Total_Score = totalScore * result.SubjectOffered,
-                    Total_Score_Obtained = Math.Round(totalCAScoreObtained + totalExanScoreObtained, 2),
+                    Total_Score_Obtained = Math.Round(totalCAScoreObtained + totalExamScoreObtained, 2),
                     Total_CA_Score = Math.Round(totalCAScoreObtained, 2),
-                    Total_Exam_Score = Math.Round(totalExanScoreObtained, 2),
+                    Total_Exam_Score = Math.Round(totalExamScoreObtained, 2),
                     SchoolName = school.Name,
                     SchoolCity = school.City,
                     SchoolState = school.State,
