@@ -93,6 +93,13 @@ namespace AssessmentSvc.API
                                     await handler.HandleAddOrUpdateSubjectAsync(message);
                                     break;
                                 }
+                            case (int)BusMessageTypes.SCHOOL:
+                            case (int)BusMessageTypes.SCHOOL_UPDATE:
+                            case (int)BusMessageTypes.SCHOOL_DELETE:
+                                {
+                                    await handler.HandleAddOrUpdateSchoolAsync(message);
+                                    break;
+                                }
                         }
                     }
                     catch (Exception e)
@@ -128,6 +135,7 @@ namespace AssessmentSvc.API
             services.AddScoped<IResultService, ResultService>();
             services.AddScoped<IGradeSetupService, GradeSetupService>();
             services.AddScoped<IApprovedResultService, ApprovedResultService>();
+            services.AddScoped<ISchoolService, SchoolService>();
             services.AddScoped<IIncidenceService, IncidenceService>();
         }
     }

@@ -694,5 +694,33 @@ namespace AssessmentSvc.Core.Services
                 ResultTypeAndValues = data
             });
         }
+
+        public async Task<List<KeyValuePair<long, GetBehaviourResultVM>>> GetBehaviouralResults(GetBehaviourResultQueryVm model)
+        {
+            var query =  _behaviourRepository.GetAll();
+
+            var queryResult = await query.Where(x =>
+             x.SchoolClassId == model.ClassId &&
+             x.SessionId == model.SessionId &&
+             x.TermSequenceNumber == model.TermSequence
+         ).ToListAsync();
+
+
+            var studGroup = queryResult.GroupBy(m => m.StudentId);
+            var rtn = new List<KeyValuePair<long, GetBehaviourResultVM>>();
+
+            foreach (var item in studGroup)
+            {
+                var values = item.GroupBy(x => x.Type).ToDictionary(g => g.Key, g => g.Select(x => new BehaviourValuesAndGrade
+                {
+                    BehaviourName = x.Name,
+                    Grade = x.Grade
+                }).ToList());
+
+                rtn.Add(new KeyValuePair<long, GetBehaviourResultVM>( item.Key, new GetBehaviourResultVM() { ResultTypeAndValues = values }));
+            }
+
+            return rtn;
+        }
     }
 }

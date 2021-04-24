@@ -266,7 +266,7 @@ namespace Shared.FileStorage
             //return File.Exists(path);
         }
 
-        private string MapStorage(string path)
+        public string MapStorage(string path)
         {
             return _fileProvider.GetFileInfo(path).PhysicalPath;
             //return path;

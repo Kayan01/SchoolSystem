@@ -343,6 +343,7 @@ namespace Auth.Core.Services.Users
                 LastName = user.LastName,
                 Phone = user.PhoneNumber,
                 RegNumber = teacher.Staff.RegNumber,
+                Signature = teacher.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Signature.GetDisplayName()).Path
             });
 
             //Email and Notifications
@@ -534,7 +535,8 @@ namespace Auth.Core.Services.Users
                 LastName = teacher.Staff.User.LastName,
                 Phone = teacher.Staff.User.PhoneNumber,
                 ClassId = teacher.ClassId,
-                RegNumber = teacher.Staff.RegNumber
+                RegNumber = teacher.Staff.RegNumber,
+                Signature = teacher.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Signature.GetDisplayName()).Path
             });
 
             result.Data = teacher;

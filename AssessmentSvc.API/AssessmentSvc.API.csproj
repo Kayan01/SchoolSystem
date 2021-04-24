@@ -28,9 +28,7 @@
 
   <ItemGroup>
     <Folder Include="error-logs\" />
-    <Folder Include="FileStore\" />
     <Folder Include="logs\" />
-    <Folder Include="FileStore\" />
   </ItemGroup>
 
   <ItemGroup>

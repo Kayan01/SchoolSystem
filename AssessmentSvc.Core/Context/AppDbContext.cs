@@ -33,6 +33,7 @@ namespace AssessmentSvc.Core.Context
 
         public DbSet<TestModel> TestModels { get; set; }
         public DbSet<SchoolClass> SchoolClasses { get; set; }
+        public DbSet<School> Schools { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<AssessmentSetup> AssessmentSetups { get; set; }

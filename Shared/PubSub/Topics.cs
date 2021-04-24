@@ -15,6 +15,7 @@ namespace Shared.PubSub
         public static string Subject => nameof(Subject).ToLower();
         public static string Parent => nameof(Parent).ToLower();
         public static string Session => nameof(Session).ToLower();
+        public static string School => nameof(School).ToLower();
 
     }
 }

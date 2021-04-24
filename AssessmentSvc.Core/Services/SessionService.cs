@@ -185,6 +185,7 @@ namespace AssessmentSvc.Core.Services
                 SessionName = session.SessionName,
                 TermName=currentTerm?.Name,
                 TermSequence=currentTerm?.SequenceNumber ?? 0,
+                TenantId = session.TenantId,
             };
 
             return result;
@@ -209,6 +210,7 @@ namespace AssessmentSvc.Core.Services
                 SessionName = session.SessionName,
                 TermName = currentTerm?.Name,
                 TermSequence = currentTerm?.SequenceNumber ?? 0,
+                TenantId = session.TenantId,
             };
 
             return result;
