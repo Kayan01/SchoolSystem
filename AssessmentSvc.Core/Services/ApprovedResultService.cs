@@ -669,8 +669,8 @@ namespace AssessmentSvc.Core.Services
                     Class = t.classs,
                     ClassTeacherComment = t.ClassTeacherComment,
                     ClassTeacherSignature = t.ClassTeacherComment,
-                    HeadTeacherComment = t.HeadTeacherComment
-
+                    HeadTeacherComment = t.HeadTeacherComment,
+                    GradeSetup = gradeSetupResult.Data
                 });
             }
 
@@ -730,8 +730,8 @@ namespace AssessmentSvc.Core.Services
             var assessmentSetup = await _assessmentSetupService.GetAllAssessmentSetup();
 
             var totalScore = assessmentSetup.Data.Sum(m => m.MaxScore);
-            var totalExamScore = assessmentSetup.Data.Where(m => m.IsExam).Sum(m => m.MaxScore);
-            var totalCAScore = assessmentSetup.Data.Where(m => !m.IsExam).Sum(m => m.MaxScore);
+            var totalExamScore = assessmentSetup.Data.Where(m => m.Name.ToLower().Contains("xam")).Sum(m => m.MaxScore);
+            var totalCAScore = assessmentSetup.Data.Where(m => !m.Name.ToLower().Contains("xam")).Sum(m => m.MaxScore);
 
             var school = await _schoolService.GetSchool(tenantId) ?? new School() ;
 
@@ -747,17 +747,20 @@ namespace AssessmentSvc.Core.Services
                 var tableObjects = new List<TableObject<object>>();
 
 
-                dynamic dictionaryToObject = new ExpandoObject();
-                var dictionary = dictionaryToObject as IDictionary<string, string>;
+                var objList = new List<object>();
                 var totalExamScoreObtained = 0d;
                 var totalCAScoreObtained = 0d;
 
                 foreach (var bd in result.Breakdowns)
                 {
-                    dictionary.Add(new KeyValuePair<string, string>("Subject", bd.SubjectName));
+                    dynamic obj = new ExpandoObject();
+                    var dictionary = obj as IDictionary<string, object>;
+                    //var dictionary = new Dictionary<string, object>();
+
+                    dictionary.Add("Subject", bd.SubjectName);
                     foreach (var assessment in bd.AssesmentAndScores)
                     {
-                        if (assessment.IsExam)
+                        if (assessment.AssessmentName.ToLower().Contains("xam"))
                         {
                             totalExamScoreObtained += assessment.StudentScore;
                         }
@@ -766,11 +769,13 @@ namespace AssessmentSvc.Core.Services
                             totalCAScoreObtained += assessment.StudentScore;
                         }
 
-                        dictionary.Add(new KeyValuePair<string, string>(assessment.AssessmentName, assessment.StudentScore.ToString()));
+                        dictionary.Add(assessment.AssessmentName, assessment.StudentScore.ToString());
                     }
-                    dictionary.Add(new KeyValuePair<string, string>("Cumulative", bd.CummulativeScore.ToString()));
-                    dictionary.Add(new KeyValuePair<string, string>("Grade", bd.Grade.ToString()));
-                    dictionary.Add(new KeyValuePair<string, string>("Interpretation", bd.Interpretation.ToString()));
+                    dictionary.Add("Cumulative", bd.CummulativeScore.ToString());
+                    dictionary.Add("Grade", bd.Grade.ToString());
+                    dictionary.Add("Interpretation", bd.Interpretation.ToString());
+
+                    objList.Add(dictionary);
                 }
 
                 var scoresTable = new TableObject<object>()
@@ -780,7 +785,7 @@ namespace AssessmentSvc.Core.Services
                         TableAttributes = new { @class = "tContent" },
                     },
                     TemplatePropertyName = "ScoresTable",
-                    TableData = dictionaryToObject
+                    TableData = objList,
             };
 
                 var gradeSetupTable = new TableObject<object>()
@@ -807,12 +812,12 @@ namespace AssessmentSvc.Core.Services
                     foreach (var behavior in item.Value)
                     {
                         dynamic behahiourObject = new ExpandoObject();
-                        var behaviourDictionary = behahiourObject as IDictionary<string, string>;
+                        var behaviourDictionary = behahiourObject as IDictionary<string, object>;
 
                         behaviourDictionary.Add(item.Key, behavior.BehaviourName);
                         behaviourDictionary.Add("Grade", behavior.Grade);
 
-                        tableData.Add(behahiourObject);
+                        tableData.Add((object)behahiourObject);
                     }
 
                     BehaviourTables.Add(new TableObject<object>()
@@ -854,9 +859,10 @@ namespace AssessmentSvc.Core.Services
                     ImgPath = school.Logo,
                     ClassTeacherName = $"{classTeacher.LastName} {classTeacher.FirstName}",
                     ClassTeacherSignature = _fileStorageService.MapStorage(classTeacher.Signature),
+                    HeadTeacherComment = result.HeadTeacherComment,
                 };
                 var pdf = _converter.ConvertToPDFBytesToList(mainData, tableObjects, tableArrays, templatePath, false);
-                var path = $"filestore\\{Guid.NewGuid().ToString()}.pdf";
+                var path = $"result\\{Guid.NewGuid().ToString()}.pdf";
                 _fileStorageService.SaveBytes(path, pdf);
                 studentFilePaths.Add(result.StudentId, path);
             }
