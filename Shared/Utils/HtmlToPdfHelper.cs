@@ -15,6 +15,7 @@ using ValueGetter;
 using System.Collections;
 using Shared.Exceptions;
 using Shared.Timing;
+using System.Dynamic;
 
 namespace Shared.Utils
 {
@@ -721,6 +722,10 @@ namespace Shared.Utils
             else if (enums is IEnumerable<IDictionary>)
             {
                 return htmltablegenerater.ToHtmlTableByKeyValue(enums as IEnumerable<IDictionary>);
+            }
+            else if (enums.FirstOrDefault().GetType().Name == (new ExpandoObject()).GetType().Name)
+            {
+                return htmltablegenerater.ToHtmlTableByKeyValue(enums.Select(m=> (IDictionary<string, object>)m));
             }
             else
             {
