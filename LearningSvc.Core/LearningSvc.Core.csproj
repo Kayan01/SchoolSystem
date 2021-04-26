@@ -25,6 +25,8 @@
     <Compile Remove="Migrations\20210423090334_kearningd.Designer.cs" />
     <Compile Remove="Migrations\20210423090431_kearningdd.cs" />
     <Compile Remove="Migrations\20210423090431_kearningdd.Designer.cs" />
+    <Compile Remove="Migrations\20210426141935_schoolj.cs" />
+    <Compile Remove="Migrations\20210426141935_schoolj.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
