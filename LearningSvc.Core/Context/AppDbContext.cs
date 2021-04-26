@@ -63,10 +63,6 @@ namespace LearningSvc.Core.Context
 
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<AssignmentAnswer> AssignmentAnswers { get; set; }
-        //public DbSet<Attendance> Attendances { get; set; }
-        //public DbSet<VirtualClassSession> VirtualClassSessions { get; set; }
-        //public DbSet<Exercise> Exercises { get; set; }
-        //public DbSet<ExerciseAnswer> ExerciseAnswers { get; set; }
         public DbSet<SchoolClass> SchoolClasses { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Subject> Subjects { get; set; }
@@ -78,5 +74,6 @@ namespace LearningSvc.Core.Context
         public DbSet<AttendanceSubject> SubjectAttendance { get; set; }
         public DbSet<AttendanceClass> ClassAttendance { get; set; }
         public DbSet<Parent> Parents { get; set; }
+        public DbSet<School> Schools { get; set; }
     }
 }

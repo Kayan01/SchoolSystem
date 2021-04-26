@@ -6,31 +6,33 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Shared.ViewModels;
 using System.Collections.Generic;
+using FinanceSvc.Core.Interfaces;
 
 namespace FinanceSvc.Core.EventHandlers
 {
     public class FinanceHandler
     {
-        private readonly IFinanceService _financeService;
         private readonly ILogger<FinanceHandler> _logger;
         private readonly IStudentService _studentService;
         private readonly IParentService _parentService;
         private readonly ISchoolClassService _schoolClassService;
         private readonly ISessionSetupService _sessionSetupService;
 
-        public FinanceHandler(IFinanceService financeService, 
+        private readonly ISchoolService _schoolService;
+        public FinanceHandler( 
             ILogger<FinanceHandler> logger,
             IStudentService studentService,
             IParentService parentService,
             ISchoolClassService schoolClassService,
+            ISchoolService schoolService,
             ISessionSetupService sessionSetupService)
         {
-            _financeService = financeService;
             _logger = logger;
             _studentService = studentService;
             _parentService = parentService;
             _schoolClassService = schoolClassService;
             _sessionSetupService = sessionSetupService;
+            _schoolService = schoolService;
         }
 
         public async Task HandleAddOrUpdateStudentAsync(BusMessage message)
@@ -84,6 +86,17 @@ namespace FinanceSvc.Core.EventHandlers
                 _logger.LogError(e.Message, e);
             }
         }
-
+        public async Task HandleAddOrUpdateSchoolAsync(BusMessage message)
+        {
+            try
+            {
+                var data = JsonConvert.DeserializeObject<SchoolSharedModel>(message.Data);
+                _schoolService.AddOrUpdateSchoolFromBroadcast(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+            }
+        }
     }
 }
