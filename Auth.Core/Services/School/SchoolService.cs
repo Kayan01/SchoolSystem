@@ -24,6 +24,7 @@ using Microsoft.OpenApi.Extensions;
 using Shared.PubSub;
 using System.Text;
 using Shared.Extensions;
+using Microsoft.Data.SqlClient;
 
 namespace Auth.Core.Services
 {
@@ -54,8 +55,15 @@ namespace Auth.Core.Services
         public async Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model)
         {
             var result = new ResultModel<SchoolVM>();
-          
-            
+
+
+            var domainCheck = await _schoolRepo.GetAll().FirstOrDefaultAsync(x => x.DomainName == model.DomainName);
+
+            if (domainCheck != null)
+            {
+                return new ResultModel<SchoolVM>("Unique name required for domain");
+            }
+
             _unitOfWork.BeginTransaction();
             var files = new List<FileUpload>();
             //save filles
@@ -103,7 +111,20 @@ namespace Auth.Core.Services
 
             _schoolRepo.Insert(school);
 
-            await _unitOfWork.SaveChangesAsync();
+            try
+            {
+
+                await _unitOfWork.SaveChangesAsync();
+            
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException is SqlException sqlException &&  (sqlException.Number == 2601 || sqlException.Number == 2627))
+                {
+                    return new ResultModel<SchoolVM>("Unique name required for domain");
+                }
+            }
+
             _unitOfWork.Commit();
 
             //add auth user
