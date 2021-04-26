@@ -144,7 +144,7 @@ namespace FinanceSvc.Core.Services
                 var listData = (IEnumerable<dynamic>)fee.FeeComponents.Select(x => new { Description = x.Component.Name, Compulsory = x.IsCompulsory, Amount = x.Amount }).ToList();
 
                 var kv = new KeyValuePair<dynamic, IEnumerable<dynamic>>(mainData, listData);
-                var item = new InvoicePdfVM { ParentEmail = student.ParentEmail, KeyValuePair = kv };
+                var item = new InvoicePdfVM { ParentEmail = student.ParentEmail, KeyValuePair = kv , StudentName = student.FullName};
                 emailData.Add(item);
             }
 
