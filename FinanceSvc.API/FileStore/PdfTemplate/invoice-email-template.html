@@ -20,14 +20,13 @@
                             <p
                                 style="font-weight: bold; font-size: 30px; line-height: 35px; color: #111118; margin-bottom: 20px;">
                                 Invoice</p>
-                                <p style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;">Date: June 4,
-                                    2020</p>
-                                <p style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;">Invoice Number:#2005
+                            <p style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;">Date: {{invoiceDate}}</p>
+                                <p style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;">Invoice Number:#{{invoiceNumber}}
                                 </p>
                         </div>
                     </th>
                     <th style="width:50%; margin-left: 0 auto ;">
-                        <img src="https://school-track-1.vercel.app/assets/images/svg/logo.svg" alt width="112">
+                        <img src="{{SchoolLogoPath}}" alt width="112">
                     </th>
                     
                 </tr>
@@ -35,83 +34,14 @@
             
             <div style="width: 125px; margin-top: 30px;">
                 <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118;">Bill To</div>
-                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;">Adebayo Adeyemi
+                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;">{{studentName}}
                 </div>
                 <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118;">
-                   Class: JSS1A</div>
+                   Class: {{className}}</div>
             </div>
 
             <div style="min-height: 45vh; width: 100%; margin-top: 50px;">
-                <table style="width: 100%; border-collapse: unset; border-spacing: 0;">
-                    <thead style="border-bottom: 1px solid #111118;">
-                        <th
-                            style="text-align: left;font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;border-bottom: 1px solid #111118 ;">
-                            Description</th>
-                        <th
-                            style="text-align: left;font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;border-bottom: 1px solid #111118 ;">
-                            Rate</th>
-                      
-                        <th
-                            style="text-align: left;font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;border-bottom: 1px solid #111118 ;">
-                            Subtotal</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div
-                                    style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;  margin-top: 15px;">
-                                    NIP</div>
-                                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118;">Release Wallet API
-                                </div>
-                            </td>
-                            <td>
-                                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118; margin-top: 20px;">
-                                    ₦65.00</div>
-                            </td>
-                           
-                            <td>
-                                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118; margin-top: 20px;">
-                                    ₦65.00</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div
-                                    style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;  margin-top: 15px;">
-                                    NIP</div>
-                                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118;">Release Wallet API
-                                </div>
-                            </td>
-                            <td>
-                                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118; margin-top: 20px;">
-                                    ₦65.00</div>
-                            </td>
-                           
-                            <td>
-                                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118; margin-top: 20px;">
-                                    ₦65.00</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div
-                                    style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;  margin-top: 15px;">
-                                    NIP</div>
-                                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118;">Release Wallet API
-                                </div>
-                            </td>
-                            <td>
-                                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118; margin-top: 20px;">
-                                    ₦65.00</div>
-                            </td>
-                           
-                            <td>
-                                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118; margin-top: 20px;">
-                                    ₦65.00</div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                {{table}}               
             </div>
         </div>
 
@@ -136,8 +66,8 @@
                             Term: {{termName}} <br />
                     </td>
                     <td style="text-align: right;" >
-                        <p style="font-size: 11.2247px;line-height: 133.9%;color: #ffffff; margin: 0;"> Subtotal: ₦1,365,000.00</p>
-                        <p style="font-weight: bold;  margin: 0;font-size: 16px; line-height: 19px;color: #ffffff;">Total : ₦1,365,000.00</p>
+                        <p style="font-size: 11.2247px;line-height: 133.9%;color: #ffffff; margin: 0;"> Subtotal: ₦{{TotalAmount}}</p>
+                        <p style="font-weight: bold;  margin: 0;font-size: 16px; line-height: 19px;color: #ffffff;">Total : ₦{{TotalAmount}}</p>
                     </td>
                 </tr>
             </tbody>

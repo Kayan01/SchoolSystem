@@ -24,6 +24,7 @@ namespace Shared.Utils
             public const string NewSchool = nameof(NewSchool);
             public const string AttendanceReport = nameof(AttendanceReport);
             public const string StudentResult = nameof(StudentResult);
+            public const string Invoice = nameof(Invoice);
         }
 
         public static class EntityType
@@ -58,6 +59,7 @@ namespace Shared.Utils
             new EmailTemplate(EmailTemplateType.NewSchool, "New School", "newschool.htm"),
             new EmailTemplate(EmailTemplateType.StudentResult, "Student Result", "result.htm"),
             new EmailTemplate(EmailTemplateType.AttendanceReport, "Attendance Report", "attendance_alert.htm"),
+            new EmailTemplate(EmailTemplateType.Invoice, "Invoice", "invoice.html"),
         };
 
         public class PaginationConsts

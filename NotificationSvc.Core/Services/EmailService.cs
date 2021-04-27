@@ -26,7 +26,7 @@ namespace NotificationSvc.Core.Services
         private readonly IRepository<Email, long> _emailRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger _logger;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IFileStorageService _fileStorageService;
         private readonly IFileStorageService _documentService;
         private readonly AppSettingsConfiguration _appSettingsConfiguration = new AppSettingsConfiguration();
 
@@ -36,11 +36,12 @@ namespace NotificationSvc.Core.Services
             IRepository<Email, long> emailRepository,
             ILogger<EmailService> logger,
             IConfiguration config,
-            IFileStorageService documentService
+            IFileStorageService documentService,
+            IFileStorageService fileStorageService
             )
         {
             _unitOfWork = unitOfWork;
-            _webHostEnvironment = webHostEnvironment;
+            _fileStorageService = fileStorageService;
             _emailRepository = emailRepository;
             _mailService = mailService;
             _logger = logger;
@@ -84,7 +85,8 @@ namespace NotificationSvc.Core.Services
                 mailBase.Attachments = new List<Attachment>();
                 foreach (var item in attachments)
                 {
-                    mailBase.Attachments.Add(new Attachment(item));
+                   var fileInfo = _fileStorageService.GetFile(item);
+                    mailBase.Attachments.Add(new Attachment(fileInfo.PhysicalPath));
                 }
             }
 

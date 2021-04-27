@@ -99,7 +99,14 @@ namespace LearningSvc.API
                             {
                                 await handler.HandleAddOrUpdateParentAsync(message);
                                 break;
-                            }
+                                }
+                            case (int)BusMessageTypes.SCHOOL:
+                            case (int)BusMessageTypes.SCHOOL_DELETE:
+                            case (int)BusMessageTypes.SCHOOL_UPDATE:
+                                {
+                                    await handler.HandleAddOrUpdateSchoolAsync(message);
+                                    break;
+                                }
                         }
                     }
                     catch (Exception e)
@@ -142,6 +149,7 @@ namespace LearningSvc.API
             services.AddScoped<IParentService, ParentService>();
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<ISchoolService, SchoolService>();
             services.AddScoped<IFileStore, FileStore>();
             services.AddScoped<IAttendanceService, AttendanceService>();
             services.AddScoped<ZoomService>();
