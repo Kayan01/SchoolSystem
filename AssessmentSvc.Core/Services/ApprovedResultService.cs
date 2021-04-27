@@ -419,9 +419,9 @@ namespace AssessmentSvc.Core.Services
 
             if (!studentId.HasValue && studentUserId.HasValue)
             {
-                var student  = await _studentRepo.GetAll().FirstOrDefaultAsync(x => x.UserId == studentUserId.Value);
+                var student = await _studentRepo.GetAll().FirstOrDefaultAsync(x => x.UserId == studentUserId.Value);
 
-                if (student ==null)
+                if (student == null)
                 {
                     return new ResultModel<StudentReportSheetVM>("Student not found");
                 }
@@ -573,8 +573,6 @@ namespace AssessmentSvc.Core.Services
 
             var currSessionAndTerm = sessionAndTermResult.Data;
 
-         
-
             var studentsApprovedResults = await _resultRepo.GetAll()
                 .Where(x => x.SessionSetupId == currSessionAndTerm.sessionId &&
                     x.SchoolClassId == classId &&
@@ -582,7 +580,8 @@ namespace AssessmentSvc.Core.Services
                     x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
                     x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved)
                 .Include(x => x.Subject)
-                .Select(m=> new {
+                .Select(m => new
+                {
                     Results = m,
                     m.Student.RegNumber,
                     studentName = $"{m.Student.FirstName} {m.Student.LastName}",
@@ -617,61 +616,64 @@ namespace AssessmentSvc.Core.Services
 
             foreach (var studentApprovedResults in uniqueStudentsResults)
             {
-
-                var studResult = new List<SubjectResultBreakdown>();
-
-                foreach (var resultGroup in resultsBySubjects)
+                if (studentIds.Contains(studentApprovedResults.Key))
                 {
-                    var breakdown = new SubjectResultBreakdown
+                    var studResult = new List<SubjectResultBreakdown>();
+
+                    foreach (var resultGroup in resultsBySubjects)
                     {
-                        SubjectName = resultGroup.FirstOrDefault(x => x.Results.SubjectId == resultGroup.Key)?.Results.Subject.Name,
-
-                        AssesmentAndScores = resultGroup
-                        .Where(x => x.Results.StudentId == studentApprovedResults.Key)
-                        .SelectMany(x => x.Results.Scores)
-                        .Select(x => new AssesmentAndScoreViewModel
+                        var breakdown = new SubjectResultBreakdown
                         {
-                            IsExam = x.IsExam,
-                            AssessmentName = x.AssessmentName,
-                            StudentScore = x.StudentScore
-                        }).ToList()
-                    };
+                            SubjectName = resultGroup.FirstOrDefault(x => x.Results.SubjectId == resultGroup.Key)?.Results.Subject.Name,
 
-                    //calculate position
-                    var orderedResults = resultGroup.OrderByDescending(x => x.Results.Scores.Sum(x => x.StudentScore)).ToList();
-                    var position = orderedResults.IndexOf(orderedResults.FirstOrDefault(x => x.Results.StudentId == studentApprovedResults.Key));
+                            AssesmentAndScores = resultGroup
+                            .Where(x => x.Results.StudentId == studentApprovedResults.Key)
+                            .SelectMany(x => x.Results.Scores)
+                            .Select(x => new AssesmentAndScoreViewModel
+                            {
+                                IsExam = x.IsExam,
+                                AssessmentName = x.AssessmentName,
+                                StudentScore = x.StudentScore
+                            }).ToList()
+                        };
 
-                    breakdown.Position = position + 1;
+                        //calculate position
+                        var orderedResults = resultGroup.OrderByDescending(x => x.Results.Scores.Sum(x => x.StudentScore)).ToList();
+                        var position = orderedResults.IndexOf(orderedResults.FirstOrDefault(x => x.Results.StudentId == studentApprovedResults.Key));
 
-                    //get interpretation
-                    foreach (var setup in gradeSetupResult.Data)
-                    {
-                        if (breakdown.CummulativeScore >= setup.LowerBound
-                            && breakdown.CummulativeScore <= setup.UpperBound)
+                        breakdown.Position = position + 1;
+
+                        //get interpretation
+                        foreach (var setup in gradeSetupResult.Data)
                         {
+                            if (breakdown.CummulativeScore >= setup.LowerBound
+                                && breakdown.CummulativeScore <= setup.UpperBound)
+                            {
 
-                            breakdown.Interpretation = setup.Interpretation;
-                            breakdown.Grade = setup.Grade;
-                            break;
+                                breakdown.Interpretation = setup.Interpretation;
+                                breakdown.Grade = setup.Grade;
+                                break;
+                            }
                         }
+
+                        studResult.Add(breakdown);
                     }
 
-                    studResult.Add(breakdown);
-                }
+                    var t = studentsApprovedResults.FirstOrDefault(n => n.StudentId == studentApprovedResults.Key);
+                    result.Data.Add(new StudentReportSheetVM
+                    {
+                        StudentId = studentApprovedResults.Key,
+                        Breakdowns = studResult,
+                        SubjectOffered = resultsBySubjects.Count(),
+                        RegNumber = t.RegNumber,
+                        Class = t.classs,
+                        ClassTeacherComment = t.ClassTeacherComment,
+                        ClassTeacherSignature = t.ClassTeacherComment,
+                        HeadTeacherComment = t.HeadTeacherComment,
+                        GradeSetup = gradeSetupResult.Data
+                    });
 
-                var t = studentsApprovedResults.FirstOrDefault(n => n.StudentId == studentApprovedResults.Key);
-                result.Data.Add(new StudentReportSheetVM
-                {
-                    StudentId = studentApprovedResults.Key,
-                    Breakdowns = studResult,
-                    SubjectOffered = resultsBySubjects.Count(),
-                    RegNumber = t.RegNumber,
-                    Class = t.classs,
-                    ClassTeacherComment = t.ClassTeacherComment,
-                    ClassTeacherSignature = t.ClassTeacherComment,
-                    HeadTeacherComment = t.HeadTeacherComment,
-                    GradeSetup = gradeSetupResult.Data
-                });
+                }
             }
 
             return result;

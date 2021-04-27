@@ -10,10 +10,10 @@ namespace Shared.Utils
 
         public static readonly string[] validExcels = new[] { ".xls", ".xlsx" };
 
-        public const string TestPdfTemplatePath1 = @"filestore\pdftemplate\TestPdfTemplate1.html";
-        public const string TestPdfTemplatePath2 = @"filestore\pdftemplate\TestPdfTemplate2.html";
-        public const string ResultPdfTemplatePath = @"pdftemplate\ResultTemplate.html";
-        public const string InvoicePdfTemplatePath = @"filestore\pdftemplate\invoice-email-template.html";
+        public const string TestPdfTemplatePath1 = @"filestore/pdftemplate/TestPdfTemplate1.html";
+        public const string TestPdfTemplatePath2 = @"filestore/pdftemplate/TestPdfTemplate2.html";
+        public const string ResultPdfTemplatePath = @"pdftemplate/ResultTemplate.html";
+        public const string InvoicePdfTemplatePath = @"filestore/pdftemplate/invoice-email-template.html";
 
         public static class EmailTemplateType
         {
