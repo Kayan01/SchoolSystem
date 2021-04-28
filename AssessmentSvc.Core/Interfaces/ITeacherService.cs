@@ -10,6 +10,6 @@ namespace AssessmentSvc.Core.Interfaces
     public interface ITeacherService
     {
         void AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model);
-        Task<List<Teacher>> GetTeachersAsync(List<long> ids);
+        Task<List<Teacher>> GetTeachersByUserIdsAsync(List<long> ids);
     }
 }

@@ -756,7 +756,7 @@ namespace AssessmentSvc.Core.Services
 
             var behaviours = await _resultService.GetBehaviouralResults(new GetBehaviourResultQueryVm() { ClassId = classId, SessionId = curSessionId, TermSequence = termSequenceNumber });
 
-            var classTeachers = await _teacherService.GetTeachersAsync(vm.Select(m => m.ClassTeacherId).Distinct().ToList());
+            var classTeachers = await _teacherService.GetTeachersByUserIdsAsync(vm.Select(m => m.ClassTeacherId).Distinct().ToList());
             var templatePath = _fileStorageService.MapStorage(CoreConstants.ResultPdfTemplatePath);
 
             var studentFilePaths = new Dictionary<long, string> ();
