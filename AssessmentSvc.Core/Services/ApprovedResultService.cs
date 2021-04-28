@@ -864,7 +864,7 @@ namespace AssessmentSvc.Core.Services
                     HeadTeacherComment = result.HeadTeacherComment,
                 };
                 var pdf = _converter.ConvertToPDFBytesToList(mainData, tableObjects, tableArrays, templatePath, false);
-                var path = $"result\\{Guid.NewGuid().ToString()}.pdf";
+                var path = $"result/{Guid.NewGuid().ToString()}.pdf";
                 _fileStorageService.SaveBytes(path, pdf);
                 studentFilePaths.Add(result.StudentId, path);
             }
