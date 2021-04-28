@@ -420,10 +420,9 @@ namespace FinanceSvc.Core.Services
 
             foreach (var item in data)
             {
+               var pdf = _converter.ConvertToPDFBytesToList((object)item.KeyValuePair.Key, item.KeyValuePair.Value.ToList(), tableConfig, CoreConstants.InvoicePdfTemplatePath, false);
 
-                var pdf = PdfHelper.BuildPdfFile(_converter, _hostingEnvironment, CoreConstants.InvoicePdfTemplatePath, item.KeyValuePair.Key, item.KeyValuePair.Value.ToList(), tableConfig, false);
-
-                var path = $"invoices\\{Guid.NewGuid()}{ DateTime.Now.Ticks}.pdf";
+                var path = $"invoices\\{Guid.NewGuid()}.pdf";
                 _fileStorageService.SaveBytes(path, pdf);
 
 
