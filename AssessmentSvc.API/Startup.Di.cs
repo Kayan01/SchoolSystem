@@ -125,6 +125,7 @@ namespace AssessmentSvc.API
 
             services.AddScoped<IPublishService, PublishService>();
 
+            services.AddScoped<IDocumentService, DocumentService>();
             services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();
