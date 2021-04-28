@@ -39,6 +39,7 @@ namespace AssessmentSvc.Core.Services
         private readonly ISchoolService _schoolService;
         private readonly ITeacherService _teacherService;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IDocumentService _documentService;
         private readonly IConverter _converter;
 
         public ApprovedResultService(
@@ -54,6 +55,7 @@ namespace AssessmentSvc.Core.Services
             ISchoolService schoolService,
             ITeacherService teacherService,
             IFileStorageService fileStorageService,
+            IDocumentService documentService,
             IConverter converter,
         IUnitOfWork unitOfWork)
         {
@@ -70,8 +72,10 @@ namespace AssessmentSvc.Core.Services
             _schoolService = schoolService;
             _teacherService = teacherService;
             _fileStorageService = fileStorageService;
+            _documentService = documentService;
             _converter = converter;
         }
+
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
         {
             var result = new ResultModel<string>();
@@ -584,12 +588,16 @@ namespace AssessmentSvc.Core.Services
                 {
                     Results = m,
                     m.Student.RegNumber,
+                    m.Student.Sex,
                     studentName = $"{m.Student.FirstName} {m.Student.LastName}",
                     classs = $"{m.SchoolClass.Name} {m.SchoolClass.ClassArm}",
-                    studentsInClass = m.SchoolClass.Students.Count,
+                    studentsInClass = m.SchoolClass.Students.Count(),
                     m.ApprovedResult.ClassTeacherComment,
                     m.ApprovedResult.HeadTeacherComment,
-                    m.StudentId
+                    m.StudentId,
+                    m.Student.DateOfBirth,
+                    m.ApprovedResult.ClassTeacherId,
+                    m.ApprovedResult.HeadTeacherId,
                 })
                 .ToListAsync();
 
@@ -666,11 +674,18 @@ namespace AssessmentSvc.Core.Services
                         Breakdowns = studResult,
                         SubjectOffered = resultsBySubjects.Count(),
                         RegNumber = t.RegNumber,
+                        StudentName = t.studentName,
+                        Sex = t.Sex,
+                        Age = DateTime.Now.Year - t.DateOfBirth.Year,
                         Class = t.classs,
                         ClassTeacherComment = t.ClassTeacherComment,
-                        ClassTeacherSignature = t.ClassTeacherComment,
                         HeadTeacherComment = t.HeadTeacherComment,
-                        GradeSetup = gradeSetupResult.Data
+                        ClassTeacherId = t.ClassTeacherId,
+                        HeadTeacherId = t.HeadTeacherId,
+                        GradeSetup = gradeSetupResult.Data,
+                        TotalInClass = t.studentsInClass,
+                        Session = currSessionAndTerm.SessionName,
+                        Term = currSessionAndTerm.TermName
                     });
 
                 }
@@ -736,6 +751,8 @@ namespace AssessmentSvc.Core.Services
             var totalCAScore = assessmentSetup.Data.Where(m => !m.Name.ToLower().Contains("xam")).Sum(m => m.MaxScore);
 
             var school = await _schoolService.GetSchool(tenantId) ?? new School() ;
+
+            var schoolLogoMemeType = school.Logo?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
 
             var behaviours = await _resultService.GetBehaviouralResults(new GetBehaviourResultQueryVm() { ClassId = classId, SessionId = curSessionId, TermSequence = termSequenceNumber });
 
@@ -834,7 +851,9 @@ namespace AssessmentSvc.Core.Services
                 }
 
                 tableArrays.Add(new KeyValuePair<string, IEnumerable<TableObject<object>>>( "Behaviours", BehaviourTables));
-                var classTeacher = classTeachers.FirstOrDefault(m => m.Id == result.ClassTeacherId)?? new Teacher();
+                var classTeacher = classTeachers.FirstOrDefault(m => m.Id == result.ClassTeacherId) ?? new Teacher();
+
+                var classTeacherMemeType = classTeacher.Signature?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
 
                 var mainData = new
                 {
@@ -842,10 +861,9 @@ namespace AssessmentSvc.Core.Services
                     Session = result.Session,
                     Term = result.Term,
                     StudentName = result.StudentName,
-                    StudentRegNum = result.StudentName,
+                    StudentRegNum = result.RegNumber,
                     StudentAge = result.Age,
                     StudentSex = result.Sex,
-                    ClassTeacherComment = result.ClassTeacherComment,
                     Total_Exam = totalExamScore * result.SubjectOffered,
                     Total_CA = totalCAScore * result.SubjectOffered,
                     Total_Score = totalScore * result.SubjectOffered,
@@ -858,11 +876,13 @@ namespace AssessmentSvc.Core.Services
                     SchoolPhone = school.PhoneNumber,
                     SchoolEmail = school.Email,
                     SchoolWebsite = school.WebsiteAddress,
-                    ImgPath = school.Logo,
+                    ImgPath = $"{schoolLogoMemeType}base64, {_documentService.TryGetUploadedFile(school.Logo)}",
                     ClassTeacherName = $"{classTeacher.LastName} {classTeacher.FirstName}",
-                    ClassTeacherSignature = _fileStorageService.MapStorage(classTeacher.Signature),
+                    ClassTeacherComment = result.ClassTeacherComment,
+                    ClassTeacherSignature = $"{classTeacherMemeType}base64, {_documentService.TryGetUploadedFile(classTeacher.Signature)}",
                     HeadTeacherComment = result.HeadTeacherComment,
                 };
+
                 var pdf = _converter.ConvertToPDFBytesToList(mainData, tableObjects, tableArrays, templatePath, false);
                 var path = $"result/{Guid.NewGuid().ToString()}.pdf";
                 _fileStorageService.SaveBytes(path, pdf);
