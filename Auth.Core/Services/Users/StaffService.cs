@@ -159,6 +159,7 @@ namespace Auth.Core.Services
                             {
                                 FirstName = n.User.FirstName,
                                 LastName = n.User.LastName,
+                                UserId = n.UserId,
                                 Signature = n.FileUploads.Where(m=>m.Name == DocumentType.Signature.GetDisplayName()).FirstOrDefault().Path
                             })
                             .ToListAsync();
