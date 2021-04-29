@@ -851,7 +851,7 @@ namespace AssessmentSvc.Core.Services
                 }
 
                 tableArrays.Add(new KeyValuePair<string, IEnumerable<TableObject<object>>>( "Behaviours", BehaviourTables));
-                var classTeacher = classTeachers.FirstOrDefault(m => m.Id == result.ClassTeacherId) ?? new Teacher();
+                var classTeacher = classTeachers.FirstOrDefault(m => m.UserId == result.ClassTeacherId) ?? new Teacher();
 
                 var classTeacherMemeType = classTeacher.Signature?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
 
