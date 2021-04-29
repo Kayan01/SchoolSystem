@@ -114,7 +114,7 @@ namespace UserManagement.API.Controllers
         }
 
         [HttpGet]
-        //[Authorize]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<List<StaffNameAndSignatureVM>>), 200)]
         public async Task<IActionResult> GetStaffNamesAndSignaturesByUserIds([FromQuery]List<long> UserIds, [FromQuery]bool GetBytes = true)
         {

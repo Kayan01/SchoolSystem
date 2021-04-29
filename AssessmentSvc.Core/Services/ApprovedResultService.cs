@@ -1,10 +1,13 @@
 ﻿using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Models;
+using AssessmentSvc.Core.ViewModels;
 using AssessmentSvc.Core.ViewModels.Result;
 using AssessmentSvc.Core.ViewModels.SessionSetup;
 using AssessmentSvc.Core.ViewModels.Student;
 using DinkToPdf.Contracts;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
@@ -17,6 +20,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using static Shared.Utils.CoreConstants;
@@ -40,6 +44,7 @@ namespace AssessmentSvc.Core.Services
         private readonly ITeacherService _teacherService;
         private readonly IFileStorageService _fileStorageService;
         private readonly IDocumentService _documentService;
+        private readonly IConfiguration _configuration ;
         private readonly IConverter _converter;
 
         public ApprovedResultService(
@@ -57,6 +62,7 @@ namespace AssessmentSvc.Core.Services
             IFileStorageService fileStorageService,
             IDocumentService documentService,
             IConverter converter,
+            IConfiguration configuration,
         IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -74,6 +80,7 @@ namespace AssessmentSvc.Core.Services
             _fileStorageService = fileStorageService;
             _documentService = documentService;
             _converter = converter;
+            _configuration = configuration;
         }
 
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
@@ -744,6 +751,16 @@ namespace AssessmentSvc.Core.Services
 
         private async Task<Dictionary<long, string>> GetStudentsResultPDFS(List<StudentReportSheetVM> vm, long classId, long curSessionId, int termSequenceNumber, long tenantId)
         {
+            var headTeacherIdParams = vm.Select(m => m.HeadTeacherId).Distinct().Select(m => $"UserIds={m}");
+
+            var baseUrl = _configuration["AuthBaseUrl"];
+            //http://localhost:58101/api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?UserIds=9&UserIds=6&GetBytes=false
+            string url = $"{baseUrl}api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?{string.Join('&', headTeacherIdParams)}&GetBytes=false";
+
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("tenantId", tenantId.ToString()); 
+            var headTeacherTask = client.GetAsync<ApiResponse<List<StaffNameAndSignatureVM>>>(url);
+
             var assessmentSetup = await _assessmentSetupService.GetAllAssessmentSetup();
 
             var totalScore = assessmentSetup.Data.Sum(m => m.MaxScore);
@@ -751,15 +768,28 @@ namespace AssessmentSvc.Core.Services
             var totalCAScore = assessmentSetup.Data.Where(m => !m.Name.ToLower().Contains("xam")).Sum(m => m.MaxScore);
 
             var school = await _schoolService.GetSchool(tenantId) ?? new School() ;
-
             var schoolLogoMemeType = school.Logo?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
+            school.Logo = $"{schoolLogoMemeType}base64, {_documentService.TryGetUploadedFile(school.Logo)}";
 
             var behaviours = await _resultService.GetBehaviouralResults(new GetBehaviourResultQueryVm() { ClassId = classId, SessionId = curSessionId, TermSequence = termSequenceNumber });
 
             var classTeachers = await _teacherService.GetTeachersByUserIdsAsync(vm.Select(m => m.ClassTeacherId).Distinct().ToList());
+            classTeachers.ForEach(m => {
+                var classTeacherMemeType = m.Signature?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
+                m.Signature = $"{classTeacherMemeType}base64, {_documentService.TryGetUploadedFile(m.Signature)}";
+                });
+            
             var templatePath = _fileStorageService.MapStorage(CoreConstants.ResultPdfTemplatePath);
 
             var studentFilePaths = new Dictionary<long, string> ();
+
+            var headTeachers = (await headTeacherTask).Payload;
+            headTeachers.ForEach(m => {
+                var headTeacherMemeType = m.Signature?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
+                m.Signature = $"{headTeacherMemeType}base64, {_documentService.TryGetUploadedFile(m.Signature)}";
+            });
+
+            client.Dispose();
 
             foreach (var result in vm)
             {
@@ -852,8 +882,7 @@ namespace AssessmentSvc.Core.Services
 
                 tableArrays.Add(new KeyValuePair<string, IEnumerable<TableObject<object>>>( "Behaviours", BehaviourTables));
                 var classTeacher = classTeachers.FirstOrDefault(m => m.UserId == result.ClassTeacherId) ?? new Teacher();
-
-                var classTeacherMemeType = classTeacher.Signature?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
+                var headTeacher = headTeachers.FirstOrDefault(m => m.UserId == result.HeadTeacherId) ?? new StaffNameAndSignatureVM();
 
                 var mainData = new
                 {
@@ -876,11 +905,13 @@ namespace AssessmentSvc.Core.Services
                     SchoolPhone = school.PhoneNumber,
                     SchoolEmail = school.Email,
                     SchoolWebsite = school.WebsiteAddress,
-                    ImgPath = $"{schoolLogoMemeType}base64, {_documentService.TryGetUploadedFile(school.Logo)}",
+                    ImgPath = school.Logo,
                     ClassTeacherName = $"{classTeacher.LastName} {classTeacher.FirstName}",
                     ClassTeacherComment = result.ClassTeacherComment,
-                    ClassTeacherSignature = $"{classTeacherMemeType}base64, {_documentService.TryGetUploadedFile(classTeacher.Signature)}",
+                    ClassTeacherSignature = classTeacher.Signature,
                     HeadTeacherComment = result.HeadTeacherComment,
+                    HeadTeacherSignature = headTeacher.Signature,
+                    HeadTeacherName = $"{headTeacher.LastName} {headTeacher.FirstName}"
                 };
 
                 var pdf = _converter.ConvertToPDFBytesToList(mainData, tableObjects, tableArrays, templatePath, false);
