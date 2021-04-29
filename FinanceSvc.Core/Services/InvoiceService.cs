@@ -417,10 +417,10 @@ namespace FinanceSvc.Core.Services
                 TdAttributes = new { },
             };
 
-
+            var templatePath = _fileStorageService.MapStorage(CoreConstants.InvoicePdfTemplatePath);
             foreach (var item in data)
             {
-               var pdf = _converter.ConvertToPDFBytesToList((object)item.KeyValuePair.Key, item.KeyValuePair.Value.ToList(), tableConfig, CoreConstants.InvoicePdfTemplatePath, false);
+               var pdf = _converter.ConvertToPDFBytesToList((object)item.KeyValuePair.Key, item.KeyValuePair.Value.ToList(), tableConfig, templatePath, false);
 
                 var path = $"invoices\\{Guid.NewGuid()}.pdf";
                 _fileStorageService.SaveBytes(path, pdf);
