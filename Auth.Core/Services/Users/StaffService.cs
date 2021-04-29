@@ -144,9 +144,34 @@ namespace Auth.Core.Services
             }
 
             var sign = _documentService.TryGetUploadedFile(staff.Signature);
-
             staff.Signature = sign;
+            
             result.Data = staff;
+            return result;
+        }
+
+        public async Task<ResultModel<List<StaffNameAndSignatureVM>>> GetStaffNamesAndSignaturesByUserIds(List<long> userIds, bool getBytes = true)
+        {
+            var result = new ResultModel<List<StaffNameAndSignatureVM>>();
+            var staffs = await _staffRepo.GetAll()
+                            .Where(x=>userIds.Contains(x.UserId))
+                            .Select(n=> new StaffNameAndSignatureVM()
+                            {
+                                FirstName = n.User.FirstName,
+                                LastName = n.User.LastName,
+                                Signature = n.FileUploads.Where(m=>m.Name == DocumentType.Signature.GetDisplayName()).FirstOrDefault().Path
+                            })
+                            .ToListAsync();
+            if (getBytes)
+            {
+                foreach (var staff in staffs)
+                {
+                    var sign = _documentService.TryGetUploadedFile(staff.Signature);
+                    staff.Signature = sign;
+                }
+            }
+
+            result.Data = staffs;
             return result;
         }
 
