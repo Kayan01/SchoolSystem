@@ -30,7 +30,6 @@ namespace FinanceSvc.Core.Services
         private readonly IRepository<School, long> _schoolRepo;
         private readonly IRepository<Fee, long> _feeRepo;
         private readonly IConverter _converter;
-        private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IFileStorageService _fileStorageService;
         private readonly IPublishService _publishService;
         private readonly IUnitOfWork _unitOfWork;
@@ -40,7 +39,6 @@ namespace FinanceSvc.Core.Services
             IRepository<Fee, long> feeRepo,
             IRepository<Student, long> studentRepo,
        IRepository<SessionSetup, long> sessionRepo,
-       IWebHostEnvironment hostingEnvironment,
        IFileStorageService fileStorageService,
        IPublishService publishService,
        IRepository<School, long> schoolRepo,
@@ -51,7 +49,6 @@ namespace FinanceSvc.Core.Services
             _feeRepo = feeRepo;
             _studentRepo = studentRepo;
             _sessionRepo = sessionRepo;
-            _hostingEnvironment = hostingEnvironment;
             _fileStorageService = fileStorageService;
             _publishService = publishService;
             _converter = converter;
@@ -417,13 +414,12 @@ namespace FinanceSvc.Core.Services
                 TdAttributes = new { },
             };
 
-
+            var templatePath = _fileStorageService.MapStorage(CoreConstants.InvoicePdfTemplatePath);
             foreach (var item in data)
             {
+               var pdf = _converter.ConvertToPDFBytesToList((object)item.KeyValuePair.Key, item.KeyValuePair.Value.ToList(), tableConfig, templatePath, false);
 
-                var pdf = PdfHelper.BuildPdfFile(_converter, _hostingEnvironment, CoreConstants.InvoicePdfTemplatePath, item.KeyValuePair.Key, item.KeyValuePair.Value.ToList(), tableConfig, false);
-
-                var path = $"invoices\\{Guid.NewGuid()}{ DateTime.Now.Ticks}.pdf";
+                var path = $"invoices\\{Guid.NewGuid()}.pdf";
                 _fileStorageService.SaveBytes(path, pdf);
 
 

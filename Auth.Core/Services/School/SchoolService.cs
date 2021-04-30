@@ -37,7 +37,7 @@ namespace Auth.Core.Services
         private readonly IPublishService _publishService;
         private readonly IAuthUserManagement _authUserManagement;
         public SchoolService(
-        IRepository<School, long> schoolRepo, 
+        IRepository<School, long> schoolRepo,
             IUnitOfWork unitOfWork,
          IPublishService publishService,
         IDocumentService documentService,
@@ -82,10 +82,11 @@ namespace Auth.Core.Services
                     return result;
                 }
             }
-           
+
 
             //todo: add more props
-            var contactDetails = new SchoolContactDetails  {
+            var contactDetails = new SchoolContactDetails
+            {
                 Email = model.ContactEmail,
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
@@ -93,19 +94,19 @@ namespace Auth.Core.Services
                 IsPrimaryContact = true
             };
             var school = new School
-                {
-                    Name = model.Name,
-                    DomainName = model.DomainName.ToLower(),
-                    Address = model.Address,
-                    City = model.City,
-                    Country = model.Country,
-                    State = model.State,
-                    WebsiteAddress = model.WebsiteAddress,
-                    FileUploads = files,
-                    IsActive = model.IsActive,
-                    PrimaryColor = model.PrimaryColor,
-                    SecondaryColor = model.SecondaryColor
-                };
+            {
+                Name = model.Name,
+                DomainName = model.DomainName.ToLower(),
+                Address = model.Address,
+                City = model.City,
+                Country = model.Country,
+                State = model.State,
+                WebsiteAddress = model.WebsiteAddress,
+                FileUploads = files,
+                IsActive = model.IsActive,
+                PrimaryColor = model.PrimaryColor,
+                SecondaryColor = model.SecondaryColor
+            };
 
             school.SchoolContactDetails.Add(contactDetails);
 
@@ -115,17 +116,16 @@ namespace Auth.Core.Services
             {
 
                 await _unitOfWork.SaveChangesAsync();
-            
+
             }
             catch (DbUpdateException ex)
             {
-                if (ex.InnerException is SqlException sqlException &&  (sqlException.Number == 2601 || sqlException.Number == 2627))
+                if (ex.InnerException is SqlException sqlException && (sqlException.Number == 2601 || sqlException.Number == 2627))
                 {
                     return new ResultModel<SchoolVM>("Unique name required for domain");
                 }
             }
 
-            _unitOfWork.Commit();
 
             //add auth user
             var user = new User
@@ -141,10 +141,15 @@ namespace Auth.Core.Services
 
             if (!userResult.Succeeded)
             {
-                result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
-                return result;
+                await _schoolRepo.DeleteAsync(school);
+
+                await _unitOfWork.SaveChangesAsync();
+                return new ResultModel<SchoolVM>(userResult.Errors.Select(x => x.Description).ToList());
             }
 
+
+
+            _unitOfWork.Commit();
             //adds tenant id to school primary contact
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, school.Id.ToString()));
 
@@ -175,7 +180,7 @@ namespace Auth.Core.Services
                 DomainName = school.DomainName,
                 Name = school.Name,
                 State = school.State,
-                Logo = school.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path
+                Logo = school.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName())?.Path
             });
 
 
@@ -246,7 +251,7 @@ namespace Auth.Core.Services
                     name = x.Name,
                     x.PrimaryColor,
                     x.SecondaryColor
-                }) .FirstOrDefaultAsync();
+                }).FirstOrDefaultAsync();
 
             if (schoolInfo is null)
             {
@@ -260,10 +265,11 @@ namespace Auth.Core.Services
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
             }
 
-            return new ResultModel<SchoolNameAndLogoVM>(data: new SchoolNameAndLogoVM() { 
-                SchoolName = schoolInfo.name, 
-                Logo = logo, 
-                PrimaryColor= schoolInfo.PrimaryColor, 
+            return new ResultModel<SchoolNameAndLogoVM>(data: new SchoolNameAndLogoVM()
+            {
+                SchoolName = schoolInfo.name,
+                Logo = logo,
+                PrimaryColor = schoolInfo.PrimaryColor,
                 SecondaryColor = schoolInfo.SecondaryColor
             });
         }
@@ -279,7 +285,7 @@ namespace Auth.Core.Services
                     name = x.Name,
                     x.PrimaryColor,
                     x.SecondaryColor
-                }) .FirstOrDefaultAsync();
+                }).FirstOrDefaultAsync();
 
             if (schoolInfo is null)
             {
@@ -293,10 +299,11 @@ namespace Auth.Core.Services
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
             }
 
-            return new ResultModel<SchoolNameAndLogoVM>(data: new SchoolNameAndLogoVM() { 
-                SchoolName = schoolInfo.name, 
-                Logo = logo, 
-                PrimaryColor= schoolInfo.PrimaryColor, 
+            return new ResultModel<SchoolNameAndLogoVM>(data: new SchoolNameAndLogoVM()
+            {
+                SchoolName = schoolInfo.name,
+                Logo = logo,
+                PrimaryColor = schoolInfo.PrimaryColor,
                 SecondaryColor = schoolInfo.SecondaryColor
             });
         }
@@ -326,9 +333,9 @@ namespace Auth.Core.Services
                     contactDetails = x.SchoolContactDetails.FirstOrDefault(x => x.IsPrimaryContact),
                     logo = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()),
                     icon = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Icon.GetDisplayName()),
-                     x.CreationTime,
-                     x.PrimaryColor,
-                     x.SecondaryColor
+                    x.CreationTime,
+                    x.PrimaryColor,
+                    x.SecondaryColor
                 })
                 .FirstOrDefaultAsync();
 
@@ -362,19 +369,30 @@ namespace Auth.Core.Services
                     StudentsCount = school.studentCount,
                     TeachersCount = school.teachingStaffCount,
                     TotalUsersCount = school.teachingStaffCount + school.staffCount + school.studentCount,
-                    PrimaryColor=school.PrimaryColor,
+                    PrimaryColor = school.PrimaryColor,
                     SecondaryColor = school.SecondaryColor
                 }
             };
         }
 
-        public async Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model, long  id)
+        public async Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model, long id)
         {
+
+
+            var domainCheck = await _schoolRepo.GetAll().FirstOrDefaultAsync(x => x.DomainName == model.DomainName);
+
+            if (domainCheck != null)
+            {
+                return new ResultModel<SchoolVM>("Unique name required for domain");
+            }
+
+
             var sch = await _schoolRepo.GetAll()
                 .Include(x => x.FileUploads)
                 .Include(x => x.SchoolContactDetails)
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync();
+
             var result = new ResultModel<SchoolVM>();
 
             if (sch == null)
@@ -382,7 +400,17 @@ namespace Auth.Core.Services
                 result.AddError("School does not exist");
                 return result;
             }
-            
+
+
+            var user = await _userManager.FindByNameAsync(model.Username);
+
+            if (user == null)
+            {
+                return new ResultModel<SchoolVM>("User does not exist");
+            }
+
+
+
             _unitOfWork.BeginTransaction();
 
 
@@ -406,32 +434,61 @@ namespace Auth.Core.Services
 
             var contactDetails = new SchoolContactDetails
             {
-                Id = sch.SchoolContactDetails.FirstOrDefault() != null ? sch.SchoolContactDetails.FirstOrDefault().Id : 0,
                 Email = model.ContactEmail,
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
                 PhoneNumber = model.ContactPhoneNo,
                 IsPrimaryContact = true
             };
-           
-                   sch. Name = model.Name;
-                   sch.DomainName = model.DomainName;
-                  sch.Address = model.Address;
-                  sch.City = model.City;
-                  sch.Country = model.Country;
-                  sch.State = model.State;
-                  sch.WebsiteAddress = model.WebsiteAddress;
-                  sch.FileUploads = files;
-                  sch.IsActive = model.IsActive;
-        
+
+            sch.Name = model.Name;
+            sch.DomainName = model.DomainName;
+            sch.Address = model.Address;
+            sch.City = model.City;
+            sch.Country = model.Country;
+            sch.State = model.State;
+            sch.WebsiteAddress = model.WebsiteAddress;
+            sch.FileUploads = files;
+            sch.IsActive = model.IsActive;
             sch.SchoolContactDetails = new List<SchoolContactDetails> { contactDetails };
             sch.FileUploads = files;
             sch.SecondaryColor = model.SecondaryColor;
             sch.PrimaryColor = model.PrimaryColor;
 
             await _schoolRepo.UpdateAsync(sch);
-            await _unitOfWork.SaveChangesAsync();
 
+            try
+            {
+
+                await _unitOfWork.SaveChangesAsync();
+
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException is SqlException sqlException && (sqlException.Number == 2601 || sqlException.Number == 2627))
+                {
+                    return new ResultModel<SchoolVM>("Unique name required for domain");
+                }
+            }
+
+
+            //update auth user
+
+            user.FirstName = model.ContactFirstName;
+            user.LastName = model.ContactLastName;
+            user.Email = model.ContactEmail;
+            user.UserName = model.Username;
+            user.PhoneNumber = model.ContactPhoneNo;
+            user.UserType = UserType.SchoolAdmin;
+
+            var userResult = await _userManager.UpdateAsync(user);
+
+            if (!userResult.Succeeded)
+            {
+                return new ResultModel<SchoolVM>(userResult.Errors.Select(x => x.Description).ToList());
+            }
+
+            _unitOfWork.Commit();
 
             //Publish to services
             await _publishService.PublishMessage(Topics.School, BusMessageTypes.SCHOOL, new SchoolSharedModel
@@ -446,7 +503,7 @@ namespace Auth.Core.Services
                 DomainName = sch.DomainName,
                 Name = sch.Name,
                 State = sch.State,
-                Logo = sch.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path
+                Logo = sch.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName())?.Path
             });
 
             result.Data = sch;
@@ -459,7 +516,7 @@ namespace Auth.Core.Services
 
             var sch = await _schoolRepo.GetAll()
                 .Include(x => x.SchoolSections)
-                .Include(x=> x.Staffs)
+                .Include(x => x.Staffs)
                 .ThenInclude(x => x.User)
                 .Include(x => x.Students)
                 .ThenInclude(x => x.User)
@@ -477,7 +534,7 @@ namespace Auth.Core.Services
                 return result;
             }
 
-           
+
 
             await _schoolRepo.DeleteAsync(Id);
             await _unitOfWork.SaveChangesAsync();
@@ -536,18 +593,18 @@ namespace Auth.Core.Services
                     IsPrimaryContact = true
                 };
                 var school = new School
-                    {
-                        Name = model.Name,
-                        DomainName = model.DomainName,
-                        Address = model.Address,
-                        City = model.City,
-                        Country = model.Country,
-                        State = model.State,
-                        WebsiteAddress = model.WebsiteAddress
-                    };
+                {
+                    Name = model.Name,
+                    DomainName = model.DomainName,
+                    Address = model.Address,
+                    City = model.City,
+                    Country = model.Country,
+                    State = model.State,
+                    WebsiteAddress = model.WebsiteAddress
+                };
 
                 school.SchoolContactDetails.Add(contactDetails);
-                
+
                 _schoolRepo.Insert(school);
 
                 schools.Add(school);
@@ -595,7 +652,7 @@ namespace Auth.Core.Services
 
         }
 
-       
+
     }
 
 
