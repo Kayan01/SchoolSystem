@@ -50,7 +50,9 @@ namespace FinanceSvc.Core.Services
                 return new ResultModel<string>(errorMessage: "Please make sure you have selected items to be paid.");
             }
 
-            if (check.InvoiceComponents?.Sum(m => m.Amount) < (check.Transactions?.Sum(m => m.Amount) + model.Amount))
+            if (check.InvoiceComponents?.Sum(m => m.Amount) < (check.Transactions?.
+                                        Where(m=>m.Status != Enumerations.TransactionStatus.Rejected)
+                                        .Sum(m => m.Amount) + model.Amount))
             {
                 return new ResultModel<string>(errorMessage: "Amount to be paid would be greater than the Amount payable.");
             }
