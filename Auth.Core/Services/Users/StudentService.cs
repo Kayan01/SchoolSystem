@@ -574,7 +574,9 @@ namespace Auth.Core.Services
             stud.User.FirstName = model.FirstName;
             stud.User.LastName = model.LastName;
                stud.User.Email = model.ContactEmail.Trim();
-                stud.User.UserName = model.ContactEmail.Trim();
+            stud.User.NormalizedEmail = model.ContactEmail.Trim().ToUpper();
+            stud.User.UserName = stud.RegNumber;
+            stud.User.NormalizedUserName = stud.RegNumber.ToUpper();
             stud.User.PhoneNumber = model.ContactPhone;
             stud.User.UserType = UserType.Student;
 

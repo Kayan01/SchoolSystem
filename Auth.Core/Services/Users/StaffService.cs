@@ -481,8 +481,10 @@ namespace Auth.Core.Services
             //update auth details
             staff.User.FirstName = model.FirstName;
             staff.User.LastName = model.LastName;
-            staff.User.Email = model.ContactDetails.EmailAddress;
-            staff.User.UserName = model.ContactDetails.EmailAddress;
+            staff.User.Email = model.ContactDetails.EmailAddress.Trim();
+            staff.User.NormalizedEmail = model.ContactDetails.EmailAddress.Trim().ToUpper();
+            staff.User.UserName = staff.RegNumber;
+            staff.User.NormalizedUserName = staff.RegNumber.ToUpper();
             staff.User.PhoneNumber = model.ContactDetails.PhoneNumber;
             staff.User.MiddleName = model.OtherNames;
 

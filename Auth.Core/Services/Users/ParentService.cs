@@ -464,7 +464,10 @@ namespace Auth.Core.Services.Users
             parent.User.LastName = vm.LastName;
             parent.User.MiddleName = vm.OtherName;
             parent.User.Email = vm.EmailAddress;
-            parent.User.UserName = vm.EmailAddress;
+            parent.User.UserName = vm.EmailAddress.Trim();
+            parent.User.NormalizedEmail = vm.EmailAddress.Trim().ToUpper();
+            parent.User.UserName = parent.RegNumber;
+            parent.User.NormalizedUserName = parent.RegNumber.ToUpper();
             parent.User.PhoneNumber = vm.PhoneNumber;
 
             parent.HomeAddress = vm.HomeAddress;
