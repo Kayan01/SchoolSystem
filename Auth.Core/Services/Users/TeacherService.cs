@@ -439,7 +439,9 @@ namespace Auth.Core.Services.Users
             teacher.Staff.User.FirstName = model.FirstName;
             teacher.Staff.User.LastName = model.LastName;
             teacher.Staff.User.Email = model.ContactDetails.EmailAddress;
-            teacher.Staff.User.UserName = model.ContactDetails.EmailAddress;
+            teacher.Staff.User.NormalizedEmail = model.ContactDetails.EmailAddress.ToUpper();
+            teacher.Staff.User.UserName = teacher.Staff.RegNumber;
+            teacher.Staff.User.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
             teacher.Staff.User.PhoneNumber = model.ContactDetails.PhoneNumber;
             teacher.Staff.User.MiddleName = model.OtherNames;
             teacher.Staff.User.UserType = UserType.Staff;
