@@ -35,6 +35,7 @@ namespace Shared.PubSub
 
         public async Task RetryPublish()
         {
+            _logger.Log(LogLevel.Information, "Running Background retry job");
             //Reset Message Stuck on Sending
             await ResetMessageStuckInSending();
             //Get all Messages to be sent
