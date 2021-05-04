@@ -50,7 +50,7 @@ namespace AssessmentSvc.Core.Services
 
         public async Task<School> GetSchool(long id)
         {
-            return await _schoolRepo.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            return (await _schoolRepo.GetAll().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id));
         }
 
     }

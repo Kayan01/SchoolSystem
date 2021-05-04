@@ -79,7 +79,7 @@ namespace NotificationSvc.Core.Services
             mailBase.IsBodyHtml = true;
             mailBase.BodyIsFile = true;
             mailBase.BodyPath = _documentService.GetFile(template.TemplatePath).PhysicalPath;
-
+            
             if (attachments != null)
             {
                 mailBase.Attachments = new List<Attachment>();
@@ -103,6 +103,14 @@ namespace NotificationSvc.Core.Services
                 await _mailService.SendMailAsync(mailBase, replacements);
                 email.Sent = true;
                 email.Modified = DateTime.Now;
+
+                if (attachments != null)
+                {
+                    foreach (var attachment in attachments)
+                    {
+                        _documentService.DeleteFile(attachment);
+                    }
+                }
             }
             catch (Exception e)
             {
