@@ -973,7 +973,7 @@ namespace AssessmentSvc.Core.Services
                    new UserVM() { FullName = m.ParentName, Email = m.Email },
                    new List<string> { pdfPaths[m.StudentId] }
                 )).ToList()
-            }); ;
+            });
 
             result.Data = "Successful";
             return result;

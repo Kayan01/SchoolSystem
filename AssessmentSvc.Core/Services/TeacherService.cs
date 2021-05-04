@@ -51,7 +51,7 @@ namespace AssessmentSvc.Core.Services
 
         public async Task<List<Teacher>> GetTeachersByUserIdsAsync(List<long> ids)
         {
-            return await _teacherRepo.GetAll().Where(x => ids.Contains(x.UserId)).ToListAsync();
+            return await _teacherRepo.GetAll().Where(x => ids.Contains(x.UserId)).AsNoTracking().ToListAsync();
         }
 
     }

@@ -703,7 +703,7 @@ namespace AssessmentSvc.Core.Services
              x.SchoolClassId == model.ClassId &&
              x.SessionId == model.SessionId &&
              x.TermSequenceNumber == model.TermSequence
-         ).ToListAsync();
+         ).AsNoTracking().ToListAsync();
 
 
             var studGroup = queryResult.GroupBy(m => m.StudentId);

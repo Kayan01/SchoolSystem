@@ -66,7 +66,7 @@ namespace AssessmentSvc.Core.Services
             {
                 Data = await _assessmentSetupRepo.GetAll()
                     .OrderBy(m=>m.SequenceNumber)
-                    .Select(x => (AssessmentSetupVM)x)
+                    .Select(x => (AssessmentSetupVM)x).AsNoTracking()
                     .ToListAsync()
             };
 
