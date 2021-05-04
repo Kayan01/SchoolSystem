@@ -652,6 +652,20 @@ namespace Auth.Core.Services
 
         }
 
+        public async Task<ResultModel<byte[]>> GetSchoolExcelSheet()
+        {
+
+            var data = new CreateSchoolVM().ToExcel("School");
+
+            if (data == null)
+            {
+                return new ResultModel<byte[]>("An error occurred while generating excel");
+            }
+            else
+            {
+                return new ResultModel<byte[]>(data);
+            }
+        }
 
     }
 

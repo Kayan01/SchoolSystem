@@ -16,7 +16,6 @@ namespace UserManagement.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
-    [AllowAnonymous]
     public class SchoolController : BaseController
     {
         private readonly ISchoolService _schoolService;
@@ -83,6 +82,23 @@ namespace UserManagement.API.Controllers
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(string), 200)]
+        public async Task<IActionResult> GetSchoolExcelUploadData()
+        {
+            try
+            {
+                var result = await _schoolService.GetSchoolExcelSheet();
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: Convert.ToBase64String(result.Data), totalCount: 1);
             }
             catch (Exception ex)
             {
