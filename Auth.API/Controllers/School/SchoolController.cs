@@ -151,6 +151,7 @@ namespace UserManagement.API.Controllers
         }
 
         [HttpGet("{domain}")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<SchoolNameAndLogoVM>), 200)]
         public async Task<IActionResult> GetSchoolNameAndLogoByDomain(string domain)
         {
