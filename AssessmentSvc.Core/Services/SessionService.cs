@@ -173,7 +173,7 @@ namespace AssessmentSvc.Core.Services
                     }
                 }
 
-                if (currentTerm?.SequenceNumber is null)
+                if (string.IsNullOrEmpty( currentTerm.Name))
                 {
                     currentTerm = session.Terms[session.Terms.Count - 1];
                 }
