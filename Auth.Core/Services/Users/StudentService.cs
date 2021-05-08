@@ -633,14 +633,27 @@ namespace Auth.Core.Services
             await _studentRepo.UpdateAsync(stud);
             await _unitOfWork.SaveChangesAsync();
 
-            //add classId to claims
-            await _userManager.ReplaceClaimAsync(
-                stud.User, 
-                new System.Security.Claims.Claim(ClaimsKey.StudentClassId, oldClass.ToString()),
-                new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString())
-                );
+          
 
             _unitOfWork.Commit();
+
+            //add / update classId to claims
+            var user = await _userManager.FindByIdAsync(stud.UserId.ToString());
+            var claims = await _userManager.GetClaimsAsync(user);
+
+            if (claims.Any(m => m.Type == ClaimsKey.StudentClassId))
+            {
+                await _userManager.ReplaceClaimAsync(
+                    user,
+                    new System.Security.Claims.Claim(ClaimsKey.StudentClassId, claims.Single(m => m.Type == ClaimsKey.StudentClassId).Value),
+                    new System.Security.Claims.Claim(ClaimsKey.StudentClassId, model.ClassId.ToString())
+                    );
+            }
+            else
+            {
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, model.ClassId.ToString()));
+            }
+
             ////PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
             {
