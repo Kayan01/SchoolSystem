@@ -641,18 +641,15 @@ namespace Auth.Core.Services
             var user = await _userManager.FindByIdAsync(stud.UserId.ToString());
             var claims = await _userManager.GetClaimsAsync(user);
 
-            if (claims.Any(m => m.Type == ClaimsKey.StudentClassId))
+            var classClaims = claims.Where(m => m.Type == ClaimsKey.StudentClassId);
+
+            if (classClaims.Any())
             {
-                await _userManager.ReplaceClaimAsync(
-                    user,
-                    new System.Security.Claims.Claim(ClaimsKey.StudentClassId, claims.Single(m => m.Type == ClaimsKey.StudentClassId).Value),
-                    new System.Security.Claims.Claim(ClaimsKey.StudentClassId, model.ClassId.ToString())
-                    );
+                await _userManager.RemoveClaimsAsync(user, classClaims);
             }
-            else
-            {
-                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, model.ClassId.ToString()));
-            }
+
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, model.ClassId.ToString()));
+          
 
             ////PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
