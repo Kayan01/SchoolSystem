@@ -169,6 +169,7 @@ namespace Auth.Core.Services
 
             var stud = new Student
             {
+
                 UserId = user.Id,
                 Address = model.ContactAddress,
                 AdmissionDate = model.AdmissionDate,
@@ -654,6 +655,8 @@ namespace Auth.Core.Services
             ////PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
             {
+                Id = stud.Id,
+                RegNumber = stud.RegNumber,
                 IsActive = true,
                 ClassId = stud.ClassId,
                 TenantId = stud.TenantId,
@@ -662,12 +665,11 @@ namespace Auth.Core.Services
                 LastName = stud.User.LastName,
                 Email = stud.User.Email,
                 Phone = stud.User.PhoneNumber,
-                RegNumber= stud.RegNumber,
                 ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
                 ParentEmail = parent.User.Email,
                 ParentId = parent.Id,
-                Sex = stud.Sex,
-                DoB = stud.DateOfBirth,
+                Sex = model.Sex,
+                DoB = model.DateOfBirth,
             });
 
             result.Data = stud;
