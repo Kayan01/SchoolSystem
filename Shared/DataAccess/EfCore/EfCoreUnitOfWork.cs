@@ -20,10 +20,8 @@ namespace Shared.DataAccess.EfCore
 
         public void BeginTransaction()
         {
-            //Determine at runtime which db provider is being used, i.e if it is testing, sql server does not support these methods.
-            //If DB provider is changed, this method needs to be updated.
-            //https://stackoverflow.com/a/51487154/14363750
-            if (_context.Database.IsSqlServer())
+            //Determine at runtime which db provider is being used, i.e Sqlite does not support these methods, so if it is testing, these methods should not run.
+            if (!_context.Database.IsSqlite())
             {
                 _context.ChangeTracker.AutoDetectChangesEnabled = false;
 
@@ -36,7 +34,7 @@ namespace Shared.DataAccess.EfCore
 
         public void Commit()
         {
-            if (_context.Database.IsSqlServer())
+            if (!_context.Database.IsSqlite())
             {
                 _context.ChangeTracker.DetectChanges();
 
@@ -72,7 +70,7 @@ namespace Shared.DataAccess.EfCore
 
         public void Rollback()
         {
-            if (_context.Database.IsSqlServer())
+            if (!_context.Database.IsSqlite())
             {
                 _context.Database.CurrentTransaction?.Rollback();
             }

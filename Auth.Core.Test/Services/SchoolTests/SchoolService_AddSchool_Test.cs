@@ -23,16 +23,9 @@ namespace Auth.Core.Test.Services.SchoolTests
     [TestFixture]
     public class SchoolService_AddSchool_Test
     {
-        //private SchoolServiceTestSetup _setup;
-
-        //public ISchoolService _schoolService;
-
         [SetUp]
         public void SetUp()
         {
-            //_setup = new SchoolServiceTestSetup();
-
-            //_schoolService = _setup._schoolService;
         }
 
         [Test]
