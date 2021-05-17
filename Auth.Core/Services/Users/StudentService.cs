@@ -169,6 +169,7 @@ namespace Auth.Core.Services
 
             var stud = new Student
             {
+
                 UserId = user.Id,
                 Address = model.ContactAddress,
                 AdmissionDate = model.AdmissionDate,
@@ -633,17 +634,29 @@ namespace Auth.Core.Services
             await _studentRepo.UpdateAsync(stud);
             await _unitOfWork.SaveChangesAsync();
 
-            //add classId to claims
-            await _userManager.ReplaceClaimAsync(
-                stud.User, 
-                new System.Security.Claims.Claim(ClaimsKey.StudentClassId, oldClass.ToString()),
-                new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString())
-                );
+          
 
             _unitOfWork.Commit();
+
+            //add / update classId to claims
+            var user = await _userManager.FindByIdAsync(stud.UserId.ToString());
+            var claims = await _userManager.GetClaimsAsync(user);
+
+            var classClaims = claims.Where(m => m.Type == ClaimsKey.StudentClassId);
+
+            if (classClaims.Any())
+            {
+                await _userManager.RemoveClaimsAsync(user, classClaims);
+            }
+
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, model.ClassId.ToString()));
+          
+
             ////PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
             {
+                Id = stud.Id,
+                RegNumber = stud.RegNumber,
                 IsActive = true,
                 ClassId = stud.ClassId,
                 TenantId = stud.TenantId,
@@ -652,12 +665,11 @@ namespace Auth.Core.Services
                 LastName = stud.User.LastName,
                 Email = stud.User.Email,
                 Phone = stud.User.PhoneNumber,
-                RegNumber= stud.RegNumber,
                 ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
                 ParentEmail = parent.User.Email,
                 ParentId = parent.Id,
-                Sex = stud.Sex,
-                DoB = stud.DateOfBirth,
+                Sex = model.Sex,
+                DoB = model.DateOfBirth,
             });
 
             result.Data = stud;
