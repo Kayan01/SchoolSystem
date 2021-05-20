@@ -15,6 +15,7 @@ using Auth.Core.Context;
 using Shared.Utils;
 using Shared.Tenancy;
 using Shared.Collections;
+using Shared.Infrastructure.HealthChecks;
 
 namespace Auth.API
 {
@@ -76,6 +77,8 @@ namespace Auth.API
                 endpoints.MapControllers()
                 .RequireAuthorization();
             });
+
+            app.UseCustomHealthChecksAPI();
         }
 
         public void AddEntityFrameworkDbContext(IServiceCollection services)
