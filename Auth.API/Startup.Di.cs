@@ -32,6 +32,8 @@ using Auth.Core.Services.Class;
 using Auth.Core.Interfaces.Setup;
 using Auth.Core.Services.Setup;
 using Microsoft.Extensions.Logging;
+using Shared.Infrastructure.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Auth.API
 {
@@ -136,6 +138,9 @@ namespace Auth.API
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ISchoolPropertyService, SchoolPropertyService>();
             services.AddTransient<AuthHandler>();
+
+            // Registers required services for health checks
+            services.AddCustomHealthChecks(Configuration, "Auth Service");
         }
     }
 }
