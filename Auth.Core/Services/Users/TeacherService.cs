@@ -439,7 +439,9 @@ namespace Auth.Core.Services.Users
             teacher.Staff.User.FirstName = model.FirstName;
             teacher.Staff.User.LastName = model.LastName;
             teacher.Staff.User.Email = model.ContactDetails.EmailAddress;
-            teacher.Staff.User.UserName = model.ContactDetails.EmailAddress;
+            teacher.Staff.User.NormalizedEmail = model.ContactDetails.EmailAddress.ToUpper();
+            teacher.Staff.User.UserName = teacher.Staff.RegNumber;
+            teacher.Staff.User.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
             teacher.Staff.User.PhoneNumber = model.ContactDetails.PhoneNumber;
             teacher.Staff.User.MiddleName = model.OtherNames;
             teacher.Staff.User.UserType = UserType.Staff;
@@ -598,20 +600,16 @@ namespace Auth.Core.Services.Users
             //adds classID as a claim
             var user = await _userManager.FindByIdAsync(teacher.Staff.UserId.ToString());
             var claims = await _userManager.GetClaimsAsync(user);
+            var classClaims = claims.Where(m => m.Type == ClaimsKey.TeacherClassId).ToList();
 
-            if (claims.Any(m=> m.Type == ClaimsKey.TeacherClassId))
+            if (classClaims.Any())
             {
-                await _userManager.ReplaceClaimAsync(
-                    user, 
-                    new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, claims.Single(m=>m.Type == ClaimsKey.TeacherClassId).Value),
-                    new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString())
-                    );
-            }
-            else
-            {
-                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
+                await _userManager.RemoveClaimsAsync(user, classClaims);
             }
 
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
+
+           
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
                 Id = teacher.Id,

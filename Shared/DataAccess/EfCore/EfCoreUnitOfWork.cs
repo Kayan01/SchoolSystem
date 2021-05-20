@@ -20,20 +20,27 @@ namespace Shared.DataAccess.EfCore
 
         public void BeginTransaction()
         {
-            _context.ChangeTracker.AutoDetectChangesEnabled = false;
+            //Determine at runtime which db provider is being used, i.e Sqlite does not support these methods, so if it is testing, these methods should not run.
+            if (!_context.Database.IsSqlite())
+            {
+                _context.ChangeTracker.AutoDetectChangesEnabled = false;
 
-            if (_context.Database.GetDbConnection().State != ConnectionState.Open)
-                _context.Database.OpenConnection();
+                if (_context.Database.GetDbConnection().State != ConnectionState.Open)
+                    _context.Database.OpenConnection();
 
-            _context.Database.BeginTransaction();
+                _context.Database.BeginTransaction();
+            }
         }
 
         public void Commit()
         {
-            _context.ChangeTracker.DetectChanges();
+            if (!_context.Database.IsSqlite())
+            {
+                _context.ChangeTracker.DetectChanges();
 
-            SaveChanges();
-            _context.Database.CommitTransaction();
+                SaveChanges();
+                _context.Database.CommitTransaction();
+            }
         }
 
         public void SaveChanges()
@@ -63,7 +70,10 @@ namespace Shared.DataAccess.EfCore
 
         public void Rollback()
         {
-            _context.Database.CurrentTransaction?.Rollback();
+            if (!_context.Database.IsSqlite())
+            {
+                _context.Database.CurrentTransaction?.Rollback();
+            }
         }
 
         public virtual TDbContext GetOrCreateDbContext<TDbContext>()
