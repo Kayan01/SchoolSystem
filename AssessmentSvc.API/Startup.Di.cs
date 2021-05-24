@@ -21,6 +21,7 @@ using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Services;
 using AssessmentSvc.Core.EventHandlers;
 using Microsoft.Extensions.Logging;
+using Shared.Infrastructure.HealthChecks;
 
 namespace AssessmentSvc.API
 {
@@ -138,6 +139,9 @@ namespace AssessmentSvc.API
             services.AddScoped<IApprovedResultService, ApprovedResultService>();
             services.AddScoped<ISchoolService, SchoolService>();
             services.AddScoped<IIncidenceService, IncidenceService>();
+
+            // Registers required services for health checks
+            services.AddCustomHealthChecks(Configuration, "Assessment Service");
         }
     }
 }

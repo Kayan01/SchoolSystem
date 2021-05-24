@@ -25,6 +25,7 @@ using NotificationSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Shared.Configuration;
 using Microsoft.Extensions.Logging;
+using Shared.Infrastructure.HealthChecks;
 
 namespace NotificationSvc.API
 {
@@ -101,6 +102,9 @@ namespace NotificationSvc.API
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IMailService, SmtpEmailService>();
+
+            // Registers required services for health checks
+            services.AddCustomHealthChecks(Configuration, "Notification Service");
         }
     }
 }
