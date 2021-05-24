@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using FinanceSvc.Core.Context;
 using Shared.Collections;
+using Shared.Infrastructure.HealthChecks;
 using Shared.Utils;
 
 namespace FinanceSvc.API
@@ -68,6 +69,9 @@ namespace FinanceSvc.API
                 endpoints.MapControllers()
                 .RequireAuthorization();
             });
+
+
+            app.UseCustomHealthChecksAPI();
         }
 
         public void AddEntityFrameworkDbContext(IServiceCollection services)
