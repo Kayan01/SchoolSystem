@@ -247,12 +247,21 @@ namespace Auth.API.Controllers.Users
             }
         }
 
-        //[HttpPost]
-        //[ProducesResponseType(typeof(ApiResponse<object>), 200)]
-        //public async Task<IActionResult> AddStaff(StaffVM model)
-        //{
-
-        //}
-
+        [HttpGet]
+        [ProducesResponseType(typeof(string), 200)]
+        public async Task<IActionResult> GetParentsExcelSheet()
+        {
+            try
+            {
+                var result = await _parentService.GetParentExcelSheet();
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: Convert.ToBase64String(result.Data), totalCount: 1);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }
