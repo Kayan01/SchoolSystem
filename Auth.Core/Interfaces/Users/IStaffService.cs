@@ -17,5 +17,6 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<List<StaffNameAndSignatureVM>>> GetStaffNamesAndSignaturesByUserIds(List<long> userId, bool getBytes = true);
         Task<ResultModel<StaffVM>> UpdateStaff(StaffUpdateVM model, long Id );
         Task<ResultModel<bool>> DeleteStaff(long Id);
+        Task<ResultModel<byte[]>> GetStaffExcelSheet();
     }
 }

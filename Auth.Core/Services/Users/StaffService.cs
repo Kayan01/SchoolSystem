@@ -377,6 +377,7 @@ namespace Auth.Core.Services
             //Publish Message
             await _publishService.PublishMessage(Topics.Staff, BusMessageTypes.STAFF, new StaffSharedModel
                 {
+                    Id = staff.Id,
                     IsActive = true,
                     StaffType = staff.StaffType,
                     TenantId = staff.TenantId,
@@ -581,6 +582,21 @@ namespace Auth.Core.Services
 
             result.Data = staff;
             return result;
+        }
+
+        public async Task<ResultModel<byte[]>> GetStaffExcelSheet()
+        {
+
+            var data = new AddStaffVM().ToExcel("Staff Excel Sheet");
+
+            if (data == null)
+            {
+                return new ResultModel<byte[]>("An error occurred while generating excel");
+            }
+            else
+            {
+                return new ResultModel<byte[]>(data);
+            }
         }
     }
 }

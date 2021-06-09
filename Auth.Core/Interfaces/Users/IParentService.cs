@@ -22,7 +22,7 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<ParentDetailVM>> AddNewParent(AddParentVM vm);
         Task<ResultModel<ParentDetailVM>> UpdateParent(long Id,UpdateParentVM vm);
         Task<ResultModel<string>> DeleteParent(long Id);
-
+        Task<ResultModel<byte[]>> GetParentExcelSheet();
 
     }
 }
