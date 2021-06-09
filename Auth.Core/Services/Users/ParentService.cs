@@ -514,5 +514,21 @@ namespace Auth.Core.Services.Users
 
             return resultModel;
         }
+
+
+        public async Task<ResultModel<byte[]>> GetParentExcelSheet()
+        {
+
+            var data = new AddParentVM().ToExcel("Parent Excel Sheet");
+
+            if (data == null)
+            {
+                return new ResultModel<byte[]>("An error occurred while generating excel");
+            }
+            else
+            {
+                return new ResultModel<byte[]>(data);
+            }
+        }
     }
 }

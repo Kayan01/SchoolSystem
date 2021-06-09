@@ -646,6 +646,20 @@ namespace Auth.Core.Services.Users
             return result;
         }
 
+        public async Task<ResultModel<byte[]>> GetTeachersExcelSheet()
+        {
+
+            var data = new AddTeacherVM().ToExcel("Teachers Excel Sheet");
+
+            if (data == null)
+            {
+                return new ResultModel<byte[]>("An error occurred while generating excel");
+            }
+            else
+            {
+                return new ResultModel<byte[]>(data);
+            }
+        }
 
         #region notification
 
