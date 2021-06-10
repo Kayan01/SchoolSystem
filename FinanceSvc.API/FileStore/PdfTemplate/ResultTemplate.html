@@ -1,0 +1,368 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .tContent {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .tContent td, .tContent th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 3px;
+        }
+
+            .tContent tr:nth-child(odd) {
+                background-color: #EBF0F5;
+            }
+
+            .tContent th {
+                color: #355691;
+            }
+
+    </style>
+</head>
+<body>
+    <table id="tMain">
+        <tr>
+            <td>
+                <table id="tRow1" class="">
+                    <tr>
+                        <th style="width:25%">
+                            <img src="{{ImgPath}}" alt width="112">
+                        </th>
+                        <th style="width:50%">
+                            <h2>REPORT CARD</h2>
+                        </th>
+                        <th style="text-align:left; width:25%;">
+                            {{SchoolName}} <br />
+                            {{SchoolCity}}, {{SchoolState}} <br />
+                            Phone Number: {{SchoolPhone}} <br />
+                            Email: {{SchoolEmail}} <br />
+                            Website: {{SchoolWebsite}} <br />
+                        </th>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table id="tRow2" class="tContent" style="width:85%; margin:30px 0px;">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Reg Number</th>
+                        <th>Age</th>
+                        <th>Sex</th>
+                    </tr>
+                    <tr>
+                        <td>{{StudentName}}</td>
+                        <td>{{StudentRegNum}}</td>
+                        <td>{{StudentAge}}</td>
+                        <td>{{StudentSex}}</td>
+                    </tr>
+                </table>
+            </td>
+
+        </tr>
+        <tr>
+            <td>
+                <table id="tRow3" class="row">
+                    <tr>
+                        <td colspan="2">
+                            <div style="margin-right:10px">
+                                <table class="row">
+                                    <tr>
+                                        <td>
+                                            <table class="tContent" style="width:60%">
+                                                <tr>
+                                                    <th>Class</th>
+                                                    <th>Session</th>
+                                                    <th>Term</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{Class}}</td>
+                                                    <td>{{Session}}</td>
+                                                    <td>{{Term}}</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <table class="tContent">
+                                                <tr>
+                                                    <th>Subject</th>
+                                                    <th>1st CA</th>
+                                                    <th>2nd CA</th>
+                                                    <th>3rd CA</th>
+                                                    <th>Exam</th>
+                                                    <th>Cumulative</th>
+                                                    <th>Grade</th>
+                                                    <th>Interpretation</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>Intro Technology</td>
+                                                    <td>12</td>
+                                                    <td>10</td>
+                                                    <td>10</td>
+                                                    <td>60</td>
+                                                    <td>92</td>
+                                                    <td>A</td>
+                                                    <td>Excellent</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Intro Technology</td>
+                                                    <td>12</td>
+                                                    <td>10</td>
+                                                    <td>10</td>
+                                                    <td>60</td>
+                                                    <td>92</td>
+                                                    <td>A</td>
+                                                    <td>Excellent</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Intro Technology</td>
+                                                    <td>12</td>
+                                                    <td>10</td>
+                                                    <td>10</td>
+                                                    <td>60</td>
+                                                    <td>92</td>
+                                                    <td>A</td>
+                                                    <td>Excellent</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Intro Technology</td>
+                                                    <td>12</td>
+                                                    <td>10</td>
+                                                    <td>10</td>
+                                                    <td>60</td>
+                                                    <td>92</td>
+                                                    <td>A</td>
+                                                    <td>Excellent</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Intro Technology</td>
+                                                    <td>12</td>
+                                                    <td>10</td>
+                                                    <td>10</td>
+                                                    <td>60</td>
+                                                    <td>92</td>
+                                                    <td>A</td>
+                                                    <td>Excellent</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <div style="margin-right:10px">
+                                                            <table class="tContent">
+                                                                <tr>
+                                                                    <th>Total Score</th>
+                                                                    <th>Total CA</th>
+                                                                    <th>Total Exam</th>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>{{Total_Score}}</td>
+                                                                    <td>{{Total_CA}}</td>
+                                                                    <td>{{Total_Exam}}</td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div style="margin-left:10px">
+                                                            <table class="tContent">
+                                                                <tr>
+                                                                    <th>Total Score Obtained</th>
+                                                                    <th>Total CA Score</th>
+                                                                    <th>Total Exam Score</th>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>{{Total_Score_Obtained}}</td>
+                                                                    <td>{{Total_CA_Score}}</td>
+                                                                    <td>{{Total_Exam_Score}}</td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <table class="tContent">
+                                                <tr>
+                                                    <th>Percentage</th>
+                                                    <th>Average</th>
+                                                    <th>Rate</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>60</td>
+                                                    <td>12</td>
+                                                    <td>3</td>
+                                                    <td>Excellent</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <table class="tContent">
+                                                <tr>
+                                                    <th>Class Teacher</th>
+                                                    <th>Comment</th>
+                                                    <th>Signature</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{ClassTeacherName}}</td>
+                                                    <td>{{ClassTeacherComment}}</td>
+                                                    <td>
+                                                        <img src="{{ClassTeacherSignature}}" alt height="100" 
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <table class="tContent">
+                                                <tr>
+                                                    <th>Head Teacher</th>
+                                                    <th>Comment</th>
+                                                    <th>Signature</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{HeadTeacherName}}</td>
+                                                    <td>{{HeadTeacherComment}}</td>
+                                                    <td>23we3232321212</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                </table>
+                            </div>
+                        </td>
+                        <td colspan="1" style="display:block">
+                            <div style="margin-left:10px">
+                                <table class="tContent">
+                                    <tr>
+                                        <th>Grade Scale</th>
+                                        <th>Grade</th>
+                                        <th>Interpretation</th>
+                                    </tr>
+                                    <tr>
+                                        <td>50-60</td>
+                                        <td>A</td>
+                                        <td>Excellent</td>
+                                    </tr>
+                                    <tr>
+                                        <td>50-60</td>
+                                        <td>A</td>
+                                        <td>Excellent</td>
+                                    </tr>
+                                    <tr>
+                                        <td>50-60</td>
+                                        <td>A</td>
+                                        <td>Excellent</td>
+                                    </tr>
+                                    <tr>
+                                        <td>50-60</td>
+                                        <td>A</td>
+                                        <td>Excellent</td>
+                                    </tr>
+                                </table>
+                                <table class="tContent">
+                                    <tr>
+                                        <th>Cognitive</th>
+                                        <th>Grade</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Analysis</td>
+                                        <td>A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Analysis</td>
+                                        <td>A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Analysis</td>
+                                        <td>A</td>
+                                    </tr>
+                                </table>
+                                <table class="tContent">
+                                    <tr>
+                                        <th>Affective or feeling</th>
+                                        <th>Grade</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Characteristic</td>
+                                        <td>A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Characteristic</td>
+                                        <td>A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Characteristic</td>
+                                        <td>A</td>
+                                    </tr>
+                                </table>
+                                <table class="tContent">
+                                    <tr>
+                                        <th>Pyschomotor or Kinisthetic</th>
+                                        <th>Grade</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Fundamental</td>
+                                        <td>A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Non-discursive</td>
+                                        <td>A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Perceptual</td>
+                                        <td>A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Reflex</td>
+                                        <td>A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Skilled</td>
+                                        <td>A</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+
+        </tr>
+    </table>
+</body>
+</html>

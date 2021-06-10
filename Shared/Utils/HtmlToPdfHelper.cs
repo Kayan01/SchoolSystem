@@ -15,6 +15,7 @@ using ValueGetter;
 using System.Collections;
 using Shared.Exceptions;
 using Shared.Timing;
+using System.Dynamic;
 
 namespace Shared.Utils
 {
@@ -108,6 +109,67 @@ namespace Shared.Utils
                 ["Time"] = Clock.Now.ToString(CoreConstants.DateFormat)
             };
 
+
+            foreach (var prop in mainData.GetType().GetProperties())
+            {
+                tableKey.Add(prop.Name, prop.GetValue(mainData, null) == null ? "N/A" : prop.GetValue(mainData, null).ToString());
+            }
+
+            var completeTemplate = Replace(htmlTemplate, tableKey, false);
+
+
+            var doc = new HtmlToPdfDocument()
+            {
+                GlobalSettings = {
+                           //ImageQuality=70,
+                           PaperSize = PaperKind.A4,
+                           Orientation = isLandscape ? Orientation.Landscape : Orientation.Portrait
+                       },
+                Objects = {
+                           new ObjectSettings()
+                           {
+                               FooterSettings = {Right = "Page [page] of [toPage]"},
+                               WebSettings = { DefaultEncoding = "utf-8" },
+                               //PagesCount = true,
+                               HtmlContent = completeTemplate
+                           }
+                       }
+            };
+
+            return converter.Convert(doc);
+        }
+
+        public static byte[] ConvertToPDFBytesToList<T>(this IConverter converter, T mainData, IEnumerable<TableObject<T>> tableObj, IEnumerable<KeyValuePair<string, IEnumerable<TableObject<T>>>> tableArrays, string htmlTemplatePath, bool isLandscape = false)
+        {
+
+            var htmlTemplate = ReadTemplateFileContent(htmlTemplatePath).Result;
+            var tableKey = new StringDictionary();
+
+            foreach (var item in tableObj)
+            {
+                tableKey.Add(item.TemplatePropertyName, item.TableData.ToHtmlTable(
+                                                            tableAttributes: item.TableConfig.TableAttributes,
+                                                            tbAttributes: item.TableConfig.TbAttributes,
+                                                            thAttributes: item.TableConfig.ThAttributes,
+                                                            HTMLTableSetting: new HtmlTableSetting { IsHtmlEncodeMode = false }
+                                                        )
+                    );
+            }
+
+            if (!(tableArrays is null) )
+            {
+                foreach (var table in tableArrays)
+                {
+                    var tableStrings = string.Join("\n", table.Value.Select(m => m.TableData.ToHtmlTable(
+                                                          tableAttributes: m.TableConfig.TableAttributes,
+                                                          tbAttributes: m.TableConfig.TbAttributes,
+                                                          thAttributes: m.TableConfig.ThAttributes,
+                                                          HTMLTableSetting: new HtmlTableSetting { IsHtmlEncodeMode = false }
+                                                      )));
+
+                    tableKey.Add(table.Key, tableStrings);
+                }
+            }
 
             foreach (var prop in mainData.GetType().GetProperties())
             {
@@ -495,6 +557,13 @@ namespace Shared.Utils
         public object TrAttributes { get; set; }
     }
 
+    public class TableObject<T>
+    {
+        public string TemplatePropertyName { get; set; }
+        public IEnumerable<T> TableData { get; set; }
+        public TableAttributeConfig TableConfig { get; set; }
+    }
+
 
     public class HtmlCaption
     {
@@ -653,6 +722,10 @@ namespace Shared.Utils
             else if (enums is IEnumerable<IDictionary>)
             {
                 return htmltablegenerater.ToHtmlTableByKeyValue(enums as IEnumerable<IDictionary>);
+            }
+            else if (enums.FirstOrDefault().GetType().Name == (new ExpandoObject()).GetType().Name)
+            {
+                return htmltablegenerater.ToHtmlTableByKeyValue(enums.Select(m=> (IDictionary<string, object>)m));
             }
             else
             {

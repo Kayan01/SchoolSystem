@@ -37,6 +37,7 @@ namespace Auth.Core.Services
     {
         private readonly IRepository<Staff, long> _staffRepo;
         private readonly IRepository<Department, long> _departmentRepo;
+        private readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
@@ -47,6 +48,7 @@ namespace Auth.Core.Services
 
         public StaffService(
             IRepository<Staff, long> staffRepo,
+            IRepository<School, long> schoolRepo,
             IUnitOfWork unitOfWork,
             UserManager<User> userManagement,
             IPublishService publishService,
@@ -57,6 +59,7 @@ namespace Auth.Core.Services
             IAuthUserManagement authUserManagement)
         {
             _staffRepo = staffRepo;
+            _schoolRepo = schoolRepo;
             _unitOfWork = unitOfWork;
             _userManager = userManagement;
             _departmentRepo = departmentRepo;
@@ -109,16 +112,67 @@ namespace Auth.Core.Services
             var result = new ResultModel<StaffDetailVM>();
             var staff = await _staffRepo.GetAll()
                             .Include(x => x.User)
-                            .Include(x=> x.FileUploads)
                             .Include(x=> x.WorkExperiences)
                             .Include(x=> x.EducationExperiences)
                             .Include(x=> x.NextOfKin)
                             .Include(x=> x.Department)
                             .Where(x=> x.Id == Id && x.StaffType == StaffType.NonTeachingStaff)
+                            .Select(x=> new {x , image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path })
                             .FirstOrDefaultAsync();
 
 
+            result.Data = staff.x;
+            result.Data.Image = _documentService.TryGetUploadedFile(staff.image);
+            return result;
+        }
+
+        public async Task<ResultModel<StaffNameAndSignatureVM>> GetStaffNameAndSignatureByUserId(long userId)
+        {
+            var result = new ResultModel<StaffNameAndSignatureVM>();
+            var staff = await _staffRepo.GetAll()
+                            .Where(x=> x.UserId == userId)
+                            .Select(n=> new StaffNameAndSignatureVM()
+                            {
+                                FirstName = n.User.FirstName,
+                                LastName = n.User.LastName,
+                                Signature = n.FileUploads.Where(m=>m.Name == DocumentType.Signature.GetDisplayName()).FirstOrDefault().Path
+                            })
+                            .FirstOrDefaultAsync();
+            if (staff == null)
+            {
+                return new ResultModel<StaffNameAndSignatureVM>(errorMessage: "Staff not found");
+            }
+
+            var sign = _documentService.TryGetUploadedFile(staff.Signature);
+            staff.Signature = sign;
+            
             result.Data = staff;
+            return result;
+        }
+
+        public async Task<ResultModel<List<StaffNameAndSignatureVM>>> GetStaffNamesAndSignaturesByUserIds(List<long> userIds, bool getBytes = true)
+        {
+            var result = new ResultModel<List<StaffNameAndSignatureVM>>();
+            var staffs = await _staffRepo.GetAll()
+                            .Where(x=>userIds.Contains(x.UserId))
+                            .Select(n=> new StaffNameAndSignatureVM()
+                            {
+                                FirstName = n.User.FirstName,
+                                LastName = n.User.LastName,
+                                UserId = n.UserId,
+                                Signature = n.FileUploads.Where(m=>m.Name == DocumentType.Signature.GetDisplayName()).FirstOrDefault().Path
+                            })
+                            .ToListAsync();
+            if (getBytes)
+            {
+                foreach (var staff in staffs)
+                {
+                    var sign = _documentService.TryGetUploadedFile(staff.Signature);
+                    staff.Signature = sign;
+                }
+            }
+
+            result.Data = staffs;
             return result;
         }
 
@@ -315,13 +369,15 @@ namespace Auth.Core.Services
                 UserId = staff.UserId
             };
 
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == staff.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user);
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
             
             //Publish Message
             await _publishService.PublishMessage(Topics.Staff, BusMessageTypes.STAFF, new StaffSharedModel
                 {
+                    Id = staff.Id,
                     IsActive = true,
                     StaffType = staff.StaffType,
                     TenantId = staff.TenantId,
@@ -426,8 +482,10 @@ namespace Auth.Core.Services
             //update auth details
             staff.User.FirstName = model.FirstName;
             staff.User.LastName = model.LastName;
-            staff.User.Email = model.ContactDetails.EmailAddress;
-            staff.User.UserName = model.ContactDetails.EmailAddress;
+            staff.User.Email = model.ContactDetails.EmailAddress.Trim();
+            staff.User.NormalizedEmail = model.ContactDetails.EmailAddress.Trim().ToUpper();
+            staff.User.UserName = staff.RegNumber;
+            staff.User.NormalizedUserName = staff.RegNumber.ToUpper();
             staff.User.PhoneNumber = model.ContactDetails.PhoneNumber;
             staff.User.MiddleName = model.OtherNames;
 
@@ -482,7 +540,7 @@ namespace Auth.Core.Services
             staff.Religion = model.Religion;
             staff.StateOfOrigin = model.StateOfOrigin;
             staff.Sex = model.Sex;
-            staff.StaffType = StaffType.TeachingStaff;
+            staff.StaffType = StaffType.NonTeachingStaff;
             staff.EmploymentDate = model.EmploymentDetails.EmploymentDate;
             staff.ResumptionDate = model.EmploymentDetails.ResumptionDate;
             staff.EmploymentStatus = model.EmploymentDetails.EmploymentStatus;
@@ -524,6 +582,21 @@ namespace Auth.Core.Services
 
             result.Data = staff;
             return result;
+        }
+
+        public async Task<ResultModel<byte[]>> GetStaffExcelSheet()
+        {
+
+            var data = new AddStaffVM().ToExcel("Staff Excel Sheet");
+
+            if (data == null)
+            {
+                return new ResultModel<byte[]>("An error occurred while generating excel");
+            }
+            else
+            {
+                return new ResultModel<byte[]>(data);
+            }
         }
     }
 }

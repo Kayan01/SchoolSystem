@@ -7,7 +7,5 @@ namespace Auth.Core.Models.Contact
     public class SchoolContactDetails : ContactDetails
     {
         public bool IsPrimaryContact { get; set; }
-        public long SchoolId { get; set; }
-        public School School { get; set; }
     }
 }

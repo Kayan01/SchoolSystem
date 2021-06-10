@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ExcelManager;
 
 namespace Auth.Core.ViewModels.Staff
 {
@@ -52,7 +53,7 @@ namespace Auth.Core.ViewModels.Staff
         public string AltPhoneNumber { get; set; }
         public string AltEmailAddress { get; set; }
         public bool IsActive { get; set; }
-
+        public string Image { get; set; }
         public NextOfKinVM NextOfKin { get; set; }
         public ContactDetailsVM ContactDetails { get; set; }
 
@@ -118,20 +119,45 @@ namespace Auth.Core.ViewModels.Staff
 
     public class AddStaffVM
     {
+        [ExcelReaderCell]
         public string FirstName { get; set; }
+        [ExcelReaderCell]
+
         public string LastName { get; set; }
+        [ExcelReaderCell]
+
         public string OtherNames { get; set; }
+        [ExcelReaderCell]
+
         public string Sex { get; set; }
+        [ExcelReaderCell]
+
         public string  MaritalStatus { get; set; }
+        [ExcelReaderCell]
+
         public DateTime DateOfBirth { get; set; }
+        [ExcelReaderCell]
+
         public string BloodGroup { get; set; }
+        [ExcelReaderCell]
+
         public string Religion { get; set; }
+        [ExcelReaderCell]
+
         public string Nationality { get; set; }
+        [ExcelReaderCell]
+
         public string StateOfOrigin { get; set; }
+        [ExcelReaderCell]
+
         public string LocalGovernment { get; set; }
+        [ExcelReaderCell]
+
         public bool IsActive { get; set; }
 
         public NextOfKinVM NextOfKin { get; set; }
+        [ExcelReaderCell]
+
         public ContactDetailsVM ContactDetails { get; set; }
 
         public EmploymentDetailsVM EmploymentDetails { get; set; }

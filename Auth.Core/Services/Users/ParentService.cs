@@ -3,7 +3,6 @@ using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
 using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
-using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Parent;
 using Auth.Core.ViewModels.School;
 using Auth.Core.ViewModels.Student;
@@ -11,8 +10,6 @@ using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Extensions;
-using NPOI.Util;
-using Org.BouncyCastle.Math.EC.Rfc7748;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
@@ -21,13 +18,11 @@ using Shared.Extensions;
 using Shared.FileStorage;
 using Shared.Pagination;
 using Shared.PubSub;
-using Shared.Utils;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using static Shared.Utils.CoreConstants;
 
@@ -108,23 +103,20 @@ namespace Auth.Core.Services.Users
 
             var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
 
-            var query = _studentRepo.GetAll()
+            var query =  await _studentRepo.GetAll()
                 .Include(x => x.Parent)
                 .Select(x => new
                 {
                     Email = x.Parent.User.Email,
-                    FullName = x.User.FullName,
+                    FullName = x.Parent.User.FullName,
                     Id = x.ParentId,
                     ParentCode = $"PRT/{x.Parent.CreationTime.Year}/{x.Parent.Id}",
                     PhoneNumber = x.Parent.User.PhoneNumber,
                     Status = x.Parent.Status,
                     Image = x.Parent.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
-                });
+                }).ToListAsync();
 
-
-            var pagedData = await query.ToPagedListAsync(vm.PageIndex, vm.PageSize);
-
-            var parents = pagedData.Items.GroupBy(x => x.Id).Select(x => new ParentListVM
+            var parents = query.GroupBy(x => x.Id).Select(x => new ParentListVM
             {
                 Email = x.FirstOrDefault()?.Email,
                 FullName = x.FirstOrDefault()?.FullName,
@@ -133,9 +125,9 @@ namespace Auth.Core.Services.Users
                 PhoneNumber = x.FirstOrDefault()?.PhoneNumber,
                 Status = x.FirstOrDefault().Status,
                 Image = x.FirstOrDefault().Image == null ? null : _documentService.TryGetUploadedFile(x.FirstOrDefault().Image),
-            });
+            }).ToPagedList(vm.PageIndex, vm.PageSize);
 
-            var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, pagedData.TotalItemCount - (pagedData.Items.Count() - parents.Count()));
+            var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, parents.Count);
 
             resultModel.Data = data;
 
@@ -408,7 +400,7 @@ namespace Auth.Core.Services.Users
 
 
             //broadcast login detail to email
-            _ = await _authUserManagementService.SendRegistrationEmail(user);
+            _ = await _authUserManagementService.SendRegistrationEmail(user, "");
 
             //Publish to services
             await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
@@ -472,7 +464,10 @@ namespace Auth.Core.Services.Users
             parent.User.LastName = vm.LastName;
             parent.User.MiddleName = vm.OtherName;
             parent.User.Email = vm.EmailAddress;
-            parent.User.UserName = vm.EmailAddress;
+            parent.User.UserName = vm.EmailAddress.Trim();
+            parent.User.NormalizedEmail = vm.EmailAddress.Trim().ToUpper();
+            parent.User.UserName = parent.RegNumber;
+            parent.User.NormalizedUserName = parent.RegNumber.ToUpper();
             parent.User.PhoneNumber = vm.PhoneNumber;
 
             parent.HomeAddress = vm.HomeAddress;
@@ -518,6 +513,22 @@ namespace Auth.Core.Services.Users
             resultModel.Data = (ParentDetailVM)parent;
 
             return resultModel;
+        }
+
+
+        public async Task<ResultModel<byte[]>> GetParentExcelSheet()
+        {
+
+            var data = new AddParentVM().ToExcel("Parent Excel Sheet");
+
+            if (data == null)
+            {
+                return new ResultModel<byte[]>("An error occurred while generating excel");
+            }
+            else
+            {
+                return new ResultModel<byte[]>(data);
+            }
         }
     }
 }

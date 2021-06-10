@@ -10,7 +10,9 @@ namespace AssessmentSvc.Core.Models
     public class ApprovedResult : FullAuditedEntity<long>, ITenantModelType
     {
         public long TenantId { get; set; }
+        public long HeadTeacherId { get; set; } // Staff's UserId
         public string HeadTeacherComment { get; set; }
+        public long ClassTeacherId { get; set; } // Staff's UserId
         public string ClassTeacherComment { get; set; }
         public long StudentId { get; set; }
         public long SessionId { get; set; }

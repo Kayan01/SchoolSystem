@@ -63,6 +63,7 @@ namespace LearningSvc.Core.Services
                     ClassSubjectId = x.SchoolClassSubjectId,
                     Class = $"{x.SchoolClassSubject.SchoolClass.Name} {x.SchoolClassSubject.SchoolClass.ClassArm}",
                     Subject = x.SchoolClassSubject.Subject.Name,
+                    SubjectId = x.SchoolClassSubject.SubjectId,
                     Teacher = x.Teacher.FirstName + " " + x.Teacher.LastName
                 }).ToListAsync()
             };

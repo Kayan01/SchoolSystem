@@ -43,7 +43,8 @@ namespace AssessmentSvc.Core.Services
                 {
                     SequenceNumber = item.SequenceNumber,
                     MaxScore = item.MaxScore,
-                    Name = item.Name
+                    Name = item.Name,
+                    IsExam = item.IsExam
                 };
 
                 result.Data.Add(_assessmentSetupRepo.Insert(assessmentSetup));
@@ -65,7 +66,7 @@ namespace AssessmentSvc.Core.Services
             {
                 Data = await _assessmentSetupRepo.GetAll()
                     .OrderBy(m=>m.SequenceNumber)
-                    .Select(x => (AssessmentSetupVM)x)
+                    .Select(x => (AssessmentSetupVM)x).AsNoTracking()
                     .ToListAsync()
             };
 
@@ -95,6 +96,7 @@ namespace AssessmentSvc.Core.Services
             assessment.SequenceNumber = model.SequenceNumber;
             assessment.MaxScore = model.MaxScore;
             assessment.Name = model.Name;
+            assessment.IsExam = model.IsExam;
 
             await _unitOfWork.SaveChangesAsync();
 

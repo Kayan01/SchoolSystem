@@ -20,5 +20,6 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<StudentDetailVM>> GetStudentById(long Id);
         Task<ResultModel<StudentVM>> UpdateStudent(long Id, StudentUpdateVM model);
         Task<ResultModel<StudentDetailVM>> GetStudentProfileById(long Id);
+        Task<ResultModel<byte[]>> GetStudentsExcelSheet();
     }
 }

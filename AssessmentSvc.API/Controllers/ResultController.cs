@@ -86,7 +86,7 @@ namespace AssessmentSvc.API.Controllers
 
         [HttpGet("{classId}")]
         [ProducesResponseType(typeof(ApiResponse<List<ResultBroadSheet>>), 200)]
-        public async Task<IActionResult> GetClassResultForApproval(long classId)
+        public async Task<IActionResult> GetClassBroadSheetApprovedByClassTeacher(long classId)
         {
             if (classId < 1)
                 return ApiResponse<List<ResultBroadSheet>>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
@@ -229,14 +229,33 @@ namespace AssessmentSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<StudentReportSheetVM>), 200)]
-        public async Task<IActionResult> GetApprovedStudentReportSheet(long studId, long classId, long? sessionId = null, int? termSequenceNumber = null)
+        public async Task<IActionResult> GetApprovedStudentReportSheet(long? studId, long? studUserId, long classId, long? sessionId = null, int? termSequenceNumber = null)
         {
             if (studId < 1 || classId < 1)
                 return ApiResponse<StudentReportSheetVM>(errors: "Please provide valid Id", codes: ApiResponseCodes.INVALID_REQUEST);
 
             try
             {
-                var result = await _approvedResultService.GetApprovedResultForStudent(classId, studId, sessionId, termSequenceNumber);
+                var result = await _approvedResultService.GetApprovedResultForStudent(classId, studId, studUserId, sessionId, termSequenceNumber);
+
+                if (result.HasError)
+                    return ApiResponse<StudentReportSheetVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+        
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<StudentReportSheetVM>), 200)]
+        public async Task<IActionResult> GetApprovedResultForMultipleStudents(long[] studId, long classId, long? sessionId = null, int? termSequenceNumber = null)
+        {
+           
+            try
+            {
+                var result = await _approvedResultService.GetApprovedResultForMultipleStudents(classId, studId, sessionId, termSequenceNumber);
 
                 if (result.HasError)
                     return ApiResponse<StudentReportSheetVM>(errors: result.ErrorMessages.ToArray());

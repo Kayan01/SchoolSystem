@@ -11,6 +11,7 @@ using IPagedList;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Extensions;
 using Shared.AspNetCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
@@ -37,6 +38,7 @@ namespace Auth.Core.Services.Users
     {
         private readonly IRepository<TeachingStaff, long> _teacherRepo;
         private readonly IRepository<Staff, long> _staffRepo;
+        private readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
@@ -51,6 +53,7 @@ namespace Auth.Core.Services.Users
         public TeacherService(UserManager<User> userManager,
             IRepository<TeachingStaff, long> teacherRepo,
             IRepository<Staff, long> staffRepo,
+            IRepository<School, long> schoolRepo,
             IUnitOfWork unitOfWork,
             IDocumentService documentService,
             IRepository<Department, long> departmentRepo,
@@ -63,6 +66,7 @@ namespace Auth.Core.Services.Users
         {
             _userManager = userManager;
             _staffRepo = staffRepo;
+            _schoolRepo = schoolRepo;
             _unitOfWork = unitOfWork;
             _teacherRepo = teacherRepo;
             _publishService = publishService;
@@ -119,7 +123,6 @@ namespace Auth.Core.Services.Users
                            .Include(x => x.Staff)
                            .ThenInclude(m => m.User)
                            .Include(x => x.Staff)
-                           .ThenInclude(x => x.FileUploads)
                            .Include(x => x.Class)
                            .Include(x => x.Staff)
                            .ThenInclude(x => x.WorkExperiences)
@@ -128,9 +131,11 @@ namespace Auth.Core.Services.Users
                            .Include(x => x.Staff)
                            .ThenInclude(x => x.EducationExperiences)
                             .Include(x => x.Class)
+                            .Select(x=> new {x, ImagePath = x.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path })
                             .FirstOrDefault();
 
-            result.Data = query;
+            result.Data = query.x;
+            result.Data.Image = _documentService.TryGetUploadedFile(query.ImagePath);
             return result;
         }
 
@@ -322,8 +327,9 @@ namespace Auth.Core.Services.Users
             _unitOfWork.Commit();
 
 
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == teacher.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user);
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
@@ -337,6 +343,7 @@ namespace Auth.Core.Services.Users
                 LastName = user.LastName,
                 Phone = user.PhoneNumber,
                 RegNumber = teacher.Staff.RegNumber,
+                Signature = teacher.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Signature.GetDisplayName()).Path
             });
 
             //Email and Notifications
@@ -432,19 +439,12 @@ namespace Auth.Core.Services.Users
             teacher.Staff.User.FirstName = model.FirstName;
             teacher.Staff.User.LastName = model.LastName;
             teacher.Staff.User.Email = model.ContactDetails.EmailAddress;
-            teacher.Staff.User.UserName = model.ContactDetails.EmailAddress;
+            teacher.Staff.User.NormalizedEmail = model.ContactDetails.EmailAddress.ToUpper();
+            teacher.Staff.User.UserName = teacher.Staff.RegNumber;
+            teacher.Staff.User.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
             teacher.Staff.User.PhoneNumber = model.ContactDetails.PhoneNumber;
             teacher.Staff.User.MiddleName = model.OtherNames;
             teacher.Staff.User.UserType = UserType.Staff;
-
-
-            //var userResult = await _userManager.UpdateAsync(teacher.Staff.User);
-
-            //if (!userResult.Succeeded)
-            //{
-            //    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
-            //    return result;
-            //}
 
             //create next of kin
             var nextOfKin = new NextOfKin
@@ -537,7 +537,8 @@ namespace Auth.Core.Services.Users
                 LastName = teacher.Staff.User.LastName,
                 Phone = teacher.Staff.User.PhoneNumber,
                 ClassId = teacher.ClassId,
-                RegNumber = teacher.Staff.RegNumber
+                RegNumber = teacher.Staff.RegNumber,
+                Signature = teacher.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Signature.GetDisplayName()).Path
             });
 
             result.Data = teacher;
@@ -598,8 +599,17 @@ namespace Auth.Core.Services.Users
 
             //adds classID as a claim
             var user = await _userManager.FindByIdAsync(teacher.Staff.UserId.ToString());
+            var claims = await _userManager.GetClaimsAsync(user);
+            var classClaims = claims.Where(m => m.Type == ClaimsKey.TeacherClassId).ToList();
+
+            if (classClaims.Any())
+            {
+                await _userManager.RemoveClaimsAsync(user, classClaims);
+            }
+
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
 
+           
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
                 Id = teacher.Id,
@@ -636,6 +646,20 @@ namespace Auth.Core.Services.Users
             return result;
         }
 
+        public async Task<ResultModel<byte[]>> GetTeachersExcelSheet()
+        {
+
+            var data = new AddTeacherVM().ToExcel("Teachers Excel Sheet");
+
+            if (data == null)
+            {
+                return new ResultModel<byte[]>("An error occurred while generating excel");
+            }
+            else
+            {
+                return new ResultModel<byte[]>(data);
+            }
+        }
 
         #region notification
 

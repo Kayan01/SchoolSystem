@@ -10,8 +10,10 @@ namespace Shared.Utils
 
         public static readonly string[] validExcels = new[] { ".xls", ".xlsx" };
 
-        public const string TestPdfTemplatePath1 = @"filestore\pdftemplate\TestPdfTemplate1.html";
-        public const string TestPdfTemplatePath2 = @"filestore\pdftemplate\TestPdfTemplate2.html";
+        public const string TestPdfTemplatePath1 = @"filestore/pdftemplate/TestPdfTemplate1.html";
+        public const string TestPdfTemplatePath2 = @"filestore/pdftemplate/TestPdfTemplate2.html";
+        public const string ResultPdfTemplatePath = @"pdftemplate/ResultTemplate.html";
+        public const string InvoicePdfTemplatePath = @"pdftemplate/invoice-email-template.html";
 
         public static class EmailTemplateType
         {
@@ -20,7 +22,9 @@ namespace Shared.Utils
             public const string NewUser = nameof(NewUser);
             public const string NewTeacher = nameof(NewTeacher);
             public const string NewSchool = nameof(NewSchool);
+            public const string AttendanceReport = nameof(AttendanceReport);
             public const string StudentResult = nameof(StudentResult);
+            public const string Invoice = nameof(Invoice);
         }
 
         public static class EntityType
@@ -54,6 +58,8 @@ namespace Shared.Utils
             new EmailTemplate(EmailTemplateType.NewTeacher, "New Teacher", "newteacher.htm"),
             new EmailTemplate(EmailTemplateType.NewSchool, "New School", "newschool.htm"),
             new EmailTemplate(EmailTemplateType.StudentResult, "Student Result", "result.htm"),
+            new EmailTemplate(EmailTemplateType.AttendanceReport, "Attendance Report", "attendance_alert.htm"),
+            new EmailTemplate(EmailTemplateType.Invoice, "Invoice", "invoice.html"),
         };
 
         public class PaginationConsts
@@ -68,6 +74,7 @@ namespace Shared.Utils
             public const string TenantId = nameof(TenantId);
             public const string UserType = nameof(UserType);
             public const string TeacherClassId = nameof(TeacherClassId);
+            public const string StudentClassId = nameof(StudentClassId);
             public const string Permissions = nameof(Permissions);
         }
 

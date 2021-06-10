@@ -7,6 +7,8 @@ namespace AssessmentSvc.Core.ViewModels.Result
 {
     public class IndividualBroadSheet
     {
+        public string ClassTeacherComment { get; set; }
+        public long? ClassTeacherId { get; set; }
         public List<SubjectResultBreakdown> Breakdowns { get; set; } = new List<SubjectResultBreakdown>();
     }
 }

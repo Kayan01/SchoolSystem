@@ -21,6 +21,7 @@ using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Services;
 using AssessmentSvc.Core.EventHandlers;
 using Microsoft.Extensions.Logging;
+using Shared.Infrastructure.HealthChecks;
 
 namespace AssessmentSvc.API
 {
@@ -93,6 +94,13 @@ namespace AssessmentSvc.API
                                     await handler.HandleAddOrUpdateSubjectAsync(message);
                                     break;
                                 }
+                            case (int)BusMessageTypes.SCHOOL:
+                            case (int)BusMessageTypes.SCHOOL_UPDATE:
+                            case (int)BusMessageTypes.SCHOOL_DELETE:
+                                {
+                                    await handler.HandleAddOrUpdateSchoolAsync(message);
+                                    break;
+                                }
                         }
                     }
                     catch (Exception e)
@@ -118,6 +126,7 @@ namespace AssessmentSvc.API
 
             services.AddScoped<IPublishService, PublishService>();
 
+            services.AddScoped<IDocumentService, DocumentService>();
             services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();
@@ -128,7 +137,11 @@ namespace AssessmentSvc.API
             services.AddScoped<IResultService, ResultService>();
             services.AddScoped<IGradeSetupService, GradeSetupService>();
             services.AddScoped<IApprovedResultService, ApprovedResultService>();
+            services.AddScoped<ISchoolService, SchoolService>();
             services.AddScoped<IIncidenceService, IncidenceService>();
+
+            // Registers required services for health checks
+            services.AddCustomHealthChecks(Configuration, "Assessment Service");
         }
     }
 }

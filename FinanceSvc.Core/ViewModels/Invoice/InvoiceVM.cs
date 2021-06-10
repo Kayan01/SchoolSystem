@@ -2,6 +2,7 @@
 using FinanceSvc.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace FinanceSvc.Core.ViewModels.Invoice
@@ -17,6 +18,8 @@ namespace FinanceSvc.Core.ViewModels.Invoice
             }
         }
         public string StudentRegNumber { get; set; }
+        public string StudentName { get; set; }
+        public DateTime CreationDate { get; set; }
         public decimal Total { get; set; }
         public string FeeGroup { get; set; }
         public string Session { get; set; }
@@ -48,5 +51,16 @@ namespace FinanceSvc.Core.ViewModels.Invoice
             }
         }
         public DateTime DueDate { get; set; }
+
+
+
+        public decimal? InvoiceItemSubtotal
+        {
+            get
+            {
+                return InvoiceItems?.Sum(m => m.Amount);
+            }
+        }
+        public List<InvoiceItemVM> InvoiceItems { get; set; }
     }
 }

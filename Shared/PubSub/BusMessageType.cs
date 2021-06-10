@@ -32,5 +32,8 @@ namespace Shared.PubSub
         SESSION,
         SESSION_UPDATE,
         SESSION_DELETE,
+        SCHOOL,
+        SCHOOL_UPDATE,
+        SCHOOL_DELETE,
     }
 }

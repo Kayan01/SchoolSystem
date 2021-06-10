@@ -43,6 +43,7 @@ namespace AssessmentSvc.Core.Models
 
     public class Score
     {
+        public bool IsExam { get; set; }
         public string AssessmentName { get; set; }
         public double StudentScore { get; set; }
     }

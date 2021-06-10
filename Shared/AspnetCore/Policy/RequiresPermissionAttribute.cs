@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Shared.Permissions;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
+using static Shared.Utils.CoreConstants;
+using Shared.Enums;
+using Shared.Extensions;
 
 namespace Shared.AspNetCore.Policy
 {
@@ -35,12 +39,16 @@ namespace Shared.AspNetCore.Policy
             public async Task OnResourceExecutionAsync(ResourceExecutingContext context,
                                                        ResourceExecutionDelegate next)
             {
+
                 if (!(await _authService.AuthorizeAsync(context.HttpContext.User,
                                             context.ActionDescriptor.ToString(),
                                             _requiredPermissions)).Succeeded)
                 {
-                    context.Result = new ForbidResult(JwtBearerDefaults.AuthenticationScheme);
-                    return;
+                    if (!context.HttpContext.User.Claims.Any(x => x.Value == UserType.SchoolAdmin.GetDescription()))
+                    {
+                        context.Result = new ForbidResult(JwtBearerDefaults.AuthenticationScheme);
+                        return;
+                    }
                 }
 
                 await next();

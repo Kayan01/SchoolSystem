@@ -36,6 +36,7 @@ namespace Auth.Core.Services
         private readonly IRepository<Student, long> _studentRepo;
         private readonly IRepository<Parent, long> _parentRepo;
         private readonly IRepository<SchoolClass, long> _classRepo;
+        private readonly IRepository<School, long> _schoolRepo;
         private readonly IDocumentService _documentService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
@@ -47,6 +48,7 @@ namespace Auth.Core.Services
             IRepository<Student, long> studentRepo,
             IRepository<Parent, long> parentRepo,
             IRepository<SchoolClass, long> classRepo,
+            IRepository<School, long> schoolRepo,
             IDocumentService documentService,
             IUnitOfWork unitOfWork,
             IPublishService publishService,
@@ -58,6 +60,7 @@ namespace Auth.Core.Services
             _studentRepo = studentRepo;
             _classRepo = classRepo;
             _parentRepo = parentRepo;
+            _schoolRepo = schoolRepo;
             _unitOfWork = unitOfWork;
             _documentService = documentService;
             _publishService = publishService;
@@ -142,7 +145,7 @@ namespace Auth.Core.Services
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
-
+            
             var medicalHistory = new MedicalDetail {
                 Allergies = model.Allergies,
                 BloodGroup = model.BloodGroup,
@@ -166,6 +169,7 @@ namespace Auth.Core.Services
 
             var stud = new Student
             {
+
                 UserId = user.Id,
                 Address = model.ContactAddress,
                 AdmissionDate = model.AdmissionDate,
@@ -198,7 +202,6 @@ namespace Auth.Core.Services
                 lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
             }
             var nextNumber = lastNumber;
-
             var saved = false;
 
             while (!saved)
@@ -226,11 +229,14 @@ namespace Auth.Core.Services
             user.NormalizedUserName = stud.RegNumber.ToUpper();
             await _userManager.UpdateAsync(user);
 
+            //add classId to claims
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString()));
+
             _unitOfWork.Commit();
 
-
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == stud.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user);
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
             //PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
@@ -248,6 +254,8 @@ namespace Auth.Core.Services
                 ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
                 ParentEmail = parent.User.Email,
                 ParentId = parent.Id,
+                Sex = model.Sex,
+                DoB = model.DateOfBirth,
             });
 
             result.Data = new StudentVM
@@ -350,6 +358,7 @@ namespace Auth.Core.Services
                             x.RegNumber,
                             x.DateOfBirth,
                             ParentName =  x.Parent.User.FullName,
+                            x.ParentId,
                             x.Nationality,
                             x.Religion,
                             x.LocalGovernment,
@@ -364,14 +373,15 @@ namespace Auth.Core.Services
                             x.MedicalDetail.Genotype,
                             x.MedicalDetail.Allergies,
                             x.MedicalDetail.ConfidentialNotes,
-                            Immunization = x.MedicalDetail.ImmunizationHistories.Select(history => new { history.DateImmunized, history.Vaccine }),
+                            Immunization = x.MedicalDetail.ImmunizationHistories,
                             x.User.PhoneNumber,
                             x.User.Email,
                             x.Country,
                             x.Address,
                             x.Town,
                             x.State,
-                            files = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
+                            x.IsActive,
+                            image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
                         }).FirstOrDefaultAsync();
 
             if (std == null)
@@ -406,8 +416,9 @@ namespace Auth.Core.Services
                 Genotype = std.Genotype,
                 HomeAddress = std.Address,
                 Id = std.Id,
-                ImagePath = std.files?.Path,
-                Immunization = sb.ToString(),
+                ParentId = std.ParentId,
+                Image = _documentService.TryGetUploadedFile(std.image?.Path),
+                ImmunizationHistoryVMs = std.Immunization.Select(x=> new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine}).ToList(),
                 LastName = std.LastName,
                 LocalGovernment = std.LocalGovernment,
                 MothersMaidenName = std.MothersMaidenName,
@@ -415,6 +426,7 @@ namespace Auth.Core.Services
                 ParentName = std.ParentName,
                 PhoneNumber = std.PhoneNumber,
                 Religion = std.Religion,
+                IsActive = std.IsActive
 
             };
             return result;
@@ -448,14 +460,15 @@ namespace Auth.Core.Services
                             x.MedicalDetail.Genotype,
                             x.MedicalDetail.Allergies,
                             x.MedicalDetail.ConfidentialNotes,
-                            Immunization = x.MedicalDetail.ImmunizationHistories.Select(x => new { x.DateImmunized, x.Vaccine }),
+                            Immunization = x.MedicalDetail.ImmunizationHistories,
                             x.User.PhoneNumber,
                             x.User.Email,
                             x.Country,
                             x.Address,
                             x.Town,
                             x.State,
-                            files = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
+                            x.IsActive,
+                            image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
                         }).FirstOrDefaultAsync();
 
             if (std == null)
@@ -464,11 +477,7 @@ namespace Auth.Core.Services
                 return result;
             }
 
-            StringBuilder sb = new StringBuilder();
-            foreach (var item in std.Immunization)
-            {
-                sb.AppendLine($"{item.DateImmunized} {item.Vaccine}");
-            }
+           
             result.Data = new StudentDetailVM
             {
                 StudentType = std.StudentType.GetDisplayName(),
@@ -489,8 +498,8 @@ namespace Auth.Core.Services
                 Genotype = std.Genotype,
                 HomeAddress = std.Address,
                 Id = std.Id,
-                ImagePath = std.files?.Path,
-                Immunization = sb.ToString(),
+                Image = _documentService.TryGetUploadedFile(std.image?.Path),
+                ImmunizationHistoryVMs = std.Immunization.Select(x => new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine }).ToList(),
                 LastName = std.LastName,
                 LocalGovernment = std.LocalGovernment,
                 MothersMaidenName = std.MothersMaidenName,
@@ -498,7 +507,8 @@ namespace Auth.Core.Services
                 ParentName = std.ParentName,
                 PhoneNumber = std.PhoneNumber,
                 Religion = std.Religion,
-                RegNumber = std.RegNumber
+                RegNumber = std.RegNumber,
+                IsActive = std.IsActive
             };
             return result;
         }
@@ -557,6 +567,7 @@ namespace Auth.Core.Services
             }
             _unitOfWork.BeginTransaction();
 
+            var oldClass = stud.ClassId;
 
             stud.ClassId = model.ClassId;
 
@@ -564,7 +575,9 @@ namespace Auth.Core.Services
             stud.User.FirstName = model.FirstName;
             stud.User.LastName = model.LastName;
                stud.User.Email = model.ContactEmail.Trim();
-                stud.User.UserName = model.ContactEmail.Trim();
+            stud.User.NormalizedEmail = model.ContactEmail.Trim().ToUpper();
+            stud.User.UserName = stud.RegNumber;
+            stud.User.NormalizedUserName = stud.RegNumber.ToUpper();
             stud.User.PhoneNumber = model.ContactPhone;
             stud.User.UserType = UserType.Student;
 
@@ -621,10 +634,29 @@ namespace Auth.Core.Services
             await _studentRepo.UpdateAsync(stud);
             await _unitOfWork.SaveChangesAsync();
 
-             _unitOfWork.Commit();
+          
+
+            _unitOfWork.Commit();
+
+            //add / update classId to claims
+            var user = await _userManager.FindByIdAsync(stud.UserId.ToString());
+            var claims = await _userManager.GetClaimsAsync(user);
+
+            var classClaims = claims.Where(m => m.Type == ClaimsKey.StudentClassId);
+
+            if (classClaims.Any())
+            {
+                await _userManager.RemoveClaimsAsync(user, classClaims);
+            }
+
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, model.ClassId.ToString()));
+          
+
             ////PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
             {
+                Id = stud.Id,
+                RegNumber = stud.RegNumber,
                 IsActive = true,
                 ClassId = stud.ClassId,
                 TenantId = stud.TenantId,
@@ -633,14 +665,30 @@ namespace Auth.Core.Services
                 LastName = stud.User.LastName,
                 Email = stud.User.Email,
                 Phone = stud.User.PhoneNumber,
-                RegNumber= stud.RegNumber,
                 ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
                 ParentEmail = parent.User.Email,
                 ParentId = parent.Id,
+                Sex = model.Sex,
+                DoB = model.DateOfBirth,
             });
 
             result.Data = stud;
             return result;
+        }
+
+        public async Task<ResultModel<byte[]>> GetStudentsExcelSheet()
+        {
+
+            var data = new CreateStudentVM().ToExcel("Student");
+
+            if (data == null)
+            {
+                return new ResultModel<byte[]>("An error occurred while generating excel");
+            }
+            else
+            {
+                return new ResultModel<byte[]>(data);
+            }
         }
     }
 }

@@ -104,7 +104,8 @@ namespace LearningSvc.Core.Services
                 {
                     Id = x.Id,
                     Class = $"{x.SchoolClass.Name} {x.SchoolClass.ClassArm}",
-                    Subject = x.Subject.Name
+                    Subject = x.Subject.Name,
+                    SubjectId = x.SubjectId,
                 }).ToListAsync()
             };
             return result;

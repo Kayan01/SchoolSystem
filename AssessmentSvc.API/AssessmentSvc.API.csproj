@@ -28,14 +28,23 @@
 
   <ItemGroup>
     <Folder Include="error-logs\" />
-    <Folder Include="FileStore\" />
     <Folder Include="logs\" />
-    <Folder Include="FileStore\" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AssessmentSvc.Core\AssessmentSvc.Core.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<None Update="libwkhtmltox.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="libwkhtmltox.dylib">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="libwkhtmltox.so">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
 </Project>

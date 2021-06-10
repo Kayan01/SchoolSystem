@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NotificationSvc.Core.Context;
 using Shared.Collections;
+using Shared.Infrastructure.HealthChecks;
 using Shared.Utils;
 
 namespace NotificationSvc.API
@@ -67,6 +68,9 @@ namespace NotificationSvc.API
                 endpoints.MapControllers()
                 .RequireAuthorization();
             });
+
+
+            app.UseCustomHealthChecksAPI();
         }
 
         public void AddEntityFrameworkDbContext(IServiceCollection services)

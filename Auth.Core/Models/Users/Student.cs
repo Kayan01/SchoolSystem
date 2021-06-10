@@ -12,7 +12,6 @@ namespace Auth.Core.Models
 {
     public class Student : Person
     {
-        public string RegNumber { get; set; }
         public string MothersMaidenName { get; set; }
         public string Nationality { get; set; }
         public string Religion { get; set; }

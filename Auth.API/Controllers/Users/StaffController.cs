@@ -92,6 +92,45 @@ namespace UserManagement.API.Controllers
             }
         }
 
+        [HttpGet("{userId}")]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<StaffNameAndSignatureVM>), 200)]
+        public async Task<IActionResult> GetStaffNameAndSignatureByUserId(long userId)
+        {
+            if (userId < 1)
+                return ApiResponse<string>(errors: "Please provide Staff's User Id");
+
+            try
+            {
+                var result = await _staffService.GetStaffNameAndSignatureByUserId(userId);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<List<StaffNameAndSignatureVM>>), 200)]
+        public async Task<IActionResult> GetStaffNamesAndSignaturesByUserIds([FromQuery]List<long> UserIds, [FromQuery]bool GetBytes = true)
+        {
+            try
+            {
+                var result = await _staffService.GetStaffNamesAndSignaturesByUserIds(UserIds, GetBytes);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpPut("{Id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<StaffVM>), 200)]
@@ -128,6 +167,22 @@ namespace UserManagement.API.Controllers
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+        [HttpGet]
+        [ProducesResponseType(typeof(string), 200)]
+        public async Task<IActionResult> GetStaffsExcelSheet()
+        {
+            try
+            {
+                var result = await _staffService.GetStaffExcelSheet();
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: Convert.ToBase64String(result.Data), totalCount: 1);
             }
             catch (Exception ex)
             {

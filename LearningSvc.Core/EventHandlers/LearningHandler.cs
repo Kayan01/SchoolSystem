@@ -6,6 +6,7 @@ using System;
 using Shared.ViewModels;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using LearningSvc.Core.Services.Interfaces;
 
 namespace LearningSvc.Core.EventHandlers
 {
@@ -16,15 +17,21 @@ namespace LearningSvc.Core.EventHandlers
         private readonly IStudentService _studentService;
         private readonly ITeacherService _teacherService;
 
+        private readonly ISchoolService _schoolService;
+        private readonly IParentService _parentService;
         public LearningHandler(ILogger<LearningHandler> logger,
             ISchoolClassService schoolClassService,
-            IStudentService studentService,
-            ITeacherService teacherService)
+            IStudentService studentService, 
+            ISchoolService schoolService,
+            ITeacherService teacherService, 
+            IParentService parentService)
         {
             _logger = logger;
             _studentService = studentService;
             _teacherService = teacherService;
             _schoolClassService = schoolClassService;
+            _parentService = parentService;
+            _schoolService = schoolService; 
         }
 
         public async Task HandleAddOrUpdateStudentAsync(BusMessage message)
@@ -65,7 +72,30 @@ namespace LearningSvc.Core.EventHandlers
                 _logger.LogError(e.Message, e);
             }
         }
-      
+        public async Task HandleAddOrUpdateParentAsync(BusMessage message)
+        {
+            try
+            {
+                var data = JsonConvert.DeserializeObject<ParentSharedModel>(message.Data);
+                _parentService.AddOrUpdateParentFromBroadcast(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+            }
+        }
+        public async Task HandleAddOrUpdateSchoolAsync(BusMessage message)
+        {
+            try
+            {
+                var data = JsonConvert.DeserializeObject<SchoolSharedModel>(message.Data);
+                _schoolService.AddOrUpdateSchoolFromBroadcast(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+            }
+        }
 
     }
 }

@@ -14,6 +14,7 @@ using LearningSvc.Core.Context;
 using Shared.Utils;
 using Shared.Tenancy;
 using Shared.Collections;
+using Shared.Infrastructure.HealthChecks;
 
 namespace LearningSvc.API
 {
@@ -31,7 +32,19 @@ namespace LearningSvc.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
+            services.AddCors(options =>
+                options.AddPolicy("MyCorsPolicy",
+                    builder => builder.WithOrigins(Configuration["AllowedCorsOrigin"].Split(",", StringSplitOptions.RemoveEmptyEntries)
+                        .Select(o => o.RemovePostFix("/"))
+                        .ToArray())
+                    .SetIsOriginAllowedToAllowWildcardSubdomains()
+                    .WithOrigins("https://*.myschooltrack.com")
+                    .AllowAnyMethod()
+                    .AllowCredentials()
+                    .AllowAnyHeader()
+                    .Build()
+   )
+                );
             services.AddSwagger("Learning Service");
             services.AddControllers();
 
@@ -50,15 +63,7 @@ namespace LearningSvc.API
 
             //app.UseMiddleware<TenantInfoMiddleware>();
 
-            app.UseCors(x =>
-            {
-                x.WithOrigins(Configuration["AllowedCorsOrigin"]
-                  .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                  .Select(o => o.RemovePostFix("/"))
-                  .ToArray())
-             .AllowAnyMethod()
-             .AllowAnyHeader();
-            });
+            app.UseCors("MyCorsPolicy");
 
             app.UseRouting();
             app.UseAuthentication();
@@ -70,6 +75,10 @@ namespace LearningSvc.API
                 endpoints.MapControllers()
                 .RequireAuthorization();
             });
+
+
+            app.UseCustomHealthChecksAPI();
+
         }
 
         public void AddEntityFrameworkDbContext(IServiceCollection services)

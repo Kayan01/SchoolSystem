@@ -48,6 +48,8 @@ namespace AssessmentSvc.Core.Services
             student.IsDeleted = model.IsDeleted;
             student.ParentEmail = model.ParentEmail;
             student.ParentName = model.ParentName;
+            student.Sex = model.Sex;
+            student.DateOfBirth = model.DoB;
 
             _unitOfWork.SaveChanges();
         }

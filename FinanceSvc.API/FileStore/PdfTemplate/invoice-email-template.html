@@ -1,0 +1,80 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+
+<body>
+    <div style="width: 45vw; margin:0 auto;">
+
+        <div>
+            <table style="width: 100%;">
+                <tr>
+                    <th style="width:50%; text-align: left;">
+                        <div>
+                            <p
+                                style="font-weight: bold; font-size: 30px; line-height: 35px; color: #111118; margin-bottom: 20px;">
+                                Invoice</p>
+                            <p style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;">Date: {{invoiceDate}}</p>
+                                <p style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;">Invoice Number:#{{invoiceNumber}}
+                                </p>
+                        </div>
+                    </th>
+                    <th style="width:50%; margin-left: 0 auto ;">
+                        <img src="{{SchoolLogoPath}}" alt width="112">
+                    </th>
+                    
+                </tr>
+            </table>
+            
+            <div style="width: 125px; margin-top: 30px;">
+                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118;">Bill To</div>
+                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118; font-weight: bold;">{{studentName}}
+                </div>
+                <div style="font-size: 11.2247px;line-height: 133.9%;color: #111118;">
+                   Class: {{className}}</div>
+            </div>
+
+            <div style="min-height: 45vh; width: 100%; margin-top: 50px;">
+                {{table}}               
+            </div>
+        </div>
+
+        <table style="background: #014D94; padding: 50px 30px; margin-top:50px; width: 100%;">
+            <tr >
+                <th style="width:50%; text-align: left; font-weight: bold; font-size: 11.2247px; line-height: 13px; color: #ffffff; border-bottom: 1px solid white; padding-bottom: 15px;">
+                        Additional Information
+                   
+                </th>
+                <th style="width:50%; text-align: right; font-weight: bold; font-size: 11.2247px; line-height: 13px; color: #ffffff; border-bottom: 1px solid white; padding-bottom: 15px;">
+                   Totals
+                </th>
+                
+            </tr>
+            <tbody>
+                <tr>
+                    <td style="color: white; font-size: 11px; line-height: 133.9%; font-weight: bold; margin: 0;">
+                        Invoice Date:{{invoiceDate}} <br />
+                           Invoice Due Date: {{InvoiceDueDate}} <br />
+                          
+                            Session: {{session}} <br />
+                            Term: {{termName}} <br />
+                    </td>
+                    <td style="text-align: right;" >
+                        <p style="font-size: 11.2247px;line-height: 133.9%;color: #ffffff; margin: 0;"> Subtotal: ₦{{TotalAmount}}</p>
+                        <p style="font-weight: bold;  margin: 0;font-size: 16px; line-height: 19px;color: #ffffff;">Total : ₦{{TotalAmount}}</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+     
+    </div>
+</body>
+
+</html>

@@ -1,17 +1,26 @@
 ﻿using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Models;
+using AssessmentSvc.Core.ViewModels;
 using AssessmentSvc.Core.ViewModels.Result;
 using AssessmentSvc.Core.ViewModels.SessionSetup;
 using AssessmentSvc.Core.ViewModels.Student;
+using DinkToPdf.Contracts;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.FileStorage;
 using Shared.PubSub;
+using Shared.Utils;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using static Shared.Utils.CoreConstants;
@@ -24,21 +33,37 @@ namespace AssessmentSvc.Core.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRepository<ApprovedResult, long> _approvedResultRepo;
         private readonly IRepository<Result, long> _resultRepo;
+        private readonly IRepository<Student, long> _studentRepo;
         private readonly ISessionSetup _sessionService;
         private readonly IResultService _resultService;
         private readonly IGradeSetupService _gradeService;
+        private readonly IAssessmentSetupService _assessmentSetupService;
         private readonly IPublishService _publishService;
         private readonly IStudentService _studentService;
+        private readonly ISchoolService _schoolService;
+        private readonly ITeacherService _teacherService;
+        private readonly IFileStorageService _fileStorageService;
+        private readonly IDocumentService _documentService;
+        private readonly IConfiguration _configuration ;
+        private readonly IConverter _converter;
 
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
             IRepository<Result, long> resultRepo,
-            ISessionSetup sessionService, 
+            ISessionSetup sessionService,
             IResultService resultService,
             IGradeSetupService gradeService,
-            IPublishService publishService, 
+            IPublishService publishService,
             IStudentService studentService,
-            IUnitOfWork unitOfWork)
+            IAssessmentSetupService assessmentSetupService,
+            IRepository<Student, long> studentRepo,
+            ISchoolService schoolService,
+            ITeacherService teacherService,
+            IFileStorageService fileStorageService,
+            IDocumentService documentService,
+            IConverter converter,
+            IConfiguration configuration,
+        IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
             _resultService = resultService;
@@ -46,9 +71,18 @@ namespace AssessmentSvc.Core.Services
             _approvedResultRepo = approvedResultRepo;
             _resultRepo = resultRepo;
             _gradeService = gradeService;
+            _assessmentSetupService = assessmentSetupService;
             _publishService = publishService;
             _studentService = studentService;
+            _studentRepo = studentRepo;
+            _schoolService = schoolService;
+            _teacherService = teacherService;
+            _fileStorageService = fileStorageService;
+            _documentService = documentService;
+            _converter = converter;
+            _configuration = configuration;
         }
+
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
         {
             var result = new ResultModel<string>();
@@ -67,7 +101,7 @@ namespace AssessmentSvc.Core.Services
 
             var currSession = sessionResult.Data;
 
-            var currTermSequence = currSession.Terms.Where(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now).FirstOrDefault()?.SequenceNumber;
+            var currTermSequence = currSession.Terms.FirstOrDefault(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now)?.SequenceNumber;
 
             if (currTermSequence == null)
             {
@@ -102,6 +136,8 @@ namespace AssessmentSvc.Core.Services
                 oldApprovedResult.ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus;
                 oldApprovedResult.SchoolAdminApprovalStatus = vm.AdminApprovalStatus;
                 oldApprovedResult.HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus;
+                oldApprovedResult.ClassTeacherId = vm.ClassTeacherId;
+                oldApprovedResult.HeadTeacherId = vm.HeadTeacherId;
 
                 await _approvedResultRepo.UpdateAsync(oldApprovedResult);
             }
@@ -118,7 +154,9 @@ namespace AssessmentSvc.Core.Services
                     StudentId = vm.StudentId,
                     ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus,
                     SchoolAdminApprovalStatus = vm.AdminApprovalStatus,
-                     HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus
+                    HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus,
+                    ClassTeacherId = vm.ClassTeacherId,
+                    HeadTeacherId = vm.HeadTeacherId,
                 };
 
                 await _approvedResultRepo.InsertAsync(newApprovedResult);
@@ -158,7 +196,7 @@ namespace AssessmentSvc.Core.Services
 
 
             //fetch results
-            var classResults = await _resultRepo.GetAll().Include(m=>m.ApprovedResult)
+            var classResults = await _resultRepo.GetAll().Include(m => m.ApprovedResult)
                 .Where(x => x.SessionSetupId == currSession.Id && x.TermSequenceNumber == currTermSequence && x.SchoolClassId == vm.ClassId)
                 .ToListAsync();
 
@@ -177,6 +215,8 @@ namespace AssessmentSvc.Core.Services
                     classResult.ApprovedResult.ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus;
                     classResult.ApprovedResult.SchoolAdminApprovalStatus = vm.AdminApprovalStatus;
                     classResult.ApprovedResult.HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus;
+                    classResult.ApprovedResult.ClassTeacherId = vm.ClassTeacherId;
+                    classResult.ApprovedResult.HeadTeacherId = vm.HeadTeacherId;
                 }
                 else
                 {
@@ -190,13 +230,15 @@ namespace AssessmentSvc.Core.Services
                         StudentId = classResult.StudentId,
                         ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus,
                         SchoolAdminApprovalStatus = vm.AdminApprovalStatus,
-                        HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus
+                        HeadTeacherApprovedStatus = vm.HeadTeacherApprovalStatus,
+                        ClassTeacherId = vm.ClassTeacherId,
+                        HeadTeacherId = vm.HeadTeacherId,
                     };
                 }
 
                 await _resultRepo.UpdateAsync(classResult);
             }
-            
+
             await _unitOfWork.SaveChangesAsync();
 
             result.Data = "Record updated";
@@ -257,8 +299,10 @@ namespace AssessmentSvc.Core.Services
                     StudentId = vm.StudentId,
                     ClassTeacherApprovalStatus = oldApprovedResult.ClassTeacherApprovalStatus,
                     AdminApprovalStatus = oldApprovedResult.SchoolAdminApprovalStatus,
-                     HeadTeacherApprovalStatus = oldApprovedResult.HeadTeacherApprovedStatus,
+                    HeadTeacherApprovalStatus = oldApprovedResult.HeadTeacherApprovedStatus,
                     StudentBroadSheet = resultsModel.Data,
+                    ClassTeacherId = oldApprovedResult.ClassTeacherId,
+                    HeadTeacherId=oldApprovedResult.HeadTeacherId,
                 };
 
 
@@ -352,7 +396,7 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StudentReportSheetVM>> GetApprovedResultForStudent(long classId, long studentId, long? curSessionId = null, int? termSequenceNumber = null)
+        public async Task<ResultModel<StudentReportSheetVM>> GetApprovedResultForStudent(long classId, long? studentId, long? studentUserId, long? curSessionId = null, int? termSequenceNumber = null)
         {
 
             var result = new ResultModel<StudentReportSheetVM>();
@@ -384,6 +428,18 @@ namespace AssessmentSvc.Core.Services
                 return new ResultModel<StudentReportSheetVM>(sessionAndTermResult.ErrorMessages);
             }
 
+            if (!studentId.HasValue && studentUserId.HasValue)
+            {
+                var student = await _studentRepo.GetAll().FirstOrDefaultAsync(x => x.UserId == studentUserId.Value);
+
+                if (student == null)
+                {
+                    return new ResultModel<StudentReportSheetVM>("Student not found");
+                }
+
+                studentId = student.Id;
+            }
+
             var currSessionAndTerm = sessionAndTermResult.Data;
 
             result.Data.Session = currSessionAndTerm.SessionName;
@@ -394,8 +450,7 @@ namespace AssessmentSvc.Core.Services
                     x.SchoolClassId == classId &&
                     x.TermSequenceNumber == currSessionAndTerm.TermSequence &&
                     x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
-                    x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved &&
-                    x.StudentId == studentId)
+                    x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved)
                 .Include(x => x.Subject)
                 .ToListAsync();
 
@@ -420,6 +475,7 @@ namespace AssessmentSvc.Core.Services
                     .SelectMany(x => x.Scores)
                     .Select(x => new AssesmentAndScoreViewModel
                     {
+                        IsExam = x.IsExam,
                         AssessmentName = x.AssessmentName,
                         StudentScore = x.StudentScore
                     }).ToList()
@@ -457,13 +513,18 @@ namespace AssessmentSvc.Core.Services
                     x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
                     x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved &&
                     x.StudentId == studentId)
-                .Select( m=> new { 
+                .Select(m => new
+                {
                     m.Student.RegNumber,
                     studentName = $"{m.Student.FirstName} {m.Student.LastName}",
                     classs = $"{m.SchoolClass.Name} {m.SchoolClass.ClassArm}",
+                    m.Student.DateOfBirth,
+                    m.Student.Sex,
                     studentsInClass = m.SchoolClass.Students.Count(),
                     m.ApprovedResult.ClassTeacherComment,
                     m.ApprovedResult.HeadTeacherComment,
+                    m.ApprovedResult.ClassTeacherId,
+                    m.ApprovedResult.HeadTeacherId,
                 })
                 .FirstOrDefaultAsync();
 
@@ -480,6 +541,162 @@ namespace AssessmentSvc.Core.Services
             result.Data.TotalInClass = ApprovedResultInfo.studentsInClass;
             result.Data.ClassTeacherComment = ApprovedResultInfo.ClassTeacherComment;
             result.Data.HeadTeacherComment = ApprovedResultInfo.HeadTeacherComment;
+            result.Data.ClassTeacherId = ApprovedResultInfo.ClassTeacherId;
+            result.Data.HeadTeacherId = ApprovedResultInfo.HeadTeacherId;
+            result.Data.Sex = ApprovedResultInfo.Sex;
+            result.Data.Age = DateTime.Now.Year - ApprovedResultInfo.DateOfBirth.Year;
+
+            return result;
+        }
+
+        public async Task<ResultModel<List<StudentReportSheetVM>>> GetApprovedResultForMultipleStudents(long classId, long[] studentIds, long? curSessionId = null, int? termSequenceNumber = null)
+        {
+
+            var result = new ResultModel<List<StudentReportSheetVM>>
+            {
+                Data = new List<StudentReportSheetVM>()
+            };
+
+            //get grade setup for school
+            var gradeSetupResult = await _gradeService.GetAllGradeForSchoolSetup();
+
+            if (gradeSetupResult.HasError || gradeSetupResult.Data.Count < 1)
+            {
+                return new ResultModel<List<StudentReportSheetVM>>("Grade has not been setup");
+            }
+
+
+            var sessionAndTermResult = new ResultModel<CurrentSessionAndTermVM>();
+
+            if (curSessionId != null && termSequenceNumber != null)
+            {
+                sessionAndTermResult = await _sessionService.GetSessionAndTerm(curSessionId.Value, termSequenceNumber.Value);
+            }
+            else
+            {
+                sessionAndTermResult = await _sessionService.GetCurrentSessionAndTerm();
+            }
+
+            if (sessionAndTermResult.HasError)
+            {
+                return new ResultModel<List<StudentReportSheetVM>>(sessionAndTermResult.ErrorMessages);
+            }
+
+            var currSessionAndTerm = sessionAndTermResult.Data;
+
+            var studentsApprovedResults = await _resultRepo.GetAll()
+                .Where(x => x.SessionSetupId == currSessionAndTerm.sessionId &&
+                    x.SchoolClassId == classId &&
+                    x.TermSequenceNumber == currSessionAndTerm.TermSequence &&
+                    x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
+                    x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved)
+                .Include(x => x.Subject)
+                .Select(m => new
+                {
+                    Results = m,
+                    m.Student.RegNumber,
+                    m.Student.Sex,
+                    studentName = $"{m.Student.FirstName} {m.Student.LastName}",
+                    classs = $"{m.SchoolClass.Name} {m.SchoolClass.ClassArm}",
+                    studentsInClass = m.SchoolClass.Students.Count(),
+                    m.ApprovedResult.ClassTeacherComment,
+                    m.ApprovedResult.HeadTeacherComment,
+                    m.StudentId,
+                    m.Student.DateOfBirth,
+                    m.ApprovedResult.ClassTeacherId,
+                    m.ApprovedResult.HeadTeacherId,
+                })
+                .ToListAsync();
+
+            if (studentsApprovedResults.Count < 1)
+            {
+                return new ResultModel<List<StudentReportSheetVM>>(errorMessage: "No result found in current term and session");
+            }
+            var uniqueStudentsResults = studentsApprovedResults.GroupBy(x => x.Results.StudentId).ToList();
+
+
+            if (uniqueStudentsResults.Select(x => x.Key).Count() != studentIds.Length)
+            {
+                for (int i = 0; i < studentIds.Length; i++)
+                {
+                    if (!uniqueStudentsResults.Select(x => x.Key).Contains(studentIds[i]))
+                    {
+                        result.AddError($"No result for student with id {studentIds[i]}");
+                    }
+                }
+            }
+
+
+            var resultsBySubjects = studentsApprovedResults.GroupBy(x => x.Results.SubjectId);
+
+            foreach (var studentApprovedResults in uniqueStudentsResults)
+            {
+                if (studentIds.Contains(studentApprovedResults.Key))
+                {
+                    var studResult = new List<SubjectResultBreakdown>();
+
+                    foreach (var resultGroup in resultsBySubjects)
+                    {
+                        var breakdown = new SubjectResultBreakdown
+                        {
+                            SubjectName = resultGroup.FirstOrDefault(x => x.Results.SubjectId == resultGroup.Key)?.Results.Subject.Name,
+
+                            AssesmentAndScores = resultGroup
+                            .Where(x => x.Results.StudentId == studentApprovedResults.Key)
+                            .SelectMany(x => x.Results.Scores)
+                            .Select(x => new AssesmentAndScoreViewModel
+                            {
+                                IsExam = x.IsExam,
+                                AssessmentName = x.AssessmentName,
+                                StudentScore = x.StudentScore
+                            }).ToList()
+                        };
+
+                        //calculate position
+                        var orderedResults = resultGroup.OrderByDescending(x => x.Results.Scores.Sum(x => x.StudentScore)).ToList();
+                        var position = orderedResults.IndexOf(orderedResults.FirstOrDefault(x => x.Results.StudentId == studentApprovedResults.Key));
+
+                        breakdown.Position = position + 1;
+
+                        //get interpretation
+                        foreach (var setup in gradeSetupResult.Data)
+                        {
+                            if (breakdown.CummulativeScore >= setup.LowerBound
+                                && breakdown.CummulativeScore <= setup.UpperBound)
+                            {
+
+                                breakdown.Interpretation = setup.Interpretation;
+                                breakdown.Grade = setup.Grade;
+                                break;
+                            }
+                        }
+
+                        studResult.Add(breakdown);
+                    }
+
+                    var t = studentsApprovedResults.FirstOrDefault(n => n.StudentId == studentApprovedResults.Key);
+                    result.Data.Add(new StudentReportSheetVM
+                    {
+                        StudentId = studentApprovedResults.Key,
+                        Breakdowns = studResult,
+                        SubjectOffered = resultsBySubjects.Count(),
+                        RegNumber = t.RegNumber,
+                        StudentName = t.studentName,
+                        Sex = t.Sex,
+                        Age = DateTime.Now.Year - t.DateOfBirth.Year,
+                        Class = t.classs,
+                        ClassTeacherComment = t.ClassTeacherComment,
+                        HeadTeacherComment = t.HeadTeacherComment,
+                        ClassTeacherId = t.ClassTeacherId,
+                        HeadTeacherId = t.HeadTeacherId,
+                        GradeSetup = gradeSetupResult.Data,
+                        TotalInClass = t.studentsInClass,
+                        Session = currSessionAndTerm.SessionName,
+                        Term = currSessionAndTerm.TermName
+                    });
+
+                }
+            }
 
             return result;
         }
@@ -513,7 +730,7 @@ namespace AssessmentSvc.Core.Services
                     x.TermSequenceNumber == currSessionAndTerm.TermSequence &&
                     x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
                     x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved
-                ).Select(m=> new StudentVM()
+                ).Select(m => new StudentVM()
                 {
                     Id = m.Student.Id,
                     Name = $"{m.Student.LastName} {m.Student.FirstName}",
@@ -526,10 +743,184 @@ namespace AssessmentSvc.Core.Services
                 return new ResultModel<List<StudentVM>>(errorMessage: "No Approved result found in current term and session");
             }
 
-            List<StudentVM> eachStudent = studentWithApprovedResults.GroupBy(x => x.Id).Select(m=>m.First()).ToList();
+            List<StudentVM> eachStudent = studentWithApprovedResults.GroupBy(x => x.Id).Select(m => m.First()).ToList();
             result.Data = eachStudent;
 
             return result;
+        }
+
+        private async Task<Dictionary<long, string>> GetStudentsResultPDFS(List<StudentReportSheetVM> vm, long classId, long curSessionId, int termSequenceNumber, long tenantId)
+        {
+            var headTeacherIdParams = vm.Select(m => m.HeadTeacherId).Distinct().Select(m => $"UserIds={m}");
+
+            var baseUrl = _configuration["AuthBaseUrl"];
+            //http://localhost:58101/api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?UserIds=9&UserIds=6&GetBytes=false
+            string url = $"{baseUrl}api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?{string.Join('&', headTeacherIdParams)}&GetBytes=false";
+
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("tenantId", tenantId.ToString()); 
+            var headTeacherTask = client.GetAsync<ApiResponse<List<StaffNameAndSignatureVM>>>(url);
+
+            var assessmentSetup = await _assessmentSetupService.GetAllAssessmentSetup();
+
+            var totalScore = assessmentSetup.Data.Sum(m => m.MaxScore);
+            var totalExamScore = assessmentSetup.Data.Where(m => m.Name.ToLower().Contains("xam")).Sum(m => m.MaxScore);
+            var totalCAScore = assessmentSetup.Data.Where(m => !m.Name.ToLower().Contains("xam")).Sum(m => m.MaxScore);
+
+            var school = await _schoolService.GetSchool(tenantId) ?? new School() ;
+            var schoolLogoMemeType = school.Logo?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
+            school.Logo = $"{schoolLogoMemeType}base64, {_documentService.TryGetUploadedFile(school.Logo)}";
+
+            var behaviours = await _resultService.GetBehaviouralResults(new GetBehaviourResultQueryVm() { ClassId = classId, SessionId = curSessionId, TermSequence = termSequenceNumber });
+
+            var classTeachers = await _teacherService.GetTeachersByUserIdsAsync(vm.Select(m => m.ClassTeacherId).Distinct().ToList());
+            classTeachers.ForEach(m => {
+                var classTeacherMemeType = m.Signature?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
+                m.Signature = $"{classTeacherMemeType}base64, {_documentService.TryGetUploadedFile(m.Signature)}";
+                });
+            
+            var templatePath = _fileStorageService.MapStorage(CoreConstants.ResultPdfTemplatePath);
+
+            var studentFilePaths = new Dictionary<long, string> ();
+
+            var headTeachers = (await headTeacherTask).Payload;
+            headTeachers.ForEach(m => {
+                var headTeacherMemeType = m.Signature?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
+                m.Signature = $"{headTeacherMemeType}base64, {_documentService.TryGetUploadedFile(m.Signature)}";
+            });
+
+            client.Dispose();
+
+            foreach (var result in vm)
+            {
+                var tableObjects = new List<TableObject<object>>();
+
+
+                var objList = new List<object>();
+                var totalExamScoreObtained = 0d;
+                var totalCAScoreObtained = 0d;
+
+                foreach (var bd in result.Breakdowns)
+                {
+                    dynamic obj = new ExpandoObject();
+                    var dictionary = obj as IDictionary<string, object>;
+                    //var dictionary = new Dictionary<string, object>();
+
+                    dictionary.Add("Subject", bd.SubjectName);
+                    foreach (var assessment in bd.AssesmentAndScores)
+                    {
+                        if (assessment.AssessmentName.ToLower().Contains("xam"))
+                        {
+                            totalExamScoreObtained += assessment.StudentScore;
+                        }
+                        else
+                        {
+                            totalCAScoreObtained += assessment.StudentScore;
+                        }
+
+                        dictionary.Add(assessment.AssessmentName, assessment.StudentScore.ToString());
+                    }
+                    dictionary.Add("Cumulative", bd.CummulativeScore.ToString());
+                    dictionary.Add("Grade", bd.Grade.ToString());
+                    dictionary.Add("Interpretation", bd.Interpretation.ToString());
+
+                    objList.Add(dictionary);
+                }
+
+                var scoresTable = new TableObject<object>()
+                {
+                    TableConfig = new TableAttributeConfig
+                    {
+                        TableAttributes = new { @class = "tContent" },
+                    },
+                    TemplatePropertyName = "ScoresTable",
+                    TableData = objList,
+            };
+
+                var gradeSetupTable = new TableObject<object>()
+                {
+                    TableConfig = new TableAttributeConfig
+                    {
+                        TableAttributes = new { @class = "tContent" },
+                    },
+                    TemplatePropertyName = "GradeSetupTable",
+                    TableData = result.GradeSetup.Select(m=> new { Grade_Scale = $"{m.UpperBound}-{m.LowerBound}", Grade = m.Grade, Interpretation = m.Interpretation})
+                };
+
+                tableObjects = new List<TableObject<object>> { scoresTable, gradeSetupTable };
+
+                var studBehaviours = behaviours.FirstOrDefault(m => m.Key == result.StudentId);
+                var tableArrays = new List<KeyValuePair<string, IEnumerable<TableObject<object>>>>();
+
+                var BehaviourTables = new List<TableObject<object>>();
+
+                foreach (var item in studBehaviours.Value.ResultTypeAndValues)
+                {
+                    var tableData = new List<object>();
+
+                    foreach (var behavior in item.Value)
+                    {
+                        dynamic behahiourObject = new ExpandoObject();
+                        var behaviourDictionary = behahiourObject as IDictionary<string, object>;
+
+                        behaviourDictionary.Add(item.Key, behavior.BehaviourName);
+                        behaviourDictionary.Add("Grade", behavior.Grade);
+
+                        tableData.Add((object)behahiourObject);
+                    }
+
+                    BehaviourTables.Add(new TableObject<object>()
+                    {
+                        TableConfig = new TableAttributeConfig
+                        {
+                            TableAttributes = new { @class = "tContent" },
+                        },
+                        TableData = tableData
+                    }
+                    );
+                }
+
+                tableArrays.Add(new KeyValuePair<string, IEnumerable<TableObject<object>>>( "Behaviours", BehaviourTables));
+                var classTeacher = classTeachers.FirstOrDefault(m => m.UserId == result.ClassTeacherId) ?? new Teacher();
+                var headTeacher = headTeachers.FirstOrDefault(m => m.UserId == result.HeadTeacherId) ?? new StaffNameAndSignatureVM();
+
+                var mainData = new
+                {
+                    Class = result.Class,
+                    Session = result.Session,
+                    Term = result.Term,
+                    StudentName = result.StudentName,
+                    StudentRegNum = result.RegNumber,
+                    StudentAge = result.Age,
+                    StudentSex = result.Sex,
+                    Total_Exam = totalExamScore * result.SubjectOffered,
+                    Total_CA = totalCAScore * result.SubjectOffered,
+                    Total_Score = totalScore * result.SubjectOffered,
+                    Total_Score_Obtained = Math.Round(totalCAScoreObtained + totalExamScoreObtained, 2),
+                    Total_CA_Score = Math.Round(totalCAScoreObtained, 2),
+                    Total_Exam_Score = Math.Round(totalExamScoreObtained, 2),
+                    SchoolName = school.Name,
+                    SchoolCity = school.City,
+                    SchoolState = school.State,
+                    SchoolPhone = school.PhoneNumber,
+                    SchoolEmail = school.Email,
+                    SchoolWebsite = school.WebsiteAddress,
+                    ImgPath = school.Logo,
+                    ClassTeacherName = $"{classTeacher.LastName} {classTeacher.FirstName}",
+                    ClassTeacherComment = result.ClassTeacherComment,
+                    ClassTeacherSignature = classTeacher.Signature,
+                    HeadTeacherComment = result.HeadTeacherComment,
+                    HeadTeacherSignature = headTeacher.Signature,
+                    HeadTeacherName = $"{headTeacher.LastName} {headTeacher.FirstName}"
+                };
+
+                var pdf = _converter.ConvertToPDFBytesToList(mainData, tableObjects, tableArrays, templatePath, false);
+                var path = $"result/{Guid.NewGuid().ToString()}.pdf";
+                _fileStorageService.SaveBytes(path, pdf);
+                studentFilePaths.Add(result.StudentId, path);
+            }
+
+            return studentFilePaths;
         }
 
         public async Task<ResultModel<string>> MailResult(MailResultVM vm)
@@ -560,6 +951,15 @@ namespace AssessmentSvc.Core.Services
                 return new ResultModel<string>(mailInfos.ErrorMessages);
             }
 
+            var resultData = await GetApprovedResultForMultipleStudents(vm.classId, vm.StudentIds, currSessionAndTerm.sessionId, currSessionAndTerm.TermSequence);
+
+            if (resultData.HasError)
+            {
+                return new ResultModel<string>(resultData.ErrorMessages);
+            }
+            //generate pdf
+            var pdfPaths = await GetStudentsResultPDFS(resultData.Data, vm.classId, currSessionAndTerm.sessionId, currSessionAndTerm.TermSequence, currSessionAndTerm.TenantId);
+
 
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
             {
@@ -568,9 +968,11 @@ namespace AssessmentSvc.Core.Services
                    new Dictionary<string, string>{
                             { "link", $"{vm.ResultPageURL}?studId={m.StudentId}&classId={vm.classId}&sessionId={currSessionAndTerm.sessionId}&termSequenceNumber={currSessionAndTerm.TermSequence}" },
                             { "ParentName", m.ParentName },
-                            {"Studentname", m.StudentName}
+                            {"Studentname", m.StudentName},
                    },
-                   new UserVM() { FullName = m.ParentName, Email = m.Email })).ToList()
+                   new UserVM() { FullName = m.ParentName, Email = m.Email },
+                   new List<string> { pdfPaths[m.StudentId] }
+                )).ToList()
             });
 
             result.Data = "Successful";

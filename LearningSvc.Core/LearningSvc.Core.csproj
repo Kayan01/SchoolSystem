@@ -9,6 +9,24 @@
     <Compile Remove="Migrations\20210209213716_regnumber.Designer.cs" />
     <Compile Remove="Migrations\20210213213413_attendancedate.cs" />
     <Compile Remove="Migrations\20210213213413_attendancedate.Designer.cs" />
+    <Compile Remove="Migrations\20210422154002_kearning.cs" />
+    <Compile Remove="Migrations\20210422154002_kearning.Designer.cs" />
+    <Compile Remove="Migrations\20210422165012_kearningd.cs" />
+    <Compile Remove="Migrations\20210422165012_kearningd.Designer.cs" />
+    <Compile Remove="Migrations\20210422165212_kearning.cs" />
+    <Compile Remove="Migrations\20210422165212_kearning.Designer.cs" />
+    <Compile Remove="Migrations\20210423085300_kearningd.cs" />
+    <Compile Remove="Migrations\20210423085300_kearningd.Designer.cs" />
+    <Compile Remove="Migrations\20210423085423_kearningd.cs" />
+    <Compile Remove="Migrations\20210423085423_kearningd.Designer.cs" />
+    <Compile Remove="Migrations\20210423090237_kearningd.cs" />
+    <Compile Remove="Migrations\20210423090237_kearningd.Designer.cs" />
+    <Compile Remove="Migrations\20210423090334_kearningd.cs" />
+    <Compile Remove="Migrations\20210423090334_kearningd.Designer.cs" />
+    <Compile Remove="Migrations\20210423090431_kearningdd.cs" />
+    <Compile Remove="Migrations\20210423090431_kearningdd.Designer.cs" />
+    <Compile Remove="Migrations\20210426141935_schoolj.cs" />
+    <Compile Remove="Migrations\20210426141935_schoolj.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

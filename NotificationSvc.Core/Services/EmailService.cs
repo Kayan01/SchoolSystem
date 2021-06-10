@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace NotificationSvc.Core.Services
@@ -25,7 +26,7 @@ namespace NotificationSvc.Core.Services
         private readonly IRepository<Email, long> _emailRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger _logger;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IFileStorageService _fileStorageService;
         private readonly IFileStorageService _documentService;
         private readonly AppSettingsConfiguration _appSettingsConfiguration = new AppSettingsConfiguration();
 
@@ -35,11 +36,12 @@ namespace NotificationSvc.Core.Services
             IRepository<Email, long> emailRepository,
             ILogger<EmailService> logger,
             IConfiguration config,
-            IFileStorageService documentService
+            IFileStorageService documentService,
+            IFileStorageService fileStorageService
             )
         {
             _unitOfWork = unitOfWork;
-            _webHostEnvironment = webHostEnvironment;
+            _fileStorageService = fileStorageService;
             _emailRepository = emailRepository;
             _mailService = mailService;
             _logger = logger;
@@ -63,12 +65,12 @@ namespace NotificationSvc.Core.Services
             return new List<EmailVM>();
         }
 
-        public async Task SendEmail(string[] emailAddresses, string emailTemplate, Dictionary<string, string> replacements)
+        public async Task SendEmail(string[] emailAddresses, string emailTemplate, Dictionary<string, string> replacements, IEnumerable<string> attachments = null)
         {
             var template = CoreConstants.EmailTemplates.FirstOrDefault(x => x.Name.Equals(emailTemplate, StringComparison.InvariantCultureIgnoreCase));
 
             if (template == null)
-                throw new NullReferenceException($"Email Template not found for {emailTemplate}");
+                throw new FileNotFoundException($"Email Template not found for {emailTemplate}");
 
             _logger.LogInformation($"email template {template.Name} {template.TemplatePath}");
 
@@ -77,6 +79,16 @@ namespace NotificationSvc.Core.Services
             mailBase.IsBodyHtml = true;
             mailBase.BodyIsFile = true;
             mailBase.BodyPath = _documentService.GetFile(template.TemplatePath).PhysicalPath;
+            
+            if (attachments != null)
+            {
+                mailBase.Attachments = new List<Attachment>();
+                foreach (var item in attachments)
+                {
+                   var fileInfo = _fileStorageService.GetFile(item);
+                    mailBase.Attachments.Add(new Attachment(fileInfo.PhysicalPath));
+                }
+            }
 
             try
             {
@@ -91,6 +103,14 @@ namespace NotificationSvc.Core.Services
                 await _mailService.SendMailAsync(mailBase, replacements);
                 email.Sent = true;
                 email.Modified = DateTime.Now;
+
+                if (attachments != null)
+                {
+                    foreach (var attachment in attachments)
+                    {
+                        _documentService.DeleteFile(attachment);
+                    }
+                }
             }
             catch (Exception e)
             {

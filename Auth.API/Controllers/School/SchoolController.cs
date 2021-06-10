@@ -16,7 +16,6 @@ namespace UserManagement.API.Controllers
 {
     [Route("api/v1/[controller]/[action]")]
     [ApiController]
-    [AllowAnonymous]
     public class SchoolController : BaseController
     {
         private readonly ISchoolService _schoolService;
@@ -90,6 +89,23 @@ namespace UserManagement.API.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(string), 200)]
+        public async Task<IActionResult> GetSchoolExcelUploadData()
+        {
+            try
+            {
+                var result = await _schoolService.GetSchoolExcelSheet();
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: Convert.ToBase64String(result.Data), totalCount: 1);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpGet("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<SchoolDetailVM>), 200)]
@@ -124,6 +140,28 @@ namespace UserManagement.API.Controllers
             try
             {
                 var result = await _schoolService.GetSchoolNameAndLogoById(id);
+                if (result.HasError)
+                    return ApiResponse<SchoolNameAndLogoVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet("{domain}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<SchoolNameAndLogoVM>), 200)]
+        public async Task<IActionResult> GetSchoolNameAndLogoByDomain(string domain)
+        {
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                return ApiResponse<SchoolNameAndLogoVM>(errors: "Please provide valid school Domain");
+            }
+            try
+            {
+                var result = await _schoolService.GetSchoolNameAndLogoByDomain(domain);
                 if (result.HasError)
                     return ApiResponse<SchoolNameAndLogoVM>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);

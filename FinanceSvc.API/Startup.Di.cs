@@ -20,6 +20,8 @@ using FinanceSvc.Core.Services.Interfaces;
 using FinanceSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Microsoft.Extensions.Logging;
+using FinanceSvc.Core.Interfaces;
+using Shared.Infrastructure.HealthChecks;
 
 namespace FinanceSvc.API
 {
@@ -92,6 +94,14 @@ namespace FinanceSvc.API
                                     await handler.HandleAddOrUpdateSessionAsync(message);
                                     break;
                                 }
+
+                            case (int)BusMessageTypes.SCHOOL:
+                            case (int)BusMessageTypes.SCHOOL_DELETE:
+                            case (int)BusMessageTypes.SCHOOL_UPDATE:
+                                {
+                                    await handler.HandleAddOrUpdateSchoolAsync(message);
+                                    break;
+                                }
                         }
                     }
                     catch (Exception e)
@@ -130,12 +140,18 @@ namespace FinanceSvc.API
             services.AddScoped<IFeeService, FeeService>();
             services.AddScoped<IInvoiceService, InvoiceService>();
             services.AddScoped<ISessionSetupService, SessionSetupService>();
+            services.AddScoped<ISchoolService, SchoolService>();
             services.AddScoped<ITransactionService, TransactionService>();
             services.AddScoped<IFileStore, FileStore>();
+
+            services.AddScoped<IPublishService, PublishService>();
 
             //services.AddTransient<IFileUploadService, FileUploadService>();
             services.AddScoped<IFinanceService, FinanceService>();
             services.AddTransient<FinanceHandler>();
+
+            // Registers required services for health checks
+            services.AddCustomHealthChecks(Configuration, "Finance Service");
         }
     }
 }

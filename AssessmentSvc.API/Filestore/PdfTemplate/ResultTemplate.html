@@ -1,0 +1,241 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        table {
+            font-family: Nunito, arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .report-title {
+            font-weight: 600;
+    font-size: 28px;
+    line-height: 20px;
+    /* font-family: Nunito; */
+    /* display: flex;
+    align-items: center; */
+    color: #000000;
+        }
+        .tContent {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .tContent td, .tContent th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 3px;
+            padding: .75rem;
+            font-size: 14px;
+            
+        }
+
+            /* .tContent tr:nth-child(odd) {
+                background-color: #EBF0F5;
+            } */
+
+            .tContent th {
+                color: #355691;
+                background-color: #EBF0F5;
+                background: #EBF0F5;
+    border: 1px solid #B4CDE9;
+    font-size: 14px;
+    color: #355691;
+    font-weight: 600;
+            }
+
+    </style>
+</head>
+<body>
+    <table id="tMain">
+        <tr>
+            <td>
+                <table id="tRow1" class="">
+                    <tr>
+                        <th style="width:25%">
+                            <img src="{{ImgPath}}" alt width="100">
+                        </th>
+                        <th style="width:50%">
+                            <h2 class="report-title">REPORT CARD</h2>
+                        </th>
+                        <th style="text-align:left; width:25%; font-size: 15px;">
+                            {{SchoolName}} <br />
+                            {{SchoolCity}}, {{SchoolState}} <br />
+                            Phone Number: {{SchoolPhone}} <br />
+                            Email: {{SchoolEmail}} <br />
+                            Website: {{SchoolWebsite}} <br />
+                        </th>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table id="tRow2" class="tContent" style="width:85%; margin:30px 0px;">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Reg Number</th>
+                        <th>Age</th>
+                        <th>Sex</th>
+                    </tr>
+                    <tr>
+                        <td>{{StudentName}}</td>
+                        <td>{{StudentRegNum}}</td>
+                        <td>{{StudentAge}}</td>
+                        <td>{{StudentSex}}</td>
+                    </tr>
+                </table>
+            </td>
+
+        </tr>
+        <tr>
+            <td>
+                <table id="tRow3" class="row">
+                    <tr>
+                        <td colspan="2">
+                            <div style="margin-right:10px">
+                                <table class="row">
+                                    <tr>
+                                        <td>
+                                            <table class="tContent" style="width:60%">
+                                                <tr>
+                                                    <th>Class</th>
+                                                    <th>Session</th>
+                                                    <th>Term</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{Class}}</td>
+                                                    <td>{{Session}}</td>
+                                                    <td>{{Term}}</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            {{ScoresTable}}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <div style="margin-right:10px">
+                                                            <table class="tContent">
+                                                                <tr>
+                                                                    <th>Total Score</th>
+                                                                    <th>Total CA</th>
+                                                                    <th>Total Exam</th>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>{{Total_Score}}</td>
+                                                                    <td>{{Total_CA}}</td>
+                                                                    <td>{{Total_Exam}}</td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div style="margin-left:10px">
+                                                            <table class="tContent">
+                                                                <tr>
+                                                                    <th>Total Score Obtained</th>
+                                                                    <th>Total CA Score</th>
+                                                                    <th>Total Exam Score</th>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>{{Total_Score_Obtained}}</td>
+                                                                    <td>{{Total_CA_Score}}</td>
+                                                                    <td>{{Total_Exam_Score}}</td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <table class="tContent">
+                                                <tr>
+                                                    <th>Percentage</th>
+                                                    <th>Average</th>
+                                                    <th>Rate</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>60</td>
+                                                    <td>12</td>
+                                                    <td>3</td>
+                                                    <td>Excellent</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <table class="tContent">
+                                                <tr>
+                                                    <th>Class Teacher</th>
+                                                    <th>Comment</th>
+                                                    <th>Signature</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{ClassTeacherName}}</td>
+                                                    <td>{{ClassTeacherComment}}</td>
+                                                    <td>
+                                                        <img src="{{ClassTeacherSignature}}" alt height="40" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>
+                                            <table class="tContent">
+                                                <tr>
+                                                    <th>Head Teacher</th>
+                                                    <th>Comment</th>
+                                                    <th>Signature</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{HeadTeacherName}}</td>
+                                                    <td>{{HeadTeacherComment}}</td>
+                                                    <td>
+                                                        <img src="{{HeadTeacherSignature}}" alt height="40" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+                                </table>
+                            </div>
+                        </td>
+                        <td colspan="1" style="display:block">
+                            <div style="margin-left:10px">
+                                {{GradeSetupTable}}
+                                {{Behaviours}}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+
+        </tr>
+    </table>
+</body>
+</html>

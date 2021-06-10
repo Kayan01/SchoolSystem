@@ -173,7 +173,7 @@ namespace AssessmentSvc.Core.Services
                     }
                 }
 
-                if (currentTerm?.SequenceNumber is null)
+                if (string.IsNullOrEmpty( currentTerm.Name))
                 {
                     currentTerm = session.Terms[session.Terms.Count - 1];
                 }
@@ -185,6 +185,7 @@ namespace AssessmentSvc.Core.Services
                 SessionName = session.SessionName,
                 TermName=currentTerm?.Name,
                 TermSequence=currentTerm?.SequenceNumber ?? 0,
+                TenantId = session.TenantId,
             };
 
             return result;
@@ -209,6 +210,7 @@ namespace AssessmentSvc.Core.Services
                 SessionName = session.SessionName,
                 TermName = currentTerm?.Name,
                 TermSequence = currentTerm?.SequenceNumber ?? 0,
+                TenantId = session.TenantId,
             };
 
             return result;

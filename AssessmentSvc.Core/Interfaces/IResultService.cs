@@ -12,6 +12,7 @@ namespace AssessmentSvc.Core.Interfaces
     {
         Task<ResultModel<string>> InsertBehaviouralResult(AddBehaviourResultVM model); 
         Task<ResultModel<GetBehaviourResultVM>> GetBehaviouralResult(GetBehaviourResultQueryVm model);
+        Task<List<KeyValuePair<long, GetBehaviourResultVM>>> GetBehaviouralResults(GetBehaviourResultQueryVm model);
         Task<ResultModel<byte[]>> GenerateResultUploadExcel(long SchoolClassId);
         Task<ResultModel<ResultUploadFormData>> FetchResultUploadFormData(long SchoolClassId);
         Task<ResultModel<string>> ProcessResultFromExcel(ResultFileUploadVM vM);
