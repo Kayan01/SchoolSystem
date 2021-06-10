@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Shared.ViewModels;
 using System.Collections.Generic;
-using FinanceSvc.Core.Interfaces;
 
 namespace FinanceSvc.Core.EventHandlers
 {

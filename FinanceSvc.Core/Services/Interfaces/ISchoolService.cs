@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FinanceSvc.Core.Interfaces
+namespace FinanceSvc.Core.Services.Interfaces
 {
     public interface ISchoolService
     {

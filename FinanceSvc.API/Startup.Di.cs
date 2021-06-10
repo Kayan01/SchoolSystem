@@ -20,7 +20,6 @@ using FinanceSvc.Core.Services.Interfaces;
 using FinanceSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Microsoft.Extensions.Logging;
-using FinanceSvc.Core.Interfaces;
 
 namespace FinanceSvc.API
 {
