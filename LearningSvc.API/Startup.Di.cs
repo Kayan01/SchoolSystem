@@ -25,7 +25,6 @@ using LearningSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Shared.Tenancy;
 using Microsoft.Extensions.Logging;
-using LearningSvc.Core.Services.Interfaces;
 using Shared.Infrastructure.HealthChecks;
 
 namespace LearningSvc.API

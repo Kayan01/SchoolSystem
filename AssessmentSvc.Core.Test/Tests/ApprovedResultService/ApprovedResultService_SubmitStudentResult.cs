@@ -21,12 +21,6 @@ namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
 
 
 
-                approvedService.SubmitStudentResult(newSchool);
-
-                var schoolCheck = context.Schools.SingleOrDefault(x => x.Id == newSchool.Id);
-
-                Assert.IsFalse(schoolCheck is null);
-                Assert.AreEqual(schoolCheck.Name, newSchool.Name);
             }
         }
 
