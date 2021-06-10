@@ -1,5 +1,5 @@
-﻿using FinanceSvc.Core.Interfaces;
-using FinanceSvc.Core.Models;
+﻿using FinanceSvc.Core.Models;
+using FinanceSvc.Core.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
