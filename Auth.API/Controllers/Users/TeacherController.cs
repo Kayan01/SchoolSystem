@@ -178,6 +178,22 @@ namespace Auth.API.Controllers.Users
                 return HandleError(ex);
             }
         }
+        [HttpGet]
+        [ProducesResponseType(typeof(string), 200)]
+        public async Task<IActionResult> GetTeachersExcelSheet()
+        {
+            try
+            {
+                var result = await _teacherService.GetTeachersExcelSheet();
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: Convert.ToBase64String(result.Data), totalCount: 1);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
     }
 }

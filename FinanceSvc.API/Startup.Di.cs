@@ -20,6 +20,8 @@ using FinanceSvc.Core.Services.Interfaces;
 using FinanceSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Microsoft.Extensions.Logging;
+using FinanceSvc.Core.Interfaces;
+using Shared.Infrastructure.HealthChecks;
 
 namespace FinanceSvc.API
 {
@@ -147,6 +149,9 @@ namespace FinanceSvc.API
             //services.AddTransient<IFileUploadService, FileUploadService>();
             services.AddScoped<IFinanceService, FinanceService>();
             services.AddTransient<FinanceHandler>();
+
+            // Registers required services for health checks
+            services.AddCustomHealthChecks(Configuration, "Finance Service");
         }
     }
 }

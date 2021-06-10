@@ -17,5 +17,6 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<TeacherVM>> UpdateTeacher(UpdateTeacherVM model, long Id);
         Task<ResultModel<string>> MakeClassTeacher(ClassTeacherVM model);
         Task<ResultModel<bool>> DeleteTeacher(long userId);
+        Task<ResultModel<byte[]>> GetTeachersExcelSheet();
     }
 }

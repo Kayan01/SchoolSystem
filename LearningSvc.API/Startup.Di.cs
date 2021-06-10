@@ -25,6 +25,8 @@ using LearningSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Shared.Tenancy;
 using Microsoft.Extensions.Logging;
+using LearningSvc.Core.Services.Interfaces;
+using Shared.Infrastructure.HealthChecks;
 
 namespace LearningSvc.API
 {
@@ -152,6 +154,9 @@ namespace LearningSvc.API
             services.AddScoped<IFileStore, FileStore>();
             services.AddScoped<IAttendanceService, AttendanceService>();
             services.AddScoped<ZoomService>();
+
+            // Registers required services for health checks
+            services.AddCustomHealthChecks(Configuration, "Learning Service");
         }
     }
 }

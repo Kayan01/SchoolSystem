@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using AssessmentSvc.Core.Context;
 using Shared.Collections;
+using Shared.Infrastructure.HealthChecks;
 using Shared.Utils;
 
 namespace AssessmentSvc.API
@@ -72,6 +73,10 @@ namespace AssessmentSvc.API
                 endpoints.MapControllers()
                 .RequireAuthorization();
             });
+
+
+            app.UseCustomHealthChecksAPI();
+
         }
 
         public void AddEntityFrameworkDbContext(IServiceCollection services)

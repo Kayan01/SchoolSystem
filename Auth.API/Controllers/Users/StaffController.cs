@@ -173,6 +173,22 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
+        [HttpGet]
+        [ProducesResponseType(typeof(string), 200)]
+        public async Task<IActionResult> GetStaffsExcelSheet()
+        {
+            try
+            {
+                var result = await _staffService.GetStaffExcelSheet();
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: Convert.ToBase64String(result.Data), totalCount: 1);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
     }
 }
