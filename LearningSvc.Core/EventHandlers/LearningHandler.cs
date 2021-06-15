@@ -6,7 +6,6 @@ using System;
 using Shared.ViewModels;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using LearningSvc.Core.Services.Interfaces;
 
 namespace LearningSvc.Core.EventHandlers
 {
