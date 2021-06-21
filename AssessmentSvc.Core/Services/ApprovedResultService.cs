@@ -1,5 +1,6 @@
 ﻿using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Models;
+using AssessmentSvc.Core.Utils;
 using AssessmentSvc.Core.ViewModels;
 using AssessmentSvc.Core.ViewModels.Result;
 using AssessmentSvc.Core.ViewModels.SessionSetup;
@@ -45,7 +46,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IFileStorageService _fileStorageService;
         private readonly IDocumentService _documentService;
         private readonly IConfiguration _configuration ;
-        private readonly IConverter _converter;
+        private readonly IToPDF _toPDF;
 
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
@@ -61,7 +62,7 @@ namespace AssessmentSvc.Core.Services
             ITeacherService teacherService,
             IFileStorageService fileStorageService,
             IDocumentService documentService,
-            IConverter converter,
+            IToPDF toPDF,
             IConfiguration configuration,
         IUnitOfWork unitOfWork)
         {
@@ -79,7 +80,7 @@ namespace AssessmentSvc.Core.Services
             _teacherService = teacherService;
             _fileStorageService = fileStorageService;
             _documentService = documentService;
-            _converter = converter;
+            _toPDF = toPDF;
             _configuration = configuration;
         }
 
@@ -914,10 +915,7 @@ namespace AssessmentSvc.Core.Services
                     HeadTeacherName = $"{headTeacher.LastName} {headTeacher.FirstName}"
                 };
 
-                var pdf = _converter.ConvertToPDFBytesToList(mainData, tableObjects, tableArrays, templatePath, false);
-                var path = $"result/{Guid.NewGuid().ToString()}.pdf";
-                _fileStorageService.SaveBytes(path, pdf);
-                studentFilePaths.Add(result.StudentId, path);
+                studentFilePaths.Add(result.StudentId, _toPDF.ResultToPDF(mainData, tableObjects, tableArrays, templatePath, false));
             }
 
             return studentFilePaths;
