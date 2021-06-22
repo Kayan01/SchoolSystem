@@ -1,5 +1,5 @@
-﻿using LearningSvc.Core.Models;
-using LearningSvc.Core.Services.Interfaces;
+﻿using LearningSvc.Core.Interfaces;
+using LearningSvc.Core.Models;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.ViewModels;

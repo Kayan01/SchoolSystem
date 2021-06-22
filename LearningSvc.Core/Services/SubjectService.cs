@@ -59,7 +59,7 @@ namespace LearningSvc.Core.Services
             _subjectRepo.Insert(subject);
             await _unitOfWork.SaveChangesAsync();
 
-            if (model.ClassIds.Length > 0)
+            if (model.ClassIds != null && model.ClassIds.Length > 0)
             {
                 var classes = await _schoolClassRepo.GetAll().Where(x => model.ClassIds.Contains(x.Id)).Select(m=>m.Id).ToListAsync();
 

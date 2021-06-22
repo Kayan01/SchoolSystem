@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LearningSvc.Core.Services.Interfaces
+namespace LearningSvc.Core.Interfaces
 {
     public interface IParentService
     {
