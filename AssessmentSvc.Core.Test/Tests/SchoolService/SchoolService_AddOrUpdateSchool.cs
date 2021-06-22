@@ -76,6 +76,7 @@ namespace AssessmentSvc.Core.Test.Tests.SchoolService
                     State = "test",
                 };
 
+                context.Add(oldSchool);
                 await context.SaveChangesAsync();
 
                 var newSchool = new SchoolSharedModel()
