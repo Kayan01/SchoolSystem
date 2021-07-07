@@ -14,6 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Migrations\20210706084941_initial.cs" />
+    <Compile Include="Migrations\20210706084941_initial.Designer.cs" />
+    <Compile Include="Migrations\AppDbContextModelSnapshot.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.msbuild" Version="3.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -39,6 +39,7 @@ namespace Shared.Entities.Mapping
                 NormalizedUserName = "tester@gmail.com".ToUpper(),
                 PasswordHash = Hasher.HashPassword(null, "micr0s0ft_"),
                 SecurityStamp = "99ae0c45-d682-4542-9ba7-1281e471916b",
+                IsFirstTimeLogin = false
             };
 
             var users = new List<User>() { user1 };
