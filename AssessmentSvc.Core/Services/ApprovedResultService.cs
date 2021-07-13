@@ -45,7 +45,7 @@ namespace AssessmentSvc.Core.Services
         private readonly ITeacherService _teacherService;
         private readonly IFileStorageService _fileStorageService;
         private readonly IDocumentService _documentService;
-        private readonly IConfiguration _configuration ;
+        private readonly IHttpClientFactory _clientFactory;
         private readonly IToPDF _toPDF;
 
         public ApprovedResultService(
@@ -63,7 +63,7 @@ namespace AssessmentSvc.Core.Services
             IFileStorageService fileStorageService,
             IDocumentService documentService,
             IToPDF toPDF,
-            IConfiguration configuration,
+            IHttpClientFactory clientFactory,
         IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -81,7 +81,7 @@ namespace AssessmentSvc.Core.Services
             _fileStorageService = fileStorageService;
             _documentService = documentService;
             _toPDF = toPDF;
-            _configuration = configuration;
+            _clientFactory = clientFactory;
         }
 
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
@@ -327,12 +327,7 @@ namespace AssessmentSvc.Core.Services
 
             if (sessionResult.HasError)
             {
-                foreach (string err in sessionResult.ErrorMessages)
-                {
-                    result.AddError(err);
-                }
-
-                return result;
+                return new ResultModel<List<ResultBroadSheet>>(sessionResult.ErrorMessages);
             }
 
             var currSession = sessionResult.Data;
@@ -754,11 +749,10 @@ namespace AssessmentSvc.Core.Services
         {
             var headTeacherIdParams = vm.Select(m => m.HeadTeacherId).Distinct().Select(m => $"UserIds={m}");
 
-            var baseUrl = _configuration["AuthBaseUrl"];
             //http://localhost:58101/api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?UserIds=9&UserIds=6&GetBytes=false
-            string url = $"{baseUrl}api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?{string.Join('&', headTeacherIdParams)}&GetBytes=false";
+            string url = $"api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?{string.Join('&', headTeacherIdParams)}&GetBytes=false";
 
-            HttpClient client = new HttpClient();
+            HttpClient client = _clientFactory.CreateClient("localclient");
             client.DefaultRequestHeaders.Add("tenantId", tenantId.ToString()); 
             var headTeacherTask = client.GetAsync<ApiResponse<List<StaffNameAndSignatureVM>>>(url);
 
@@ -784,7 +778,10 @@ namespace AssessmentSvc.Core.Services
 
             var studentFilePaths = new Dictionary<long, string> ();
 
-            var headTeachers = (await headTeacherTask).Payload;
+            var headTeachers = (await headTeacherTask)?.Payload;
+
+            headTeachers = headTeachers == null ? new List<StaffNameAndSignatureVM>() : headTeachers;
+
             headTeachers.ForEach(m => {
                 var headTeacherMemeType = m.Signature?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
                 m.Signature = $"{headTeacherMemeType}base64, {_documentService.TryGetUploadedFile(m.Signature)}";
