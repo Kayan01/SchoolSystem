@@ -129,7 +129,7 @@ namespace NotificationSvc.Core.Services
 
         protected virtual async Task SendMailAsync(MailBase mail, Dictionary<string, string> replacements)
         {
-            var message = BuildMailMessage(mail, replacements).Result;
+            var message = await BuildMailMessage(mail, replacements);
             try
             {
                 using (var _smtpClient = GetSmtpClient())
