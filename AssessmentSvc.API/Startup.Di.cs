@@ -142,6 +142,11 @@ namespace AssessmentSvc.API
             services.AddScoped<IIncidenceService, IncidenceService>();
             services.AddSingleton<IToPDF, ToPDF>();
 
+            services.AddHttpClient("localclient", c =>
+            {
+                c.BaseAddress = new Uri(Configuration["AuthBaseUrl"]);
+            });
+
             // Registers required services for health checks
             services.AddCustomHealthChecks(Configuration, "Assessment Service");
         }

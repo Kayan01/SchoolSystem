@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using AssessmentSvc.Core.Models;
 
 namespace AssessmentSvc.Core.Test.Tests.SchoolService
 {
@@ -58,10 +59,10 @@ namespace AssessmentSvc.Core.Test.Tests.SchoolService
         {
             using (ServicesDISetup _setup = new ServicesDISetup())
             {
-                var _schoolService = (ISchoolService)_setup.ServiceProvider.GetService(typeof(ISchoolService));
+                var _schoolService = _setup.ServiceProvider.GetService<ISchoolService>();
                 var context = _setup.DbContext;
 
-                var oldSchool = new SchoolSharedModel()
+                var oldSchool = new School()
                 {
                     Name = "OldTestSchool",
                     DomainName = "Test",

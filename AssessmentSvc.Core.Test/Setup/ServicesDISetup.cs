@@ -20,6 +20,7 @@ using Shared.PubSub;
 using Shared.Utils;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 
 namespace AssessmentSvc.Core.Test.Setup
@@ -94,6 +95,11 @@ namespace AssessmentSvc.Core.Test.Setup
 
             var moqToPDF = new MockToPDF();
             services.AddSingleton<IToPDF>(_ => moqToPDF.Mock.Object);
+
+            var httpClientFactory = new MockHttpClientFactory();
+            services.AddScoped<IHttpClientFactory>(_ => httpClientFactory.Mock.Object);
+
+
 
             ServiceProvider = services.AddLogging().BuildServiceProvider();
 
