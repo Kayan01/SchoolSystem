@@ -140,7 +140,9 @@ namespace AssessmentSvc.API
             services.AddScoped<IApprovedResultService, ApprovedResultService>();
             services.AddScoped<ISchoolService, SchoolService>();
             services.AddScoped<IIncidenceService, IncidenceService>();
-            services.AddSingleton<IToPDF, ToPDF>();
+            services.AddScoped<IPromotionSetupService, PromotionSetupService>();
+
+            services.AddScoped<IToPDF, ToPDF>();
 
             services.AddHttpClient("localclient", c =>
             {
