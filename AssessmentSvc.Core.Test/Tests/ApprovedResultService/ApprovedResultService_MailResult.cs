@@ -50,6 +50,19 @@ namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
                 var subject = Builder<Subject>.CreateNew().Build();
                 context.Subjects.Add(subject);
 
+                foreach (var student in students)
+                {
+                    var behaviour = Builder<BehaviourResult>.CreateListOfSize(3)
+                            .All().With(p => p.Id = 0)
+                            .All().With(p => p.SessionId = session.Id)
+                            .All().With(p => p.TermSequenceNumber = session.Terms[0].SequenceNumber)
+                            .All().With(p => p.TenantId = 1)
+                            .All().With(p => p.IsDeleted = false)
+                            .All().With(p => p.StudentId = student.Id)
+                            .All().With(p => p.SchoolClassId = Class.Id)
+                            .Build();
+                    context.BehaviourResults.AddRange(behaviour);
+                }
                 await context.SaveChangesAsync();
 
                 var oldapprovedResults = new List<ApprovedResult>(

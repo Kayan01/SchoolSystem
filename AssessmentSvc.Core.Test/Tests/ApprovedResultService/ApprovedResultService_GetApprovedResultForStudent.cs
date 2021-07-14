@@ -74,7 +74,7 @@ namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
 
                 Assert.IsFalse(rtn.HasError);
                 Assert.IsNotNull(rtn.Data);
-                Assert.IsNotNull(oldapprovedResult.HeadTeacherComment, rtn.Data.HeadTeacherComment);
+                Assert.AreEqual(oldapprovedResult.HeadTeacherComment, rtn.Data.HeadTeacherComment);
             }
 
         }

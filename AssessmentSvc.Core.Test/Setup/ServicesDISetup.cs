@@ -92,6 +92,7 @@ namespace AssessmentSvc.Core.Test.Setup
             services.AddScoped<IGradeSetupService, GradeSetupService>();
             services.AddScoped<IApprovedResultService, ApprovedResultService>();
             services.AddScoped<IIncidenceService, IncidenceService>();
+            services.AddScoped<IPromotionSetupService, PromotionSetupService>();
 
             var moqToPDF = new MockToPDF();
             services.AddSingleton<IToPDF>(_ => moqToPDF.Mock.Object);

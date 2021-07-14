@@ -852,32 +852,35 @@ namespace AssessmentSvc.Core.Services
 
                 var BehaviourTables = new List<TableObject<object>>();
 
-                foreach (var item in studBehaviours.Value.ResultTypeAndValues)
+                if (!studBehaviours.Equals(default(KeyValuePair<long, GetBehaviourResultVM>)))
                 {
-                    var tableData = new List<object>();
-
-                    foreach (var behavior in item.Value)
+                    foreach (var item in studBehaviours.Value.ResultTypeAndValues)
                     {
-                        dynamic behahiourObject = new ExpandoObject();
-                        var behaviourDictionary = behahiourObject as IDictionary<string, object>;
+                        var tableData = new List<object>();
 
-                        behaviourDictionary.Add(item.Key, behavior.BehaviourName);
-                        behaviourDictionary.Add("Grade", behavior.Grade);
-
-                        tableData.Add((object)behahiourObject);
-                    }
-
-                    BehaviourTables.Add(new TableObject<object>()
-                    {
-                        TableConfig = new TableAttributeConfig
+                        foreach (var behavior in item.Value)
                         {
-                            TableAttributes = new { @class = "tContent" },
-                        },
-                        TableData = tableData
-                    }
-                    );
-                }
+                            dynamic behahiourObject = new ExpandoObject();
+                            var behaviourDictionary = behahiourObject as IDictionary<string, object>;
 
+                            behaviourDictionary.Add(item.Key, behavior.BehaviourName);
+                            behaviourDictionary.Add("Grade", behavior.Grade);
+
+                            tableData.Add((object)behahiourObject);
+                        }
+
+                        BehaviourTables.Add(new TableObject<object>()
+                        {
+                            TableConfig = new TableAttributeConfig
+                            {
+                                TableAttributes = new { @class = "tContent" },
+                            },
+                            TableData = tableData
+                        }
+                        );
+                    }
+
+                }
                 tableArrays.Add(new KeyValuePair<string, IEnumerable<TableObject<object>>>( "Behaviours", BehaviourTables));
                 var classTeacher = classTeachers.FirstOrDefault(m => m.UserId == result.ClassTeacherId) ?? new Teacher();
                 var headTeacher = headTeachers.FirstOrDefault(m => m.UserId == result.HeadTeacherId) ?? new StaffNameAndSignatureVM();
