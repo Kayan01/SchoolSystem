@@ -44,44 +44,18 @@ namespace AssessmentSvc.Core.Services
 
         public async Task<ResultModel<WithdrawalSetupVM>> AddOrUpdateWithdrawalSetup(WithdrawalSetupVM vm)
         {
-            var setup = await _promotionSetupRepo.GetAll().Include(m=>m.WithdrawalReasons).FirstOrDefaultAsync();
+            var setup = await _promotionSetupRepo.GetAll().FirstOrDefaultAsync();
 
             if (setup == null)
             {
                 setup = new PromotionSetup();
-                setup.WithdrawalReasons = vm.WithdrawalReasons.Select(m => new WithdrawalReason() { Reason = m.reason }).ToList();
-            }
-            else
-            {
-                setup.WithdrawalReasons.RemoveAll(m => !vm.WithdrawalReasons.Any(n => n.id == m.Id));
-
-                foreach (var reason in setup.WithdrawalReasons)
-                {
-                    //check if this reason still exists in the view model
-                    var vmReason = vm.WithdrawalReasons.FirstOrDefault(m => m.id == reason.Id);
-
-                    //if it does not exist, Remove it.
-                    if (vmReason is null)
-                    {
-                        setup.WithdrawalReasons.Remove(reason);
-                    }
-                    else // update it.
-                    {
-                        reason.Reason = vmReason.reason;
-                    }
-
-                }
-
-                // Add the reasons with id as 0
-                var newReasons = vm.WithdrawalReasons.Where(m => m.id == 0);
-                setup.WithdrawalReasons.AddRange(newReasons.Select(m => new WithdrawalReason() { Reason = m.reason }));
             }
 
             setup.MaxRepeat = vm.MaxRepeat;
 
             await _unitOfWork.SaveChangesAsync();
 
-            setup = await _promotionSetupRepo.GetAll().Include(m => m.WithdrawalReasons).FirstOrDefaultAsync();
+            setup = await _promotionSetupRepo.GetAll().FirstOrDefaultAsync();
 
             return new ResultModel<WithdrawalSetupVM>((WithdrawalSetupVM)setup);
         }
