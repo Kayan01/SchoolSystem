@@ -35,6 +35,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IRepository<ApprovedResult, long> _approvedResultRepo;
         private readonly IRepository<Result, long> _resultRepo;
         private readonly IRepository<Student, long> _studentRepo;
+        private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly ISessionSetup _sessionService;
         private readonly IResultService _resultService;
         private readonly IGradeSetupService _gradeService;
@@ -51,6 +52,7 @@ namespace AssessmentSvc.Core.Services
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
             IRepository<Result, long> resultRepo,
+            IRepository<SchoolClass, long> schoolClassRepo,
             ISessionSetup sessionService,
             IResultService resultService,
             IGradeSetupService gradeService,
@@ -76,6 +78,7 @@ namespace AssessmentSvc.Core.Services
             _publishService = publishService;
             _studentService = studentService;
             _studentRepo = studentRepo;
+            _schoolClassRepo = schoolClassRepo;
             _schoolService = schoolService;
             _teacherService = teacherService;
             _fileStorageService = fileStorageService;
@@ -394,7 +397,6 @@ namespace AssessmentSvc.Core.Services
 
         public async Task<ResultModel<StudentReportSheetVM>> GetApprovedResultForStudent(long classId, long? studentId, long? studentUserId, long? curSessionId = null, int? termSequenceNumber = null)
         {
-
             var result = new ResultModel<StudentReportSheetVM>();
             result.Data = new StudentReportSheetVM();
 
@@ -977,5 +979,100 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<List<ClassResultApprovalVM>>> GetClassesResultApproval(long? curSessionId = null, int? termSequenceNumber = null)
+        {
+            var sessionAndTermResult = new ResultModel<CurrentSessionAndTermVM>();
+
+            if (curSessionId != null && termSequenceNumber != null)
+            {
+                sessionAndTermResult = await _sessionService.GetSessionAndTerm(curSessionId.Value, termSequenceNumber.Value);
+            }
+            else
+            {
+                sessionAndTermResult = await _sessionService.GetCurrentSessionAndTerm();
+            }
+
+            if (sessionAndTermResult.HasError)
+            {
+                return new ResultModel<List<ClassResultApprovalVM>>(sessionAndTermResult.ErrorMessages);
+            }
+
+            var classes = await _schoolClassRepo.GetAll()
+                .Include(m => m.Students)
+                .Include(m=>m.SchoolClassSubjects)
+                .ThenInclude(m=>m.Subject)
+                .ToListAsync();
+
+            if (classes.Count < 1)
+            {
+                return new ResultModel<List<ClassResultApprovalVM>>("No Class was found.");
+            }
+
+            var schoolApprovedResults = await _resultRepo.GetAll()
+                .Where(x => x.SessionSetupId == sessionAndTermResult.Data.sessionId &&
+                    x.TermSequenceNumber == sessionAndTermResult.Data.TermSequence &&
+                    x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
+                    x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved)
+                .Include(x => x.Subject)
+                .Include(x => x.ApprovedResult)
+                .ToListAsync();
+
+            if (schoolApprovedResults.Count < 1)
+            {
+                return new ResultModel<List<ClassResultApprovalVM>>(errorMessage: "No approved result found in current term and session");
+            }
+
+            var rtnData = new List<ClassResultApprovalVM> ();
+
+            foreach (var clas in classes)
+            {
+                var allStudentApproved = false;
+                // do i make sure that all the individual student's result in all subjects are approved?
+                var classesResults = schoolApprovedResults.Where(m => m.SchoolClassId == clas.Id);
+                foreach (var classStudent in clas.Students)
+                {
+                    var allSubjectApproved = false;
+                    var studentResult = classesResults.Where(m => m.StudentId == classStudent.Id);
+                    foreach (var subject in clas.SchoolClassSubjects)
+                    {
+                        var subjectResult = studentResult.Where(m => m.SubjectId == subject.SubjectId);
+                        if (subjectResult.Any())
+                        {
+                            allSubjectApproved = true;
+                        }
+                        else
+                        {
+                            allSubjectApproved = false;
+                            break;
+                        }
+                    }
+
+                    if (allSubjectApproved)
+                    {
+                        allStudentApproved = true;
+                    }
+                    else
+                    {
+                        allStudentApproved = false;
+                        break;
+                    }
+                }
+
+                rtnData.Add(new ClassResultApprovalVM()
+                {
+                    ClassName = $"{clas.Name} {clas.ClassArm}",
+                    isApproved = allStudentApproved,
+                    DateCreated = classesResults.FirstOrDefault()?.ApprovedResult?.LastModificationTime.GetValueOrDefault().ToShortDateString()
+                } ) ;
+            }
+
+            return new ResultModel<List<ClassResultApprovalVM>>(rtnData);
+
+        }
+
+        public Task<ResultModel<List<StudentResultSummaryVM>>> CalculateResultSummary(long? curSessionId = null, int? termSequenceNumber = null)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
