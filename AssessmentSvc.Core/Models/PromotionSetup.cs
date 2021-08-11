@@ -14,7 +14,5 @@ namespace AssessmentSvc.Core.Models
         public PromotionType PromotionType { get; set; }
         public int PromotionScore { get; set; }
         public int MaxRepeat { get; set; }
-
-        public List<WithdrawalReason> WithdrawalReasons { get; set; }
     }
 }
