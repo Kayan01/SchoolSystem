@@ -1,22 +1,22 @@
-﻿using AssessmentSvc.Core.Test.Setup;
+﻿using AssessmentSvc.Core.Interfaces;
+using AssessmentSvc.Core.Test.Setup;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using AssessmentSvc.Core.Interfaces;
-using AssessmentSvc.Core.Models;
 using FizzWare.NBuilder;
+using AssessmentSvc.Core.Models;
 using AssessmentSvc.Core.ViewModels.Result;
 using System.Linq;
 
 namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
 {
-    public class ApprovedResultService_SubmitStudentResult
+    class ApprovedResultService_SubmitClassResultForApproval
     {
           [Test]
-        public async Task SubmitStudentResult_NewApprovedResult()
+        public async Task SubmitClassResultForApproval_NewApprovedResult()
         {
             using (ServicesDISetup _setup = new ServicesDISetup())
             {
@@ -34,8 +34,10 @@ namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
                     .Build();
                 context.SessionSetups.Add(session);
 
+                var Class = Builder<SchoolClass>.CreateNew().Build();
+
                 var student = Builder<Student>.CreateNew().With(
-                        p => p.Class = Builder<SchoolClass>.CreateNew().Build()
+                        p => p.Class= Class
                     )
                     .Build();
                 context.Students.Add(student);
@@ -51,7 +53,7 @@ namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
                     .With(p => p.TermSequenceNumber = session.Terms[0].SequenceNumber)
                     .With(p => p.StudentId = student.Id)
                     .With(p => p.SubjectId = subject.Id)
-                    .With(p => p.SchoolClassId = student.Class.Id)
+                    .With(p => p.SchoolClassId = Class.Id)
                     .With(p => p.Scores = (List<Score>)Builder<Score>.CreateListOfSize(2).All().Build())
                     .Build();
 
@@ -59,13 +61,11 @@ namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
 
                 await context.SaveChangesAsync();
 
-                var model = Builder<UpdateApprovedStudentResultViewModel>.CreateNew()
-                    .With(p => p.SessionId = session.Id)
-                    .With(p => p.TermSequence = session.Terms[0].SequenceNumber)
-                    .With(p => p.StudentId = student.Id)
+                var model = Builder<UpdateApprovedClassResultViewModel>.CreateNew()
+                    .With(p => p.ClassId = Class.Id)
                     .Build();
 
-                var rtn = await approvedService.SubmitStudentResult(model);
+                var rtn = await approvedService.SubmitClassResultForApproval(model);
 
                 Assert.IsFalse(rtn.HasError);
                 Assert.AreEqual("Record updated", rtn.Data);
@@ -74,7 +74,7 @@ namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
         }
 
         [Test]
-        public async Task SubmitStudentResult_UpdateApprovedResult()
+        public async Task SubmitClassResultForApproval_UpdateApprovedResult()
         {
             using (ServicesDISetup _setup = new ServicesDISetup())
             {
@@ -128,20 +128,18 @@ namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
 
                 await context.SaveChangesAsync();
 
-                var model = Builder<UpdateApprovedStudentResultViewModel>.CreateNew()
-                    .With(p => p.SessionId = session.Id)
-                    .With(p => p.TermSequence = session.Terms[0].SequenceNumber)
-                    .With(p => p.StudentId = student.Id)
-                    .With(p => p.ClassTeacherComment = "new comment")
+                var model = Builder<UpdateApprovedClassResultViewModel>.CreateNew()
+                    .With(p => p.ClassId = student.Class.Id)
                     .Build();
 
-                var rtn = await approvedService.SubmitStudentResult(model);
+                var rtn = await approvedService.SubmitClassResultForApproval(model);
 
                 Assert.IsFalse(rtn.HasError);
                 Assert.AreEqual("Record updated", rtn.Data);
 
-                var check = context.ApprovedResults.SingleOrDefault();
+                var check = context.ApprovedResults.FirstOrDefault();
 
+                Assert.IsNotNull(check);
                 Assert.AreNotEqual("old comment", check.ClassTeacherComment);
                 Assert.AreEqual(check.ClassTeacherComment, model.ClassTeacherComment);
 

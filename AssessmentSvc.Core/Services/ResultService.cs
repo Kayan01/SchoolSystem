@@ -491,7 +491,7 @@ namespace AssessmentSvc.Core.Services
 
             if (gradeSetupResult.HasError || gradeSetupResult.Data.Count < 1)
             {
-                result.AddError("Grade has not setup");
+                result.AddError("Grade has not been setup");
                 return result; 
             }
 

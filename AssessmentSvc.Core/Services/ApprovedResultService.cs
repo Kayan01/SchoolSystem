@@ -35,6 +35,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IRepository<ApprovedResult, long> _approvedResultRepo;
         private readonly IRepository<Result, long> _resultRepo;
         private readonly IRepository<Student, long> _studentRepo;
+        private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly ISessionSetup _sessionService;
         private readonly IResultService _resultService;
         private readonly IGradeSetupService _gradeService;
@@ -45,12 +46,13 @@ namespace AssessmentSvc.Core.Services
         private readonly ITeacherService _teacherService;
         private readonly IFileStorageService _fileStorageService;
         private readonly IDocumentService _documentService;
-        private readonly IConfiguration _configuration ;
+        private readonly IHttpClientFactory _clientFactory;
         private readonly IToPDF _toPDF;
 
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
             IRepository<Result, long> resultRepo,
+            IRepository<SchoolClass, long> schoolClassRepo,
             ISessionSetup sessionService,
             IResultService resultService,
             IGradeSetupService gradeService,
@@ -63,7 +65,7 @@ namespace AssessmentSvc.Core.Services
             IFileStorageService fileStorageService,
             IDocumentService documentService,
             IToPDF toPDF,
-            IConfiguration configuration,
+            IHttpClientFactory clientFactory,
         IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -76,12 +78,13 @@ namespace AssessmentSvc.Core.Services
             _publishService = publishService;
             _studentService = studentService;
             _studentRepo = studentRepo;
+            _schoolClassRepo = schoolClassRepo;
             _schoolService = schoolService;
             _teacherService = teacherService;
             _fileStorageService = fileStorageService;
             _documentService = documentService;
             _toPDF = toPDF;
-            _configuration = configuration;
+            _clientFactory = clientFactory;
         }
 
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
@@ -327,12 +330,7 @@ namespace AssessmentSvc.Core.Services
 
             if (sessionResult.HasError)
             {
-                foreach (string err in sessionResult.ErrorMessages)
-                {
-                    result.AddError(err);
-                }
-
-                return result;
+                return new ResultModel<List<ResultBroadSheet>>(sessionResult.ErrorMessages);
             }
 
             var currSession = sessionResult.Data;
@@ -399,7 +397,6 @@ namespace AssessmentSvc.Core.Services
 
         public async Task<ResultModel<StudentReportSheetVM>> GetApprovedResultForStudent(long classId, long? studentId, long? studentUserId, long? curSessionId = null, int? termSequenceNumber = null)
         {
-
             var result = new ResultModel<StudentReportSheetVM>();
             result.Data = new StudentReportSheetVM();
 
@@ -754,11 +751,10 @@ namespace AssessmentSvc.Core.Services
         {
             var headTeacherIdParams = vm.Select(m => m.HeadTeacherId).Distinct().Select(m => $"UserIds={m}");
 
-            var baseUrl = _configuration["AuthBaseUrl"];
             //http://localhost:58101/api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?UserIds=9&UserIds=6&GetBytes=false
-            string url = $"{baseUrl}api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?{string.Join('&', headTeacherIdParams)}&GetBytes=false";
+            string url = $"api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?{string.Join('&', headTeacherIdParams)}&GetBytes=false";
 
-            HttpClient client = new HttpClient();
+            HttpClient client = _clientFactory.CreateClient("localclient");
             client.DefaultRequestHeaders.Add("tenantId", tenantId.ToString()); 
             var headTeacherTask = client.GetAsync<ApiResponse<List<StaffNameAndSignatureVM>>>(url);
 
@@ -784,7 +780,10 @@ namespace AssessmentSvc.Core.Services
 
             var studentFilePaths = new Dictionary<long, string> ();
 
-            var headTeachers = (await headTeacherTask).Payload;
+            var headTeachers = (await headTeacherTask)?.Payload;
+
+            headTeachers = headTeachers == null ? new List<StaffNameAndSignatureVM>() : headTeachers;
+
             headTeachers.ForEach(m => {
                 var headTeacherMemeType = m.Signature?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
                 m.Signature = $"{headTeacherMemeType}base64, {_documentService.TryGetUploadedFile(m.Signature)}";
@@ -855,32 +854,35 @@ namespace AssessmentSvc.Core.Services
 
                 var BehaviourTables = new List<TableObject<object>>();
 
-                foreach (var item in studBehaviours.Value.ResultTypeAndValues)
+                if (!studBehaviours.Equals(default(KeyValuePair<long, GetBehaviourResultVM>)))
                 {
-                    var tableData = new List<object>();
-
-                    foreach (var behavior in item.Value)
+                    foreach (var item in studBehaviours.Value.ResultTypeAndValues)
                     {
-                        dynamic behahiourObject = new ExpandoObject();
-                        var behaviourDictionary = behahiourObject as IDictionary<string, object>;
+                        var tableData = new List<object>();
 
-                        behaviourDictionary.Add(item.Key, behavior.BehaviourName);
-                        behaviourDictionary.Add("Grade", behavior.Grade);
-
-                        tableData.Add((object)behahiourObject);
-                    }
-
-                    BehaviourTables.Add(new TableObject<object>()
-                    {
-                        TableConfig = new TableAttributeConfig
+                        foreach (var behavior in item.Value)
                         {
-                            TableAttributes = new { @class = "tContent" },
-                        },
-                        TableData = tableData
-                    }
-                    );
-                }
+                            dynamic behahiourObject = new ExpandoObject();
+                            var behaviourDictionary = behahiourObject as IDictionary<string, object>;
 
+                            behaviourDictionary.Add(item.Key, behavior.BehaviourName);
+                            behaviourDictionary.Add("Grade", behavior.Grade);
+
+                            tableData.Add((object)behahiourObject);
+                        }
+
+                        BehaviourTables.Add(new TableObject<object>()
+                        {
+                            TableConfig = new TableAttributeConfig
+                            {
+                                TableAttributes = new { @class = "tContent" },
+                            },
+                            TableData = tableData
+                        }
+                        );
+                    }
+
+                }
                 tableArrays.Add(new KeyValuePair<string, IEnumerable<TableObject<object>>>( "Behaviours", BehaviourTables));
                 var classTeacher = classTeachers.FirstOrDefault(m => m.UserId == result.ClassTeacherId) ?? new Teacher();
                 var headTeacher = headTeachers.FirstOrDefault(m => m.UserId == result.HeadTeacherId) ?? new StaffNameAndSignatureVM();
@@ -977,5 +979,100 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<List<ClassResultApprovalVM>>> GetClassesResultApproval(long? curSessionId = null, int? termSequenceNumber = null)
+        {
+            var sessionAndTermResult = new ResultModel<CurrentSessionAndTermVM>();
+
+            if (curSessionId != null && termSequenceNumber != null)
+            {
+                sessionAndTermResult = await _sessionService.GetSessionAndTerm(curSessionId.Value, termSequenceNumber.Value);
+            }
+            else
+            {
+                sessionAndTermResult = await _sessionService.GetCurrentSessionAndTerm();
+            }
+
+            if (sessionAndTermResult.HasError)
+            {
+                return new ResultModel<List<ClassResultApprovalVM>>(sessionAndTermResult.ErrorMessages);
+            }
+
+            var classes = await _schoolClassRepo.GetAll()
+                .Include(m => m.Students)
+                .Include(m=>m.SchoolClassSubjects)
+                .ThenInclude(m=>m.Subject)
+                .ToListAsync();
+
+            if (classes.Count < 1)
+            {
+                return new ResultModel<List<ClassResultApprovalVM>>("No Class was found.");
+            }
+
+            var schoolApprovedResults = await _resultRepo.GetAll()
+                .Where(x => x.SessionSetupId == sessionAndTermResult.Data.sessionId &&
+                    x.TermSequenceNumber == sessionAndTermResult.Data.TermSequence &&
+                    x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
+                    x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved)
+                .Include(x => x.Subject)
+                .Include(x => x.ApprovedResult)
+                .ToListAsync();
+
+            if (schoolApprovedResults.Count < 1)
+            {
+                return new ResultModel<List<ClassResultApprovalVM>>(errorMessage: "No approved result found in current term and session");
+            }
+
+            var rtnData = new List<ClassResultApprovalVM> ();
+
+            foreach (var clas in classes)
+            {
+                var allStudentApproved = false;
+                // do i make sure that all the individual student's result in all subjects are approved?
+                var classesResults = schoolApprovedResults.Where(m => m.SchoolClassId == clas.Id);
+                foreach (var classStudent in clas.Students)
+                {
+                    var allSubjectApproved = false;
+                    var studentResult = classesResults.Where(m => m.StudentId == classStudent.Id);
+                    foreach (var subject in clas.SchoolClassSubjects)
+                    {
+                        var subjectResult = studentResult.Where(m => m.SubjectId == subject.SubjectId);
+                        if (subjectResult.Any())
+                        {
+                            allSubjectApproved = true;
+                        }
+                        else
+                        {
+                            allSubjectApproved = false;
+                            break;
+                        }
+                    }
+
+                    if (allSubjectApproved)
+                    {
+                        allStudentApproved = true;
+                    }
+                    else
+                    {
+                        allStudentApproved = false;
+                        break;
+                    }
+                }
+
+                rtnData.Add(new ClassResultApprovalVM()
+                {
+                    ClassName = $"{clas.Name} {clas.ClassArm}",
+                    isApproved = allStudentApproved,
+                    DateCreated = classesResults.FirstOrDefault()?.ApprovedResult?.LastModificationTime.GetValueOrDefault().ToShortDateString()
+                } ) ;
+            }
+
+            return new ResultModel<List<ClassResultApprovalVM>>(rtnData);
+
+        }
+
+        public Task<ResultModel<List<StudentResultSummaryVM>>> CalculateResultSummary(long? curSessionId = null, int? termSequenceNumber = null)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
