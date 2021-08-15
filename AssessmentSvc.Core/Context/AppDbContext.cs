@@ -36,6 +36,7 @@ namespace AssessmentSvc.Core.Context
         public DbSet<School> Schools { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Subject> Subjects { get; set; }
+        public DbSet<SchoolClassSubject> SchoolClassSubjects { get; set; }
         public DbSet<AssessmentSetup> AssessmentSetups { get; set; }
         public DbSet<Result> Results { get; set; }
         public DbSet<SessionSetup> SessionSetups { get; set; }
@@ -44,6 +45,9 @@ namespace AssessmentSvc.Core.Context
         public DbSet<ApprovedResult> ApprovedResults { get; set; }
         public DbSet<BehaviourResult> BehaviourResults { get; set; }
         public DbSet<StudentIncidence> StudentIncidence { get; set; }
+        public DbSet<PromotionLog> PromotionLogs { get; set; }
+        public DbSet<PromotionSetup> PromotionSetups { get; set; }
+        public DbSet<ResultSummary> ResultSummaries { get; set; }
 
         public async Task AddSampleData()
         {

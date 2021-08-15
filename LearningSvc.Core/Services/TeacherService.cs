@@ -24,27 +24,6 @@ namespace LearningSvc.Core.Services
             _teacherRepo = teacherRepo;
         }
 
-        public ResultModel<TeacherVM> AddTeacher(TeacherVM model)
-        {
-            var result = new ResultModel<TeacherVM>();
-
-            var cls = new Teacher
-            {
-                //Todo : Add more fields
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                Phone = model.Phone,
-
-            };
-
-            var id = _teacherRepo.InsertAndGetId(cls);
-            _unitOfWork.SaveChanges();
-            model.Id = id;
-            result.Data = model;
-            return result;
-        }
-
         public void AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model)
         {
             var teacher = _teacherRepo.FirstOrDefault(x => x.Id == model.Id && x.TenantId == model.TenantId);
@@ -69,23 +48,7 @@ namespace LearningSvc.Core.Services
 
             _unitOfWork.SaveChanges();
         }
-        public async Task<ResultModel<List<TeacherVM>>> GetAllTeacher()
-        {
-            var result = new ResultModel<List<TeacherVM>>
-            {
-                Data = await _teacherRepo.GetAll().Select(x => (TeacherVM)x).ToListAsync()
-            };
-            return result;
-        }
 
-        public async Task<ResultModel<TeacherVM>> GetTeacherSummaryById(long id)
-        {
-            var result = new ResultModel<TeacherVM>
-            {
-                Data = await _teacherRepo.GetAll().Where(m=>m.Id == id).FirstOrDefaultAsync()
-            };
-            return result;
-        }
         public async Task<long> GetTeacherIdByUserId(long userId)
         {
             var teacherId = await _teacherRepo.GetAll().Where(m => m.UserId == userId).Select(n => n.Id).FirstOrDefaultAsync();

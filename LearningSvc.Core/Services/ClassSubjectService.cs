@@ -5,6 +5,7 @@ using LearningSvc.Core.ViewModels.Subject;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.PubSub;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -19,16 +20,19 @@ namespace LearningSvc.Core.Services
         private readonly IRepository<SchoolClassSubject, long> _classSubjectRepo;
         private readonly IRepository<Subject, long> _subjectRepo;
         private readonly IRepository<SchoolClass, long> _schoolClassRepo;
+        private readonly IPublishService _publishService;
         private readonly IUnitOfWork _unitOfWork;
 
         public ClassSubjectService(IUnitOfWork unitOfWork, 
             IRepository<SchoolClassSubject, long> classSubjectRepo, 
-            IRepository<SchoolClass, long> schoolClassRepo, 
+            IRepository<SchoolClass, long> schoolClassRepo,
+            IPublishService publishService,
             IRepository<Subject, long> subjectRepo)
         {
             _unitOfWork = unitOfWork;
             _classSubjectRepo = classSubjectRepo;
             _schoolClassRepo = schoolClassRepo;
+            _publishService = publishService;
             _subjectRepo = subjectRepo;
         }
 
@@ -42,16 +46,26 @@ namespace LearningSvc.Core.Services
                 return r;
             }
 
+            var addedSchoolClassSubjects = new List<SchoolClassSubject>();
             foreach (var id in model.SubjectIds)
             {
-                _classSubjectRepo.Insert(new SchoolClassSubject()
+                addedSchoolClassSubjects.Add(_classSubjectRepo.Insert(new SchoolClassSubject()
                 {
                     SchoolClassId = model.ClassId,
                     SubjectId = id
-                });
+                }));
             }
 
             await _unitOfWork.SaveChangesAsync();
+
+            await _publishService.PublishMessage(Topics.ClassSubject, BusMessageTypes.CLASSSUBJECT, addedSchoolClassSubjects.Select(m=> new SchoolClassSubjectSharedModel()
+                {
+                    Id = m.Id,
+                    TenantId = m.TenantId,
+                    SchoolClassId= m.SchoolClassId,
+                    SubjectId = m.SubjectId
+                }
+            ));
 
             r.Data = "Saved successfully";
             return r;
@@ -67,16 +81,26 @@ namespace LearningSvc.Core.Services
                 return r;
             }
 
+            var addedSchoolClassSubjects = new List<SchoolClassSubject>();
             foreach (var id in model.ClassIds)
             {
-                _classSubjectRepo.Insert(new SchoolClassSubject()
+                addedSchoolClassSubjects.Add(_classSubjectRepo.Insert(new SchoolClassSubject()
                 {
                     SchoolClassId = id,
                     SubjectId = model.SubjectId
-                });
+                }));
             }
 
             await _unitOfWork.SaveChangesAsync();
+
+            await _publishService.PublishMessage(Topics.ClassSubject, BusMessageTypes.CLASSSUBJECT, addedSchoolClassSubjects.Select(m => new SchoolClassSubjectSharedModel()
+            {
+                Id = m.Id,
+                TenantId = m.TenantId,
+                SchoolClassId = m.SchoolClassId,
+                SubjectId = m.SubjectId
+            }
+            ));
 
             r.Data = "Saved successfully";
             return r;
