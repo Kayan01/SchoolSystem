@@ -38,6 +38,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly ISessionSetup _sessionService;
         private readonly IResultService _resultService;
+        private readonly IResultSummaryService _resultSummaryService;
         private readonly IGradeSetupService _gradeService;
         private readonly IAssessmentSetupService _assessmentSetupService;
         private readonly IPublishService _publishService;
@@ -55,6 +56,7 @@ namespace AssessmentSvc.Core.Services
             IRepository<SchoolClass, long> schoolClassRepo,
             ISessionSetup sessionService,
             IResultService resultService,
+            IResultSummaryService resultSummaryService,
             IGradeSetupService gradeService,
             IPublishService publishService,
             IStudentService studentService,
@@ -73,6 +75,7 @@ namespace AssessmentSvc.Core.Services
             _sessionService = sessionService;
             _approvedResultRepo = approvedResultRepo;
             _resultRepo = resultRepo;
+            _resultSummaryService = resultSummaryService;
             _gradeService = gradeService;
             _assessmentSetupService = assessmentSetupService;
             _publishService = publishService;
@@ -999,8 +1002,6 @@ namespace AssessmentSvc.Core.Services
 
             var classes = await _schoolClassRepo.GetAll()
                 .Include(m => m.Students)
-                .Include(m=>m.SchoolClassSubjects)
-                .ThenInclude(m=>m.Subject)
                 .ToListAsync();
 
             if (classes.Count < 1)
@@ -1008,46 +1009,26 @@ namespace AssessmentSvc.Core.Services
                 return new ResultModel<List<ClassResultApprovalVM>>("No Class was found.");
             }
 
-            var schoolApprovedResults = await _resultRepo.GetAll()
-                .Where(x => x.SessionSetupId == sessionAndTermResult.Data.sessionId &&
-                    x.TermSequenceNumber == sessionAndTermResult.Data.TermSequence &&
-                    x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved &&
-                    x.ApprovedResult.HeadTeacherApprovedStatus == Enumeration.ApprovalStatus.Approved)
-                .Include(x => x.Subject)
-                .Include(x => x.ApprovedResult)
-                .ToListAsync();
+            var schoolApprovedResultSummariesResult = await _resultSummaryService.GetResultSummaries(sessionAndTermResult.Data.sessionId, sessionAndTermResult.Data.TermSequence);
 
-            if (schoolApprovedResults.Count < 1)
+            if (schoolApprovedResultSummariesResult.HasError || schoolApprovedResultSummariesResult.Data is null)
             {
-                return new ResultModel<List<ClassResultApprovalVM>>(errorMessage: "No approved result found in current term and session");
+                return new ResultModel<List<ClassResultApprovalVM>>(errorMessage: "No result summary found in current term and session");
             }
+            var schoolApprovedResultSummaries = schoolApprovedResultSummariesResult.Data;
 
             var rtnData = new List<ClassResultApprovalVM> ();
 
             foreach (var clas in classes)
             {
                 var allStudentApproved = false;
+                var studentResult = new ResultSummary();
                 // do i make sure that all the individual student's result in all subjects are approved?
-                var classesResults = schoolApprovedResults.Where(m => m.SchoolClassId == clas.Id);
                 foreach (var classStudent in clas.Students)
                 {
-                    var allSubjectApproved = false;
-                    var studentResult = classesResults.Where(m => m.StudentId == classStudent.Id);
-                    foreach (var subject in clas.SchoolClassSubjects)
-                    {
-                        var subjectResult = studentResult.Where(m => m.SubjectId == subject.SubjectId);
-                        if (subjectResult.Any())
-                        {
-                            allSubjectApproved = true;
-                        }
-                        else
-                        {
-                            allSubjectApproved = false;
-                            break;
-                        }
-                    }
-
-                    if (allSubjectApproved)
+                    studentResult = schoolApprovedResultSummaries.FirstOrDefault(m => m.StudentId == classStudent.Id);
+                    
+                    if (studentResult != null && studentResult.ResultApproved)
                     {
                         allStudentApproved = true;
                     }
@@ -1062,7 +1043,7 @@ namespace AssessmentSvc.Core.Services
                 {
                     ClassName = $"{clas.Name} {clas.ClassArm}",
                     isApproved = allStudentApproved,
-                    DateCreated = classesResults.FirstOrDefault()?.ApprovedResult?.LastModificationTime.GetValueOrDefault().ToShortDateString()
+                    DateCreated = studentResult==null ? "" : studentResult.CreationTime.ToShortDateString()
                 } ) ;
             }
 
@@ -1070,9 +1051,5 @@ namespace AssessmentSvc.Core.Services
 
         }
 
-        public Task<ResultModel<List<StudentResultSummaryVM>>> CalculateResultSummary(long? curSessionId = null, int? termSequenceNumber = null)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
