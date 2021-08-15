@@ -141,6 +141,8 @@ namespace AssessmentSvc.API
             services.AddScoped<ISchoolService, SchoolService>();
             services.AddScoped<IIncidenceService, IncidenceService>();
             services.AddScoped<IPromotionSetupService, PromotionSetupService>();
+            services.AddScoped<IPromotionService, PromotionService>();
+            services.AddScoped<IResultSummaryService, ResultSummaryService>();
 
             services.AddScoped<IToPDF, ToPDF>();
 
