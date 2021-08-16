@@ -22,11 +22,6 @@ namespace AssessmentSvc.Core.Test.Tests.PromotionSetupService
                 var context = _setup.DbContext;
 
                 var setup = Builder<PromotionSetup>.CreateNew()
-                    .With(
-                        p => p.WithdrawalReasons = (List<WithdrawalReason>)Builder<WithdrawalReason>.CreateListOfSize(2).All()
-                            .With(m=> m.PromotionSetupId = 0)
-                            .Build()
-                        )
                     .Build();
                 var x = context.PromotionSetups.Add(setup);
                 await context.SaveChangesAsync();
