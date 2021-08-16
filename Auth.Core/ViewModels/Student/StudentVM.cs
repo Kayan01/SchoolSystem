@@ -9,6 +9,7 @@ namespace Auth.Core.ViewModels.Student
 {
     public class StudentDetailVM
     {
+        public long TenantId { get; set; }
         public string Title { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -23,6 +24,7 @@ namespace Auth.Core.ViewModels.Student
         public string StateOfOrigin { get; set; }
         public string StudentType { get; set; }
         public DateTime AdmissionDate { get; set; }
+        public string Level { get; set; }
         public string Section { get; set; }
         public string Class { get; set; }
         public string BloodGroup { get; set; }

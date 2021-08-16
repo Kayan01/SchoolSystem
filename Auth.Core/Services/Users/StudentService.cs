@@ -350,6 +350,7 @@ namespace Auth.Core.Services
             var std = await _studentRepo.GetAll().Where(x => x.Id == Id)
                         .Select(x => new
                         {
+                            x.TenantId,
                             x.Id,
                             x.User.FirstName,
                             x.User.LastName,
@@ -416,6 +417,7 @@ namespace Auth.Core.Services
                 Genotype = std.Genotype,
                 HomeAddress = std.Address,
                 Id = std.Id,
+                Level = std.Level,
                 ParentId = std.ParentId,
                 Image = _documentService.TryGetUploadedFile(std.image?.Path),
                 ImmunizationHistoryVMs = std.Immunization.Select(x=> new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine}).ToList(),
