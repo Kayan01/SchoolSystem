@@ -43,7 +43,6 @@ namespace Auth.API
                         .ToArray())
                     .SetIsOriginAllowedToAllowWildcardSubdomains()
                     .WithOrigins("https://*.myschooltrack.com")
-                    .WithOrigins("https://*.sbscschooltrack.com")
                     .AllowAnyMethod()
                     .AllowCredentials()
                     .AllowAnyHeader()
