@@ -1,7 +1,9 @@
 ﻿using Auth.Core.Context;
 using Auth.Core.Models;
 using Auth.Core.Services;
+using Auth.Core.Services.Class;
 using Auth.Core.Services.Interfaces;
+using Auth.Core.Services.Interfaces.Class;
 using Auth.Core.Test.Mocks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
@@ -70,13 +72,16 @@ namespace Auth.Core.Test.Services.Setup
             services.RegisterGenericRepos(typeof(AppDbContext));
 
             services.AddScoped<ISchoolService, SchoolService>();
+            services.AddScoped<ISectionService, SectionService>();
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider("/FileStore"));
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IDocumentService, DocumentService>();
 
             var moqPublish = new MockPublishService();
+            var moqFileUpload = new MockFileUploadService();
 
-            services.AddScoped<IPublishService>(_ => moqPublish.Mock.Object); 
+            services.AddScoped<IPublishService>(_ => moqPublish.Mock.Object);
+            services.AddScoped<IDocumentService>(_ => moqFileUpload.Mock.Object);
             services.AddScoped<IAuthUserManagement, AuthUserManagementService>();
             var builder = new ConfigurationBuilder()
                 //.SetBasePath("path here") //<--You would need to set the path

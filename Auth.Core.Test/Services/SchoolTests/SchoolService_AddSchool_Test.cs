@@ -23,6 +23,9 @@ namespace Auth.Core.Test.Services.SchoolTests
     [TestFixture]
     public class SchoolService_AddSchool_Test
     {
+
+        public const string DomainErrorMessage = "Unique name required for domain";
+
         [SetUp]
         public void SetUp()
         {
@@ -43,14 +46,41 @@ namespace Auth.Core.Test.Services.SchoolTests
                 });
                 await context.SaveChangesAsync();
 
-                var result = await _schoolService.AddSchool(new CreateSchoolVM()
+                var result = await _schoolService.CheckSchoolDomain(new CreateSchoolVM()
                 {
                     Name = "Test",
                     DomainName = "Test",
                 });
 
-                Assert.IsTrue(result.HasError);
-                Assert.AreEqual("Unique name required for domain", result.ErrorMessages[0]);
+
+                Assert.That(result.ErrorMessages.Contains(DomainErrorMessage));
+            }
+        }
+
+
+        [Test]
+        public async Task AddSchool_Domain_Does_Not_ExistsAsync()
+        {
+            using (ServicesDISetup _setup = new ServicesDISetup())
+            {
+                var _schoolService = (ISchoolService)_setup.ServiceProvider.GetService(typeof(ISchoolService));
+                var context = (AppDbContext)_setup.ServiceProvider.GetService(typeof(AppDbContext));
+
+                context.Schools.Add(new School()
+                {
+                    DomainName = "Test",
+                    Name = "Test School"
+                });
+                await context.SaveChangesAsync();
+
+                var result = await _schoolService.CheckSchoolDomain(new CreateSchoolVM()
+                {
+                    Name = "Test",
+                    DomainName = "Test 2",
+                });
+
+
+                Assert.That(!result.ErrorMessages.Contains(DomainErrorMessage));
             }
         }
 
@@ -77,9 +107,7 @@ namespace Auth.Core.Test.Services.SchoolTests
                     State = "test",
                 });
 
-
-                Assert.IsFalse(result.HasError);
-                //Assert.Equals(result.ErrorMessages[0], "Unique name required for domain");
+                Assert.That(!result.ErrorMessages.Contains(DomainErrorMessage));
             }
         }
     }

@@ -30,7 +30,7 @@ namespace Auth.Core.Services.Class
         {
             var result = new ResultModel<ClassSectionVM>();
             //todo: add more props
-            var classArm = _schoolSectionRepository.Insert(new SchoolSection { Name = model.Name });
+            var classArm = _schoolSectionRepository.Insert(new SchoolSection {Id= model.Id, Name = model.Name});
 
             await _unitOfWork.SaveChangesAsync();
             model.Id = classArm.Id;

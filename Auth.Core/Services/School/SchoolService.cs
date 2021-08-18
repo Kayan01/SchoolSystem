@@ -52,17 +52,26 @@ namespace Auth.Core.Services
             _authUserManagement = authUserManagement;
         }
 
+        public async Task<ResultModel<bool>> CheckSchoolDomain(CreateSchoolVM model)
+        {
+            var domainCheck = await _schoolRepo.GetAll().FirstOrDefaultAsync(x => x.DomainName == model.DomainName);
+
+            if (domainCheck != null)
+            {
+                return new ResultModel<bool>("Unique name required for domain");
+            }
+            return new ResultModel<bool>(data : true);
+        }
+
         public async Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model)
         {
             var result = new ResultModel<SchoolVM>();
 
 
-            var domainCheck = await _schoolRepo.GetAll().FirstOrDefaultAsync(x => x.DomainName == model.DomainName);
+            var check = await CheckSchoolDomain(model);
 
-            if (domainCheck != null)
-            {
-                return new ResultModel<SchoolVM>("Unique name required for domain");
-            }
+            if (check.HasError)
+                return new ResultModel<SchoolVM>(check.ErrorMessages);
 
             _unitOfWork.BeginTransaction();
             var files = new List<FileUpload>();
@@ -242,6 +251,8 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<SchoolNameAndLogoVM>> GetSchoolNameAndLogoById(long Id)
         {
+            string logo = default;
+
             var schoolInfo = await _schoolRepo
                 .GetAll()
                 .Where(y => y.Id == Id)
@@ -258,8 +269,11 @@ namespace Auth.Core.Services
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "School not found.");
             }
 
-            var logo = _documentService.TryGetUploadedFile(schoolInfo.path);
-
+            if(!(schoolInfo.path == null))
+            {
+                logo = _documentService.TryGetUploadedFile(schoolInfo.path);
+            }
+            
             if (string.IsNullOrWhiteSpace(logo))
             {
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
