@@ -33,9 +33,6 @@ namespace Auth.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var urls = Configuration["AllowedCorsOrigin"].Split(",", StringSplitOptions.RemoveEmptyEntries)
-                        .Select(o => o.RemovePostFix("/"))
-                        .ToArray();
             services.AddCors(options =>
                 options.AddPolicy("MyCorsPolicy",
                     builder => builder.WithOrigins(Configuration["AllowedCorsOrigin"].Split(",", StringSplitOptions.RemoveEmptyEntries)
