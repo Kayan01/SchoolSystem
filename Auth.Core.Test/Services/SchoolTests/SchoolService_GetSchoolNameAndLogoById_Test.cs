@@ -16,6 +16,10 @@ namespace Auth.Core.Test.Services.SchoolTests
     [TestFixture]
     class SchoolService_GetSchoolNameAndLogoById_Test
     {
+
+        readonly string expectedOutput = "School not found.";
+        readonly string logoErrorMessage = "Logo not found.";
+
         [SetUp]
         public void SetUp()
         {
@@ -37,8 +41,6 @@ namespace Auth.Core.Test.Services.SchoolTests
                     SecondaryColor = "blue"
                 });
                 await context.SaveChangesAsync();
-
-                string expectedOutput = "School not found.";
 
                 var result = await _schoolService.GetSchoolNameAndLogoById(6);
 
@@ -64,11 +66,11 @@ namespace Auth.Core.Test.Services.SchoolTests
                 });
                 await context.SaveChangesAsync();
 
-                string expectedOutput = "Logo not found.";
+                
 
                 var result = await _schoolService.GetSchoolNameAndLogoById(4);
 
-                Assert.That(result.ErrorMessages.Contains(expectedOutput));
+                Assert.That(result.ErrorMessages.Contains(logoErrorMessage));
             }
         }
 
@@ -112,6 +114,61 @@ namespace Auth.Core.Test.Services.SchoolTests
 
                 Assert.False(result.HasError);
                 Assert.AreEqual(expectedOutPut, result.Data.Logo);
+            }
+        }
+
+        [Test]
+        public async Task GetSchoolNameAndLogoByDomain()
+        {
+            using(ServicesDISetup _setup = new ServicesDISetup())
+            {
+                var _schoolService = _setup.ServiceProvider.GetService<ISchoolService>();
+                var context = _setup.ServiceProvider.GetService<AppDbContext>();
+
+                context.Schools.Add(new School()
+                {
+                    DomainName = "test",
+                    Name = "Test School"
+                });
+                await context.SaveChangesAsync();
+
+                var result = await _schoolService.GetSchoolNameAndLogoByDomain("test");
+
+                Assert.AreEqual("Test School", result.Data.SchoolName);
+            }
+        }
+
+        [Test]
+        public async Task GetSchoolNameAndLogoByDomain_School_Does_Not_Exist()
+        {
+            using (ServicesDISetup _setup = new ServicesDISetup())
+            {
+                var _schoolService = _setup.ServiceProvider.GetService<ISchoolService>();
+                var context = _setup.ServiceProvider.GetService<AppDbContext>();
+
+                var result = await _schoolService.GetSchoolNameAndLogoByDomain("test");
+
+                Assert.That(result.ErrorMessages.Contains(expectedOutput));
+            }
+        }
+
+        [Test]
+        public async Task GetSchoolNameAndLogoByDomain_Logo_Not_Found()
+        {
+            using (ServicesDISetup _setup = new ServicesDISetup())
+            {
+                var _schoolService = _setup.ServiceProvider.GetService<ISchoolService>();
+                var context = _setup.ServiceProvider.GetService<AppDbContext>();
+                context.Schools.Add(new School()
+                {
+                    DomainName = "test",
+                    Name = "Test School"
+                });
+                await context.SaveChangesAsync();
+
+                var result = await _schoolService.GetSchoolNameAndLogoByDomain("test");
+
+                Assert.That(result.ErrorMessages.Contains(logoErrorMessage));
             }
         }
     }

@@ -7,7 +7,7 @@ namespace Auth.Core.ViewModels.SchoolClass
 {
     public class ClassSectionVM
     {
-        public long Id { get; set; }
+        public long Id { get; internal set; }
         public string  Name { get; set; }
 
         public static explicit operator ClassSectionVM(SchoolSection model)

@@ -7,12 +7,13 @@ using NUnit.Framework;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.ViewModels;
+using Microsoft.AspNetCore.Http;
 
 namespace Auth.Core.Test.Services.SchoolTests
 {
     [TestFixture]
     public class SectionService_Test
-    {
+    {        
         readonly string expectedOutput = "Section could not be found";
 
         [SetUp]
@@ -26,7 +27,7 @@ namespace Auth.Core.Test.Services.SchoolTests
             using (ServicesDISetup _setup = new ServicesDISetup())
             {
                 var _sectionServices = _setup.ServiceProvider.GetService<ISectionService>();
-                var context = (AppDbContext)_setup.ServiceProvider.GetService(typeof(AppDbContext));
+                var context = _setup.ServiceProvider.GetService<AppDbContext>();
 
                 var school = new School()
                 {
@@ -34,11 +35,12 @@ namespace Auth.Core.Test.Services.SchoolTests
                     DomainName = "Test",
                     Name = "Test School"
                 };
+                context.Schools.Add(school);
+                await context.SaveChangesAsync();
 
                 var model = new ClassSectionVM()
                 {
-                    Id = 3,
-                    Name = "Testing"
+                    Name = "Testing",
                 };
 
                 var result = await _sectionServices.AddSection(model);
@@ -108,6 +110,23 @@ namespace Auth.Core.Test.Services.SchoolTests
                 var _sectionService = _setup.ServiceProvider.GetService<ISectionService>();
                 var context = _setup.ServiceProvider.GetService<AppDbContext>();
 
+
+                var school = new School()
+                {
+                    Id = 4,
+                    DomainName = "Test",
+                    Name = "Test School"
+                };
+                context.Schools.Add(school);
+                await context.SaveChangesAsync();
+
+                var model = new ClassSectionVM()
+                {
+                    Name = "Testing",
+                };
+
+                var AddSection = await _sectionService.AddSection(model);
+
                 var queryModel = new QueryModel()
                 {
                     PageIndex =1,
@@ -117,7 +136,7 @@ namespace Auth.Core.Test.Services.SchoolTests
                 var result = await _sectionService.GetAllSections(queryModel);
 
                 Assert.That(!result.HasError);
-                Assert.AreEqual(2,result.Data.TotalItemCount);
+                Assert.AreEqual(1,result.Data.TotalItemCount);
             }
         }
 
@@ -129,10 +148,26 @@ namespace Auth.Core.Test.Services.SchoolTests
                 var _sectionService = _setup.ServiceProvider.GetService<ISectionService>();
                 var context = _setup.ServiceProvider.GetService<AppDbContext>();
 
-                var result = await _sectionService.GetSectionById(1);
+                var school = new School()
+                {
+                    Id = 4,
+                    DomainName = "Test",
+                    Name = "Test School"
+                };
+                context.Schools.Add(school);
+                await context.SaveChangesAsync();
+
+                var model = new ClassSectionVM()
+                {
+                    Name = "Testing",
+                };
+
+                var AddSection = await _sectionService.AddSection(model);
+
+                var result = await _sectionService.GetSectionById(3);
 
                 Assert.That(!result.HasError);
-                Assert.AreEqual("A", result.Data.Name);
+                Assert.AreEqual("Testing", result.Data.Name);
             }
         }
 
@@ -147,6 +182,53 @@ namespace Auth.Core.Test.Services.SchoolTests
                 var result = await _sectionService.GetSectionById(3);
 
                 Assert.That(result.ErrorMessages.Contains(expectedOutput));
+            }
+        }
+
+        [Test]
+        public async Task DeleteSection_Test()
+        {
+            using (ServicesDISetup _setup = new ServicesDISetup())
+            {
+                var _sectionService = _setup.ServiceProvider.GetService<ISectionService>();
+                var context = _setup.ServiceProvider.GetService<AppDbContext>();
+
+                var school = new School()
+                {
+                    Id = 4,
+                    DomainName = "Test",
+                    Name = "Test School"
+                };
+                context.Schools.Add(school);
+                await context.SaveChangesAsync();
+
+                var model = new ClassSectionVM()
+                {
+                    Name = "Testing",
+                };
+
+                var AddSection = await _sectionService.AddSection(model);
+
+                Assert.That(!(AddSection.ErrorMessages.Contains("Operation Failed")));
+
+                var result =await _sectionService.DeleteSection(3);
+
+                Assert.That(result.Data == true);
+            }
+        }
+        
+        [Test]
+        public async Task DeleteSection_Id_Not_Found_Test()
+        {
+            using (ServicesDISetup _setup = new ServicesDISetup())
+            {
+                var _sectionService = _setup.ServiceProvider.GetService<ISectionService>();
+                var context = _setup.ServiceProvider.GetService<AppDbContext>();
+
+                var result = await _sectionService.DeleteSection(1);
+
+                Assert.That(result.Data == false);
+
             }
         }
     }

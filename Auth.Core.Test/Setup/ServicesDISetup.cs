@@ -5,6 +5,7 @@ using Auth.Core.Services.Class;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.Services.Interfaces.Class;
 using Auth.Core.Test.Mocks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,9 @@ using Shared.PubSub;
 using Shared.Utils;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text;
+using static Shared.Utils.CoreConstants;
 
 namespace Auth.Core.Test.Services.Setup
 {
@@ -67,8 +70,6 @@ namespace Auth.Core.Test.Services.Setup
             }).AddEntityFrameworkStores<AppDbContext>()
            .AddDefaultTokenProviders();
 
-
-            services.AddHttpContextAccessor();
             services.RegisterGenericRepos(typeof(AppDbContext));
 
             services.AddScoped<ISchoolService, SchoolService>();
@@ -79,9 +80,12 @@ namespace Auth.Core.Test.Services.Setup
 
             var moqPublish = new MockPublishService();
             var moqFileUpload = new MockFileUploadService();
+            var moqHttpAccessor = new MockhttpContextAccessorclass();
 
             services.AddScoped<IPublishService>(_ => moqPublish.Mock.Object);
             services.AddScoped<IDocumentService>(_ => moqFileUpload.Mock.Object);
+            services.AddScoped<IHttpContextAccessor>(_ => moqHttpAccessor.Mock.Object);
+
             services.AddScoped<IAuthUserManagement, AuthUserManagementService>();
             var builder = new ConfigurationBuilder()
                 //.SetBasePath("path here") //<--You would need to set the path

@@ -290,6 +290,8 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<SchoolNameAndLogoVM>> GetSchoolNameAndLogoByDomain(string domain)
         {
+
+            string logo = default;
             var schoolInfo = await _schoolRepo
                 .GetAll()
                 .Where(y => y.DomainName == domain.ToLower())
@@ -306,8 +308,11 @@ namespace Auth.Core.Services
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "School not found.");
             }
 
-            var logo = _documentService.TryGetUploadedFile(schoolInfo.path);
-
+            if(!(schoolInfo.path == null))
+            {
+                logo = _documentService.TryGetUploadedFile(schoolInfo.path);
+            }
+            
             if (string.IsNullOrWhiteSpace(logo))
             {
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
