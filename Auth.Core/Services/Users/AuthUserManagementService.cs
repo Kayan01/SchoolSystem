@@ -118,6 +118,13 @@ namespace Auth.Core.Services
                     {"link", callbackUrl},
                 }, user);
             }
+            else if (user.UserType == UserType.SchoolGroupManager)
+            {
+                emailModel = new CreateEmailModel(EmailTemplateType.NewManager, new Dictionary<string, string>
+                {
+                    {"link", callbackUrl},
+                }, user);
+            }
             else
             {
                 emailModel = new CreateEmailModel(EmailTemplateType.NewUser, new Dictionary<string, string>

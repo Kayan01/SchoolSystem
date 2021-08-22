@@ -23,6 +23,7 @@ namespace Auth.Core.Context
         public DbSet<FileUpload> FileUploads { get; set; }
         public DbSet<Test> Tests { get; set; }
         public DbSet<School> Schools { get; set; }
+        public DbSet<SchoolGroup> SchoolGroups { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<TeachingStaff> TeachingStaffs { get; set; }

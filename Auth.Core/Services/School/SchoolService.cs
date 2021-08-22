@@ -188,10 +188,16 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model)
+        public async Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model, long? groupId = null)
         {
-            var query = _schoolRepo.GetAll()
-                .Include(x => x.Staffs)
+            var firstQuery = _schoolRepo.GetAll();
+
+            //add where clause to filter schools
+            if (groupId != null)
+            {
+                firstQuery = firstQuery.Where(x => x.SchoolGroupId == groupId);
+            }
+           var query = firstQuery.Include(x => x.Staffs)
                 .Include(x => x.FileUploads)
                 .Include(x => x.Students)
                 .Include(x => x.TeachingStaffs)
@@ -215,6 +221,7 @@ namespace Auth.Core.Services
                     x.WebsiteAddress,
                     x.IsActive
                 });
+
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 

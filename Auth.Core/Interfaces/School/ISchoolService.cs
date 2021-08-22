@@ -17,7 +17,7 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<int>> GetTotalSchoolsCount();
         Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model);
         Task<ResultModel<bool>> AddBulkSchool(IFormFile model);
-        Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model);
+        Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model, long? groupId = null);
         Task<ResultModel<SchoolDetailVM>> GetSchoolById(long Id);
         Task<ResultModel<SchoolNameAndLogoVM>> GetSchoolNameAndLogoById(long Id);
         Task<ResultModel<SchoolNameAndLogoVM>> GetSchoolNameAndLogoByDomain(string domain);

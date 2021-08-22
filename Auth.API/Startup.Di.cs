@@ -138,6 +138,7 @@ namespace Auth.API
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ISchoolPropertyService, SchoolPropertyService>();
             services.AddScoped<IAlumniService, AlumniService>();
+            services.AddScoped<ISchoolGroupService, SchoolGroupService>();
             services.AddTransient<AuthHandler>();
 
             // Registers required services for health checks
