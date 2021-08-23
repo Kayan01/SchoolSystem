@@ -52,6 +52,12 @@ namespace AssessmentSvc.Core.Services
             }
             var currSession = curSessionResult.Data;
 
+            var check = _schoolPromotionLogRepo.GetAll().Where(m => m.SessionSetupId == currSession.sessionId);
+            if (check != null)
+            {
+                return new ResultModel<string>("Promotion has already been done for this session. Promotion can not be done twice per semester.");
+            }
+
             var promoSetupResult = await _promotionSetupService.GetPromotionSetup();
             if (promoSetupResult.HasError)
             {
