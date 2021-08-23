@@ -228,7 +228,8 @@ namespace Auth.Core.Services
                     studentCount = x.Students.Count,
                     teacherCount = x.Students.Count,
                     x.WebsiteAddress,
-                    x.IsActive
+                    x.IsActive,
+                    x.SchoolGroupId
                 });
 
 
@@ -243,7 +244,8 @@ namespace Auth.Core.Services
                 ClientCode = x.ClientCode,
                 DateCreated = x.CreationTime,
                 Status = x.IsActive,
-                UsersCount = x.staffCount + x.studentCount + x.teacherCount
+                UsersCount = x.staffCount + x.studentCount + x.teacherCount,
+                SchoolGroupId = x.SchoolGroupId
 
             }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
