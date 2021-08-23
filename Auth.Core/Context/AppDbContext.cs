@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using Auth.Core.Models.Users;
 using Auth.Core.Models.Setup;
+using Auth.Core.Models.Alumni;
 
 namespace Auth.Core.Context
 {
@@ -22,6 +23,7 @@ namespace Auth.Core.Context
         public DbSet<FileUpload> FileUploads { get; set; }
         public DbSet<Test> Tests { get; set; }
         public DbSet<School> Schools { get; set; }
+        public DbSet<SchoolGroup> SchoolGroups { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<TeachingStaff> TeachingStaffs { get; set; }
@@ -32,5 +34,6 @@ namespace Auth.Core.Context
         public DbSet<Admin> Admins { get; set; }
         public DbSet<SchoolTrackRole> SchoolTrackRoles { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<Alumni> Alumnis{ get; set; }
     }
 }

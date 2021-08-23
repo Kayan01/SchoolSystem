@@ -110,7 +110,6 @@ namespace Shared.Extensions
                 return ms.ToArray();
             }
 
-            return null;
         }
 
         private static void CreateCell(IRow CurrentRow, int CellIndex, string Value, XSSFCellStyle Style)
