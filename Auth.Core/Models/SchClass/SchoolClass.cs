@@ -18,6 +18,7 @@ namespace Auth.Core.Models
         public bool IsActive { get; set; }
         public long SchoolSectionId { get; set; }
         public int Sequence { get; set; }
+        public bool IsTerminalClass { get; set; }
         [NotMapped]
         public string FullName { get { return $"{Name} {ClassArm}"; } }
         public SchoolSection SchoolSection { get; set; }

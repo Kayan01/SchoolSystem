@@ -38,5 +38,8 @@ namespace Shared.PubSub
         SCHOOL,
         SCHOOL_UPDATE,
         SCHOOL_DELETE,
+        PROMOTION,
+        PROMOTION_UPDATE,
+        PROMOTION_DELETE,
     }
 }
