@@ -10,6 +10,7 @@ namespace AssessmentSvc.Core.ViewModels.PromotionSetup
         public PromotionMethod PromotionMethod { get; set; }
         public PromotionType PromotionType { get; set; }
         public int PromotionScore { get; set; }
+        public int MaxRepeat { get; set; }
 
 
         public static explicit operator PromotionSetupVM(Models.PromotionSetup model)
@@ -19,6 +20,7 @@ namespace AssessmentSvc.Core.ViewModels.PromotionSetup
                 PromotionMethod = model.PromotionMethod,
                 PromotionType = model.PromotionType,
                 PromotionScore = model.PromotionScore,
+                MaxRepeat = model.MaxRepeat
             };
         }
     }
