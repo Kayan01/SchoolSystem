@@ -75,7 +75,7 @@ namespace Auth.Core.Services
                     IsActive = model.Status,
                     TenantId = schoolSection.TenantId,
                     Sequence = model.Sequence,
-
+                    IsTerminalClass = model.IsTerminalClass
                 });
 
             }
@@ -100,7 +100,9 @@ namespace Auth.Core.Services
                 ClassArm = x.ClassArm,
                 Id = x.Id,
                 Name = x.Name,
-                TenantId = x.TenantId
+                TenantId = x.TenantId,
+                IsTerminalClass = x.IsTerminalClass,
+                Sequence = x.Sequence
             }).ToList();
 
 
@@ -183,7 +185,7 @@ namespace Auth.Core.Services
 
 
             var query = _classRepo.GetAll()
-                .OrderByDescending(x => x.CreationTime)
+                .OrderByDescending(x => x.Sequence).ThenBy(x => x.CreationTime)
                 .Select(x => new ListClassVM
                 {
                     Name = x.Name,
@@ -272,6 +274,8 @@ namespace Auth.Core.Services
 
             //TODO: add more props
             @class.Name = model.Name;
+            @class.Sequence = model.Sequence;
+            @class.IsTerminalClass = model.IsTerminalClass;
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -282,7 +286,9 @@ namespace Auth.Core.Services
                     ClassArm = @class.ClassArm,
                     Id = @class.Id,
                     Name = @class.Name,
-                    TenantId = @class.TenantId
+                    TenantId = @class.TenantId,
+                    IsTerminalClass = @class.IsTerminalClass,
+                    Sequence = @class.Sequence
                 }
             };
 

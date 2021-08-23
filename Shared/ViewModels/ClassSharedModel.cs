@@ -10,5 +10,7 @@ namespace Shared.ViewModels
         public long TenantId { get; set; }
         public string Name { get; set; }
         public string ClassArm { get; set; }
+        public bool IsTerminalClass { get; set; }
+        public int Sequence { get; set; }
     }
 }

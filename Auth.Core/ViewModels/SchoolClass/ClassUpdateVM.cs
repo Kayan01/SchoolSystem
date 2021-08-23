@@ -8,5 +8,7 @@ namespace Auth.Core.ViewModels.SchoolClass
     {
         public long Id { get; set; }
         public string Name { get;  set; }
+        public int Sequence { get;  set; }
+        public bool IsTerminalClass { get;  set; }
     }
 }
