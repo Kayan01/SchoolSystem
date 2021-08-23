@@ -289,12 +289,29 @@ namespace Auth.Core.Test.Services.SchoolTests
                 context.Schools.Add(school);
                 context.SaveChanges();
 
-                var Data = await UpdateModelData();
+                var Data = new UpdateSchoolVM()
+                {
+                    DomainName = "test",
+                    Name = "Test School",
+                    PrimaryColor = "red",
+                    SecondaryColor = "blue",
+                    WebsiteAddress = "W.AspNet.com",
+                    Address = "Address1",
+                    City = "Lekki",
+                    State = "Lagos",
+                    Country = "Nigeria",
+                    ContactFirstName = "Ade",
+                    ContactLastName = "OLa",
+                    ContactPhoneNo = "090567564532",
+                    ContactEmail = "Bed@gmail.com",
+                    Username = "tester@gmail.com", 
+                    IsActive = true
+                };
 
                 var result = await _schoolService.UpdateSchool(Data, 4);
 
                 Assert.That(!result.ErrorMessages.Contains("User does not exist"));
-                Assert.AreEqual(Data.DomainName, result.Data.Name);
+                Assert.AreEqual(Data.Name, result.Data.Name);
             }
         }
 
@@ -340,8 +357,6 @@ namespace Auth.Core.Test.Services.SchoolTests
                 };
                 context.Schools.Add(school);
                 await context.SaveChangesAsync();
-
-               // var testData = await TestData();
 
                 var Data = await UpdateModelData();
 
@@ -435,8 +450,7 @@ namespace Auth.Core.Test.Services.SchoolTests
                 ContactLastName = "OLa",
                 ContactPhoneNo = "090567564532",
                 ContactEmail = "Bed@gmail.com",
-                //Username = "tester@gmail.com", //available User
-                Username = "User", //User not in database
+                Username = "User", 
                 IsActive = true
             };
 
