@@ -22,6 +22,7 @@ namespace Shared.Utils
             public const string NewUser = nameof(NewUser);
             public const string NewTeacher = nameof(NewTeacher);
             public const string NewSchool = nameof(NewSchool);
+            public const string NewManager = nameof(NewManager);
             public const string AttendanceReport = nameof(AttendanceReport);
             public const string StudentResult = nameof(StudentResult);
             public const string Invoice = nameof(Invoice);
@@ -57,6 +58,7 @@ namespace Shared.Utils
             new EmailTemplate(EmailTemplateType.NewUser, "New User", "newuser.htm"),
             new EmailTemplate(EmailTemplateType.NewTeacher, "New Teacher", "newteacher.htm"),
             new EmailTemplate(EmailTemplateType.NewSchool, "New School", "newschool.htm"),
+            new EmailTemplate(EmailTemplateType.NewManager, "New School", "newschoolmanager.htm"),
             new EmailTemplate(EmailTemplateType.StudentResult, "Student Result", "result.htm"),
             new EmailTemplate(EmailTemplateType.AttendanceReport, "Attendance Report", "attendance_alert.htm"),
             new EmailTemplate(EmailTemplateType.Invoice, "Invoice", "invoice.html"),
@@ -76,6 +78,7 @@ namespace Shared.Utils
             public const string TeacherClassId = nameof(TeacherClassId);
             public const string StudentClassId = nameof(StudentClassId);
             public const string Permissions = nameof(Permissions);
+            public const string SchGroupId = nameof(SchGroupId);
         }
 
         public class AllowedFileExtensions

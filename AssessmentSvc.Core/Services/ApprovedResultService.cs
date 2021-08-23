@@ -1,5 +1,6 @@
 ﻿using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Models;
+using AssessmentSvc.Core.Utils;
 using AssessmentSvc.Core.ViewModels;
 using AssessmentSvc.Core.ViewModels.Result;
 using AssessmentSvc.Core.ViewModels.SessionSetup;
@@ -34,8 +35,10 @@ namespace AssessmentSvc.Core.Services
         private readonly IRepository<ApprovedResult, long> _approvedResultRepo;
         private readonly IRepository<Result, long> _resultRepo;
         private readonly IRepository<Student, long> _studentRepo;
+        private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly ISessionSetup _sessionService;
         private readonly IResultService _resultService;
+        private readonly IResultSummaryService _resultSummaryService;
         private readonly IGradeSetupService _gradeService;
         private readonly IAssessmentSetupService _assessmentSetupService;
         private readonly IPublishService _publishService;
@@ -44,14 +47,16 @@ namespace AssessmentSvc.Core.Services
         private readonly ITeacherService _teacherService;
         private readonly IFileStorageService _fileStorageService;
         private readonly IDocumentService _documentService;
-        private readonly IConfiguration _configuration ;
-        private readonly IConverter _converter;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly IToPDF _toPDF;
 
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
             IRepository<Result, long> resultRepo,
+            IRepository<SchoolClass, long> schoolClassRepo,
             ISessionSetup sessionService,
             IResultService resultService,
+            IResultSummaryService resultSummaryService,
             IGradeSetupService gradeService,
             IPublishService publishService,
             IStudentService studentService,
@@ -61,8 +66,8 @@ namespace AssessmentSvc.Core.Services
             ITeacherService teacherService,
             IFileStorageService fileStorageService,
             IDocumentService documentService,
-            IConverter converter,
-            IConfiguration configuration,
+            IToPDF toPDF,
+            IHttpClientFactory clientFactory,
         IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -70,17 +75,19 @@ namespace AssessmentSvc.Core.Services
             _sessionService = sessionService;
             _approvedResultRepo = approvedResultRepo;
             _resultRepo = resultRepo;
+            _resultSummaryService = resultSummaryService;
             _gradeService = gradeService;
             _assessmentSetupService = assessmentSetupService;
             _publishService = publishService;
             _studentService = studentService;
             _studentRepo = studentRepo;
+            _schoolClassRepo = schoolClassRepo;
             _schoolService = schoolService;
             _teacherService = teacherService;
             _fileStorageService = fileStorageService;
             _documentService = documentService;
-            _converter = converter;
-            _configuration = configuration;
+            _toPDF = toPDF;
+            _clientFactory = clientFactory;
         }
 
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
@@ -326,12 +333,7 @@ namespace AssessmentSvc.Core.Services
 
             if (sessionResult.HasError)
             {
-                foreach (string err in sessionResult.ErrorMessages)
-                {
-                    result.AddError(err);
-                }
-
-                return result;
+                return new ResultModel<List<ResultBroadSheet>>(sessionResult.ErrorMessages);
             }
 
             var currSession = sessionResult.Data;
@@ -398,7 +400,6 @@ namespace AssessmentSvc.Core.Services
 
         public async Task<ResultModel<StudentReportSheetVM>> GetApprovedResultForStudent(long classId, long? studentId, long? studentUserId, long? curSessionId = null, int? termSequenceNumber = null)
         {
-
             var result = new ResultModel<StudentReportSheetVM>();
             result.Data = new StudentReportSheetVM();
 
@@ -753,11 +754,10 @@ namespace AssessmentSvc.Core.Services
         {
             var headTeacherIdParams = vm.Select(m => m.HeadTeacherId).Distinct().Select(m => $"UserIds={m}");
 
-            var baseUrl = _configuration["AuthBaseUrl"];
             //http://localhost:58101/api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?UserIds=9&UserIds=6&GetBytes=false
-            string url = $"{baseUrl}api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?{string.Join('&', headTeacherIdParams)}&GetBytes=false";
+            string url = $"api/v1/Staff/GetStaffNamesAndSignaturesByUserIds?{string.Join('&', headTeacherIdParams)}&GetBytes=false";
 
-            HttpClient client = new HttpClient();
+            HttpClient client = _clientFactory.CreateClient("localclient");
             client.DefaultRequestHeaders.Add("tenantId", tenantId.ToString()); 
             var headTeacherTask = client.GetAsync<ApiResponse<List<StaffNameAndSignatureVM>>>(url);
 
@@ -783,7 +783,10 @@ namespace AssessmentSvc.Core.Services
 
             var studentFilePaths = new Dictionary<long, string> ();
 
-            var headTeachers = (await headTeacherTask).Payload;
+            var headTeachers = (await headTeacherTask)?.Payload;
+
+            headTeachers = headTeachers == null ? new List<StaffNameAndSignatureVM>() : headTeachers;
+
             headTeachers.ForEach(m => {
                 var headTeacherMemeType = m.Signature?.EndsWith("png") == true ? "data:image/png;" : "data:image/jpeg;";
                 m.Signature = $"{headTeacherMemeType}base64, {_documentService.TryGetUploadedFile(m.Signature)}";
@@ -854,32 +857,35 @@ namespace AssessmentSvc.Core.Services
 
                 var BehaviourTables = new List<TableObject<object>>();
 
-                foreach (var item in studBehaviours.Value.ResultTypeAndValues)
+                if (!studBehaviours.Equals(default(KeyValuePair<long, GetBehaviourResultVM>)))
                 {
-                    var tableData = new List<object>();
-
-                    foreach (var behavior in item.Value)
+                    foreach (var item in studBehaviours.Value.ResultTypeAndValues)
                     {
-                        dynamic behahiourObject = new ExpandoObject();
-                        var behaviourDictionary = behahiourObject as IDictionary<string, object>;
+                        var tableData = new List<object>();
 
-                        behaviourDictionary.Add(item.Key, behavior.BehaviourName);
-                        behaviourDictionary.Add("Grade", behavior.Grade);
-
-                        tableData.Add((object)behahiourObject);
-                    }
-
-                    BehaviourTables.Add(new TableObject<object>()
-                    {
-                        TableConfig = new TableAttributeConfig
+                        foreach (var behavior in item.Value)
                         {
-                            TableAttributes = new { @class = "tContent" },
-                        },
-                        TableData = tableData
-                    }
-                    );
-                }
+                            dynamic behahiourObject = new ExpandoObject();
+                            var behaviourDictionary = behahiourObject as IDictionary<string, object>;
 
+                            behaviourDictionary.Add(item.Key, behavior.BehaviourName);
+                            behaviourDictionary.Add("Grade", behavior.Grade);
+
+                            tableData.Add((object)behahiourObject);
+                        }
+
+                        BehaviourTables.Add(new TableObject<object>()
+                        {
+                            TableConfig = new TableAttributeConfig
+                            {
+                                TableAttributes = new { @class = "tContent" },
+                            },
+                            TableData = tableData
+                        }
+                        );
+                    }
+
+                }
                 tableArrays.Add(new KeyValuePair<string, IEnumerable<TableObject<object>>>( "Behaviours", BehaviourTables));
                 var classTeacher = classTeachers.FirstOrDefault(m => m.UserId == result.ClassTeacherId) ?? new Teacher();
                 var headTeacher = headTeachers.FirstOrDefault(m => m.UserId == result.HeadTeacherId) ?? new StaffNameAndSignatureVM();
@@ -914,10 +920,7 @@ namespace AssessmentSvc.Core.Services
                     HeadTeacherName = $"{headTeacher.LastName} {headTeacher.FirstName}"
                 };
 
-                var pdf = _converter.ConvertToPDFBytesToList(mainData, tableObjects, tableArrays, templatePath, false);
-                var path = $"result/{Guid.NewGuid().ToString()}.pdf";
-                _fileStorageService.SaveBytes(path, pdf);
-                studentFilePaths.Add(result.StudentId, path);
+                studentFilePaths.Add(result.StudentId, _toPDF.ResultToPDF(mainData, tableObjects, tableArrays, templatePath, false));
             }
 
             return studentFilePaths;
@@ -977,6 +980,75 @@ namespace AssessmentSvc.Core.Services
 
             result.Data = "Successful";
             return result;
+        }
+
+        public async Task<ResultModel<List<ClassResultApprovalVM>>> GetClassesResultApproval(long? curSessionId = null, int? termSequenceNumber = null)
+        {
+            var sessionAndTermResult = new ResultModel<CurrentSessionAndTermVM>();
+
+            if (curSessionId != null && termSequenceNumber != null)
+            {
+                sessionAndTermResult = await _sessionService.GetSessionAndTerm(curSessionId.Value, termSequenceNumber.Value);
+            }
+            else
+            {
+                sessionAndTermResult = await _sessionService.GetCurrentSessionAndTerm();
+            }
+
+            if (sessionAndTermResult.HasError)
+            {
+                return new ResultModel<List<ClassResultApprovalVM>>(sessionAndTermResult.ErrorMessages);
+            }
+
+            var classes = await _schoolClassRepo.GetAll()
+                .Include(m => m.Students)
+                .ToListAsync();
+
+            if (classes.Count < 1)
+            {
+                return new ResultModel<List<ClassResultApprovalVM>>("No Class was found.");
+            }
+
+            var schoolApprovedResultSummariesResult = await _resultSummaryService.GetResultSummaries(sessionAndTermResult.Data.sessionId, sessionAndTermResult.Data.TermSequence);
+
+            if (schoolApprovedResultSummariesResult.HasError || schoolApprovedResultSummariesResult.Data is null)
+            {
+                return new ResultModel<List<ClassResultApprovalVM>>(errorMessage: "No result summary found in current term and session");
+            }
+            var schoolApprovedResultSummaries = schoolApprovedResultSummariesResult.Data;
+
+            var rtnData = new List<ClassResultApprovalVM> ();
+
+            foreach (var clas in classes)
+            {
+                var allStudentApproved = false;
+                var studentResult = new ResultSummary();
+                // do i make sure that all the individual student's result in all subjects are approved?
+                foreach (var classStudent in clas.Students)
+                {
+                    studentResult = schoolApprovedResultSummaries.FirstOrDefault(m => m.StudentId == classStudent.Id);
+                    
+                    if (studentResult != null && studentResult.ResultApproved)
+                    {
+                        allStudentApproved = true;
+                    }
+                    else
+                    {
+                        allStudentApproved = false;
+                        break;
+                    }
+                }
+
+                rtnData.Add(new ClassResultApprovalVM()
+                {
+                    ClassName = $"{clas.Name} {clas.ClassArm}",
+                    isApproved = allStudentApproved,
+                    DateCreated = studentResult==null ? "" : studentResult.CreationTime.ToShortDateString()
+                } ) ;
+            }
+
+            return new ResultModel<List<ClassResultApprovalVM>>(rtnData);
+
         }
 
     }

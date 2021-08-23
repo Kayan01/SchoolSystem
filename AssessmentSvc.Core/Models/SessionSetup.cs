@@ -21,7 +21,14 @@ namespace AssessmentSvc.Core.Models
         [NotMapped]
         public List<Term> Terms { 
             get {
-                return JsonConvert.DeserializeObject<List<Term>>(TermsJSON, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                try
+                {
+                    return JsonConvert.DeserializeObject<List<Term>>(TermsJSON, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                }
+                catch (Exception)
+                {
+                    return new List<Term>();
+                }
             } 
 
             set

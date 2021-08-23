@@ -3,6 +3,8 @@ using AssessmentSvc.Core.EventHandlers;
 using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Services;
 using AssessmentSvc.Core.Test.Mocks;
+using AssessmentSvc.Core.Utils;
+using DinkToPdf.Contracts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +20,7 @@ using Shared.PubSub;
 using Shared.Utils;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 
 namespace AssessmentSvc.Core.Test.Setup
@@ -89,6 +92,17 @@ namespace AssessmentSvc.Core.Test.Setup
             services.AddScoped<IGradeSetupService, GradeSetupService>();
             services.AddScoped<IApprovedResultService, ApprovedResultService>();
             services.AddScoped<IIncidenceService, IncidenceService>();
+            services.AddScoped<IPromotionSetupService, PromotionSetupService>();
+            services.AddScoped<IPromotionService, PromotionService>();
+            services.AddScoped<IResultSummaryService, ResultSummaryService>();
+
+            var moqToPDF = new MockToPDF();
+            services.AddSingleton<IToPDF>(_ => moqToPDF.Mock.Object);
+
+            var httpClientFactory = new MockHttpClientFactory();
+            services.AddScoped<IHttpClientFactory>(_ => httpClientFactory.Mock.Object);
+
+
 
             ServiceProvider = services.AddLogging().BuildServiceProvider();
 

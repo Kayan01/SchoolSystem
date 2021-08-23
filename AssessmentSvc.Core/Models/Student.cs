@@ -16,5 +16,6 @@ namespace AssessmentSvc.Core.Models
         public string ParentEmail { get; set; }
 
         public SchoolClass Class { get; set; }
+        public ICollection<SchoolClassSubject> SchoolClassSubjects { get; set; }
     }
 }

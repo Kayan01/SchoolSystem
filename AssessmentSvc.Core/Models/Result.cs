@@ -31,7 +31,15 @@ namespace AssessmentSvc.Core.Models
         {
             get
             {
-                return JsonConvert.DeserializeObject<List<Score>>(ScoresJSON, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                try
+                {
+                    return JsonConvert.DeserializeObject<List<Score>>(ScoresJSON, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                }
+                catch (Exception)
+                {
+                    return new List<Score>();
+                }
+                
             }
 
             set

@@ -9,7 +9,7 @@ namespace Shared.Reflection
     /// <summary>
     /// Defines helper methods for reflection.
     /// </summary>
-    internal static class ReflectionHelper
+    public static class ReflectionHelper
     {
         /// <summary>
         /// Checks whether <paramref name="givenType"/> implements/inherits <paramref name="genericType"/>.
@@ -250,6 +250,51 @@ namespace Shared.Reflection
 
             property = currentType.GetProperty(properties.Last());
             property.SetValue(obj, value);
+        }
+
+        public static TResult SetObjectProperty<TEntity, TResult>(this TEntity entity, TResult vm)
+        {
+            var type = entity.GetType();
+            var properties = type.GetProperties();
+
+            foreach (var prop in properties)
+            {
+
+                var entProp = vm.GetType().GetProperty(prop.Name);
+                if (entProp != null)
+                {
+                    entProp.SetValue(vm, prop.GetValue(entity), null);
+                }
+            }
+
+            return vm;
+
+        }
+
+        public static IEnumerable<TResult> SetObjectPropertiesFromList<TResult, TEntity>(this IEnumerable<TEntity> vmsEntities, IList<TResult> entities) where TResult : new()
+        {
+            var properties = typeof(TEntity).GetProperties();
+
+            foreach (var entity1 in vmsEntities)
+            {
+                var obj = new TResult();
+                foreach (var prop in properties)
+                {
+
+                    var entProp = obj.GetType().GetProperty(prop.Name);
+                    if (entProp != null)
+                    {
+                        entProp.SetValue(obj, prop.GetValue(entity1), null);
+                    }
+
+                }
+
+                entities.Add(obj);
+            }
+
+
+            return entities;
+
         }
     }
 }
