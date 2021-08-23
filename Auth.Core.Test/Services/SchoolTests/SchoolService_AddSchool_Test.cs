@@ -8,15 +8,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
-using Shared.DataAccess.EfCore.UnitOfWork;
-using Shared.DataAccess.Repository;
-using Shared.Entities;
-using Shared.FileStorage;
-using Shared.PubSub;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Shared.ViewModels;
 
 namespace Auth.Core.Test.Services.SchoolTests
 {
@@ -89,7 +83,7 @@ namespace Auth.Core.Test.Services.SchoolTests
         {
             using (ServicesDISetup _setup = new ServicesDISetup())
             {
-                var _schoolService = (ISchoolService)_setup.ServiceProvider.GetService(typeof(ISchoolService));
+                var _schoolService = _setup.ServiceProvider.GetService<ISchoolService>();
                 var result = await _schoolService.AddSchool(new CreateSchoolVM()
                 {
                     Name = "Test",
@@ -108,6 +102,39 @@ namespace Auth.Core.Test.Services.SchoolTests
                 });
 
                 Assert.That(!result.ErrorMessages.Contains(DomainErrorMessage));
+            }
+        }
+
+        [Test]
+        public async Task GetAllSchools_Test()
+        {
+            using (ServicesDISetup _setup = new ServicesDISetup())
+            {
+                var _schoolService = _setup.ServiceProvider.GetService<ISchoolService>();
+                var context = _setup.ServiceProvider.GetService<AppDbContext>();
+                var school = new School()
+                {
+                    Name = "Test",
+                    DomainName = "Test",
+                    Address = "Test",
+                    IsActive = true,
+                    WebsiteAddress = "Test.com",
+                    City = "Test City",
+                    Country = "Nigeria",
+                    State = "test",
+                };
+                context.Schools.Add(school);
+                await context.SaveChangesAsync();
+
+                var queryModel = new QueryModel()
+                {
+                    PageIndex = 1,
+                    PageSize = 3
+                };
+
+                var result = await _schoolService.GetAllSchools(queryModel);
+
+                Assert.That(result.ErrorMessages.Count == 0);
             }
         }
     }
