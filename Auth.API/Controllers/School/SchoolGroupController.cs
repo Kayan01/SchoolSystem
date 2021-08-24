@@ -74,11 +74,46 @@ namespace UserManagement.API.Controllers
         [HttpGet]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<SchoolGroupListVM>>), 200)]
-        public async Task<IActionResult> GetSchoolGroups([FromQuery] QueryModel vM, [FromQuery] long? groupId)
+        public async Task<IActionResult> GetSchoolGroups([FromQuery] QueryModel vM)
         {
             try
             {
-                var result = await _schoolGroupService.GetAllSchoolGroups(vM, groupId);
+                var result = await _schoolGroupService.GetAllSchoolGroups(vM, null);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+        [HttpGet("{id}")]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<SchoolGroupListVM>>), 200)]
+        public async Task<IActionResult> GetSchoolGroupsById(long groupId)
+        {
+            try
+            {
+                var result = await _schoolGroupService.GetAllSchoolGroups(new QueryModel(), groupId);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<SchoolGroupListVM>>), 200)]
+        public async Task<IActionResult> GetAllSchoolsInGroup([FromQuery] QueryModel vM, [FromQuery] long groupId)
+        {
+            try
+            {
+                var result = await _schoolGroupService.GetAllSchoolInGroup(vM, groupId);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
