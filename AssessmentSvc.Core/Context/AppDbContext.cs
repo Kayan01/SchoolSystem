@@ -45,7 +45,7 @@ namespace AssessmentSvc.Core.Context
         public DbSet<ApprovedResult> ApprovedResults { get; set; }
         public DbSet<BehaviourResult> BehaviourResults { get; set; }
         public DbSet<StudentIncidence> StudentIncidence { get; set; }
-        public DbSet<PromotionLog> PromotionLogs { get; set; }
+        public DbSet<SchoolPromotionLog> SchoolPromotionLogs { get; set; }
         public DbSet<PromotionSetup> PromotionSetups { get; set; }
         public DbSet<ResultSummary> ResultSummaries { get; set; }
 

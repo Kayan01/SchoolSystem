@@ -339,8 +339,7 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 
-*/Migrations/*
-!*/Migrations/sp_*[a-zA-Z0-9]*.cs
+
 
 */Log/*
 /UserManagement/UserManagement.Core/Migrations
