@@ -256,6 +256,7 @@ namespace Auth.Core.Services
                 ParentId = parent.Id,
                 Sex = model.Sex,
                 DoB = model.DateOfBirth,
+                StudentStatusInSchool = stud.StudentStatusInSchool,
             });
 
             result.Data = new StudentVM
@@ -672,6 +673,7 @@ namespace Auth.Core.Services
                 ParentId = parent.Id,
                 Sex = model.Sex,
                 DoB = model.DateOfBirth,
+                StudentStatusInSchool = stud.StudentStatusInSchool,
             });
 
             result.Data = stud;

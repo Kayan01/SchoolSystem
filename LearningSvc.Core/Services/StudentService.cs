@@ -43,6 +43,7 @@ namespace LearningSvc.Core.Services
             student.IsDeleted = model.IsDeleted;
             student.RegNumber = model.RegNumber;
             student.ParentId = model.ParentId;
+            student.StudentStatusInSchool = model.StudentStatusInSchool;
 
 
             _unitOfWork.SaveChanges();

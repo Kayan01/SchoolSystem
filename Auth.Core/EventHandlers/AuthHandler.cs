@@ -6,17 +6,23 @@ using Shared.PubSub;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Shared.ViewModels;
+using Auth.Core.Interfaces;
 
 namespace Auth.Core.EventHandlers
 {
     public class AuthHandler
     {
         private readonly ITestService _testService;
+        private readonly IPromotionService _promotionService;
         private readonly ILogger<AuthHandler> _logger;
 
-        public AuthHandler(ITestService testService, ILogger<AuthHandler> logger)
+        public AuthHandler(ITestService testService,
+            IPromotionService promotionService,
+            ILogger<AuthHandler> logger)
         {
             _testService = testService;
+            _promotionService = promotionService;
             _logger = logger;
         }
 
@@ -31,6 +37,19 @@ namespace Auth.Core.EventHandlers
                 {
                     _logger.LogError(string.Join(", ", result.ErrorMessages));
                 }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+            }
+        }
+
+        public void HandlePromotion(BusMessage message)
+        {
+            try
+            {
+                var promoData = JsonConvert.DeserializeObject<PromotionSharedModel>(message.Data);
+                //await _promotionService.PromoteAllStudent(promoData);
             }
             catch (Exception e)
             {

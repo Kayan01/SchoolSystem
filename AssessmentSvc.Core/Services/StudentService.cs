@@ -50,6 +50,7 @@ namespace AssessmentSvc.Core.Services
             student.ParentName = model.ParentName;
             student.Sex = model.Sex;
             student.DateOfBirth = model.DoB;
+            student.StudentStatusInSchool = model.StudentStatusInSchool;
 
             _unitOfWork.SaveChanges();
         }
