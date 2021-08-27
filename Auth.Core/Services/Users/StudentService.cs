@@ -239,7 +239,7 @@ namespace Auth.Core.Services
             _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
             //PublishMessage
-            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>{ new StudentSharedModel
             {
                 Id = stud.Id,
                 RegNumber = stud.RegNumber,
@@ -257,7 +257,7 @@ namespace Auth.Core.Services
                 Sex = model.Sex,
                 DoB = model.DateOfBirth,
                 StudentStatusInSchool = stud.StudentStatusInSchool,
-            });
+            } });
 
             result.Data = new StudentVM
             {
@@ -656,24 +656,26 @@ namespace Auth.Core.Services
           
 
             ////PublishMessage
-            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
-            {
-                Id = stud.Id,
-                RegNumber = stud.RegNumber,
-                IsActive = true,
-                ClassId = stud.ClassId,
-                TenantId = stud.TenantId,
-                UserId = stud.UserId,
-                FirstName = stud.User.FirstName,
-                LastName = stud.User.LastName,
-                Email = stud.User.Email,
-                Phone = stud.User.PhoneNumber,
-                ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
-                ParentEmail = parent.User.Email,
-                ParentId = parent.Id,
-                Sex = model.Sex,
-                DoB = model.DateOfBirth,
-                StudentStatusInSchool = stud.StudentStatusInSchool,
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>{ 
+                new StudentSharedModel
+                {
+                    Id = stud.Id,
+                    RegNumber = stud.RegNumber,
+                    IsActive = true,
+                    ClassId = stud.ClassId,
+                    TenantId = stud.TenantId,
+                    UserId = stud.UserId,
+                    FirstName = stud.User.FirstName,
+                    LastName = stud.User.LastName,
+                    Email = stud.User.Email,
+                    Phone = stud.User.PhoneNumber,
+                    ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
+                    ParentEmail = parent.User.Email,
+                    ParentId = parent.Id,
+                    Sex = model.Sex,
+                    DoB = model.DateOfBirth,
+                    StudentStatusInSchool = stud.StudentStatusInSchool,
+                } 
             });
 
             result.Data = stud;

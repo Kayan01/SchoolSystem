@@ -25,32 +25,38 @@ namespace AssessmentSvc.Core.Services
         }
 
 
-        public void AddOrUpdateStudentFromBroadcast(StudentSharedModel model)
+        public void AddOrUpdateStudentFromBroadcast(List<StudentSharedModel> models)
         {
-            var student = _studentRepo.FirstOrDefault(x => x.Id == model.Id && x.TenantId == model.TenantId);
-            if (student == null)
-            {
-                student = _studentRepo.Insert(new Student
-                {
-                    Id = model.Id
-                });
-            }
+            var idList = models.Select(m => m.Id).Distinct();
+            var studentList = _studentRepo.GetAll().Where(m => idList.Contains(m.Id)).ToList();
 
-            student.TenantId = model.TenantId;
-            student.ClassId = model.ClassId;
-            student.FirstName = model.FirstName;
-            student.LastName = model.LastName;
-            student.Email = model.Email;
-            student.Phone = model.Phone;
-            student.UserId = model.UserId;
-            student.RegNumber = model.RegNumber;
-            student.IsActive = model.IsActive;
-            student.IsDeleted = model.IsDeleted;
-            student.ParentEmail = model.ParentEmail;
-            student.ParentName = model.ParentName;
-            student.Sex = model.Sex;
-            student.DateOfBirth = model.DoB;
-            student.StudentStatusInSchool = model.StudentStatusInSchool;
+            foreach (var model in models)
+            {
+                var student = studentList.FirstOrDefault(x => x.Id == model.Id && x.TenantId == model.TenantId);
+                if (student == null)
+                {
+                    student = _studentRepo.Insert(new Student
+                    {
+                        Id = model.Id
+                    });
+                }
+
+                student.TenantId = model.TenantId;
+                student.ClassId = model.ClassId;
+                student.FirstName = string.IsNullOrEmpty(model.FirstName) ? student.FirstName : model.FirstName;
+                student.LastName = string.IsNullOrEmpty(model.LastName) ? student.LastName : model.LastName;
+                student.Email = string.IsNullOrEmpty(model.Email) ? student.Email : model.Email;
+                student.Phone = string.IsNullOrEmpty(model.Phone) ? student.Phone : model.Phone;
+                student.ParentEmail = string.IsNullOrEmpty(model.ParentEmail) ? student.ParentEmail : model.ParentEmail;
+                student.ParentName = string.IsNullOrEmpty(model.ParentName) ? student.ParentName : model.ParentName;
+                student.UserId = model.UserId;
+                student.RegNumber = model.RegNumber;
+                student.IsActive = model.IsActive;
+                student.IsDeleted = model.IsDeleted;
+                student.Sex = model.Sex;
+                student.DateOfBirth = model.DoB;
+                student.StudentStatusInSchool = model.StudentStatusInSchool;
+            }
 
             _unitOfWork.SaveChanges();
         }
