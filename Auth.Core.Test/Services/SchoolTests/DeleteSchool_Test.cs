@@ -8,6 +8,8 @@ using Auth.Core.Services.Interfaces;
 using Auth.Core.Context;
 using Auth.Core.Models;
 using NUnit.Framework;
+using Shared.ViewModels;
+using System.Linq;
 
 namespace Auth.Core.Test.Services.SchoolTests
 {
@@ -63,7 +65,17 @@ namespace Auth.Core.Test.Services.SchoolTests
             {
                 var schoolService = _setup.ServiceProvider.GetService<ISchoolService>();
                 var context = _setup.ServiceProvider.GetService<AppDbContext>();
-                
+
+                //Delete all seeded Data
+                var allSchools = context.Schools.ToList();
+                foreach (var item in allSchools)
+                {
+                    var deleteSchool = schoolService.DeleteSchool(item.Id);
+                }
+                var checkSchoolCount = await schoolService.GetTotalSchoolsCount();
+                Assert.That(checkSchoolCount.Data == 0);
+
+
                 //Arrange
                 var newSchool = new School()
                 {
@@ -76,9 +88,8 @@ namespace Auth.Core.Test.Services.SchoolTests
 
                 //Act
                 var result = await schoolService.GetTotalSchoolsCount();
-                //Assert 
-                //Check that the total number of items is = 4
-                Assert.That(result.Data == 4);
+                //Assert
+                Assert.That(result.Data == 1);
                 Assert.That(result.ErrorMessages.Count == 0);
             }
         }

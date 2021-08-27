@@ -34,7 +34,7 @@ namespace Auth.Core.Test.Services.Users
                 var result = await _AuthUserManagementService.AddUserAsync(newAuthUserModel);
                 
                 Assert.That(result.HasValue);
-                //Console.WriteLine(result.GetValueOrDefault());
+                Assert.That(result.GetValueOrDefault() == 2);
             }
             
         }
@@ -101,7 +101,6 @@ namespace Auth.Core.Test.Services.Users
 
             }
         }
-
         [Test]
         public async Task SendRegistrationEmailTest()
         {
@@ -125,7 +124,6 @@ namespace Auth.Core.Test.Services.Users
                 Assert.That(result.Data == true);
             }
         }
-        
         [Test]
         public async Task RequestPasswordReset()
         {
@@ -144,7 +142,123 @@ namespace Auth.Core.Test.Services.Users
                 Assert.That(result.Data.Contains(newAuthUserModels.Email));
             }
         }
+        [Test]
+        public async Task GetPasswordResetCode_Test()
+        {
+            using(ServicesDISetup _setup = new ServicesDISetup())
+            {
+                var AuthUserManagement = _setup.ServiceProvider.GetService<IAuthUserManagement>();
+                var context = _setup.ServiceProvider.GetService<AppDbContext>();
+                var newAuthUserModel = AuthUserModelData();
 
+                var addAdmin = await AuthUserManagement.AddUserAsync(newAuthUserModel);
+                var Id = addAdmin.GetValueOrDefault();
+
+                var result =await AuthUserManagement.GetPasswordRestCode(newAuthUserModel.Email);
+
+                Assert.That(result.Message == "Success");
+                Assert.That(result.Data.user.Email == newAuthUserModel.Email);
+            }
+        }
+        [Test]
+        public async Task PasswordReset_Test()
+        {
+            using ServicesDISetup _setup = new ServicesDISetup();
+            var AuthUserManagement = _setup.ServiceProvider.GetService<IAuthUserManagement>();
+            var context = _setup.ServiceProvider.GetService<AppDbContext>();
+            var newAuthUserModel = AuthUserModelData();
+
+            var addAdmin = await AuthUserManagement.AddUserAsync(newAuthUserModel);
+            var Id = addAdmin.GetValueOrDefault();
+
+            var AuthUserRequestResetCode = await AuthUserManagement.GetPasswordRestCode(newAuthUserModel.Email);
+
+            var passwordResetModel = new PasswordResetModel()
+            {
+                Token = AuthUserRequestResetCode.Data.code,
+                NewPassword = "OsascodeReset5436"
+            };
+
+            var result = await AuthUserManagement.PassworReset(passwordResetModel);
+
+            Assert.That(result.Data == true);
+            Assert.That(result.Message == "Success");
+        }
+
+        [Test]
+        public async Task PasswordReset_InvalidToken_Test()
+        {
+            using ServicesDISetup _setup = new ServicesDISetup();
+            var AuthUserManagement = _setup.ServiceProvider.GetService<IAuthUserManagement>();
+            var context = _setup.ServiceProvider.GetService<AppDbContext>();
+            var newAuthUserModel = AuthUserModelData();
+
+            var addAdmin = await AuthUserManagement.AddUserAsync(newAuthUserModel);
+            var Id = addAdmin.GetValueOrDefault();
+
+            var AuthUserRequestResetCode = await AuthUserManagement.GetPasswordRestCode(newAuthUserModel.Email);
+
+            var passwordResetModel = new PasswordResetModel()
+            {
+                Token = AuthUserRequestResetCode.Data.code + "hjuikol",
+                NewPassword = "OsascodeReset5436"
+            };
+
+            var result = await AuthUserManagement.PassworReset(passwordResetModel);
+
+            Assert.That(result.Data == false);
+            Assert.That(result.ErrorMessages.Contains("Invalid Token"));
+        }
+
+        [Test]
+        public async Task PasswordReset_User_Does_NotExist_Test()
+        {
+            using ServicesDISetup _setup = new ServicesDISetup();
+            var AuthUserManagement = _setup.ServiceProvider.GetService<IAuthUserManagement>();
+            var context = _setup.ServiceProvider.GetService<AppDbContext>();
+            var newAuthUserModel = AuthUserModelData();
+
+            var addAdmin = await AuthUserManagement.AddUserAsync(newAuthUserModel);
+            var Id = addAdmin.GetValueOrDefault();
+
+            var AuthUserRequestResetCode = await AuthUserManagement.GetPasswordRestCode(newAuthUserModel.Email);
+
+            var passwordResetModel = new PasswordResetModel()
+            {
+                Token = AuthUserRequestResetCode.Data.code,
+                NewPassword = "OsascodeReset5436"
+            };
+            var deleteUser = AuthUserManagement.DeleteUserAsync(Id);
+            var result = await AuthUserManagement.PassworReset(passwordResetModel);
+
+            Assert.That(result.Data == false);
+            Assert.That(result.ErrorMessages.Contains($"User with {newAuthUserModel.Email} does not exist"));
+        }
+
+        [Test]
+        public async Task PasswordReset_Failed_To_Reset_Password_Test()
+        {
+            using ServicesDISetup _setup = new ServicesDISetup();
+            var AuthUserManagement = _setup.ServiceProvider.GetService<IAuthUserManagement>();
+            var context = _setup.ServiceProvider.GetService<AppDbContext>();
+            var newAuthUserModel = AuthUserModelData();
+
+            var addAdmin = await AuthUserManagement.AddUserAsync(newAuthUserModel);
+            var Id = addAdmin.GetValueOrDefault();
+
+            var AuthUserRequestResetCode = await AuthUserManagement.GetPasswordRestCode(newAuthUserModel.Email);
+
+            var passwordResetModel = new PasswordResetModel()
+            {
+                Token = AuthUserRequestResetCode.Data.code,
+                NewPassword = "9"
+            };
+
+            var result = await AuthUserManagement.PassworReset(passwordResetModel);
+
+            Assert.That(result.Data == false);
+            Assert.That(result.ErrorMessages.Contains("Failed to reset password"));
+        }
 
 
         private AuthUserModel AuthUserModelData()
@@ -153,7 +267,7 @@ namespace Auth.Core.Test.Services.Users
             {
                 FirstName = "Ade",
                 LastName = "Ola",
-                Email = "AdeOla@gmsil.com",
+                Email = "AdeOla@gmail.com",
                 PhoneNumber = "09089787632",
                 Password = "GabbySTeams1990",
                 UserType = UserType.GlobalAdmin
