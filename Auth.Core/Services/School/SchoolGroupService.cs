@@ -177,9 +177,88 @@ namespace Auth.Core.Services
             return await _schoolService.GetAllSchools(qm, id);
         }
 
-        public Task<ResultModel<SchoolGroupListVM>> UpdateSchoolGroup(UpdateSchoolGroupVM model, long Id)
+        public async Task<ResultModel<SchoolGroupListVM>> UpdateSchoolGroup(UpdateSchoolGroupVM model, long Id)
         {
-            throw new System.NotImplementedException();
+            var result = new ResultModel<SchoolGroupListVM>();
+
+            var schgrp = await _schGroupRepo.GetAll()
+                .Include(x=> x.SchoolContactDetails)
+                .FirstOrDefaultAsync(x => x.Id == Id);
+
+            var user = await _userManager.FindByNameAsync(model.ContactEmail);
+
+            if (schgrp is null)
+            {
+                return new ResultModel<SchoolGroupListVM>($"No school group for id {Id}");
+            }
+
+            if (user is null)
+            {
+                return new ResultModel<SchoolGroupListVM>("No School group admin found");
+            }
+
+            _unitOfWork.BeginTransaction();
+
+            var files = new List<FileUpload>();
+            //save filles
+            if (model.Files != null && model.Files.Any())
+            {
+                if (model.Files.Count != model.DocumentTypes.Count)
+                {
+
+                    return new ResultModel<SchoolGroupListVM>("Some document types are missing");
+                }
+                files = await _documentService.TryUploadSupportingDocuments(model.Files, model.DocumentTypes);
+                if (files.Count() != model.Files.Count())
+                {
+                    return new ResultModel<SchoolGroupListVM>("Some files could not be uploaded");
+                }
+            }
+
+            schgrp.SchoolContactDetails = new List<SchoolContactDetails>{ new SchoolContactDetails
+            {
+                Email = model.ContactEmail,
+                FirstName = model.ContactFirstName,
+                LastName = model.ContactLastName,
+                PhoneNumber = model.ContactPhoneNo,
+                IsPrimaryContact = true
+            } };
+
+
+            schgrp.Name = model.Name;
+            schgrp.WebsiteAddress = model.WebsiteAddress;
+            schgrp.FileUploads = files;
+            schgrp.IsActive = model.IsActive;
+            schgrp.PrimaryColor = model.PrimaryColor;
+            schgrp.SecondaryColor = model.SecondaryColor;
+
+
+           await _schGroupRepo.UpdateAsync(schgrp);
+
+            //update auth user
+
+            user.FirstName = model.ContactFirstName;
+            user.LastName = model.ContactLastName;
+            user.Email = model.ContactEmail;
+            user.PhoneNumber = model.ContactPhoneNo;
+            user.UserType = UserType.SchoolGroupManager;
+
+
+            var userResult = await _userManager.UpdateAsync(user);
+
+            if (!userResult.Succeeded)
+            {
+                await _schGroupRepo.DeleteAsync(schgrp);
+
+                await _unitOfWork.SaveChangesAsync();
+                return new ResultModel<SchoolGroupListVM>(userResult.Errors.Select(x => x.Description).ToList());
+            }
+
+
+            _unitOfWork.Commit();          
+
+            result.Data = schgrp;
+            return result;
         }
     }
 
