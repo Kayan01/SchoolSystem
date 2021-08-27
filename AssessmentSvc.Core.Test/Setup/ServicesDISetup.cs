@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Shared.AspNetCore;
 using Shared.DataAccess.EfCore;
 using Shared.DataAccess.EfCore.Context;
 using Shared.DataAccess.EfCore.UnitOfWork;
@@ -85,6 +86,7 @@ namespace AssessmentSvc.Core.Test.Setup
             services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();
             services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<IHttpUserService, HttpUserService>();
             services.AddScoped<ISchoolClassService, SchoolClassService>();
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<ISubjectService, SubjectService>();
