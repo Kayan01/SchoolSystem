@@ -45,16 +45,52 @@ namespace Auth.Core.Test.Services.SchoolTests
         [Test]
         public async Task DeleteSchool_School_Does_Not_Exist()
         {
-            using(ServicesDISetup _setup = new ServicesDISetup())
+            using ServicesDISetup _setup = new ServicesDISetup();
+            var _schoolService = _setup.ServiceProvider.GetService<ISchoolService>();
+            var context = _setup.ServiceProvider.GetService<AppDbContext>();
+
+            //Delete all seeded Data
+            var allSchools = context.Schools.ToList();
+            foreach (var item in allSchools)
             {
-                var _schoolService = _setup.ServiceProvider.GetService<ISchoolService>();
-
-                //Passing in a wrong Id to check that school does not exist.
-                var result = await _schoolService.DeleteSchool(5);
-
-                Assert.That(result.ErrorMessages.Contains("School does not exist"));
-                Assert.That(result.Data == false);
+                _ = _schoolService.DeleteSchool(item.Id);
             }
+            var checkSchoolCount = await _schoolService.GetTotalSchoolsCount();
+            Assert.That(checkSchoolCount.Data == 0);
+
+            var newSchool1 = new School()
+            {
+                DomainName = "Test1",
+                Name = "Test School1"
+            };
+            context.Schools.Add(newSchool1);
+
+            var newSchool2 = new School()
+            {
+                DomainName = "Test2",
+                Name = "Test School2"
+            };
+            context.Schools.Add(newSchool2);
+
+            var newSchool3 = new School()
+            {
+                DomainName = "Test3",
+                Name = "Test School3"
+            };
+            context.Schools.Add(newSchool3);
+            await context.SaveChangesAsync();
+
+            await context.SaveChangesAsync();
+
+            //Second Item Deleted.
+            _ = await _schoolService.DeleteSchool(newSchool2.Id);
+
+            //Passing in the Id already deleted from database to check if its still there.
+            var result = await _schoolService.DeleteSchool(newSchool2.Id);
+
+            //Assert
+            Assert.That(result.ErrorMessages.Contains("School does not exist"));
+            Assert.That(result.Data == false);
 
         }
 
