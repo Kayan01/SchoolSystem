@@ -48,7 +48,7 @@ namespace LearningSvc.Core.Test.Tests.StudentService
                     ClassId = 1
                 };
 
-                _studentService.AddOrUpdateStudentFromBroadcast(newStudent);
+                _studentService.AddOrUpdateStudentFromBroadcast(new List<StudentSharedModel> { newStudent });
 
                 var studentCheck = context.Students.SingleOrDefault(x => x.Id == newStudent.Id);
 
@@ -95,7 +95,7 @@ namespace LearningSvc.Core.Test.Tests.StudentService
                     ClassId = 1
                 };
 
-                _studentService.AddOrUpdateStudentFromBroadcast(newStudent);
+                _studentService.AddOrUpdateStudentFromBroadcast(new List<StudentSharedModel> { newStudent });
 
                 var studentCheck = context.Students.SingleOrDefault(x => x.Id == newStudent.Id);
 
