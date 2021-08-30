@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using Shared.ViewModels;
 using Auth.Core.Interfaces;
+using System.Threading.Tasks;
 
 namespace Auth.Core.EventHandlers
 {
@@ -44,12 +45,12 @@ namespace Auth.Core.EventHandlers
             }
         }
 
-        public void HandlePromotion(BusMessage message)
+        public async Task HandlePromotionAsync(BusMessage message)
         {
             try
             {
                 var promoData = JsonConvert.DeserializeObject<PromotionSharedModel>(message.Data);
-                //await _promotionService.PromoteAllStudent(promoData);
+                await _promotionService.PromoteAllStudent(promoData);
             }
             catch (Exception e)
             {
