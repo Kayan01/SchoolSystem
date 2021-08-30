@@ -14,5 +14,6 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchoolInGroup(QueryModel model, long id);
         Task<ResultModel<PaginatedModel<SchoolGroupListVM>>> GetAllSchoolGroups(QueryModel model, long? id);
         Task<ResultModel<SchoolGroupListVM>> UpdateSchoolGroup(UpdateSchoolGroupVM model, long Id);
+        Task<ResultModel<GetSchoolGroupAnalyticsVM>> GetSchoolGroupAnalytics(long id);
     }
 }

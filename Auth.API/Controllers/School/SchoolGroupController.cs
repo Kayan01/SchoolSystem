@@ -48,28 +48,26 @@ namespace UserManagement.API.Controllers
             }
         }
 
-        //[HttpPost]
-        //[ProducesResponseType(typeof(ApiResponse<bool>), 200)]
-        //public async Task<IActionResult> BulkAddSchoolGroup([FromForm]IFormFile file)
-        //{
-        //    if (file == null)
-        //        return ApiResponse<string>(errors: "No file uploaded");
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        public async Task<IActionResult> GetSchoolGroupAnalytics(long id)
+        {
+            if (id <1)
+                return ApiResponse<string>(errors: "Invalid Id provided");
 
-        //    if (!ModelState.IsValid)
-        //        return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
 
-        //    try
-        //    {
-        //        var result = await _schoolGroupService.AddBulkSchoolGroup(file);
-        //        if (result.HasError)
-        //            return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-        //        return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return HandleError(ex);
-        //    }
-        //}
+            try
+            {
+                var result = await _schoolGroupService.GetSchoolGroupAnalytics(id);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
         [HttpGet]
         //[Authorize]
