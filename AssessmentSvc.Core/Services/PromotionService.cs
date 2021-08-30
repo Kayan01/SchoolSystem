@@ -19,7 +19,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IRepository<ResultSummary, long> _resultSummaryRepo;
         private readonly IRepository<SchoolPromotionLog, long> _schoolPromotionLogRepo;
         private readonly IRepository<Student, long> _studentRepo;
-        private readonly PromotionSetupService _promotionSetupService;
+        private readonly IRepository<PromotionSetup, long> _promotionSetupRepo;
         private readonly ISessionSetup _sessionService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPublishService _publishService;
@@ -28,8 +28,8 @@ namespace AssessmentSvc.Core.Services
             IRepository<ResultSummary, long> resultSummaryRepo,
             IRepository<SchoolPromotionLog, long> schoolPromotionLogRepo,
             IRepository<Student, long> studentRepo,
+            IRepository<PromotionSetup, long> promotionSetupRepo,
             ISessionSetup sessionService,
-            PromotionSetupService promotionSetupService,
             IUnitOfWork unitOfWork,
             IPublishService publishService
             )
@@ -39,7 +39,7 @@ namespace AssessmentSvc.Core.Services
             _schoolPromotionLogRepo = schoolPromotionLogRepo;
             _studentRepo = studentRepo;
             _sessionService = sessionService;
-            _promotionSetupService = promotionSetupService;
+            _promotionSetupRepo = promotionSetupRepo;
             _publishService = publishService;
         }
 
@@ -58,12 +58,11 @@ namespace AssessmentSvc.Core.Services
                 return new ResultModel<string>("Promotion has already been done for this session. Promotion can not be done twice per semester.");
             }
 
-            var promoSetupResult = await _promotionSetupService.GetPromotionSetup();
-            if (promoSetupResult.HasError)
+            var promoSetup = await _promotionSetupRepo.GetAll().FirstOrDefaultAsync();
+            if (promoSetup == null)
             {
-                return new ResultModel<string>(promoSetupResult.ErrorMessages);
+                return new ResultModel<string>(errorMessage: "Promotion setup not done.");
             }
-            var promoSetup = promoSetupResult.Data;
 
             var allStudents = await _studentRepo.GetAll().AsNoTracking().ToListAsync();
 
