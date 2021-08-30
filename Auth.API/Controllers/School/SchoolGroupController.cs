@@ -88,7 +88,7 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
-        [HttpGet("{id}")]
+        [HttpGet("{groupId}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<SchoolGroupListVM>>), 200)]
         public async Task<IActionResult> GetSchoolGroupsById(long groupId)
