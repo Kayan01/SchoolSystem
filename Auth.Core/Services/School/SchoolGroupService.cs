@@ -175,17 +175,13 @@ namespace Auth.Core.Services
         public async Task<ResultModel<GetSchoolGroupAnalyticsVM>> GetSchoolGroupAnalytics(long id)
         {
             /*no of schools
-             no of students
-
-             
+             no of students 
              */
-
             var data = await _schGroupRepo.GetAll().Where(x=> x.Id == id).Select(x => new GetSchoolGroupAnalyticsVM
             {
                 NoOfSchools = x.Schools.Count(),
-                NoOfStudents = x.Schools.Sum(x => x.Students.Count)
+                StudentCounts = x.Schools.Select(x => x.Students.Count())
             }).FirstOrDefaultAsync();
-
 
             return new ResultModel<GetSchoolGroupAnalyticsVM>(data);
 
