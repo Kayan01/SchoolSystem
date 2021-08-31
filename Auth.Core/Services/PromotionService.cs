@@ -61,7 +61,7 @@ namespace Auth.Core.Services
 
             var publishObj = new List<StudentSharedModel>();
 
-            foreach (var studentItem in model.StudentPromotionStatus)
+            foreach (var studentItem in model.StudentPromotionList)
             {
                 var student = students.FirstOrDefault(m => m.Id == studentItem.StudentId);
 
@@ -82,7 +82,7 @@ namespace Auth.Core.Services
 
                     if (curclass.IsTerminalClass)
                     {
-                        _alumniRepo.Insert(NewAlumni(student, model.SessionName)); //if current class is a terminal class, create an alumni record.
+                        _alumniRepo.Insert(AlumniService.+NewAlumni(student, model.SessionName)); //if current class is a terminal class, create an alumni record.
                     }
 
                     //Promote Student
@@ -104,12 +104,14 @@ namespace Auth.Core.Services
                         SessionSetupId = model.SessionId,
                         SchoolClassId = nextClass.Id,
                         StudentId = student.Id,
+                        AverageScore = studentItem.Average,
                         TenantId = model.TenantId
                     });
                 }
                 else // student did not meet cutoff mark
                 {
                     var previousWithdrawals = await _promotionLogRepo.GetAll().Where(m => 
+                        m.StudentId == student.Id &&
                         m.SchoolClassId == student.ClassId && 
                         m.PromotionStatus == Enumeration.PromotionStatus.Repeated
                     ).ToListAsync();
@@ -166,30 +168,5 @@ namespace Auth.Core.Services
         }
 
 
-        public Alumni NewAlumni(Student student, string sessionName)
-        {
-            return new Alumni
-            {
-                DateOfBirth = student.DateOfBirth,
-                Address = student.Address,
-                AdmissionDate = student.AdmissionDate,
-                Country = student.Country,
-                Level = student.Level,
-                LocalGovernment = student.LocalGovernment,
-                MothersMaidenName = student.MothersMaidenName,
-                State = student.State,
-                TenantId = student.TenantId,
-                StudentType = student.StudentType,
-                StudentId = student.Id,
-                RegNumber = student.RegNumber,
-                Nationality = student.Nationality,
-                ParentId = student.ParentId,
-                Sex = student.Sex,
-                Religion = student.Religion,
-                StateOfOrigin = student.StateOfOrigin,
-                SessionName = sessionName,
-
-            };
-        }
     }
 }

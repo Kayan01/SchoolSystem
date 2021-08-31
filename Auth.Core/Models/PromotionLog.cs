@@ -19,5 +19,6 @@ namespace Auth.Core.Models
 
         public SchoolClass SchoolClass { get; set; }
         public Student Student { get; set; }
+        public double AverageScore { get; set; }
     }
 }

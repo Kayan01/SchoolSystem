@@ -80,7 +80,7 @@ namespace AssessmentSvc.Core.Services
 
                 if (results == null || results.Count<1)
                 {
-                    resultNotFoundMessage.Append($"{student.LastName} {student.FirstName} \n");
+                    resultNotFoundMessage.Append($"{student.LastName} {student.FirstName} (Student Id : {student.Id})\n");
                     missingStudentResult = true;
                     continue;
                 }
@@ -109,7 +109,7 @@ namespace AssessmentSvc.Core.Services
                 MaxRepeats = promoSetup.MaxRepeat,
                 SessionId = currSession.sessionId,
                 SessionName = currSession.SessionName,
-                StudentPromotionStatus = promotionData,
+                StudentPromotionList = promotionData,
                 TenantId = allStudents.First().TenantId,
 
             };
