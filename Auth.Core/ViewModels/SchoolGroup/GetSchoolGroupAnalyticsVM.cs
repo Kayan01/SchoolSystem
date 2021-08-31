@@ -14,6 +14,9 @@ namespace Auth.Core.ViewModels.SchoolGroup
                 return StudentCounts.Sum();
             }
         }
+
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public IEnumerable<int> StudentCounts { get; set; } = new List<int>();
     }
 }
