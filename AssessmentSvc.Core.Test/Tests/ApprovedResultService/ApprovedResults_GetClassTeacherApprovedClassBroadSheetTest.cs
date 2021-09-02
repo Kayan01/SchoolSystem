@@ -13,6 +13,7 @@ using System.Linq;
 
 namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
 {
+    [TestFixture]
     class ApprovedResults_GetClassTeacherApprovedClassBroadSheetTest
     {
         [Test]
