@@ -1,4 +1,5 @@
 ﻿using Shared.Entities.Auditing;
+using Shared.Enums;
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;

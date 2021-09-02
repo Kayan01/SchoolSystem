@@ -7,6 +7,6 @@ namespace FinanceSvc.Core.Services.Interfaces
 {
     public interface IStudentService
     {
-        void AddOrUpdateStudentFromBroadcast(StudentSharedModel model);
+        void AddOrUpdateStudentFromBroadcast(List<StudentSharedModel> model);
     }
 }

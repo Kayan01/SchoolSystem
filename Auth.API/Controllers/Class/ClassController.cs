@@ -138,6 +138,24 @@ namespace UserManagement.API.Controllers
             }
         }
 
+        [HttpGet]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<ClassWithoutArmVM>>), 200)]
+        public async Task<IActionResult> GetClassesWithoutArm()
+        {
+            try
+            {
+                var result = await _classService.GetClassesWithoutArm();
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpGet("{id}")]
         //[Authorize]
         [ProducesResponseType(typeof(ApiResponse<List<ListClassVM>>), 200)]
@@ -205,7 +223,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPut]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<ClassUpdateVM>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<ClassUpdateVM>>), 200)]
         public async Task<IActionResult> UpdateClass([FromBody] ClassUpdateVM model)
         {
             if (!ModelState.IsValid)
@@ -216,6 +234,29 @@ namespace UserManagement.API.Controllers
             try
             {
                 var result = await _classService.UpdateClass(model);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpPut]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> UpdateClassSequenceAndTerminal([FromBody] List<ClassWithoutArmVM> model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+            try
+            {
+                var result = await _classService.UpdateClassSequenceAndTerminal(model);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
