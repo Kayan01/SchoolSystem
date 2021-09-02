@@ -91,31 +91,6 @@ namespace Auth.Core.Services
             return new ResultModel<AlumniDetailVM>(data: alumni);
         }
 
-        public static Alumni NewAlumni(Student student, string sessionName)
-        {
-            return new Alumni
-            {
-                DateOfBirth = student.DateOfBirth,
-                Address = student.Address,
-                AdmissionDate = student.AdmissionDate,
-                Country = student.Country,
-                Level = student.Level,
-                LocalGovernment = student.LocalGovernment,
-                MothersMaidenName = student.MothersMaidenName,
-                State = student.State,
-                TenantId = student.TenantId,
-                StudentType = student.StudentType,
-                StudentId = student.Id,
-                RegNumber = student.RegNumber,
-                Nationality = student.Nationality,
-                ParentId = student.ParentId,
-                Sex = student.Sex,
-                Religion = student.Religion,
-                StateOfOrigin = student.StateOfOrigin,
-                SessionName = sessionName,
-
-            };
-        }
 
         public Task<ResultModel<PaginatedModel<AlumniDetailVM>>> GetAllAlumni(QueryModel model)
         {
