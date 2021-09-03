@@ -26,7 +26,7 @@ namespace Auth.Core.Migrations
                     TenantId = table.Column<long>(nullable: false),
                     PromotionStatus = table.Column<int>(nullable: false),
                     Reason = table.Column<string>(nullable: true),
-                    StudentId = table.Column<long>(nullable: false),
+                    StudentId = table.Column<long>(nullable: true),
                     SessionSetupId = table.Column<long>(nullable: false),
                     SchoolClassId = table.Column<long>(nullable: false),
                     AverageScore = table.Column<double>(nullable: false)
@@ -45,7 +45,7 @@ namespace Auth.Core.Migrations
                         column: x => x.StudentId,
                         principalTable: "Students",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.UpdateData(
@@ -53,77 +53,77 @@ namespace Auth.Core.Migrations
                 keyColumn: "Id",
                 keyValue: 1L,
                 column: "CreationTime",
-                value: new DateTime(2021, 9, 3, 11, 26, 13, 63, DateTimeKind.Local).AddTicks(7557));
+                value: new DateTime(2021, 9, 3, 12, 34, 0, 109, DateTimeKind.Local).AddTicks(6721));
 
             migrationBuilder.UpdateData(
                 table: "Classes",
                 keyColumn: "Id",
                 keyValue: 1L,
                 column: "CreationTime",
-                value: new DateTime(2021, 9, 3, 11, 26, 13, 75, DateTimeKind.Local).AddTicks(1429));
+                value: new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(6009));
 
             migrationBuilder.UpdateData(
                 table: "Classes",
                 keyColumn: "Id",
                 keyValue: 2L,
                 column: "CreationTime",
-                value: new DateTime(2021, 9, 3, 11, 26, 13, 75, DateTimeKind.Local).AddTicks(2687));
+                value: new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(6416));
 
             migrationBuilder.UpdateData(
                 table: "MyTest",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreationTime",
-                value: new DateTime(2021, 9, 3, 11, 26, 13, 72, DateTimeKind.Local).AddTicks(2951));
+                value: new DateTime(2021, 9, 3, 12, 34, 0, 113, DateTimeKind.Local).AddTicks(5023));
 
             migrationBuilder.UpdateData(
                 table: "MyTest",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreationTime",
-                value: new DateTime(2021, 9, 3, 11, 26, 13, 72, DateTimeKind.Local).AddTicks(6195));
+                value: new DateTime(2021, 9, 3, 12, 34, 0, 113, DateTimeKind.Local).AddTicks(5930));
 
             migrationBuilder.UpdateData(
                 table: "SchoolSections",
                 keyColumn: "Id",
                 keyValue: 1L,
                 column: "CreationTime",
-                value: new DateTime(2021, 9, 3, 11, 26, 13, 74, DateTimeKind.Local).AddTicks(8832));
+                value: new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(5021));
 
             migrationBuilder.UpdateData(
                 table: "SchoolSections",
                 keyColumn: "Id",
                 keyValue: 2L,
                 column: "CreationTime",
-                value: new DateTime(2021, 9, 3, 11, 26, 13, 74, DateTimeKind.Local).AddTicks(9926));
+                value: new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(5438));
 
             migrationBuilder.UpdateData(
                 table: "Schools",
                 keyColumn: "Id",
                 keyValue: 1L,
                 column: "CreationTime",
-                value: new DateTime(2021, 9, 3, 11, 26, 13, 74, DateTimeKind.Local).AddTicks(5560));
+                value: new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(4022));
 
             migrationBuilder.UpdateData(
                 table: "Schools",
                 keyColumn: "Id",
                 keyValue: 2L,
                 column: "CreationTime",
-                value: new DateTime(2021, 9, 3, 11, 26, 13, 74, DateTimeKind.Local).AddTicks(6633));
+                value: new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(4349));
 
             migrationBuilder.UpdateData(
                 table: "Schools",
                 keyColumn: "Id",
                 keyValue: 3L,
                 column: "CreationTime",
-                value: new DateTime(2021, 9, 3, 11, 26, 13, 74, DateTimeKind.Local).AddTicks(6671));
+                value: new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(4361));
 
             migrationBuilder.UpdateData(
                 table: "User",
                 keyColumn: "Id",
                 keyValue: 1L,
                 columns: new[] { "ConcurrencyStamp", "CreationTime", "LastLoginDate", "PasswordHash" },
-                values: new object[] { "3e8e0d0f-d8f9-4375-a880-8aa99eff111f", new DateTime(2021, 9, 3, 11, 26, 12, 993, DateTimeKind.Local).AddTicks(8850), new DateTime(2021, 9, 3, 11, 26, 12, 996, DateTimeKind.Local).AddTicks(7000), "AQAAAAEAACcQAAAAEAiDQ9O6Hy50Cnyu6gMXpUFTTfPbNM2m6k6gFvz8RHH0UfPqFkAiHSUX3+mt17Poew==" });
+                values: new object[] { "b9824a6b-308b-4c15-b629-246c63ac870c", new DateTime(2021, 9, 3, 12, 34, 0, 81, DateTimeKind.Local).AddTicks(880), new DateTime(2021, 9, 3, 12, 34, 0, 82, DateTimeKind.Local).AddTicks(424), "AQAAAAEAACcQAAAAEObpIFFhWPSbg1xjAfB1ceRCcL2ayd5emj5mjbluLHB7OetNCKI0RYPwXXdOGPmPBw==" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_PromotionLogs_SchoolClassId",

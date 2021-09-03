@@ -354,7 +354,7 @@ namespace Auth.Core.Migrations
                     b.Property<long>("SessionSetupId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("StudentId")
+                    b.Property<long?>("StudentId")
                         .HasColumnType("bigint");
 
                     b.Property<long>("TenantId")
@@ -447,7 +447,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 13, 74, DateTimeKind.Local).AddTicks(5560),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(4022),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Johnson International"
@@ -455,7 +455,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 13, 74, DateTimeKind.Local).AddTicks(6633),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(4349),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Bariga International"
@@ -463,7 +463,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 3L,
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 13, 74, DateTimeKind.Local).AddTicks(6671),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(4361),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Ikeja International"
@@ -529,7 +529,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 13, 75, DateTimeKind.Local).AddTicks(1429),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(6009),
                             IsActive = false,
                             IsDeleted = false,
                             IsTerminalClass = false,
@@ -541,7 +541,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 13, 75, DateTimeKind.Local).AddTicks(2687),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(6416),
                             IsActive = false,
                             IsDeleted = false,
                             IsTerminalClass = false,
@@ -644,7 +644,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 13, 74, DateTimeKind.Local).AddTicks(8832),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(5021),
                             IsDeleted = false,
                             Name = "A",
                             TenantId = 1L
@@ -652,7 +652,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 13, 74, DateTimeKind.Local).AddTicks(9926),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 114, DateTimeKind.Local).AddTicks(5438),
                             IsDeleted = false,
                             Name = "B",
                             TenantId = 1L
@@ -1063,7 +1063,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1,
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 13, 72, DateTimeKind.Local).AddTicks(2951),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 113, DateTimeKind.Local).AddTicks(5023),
                             Description = "Testing",
                             IsDeleted = false,
                             Title = "Debug"
@@ -1071,7 +1071,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2,
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 13, 72, DateTimeKind.Local).AddTicks(6195),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 113, DateTimeKind.Local).AddTicks(5930),
                             Description = "Unit Test",
                             IsDeleted = false,
                             Title = "Test"
@@ -1285,7 +1285,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 13, 63, DateTimeKind.Local).AddTicks(7557),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 109, DateTimeKind.Local).AddTicks(6721),
                             IsDeleted = false,
                             UserId = 1L,
                             UserType = 1
@@ -1875,19 +1875,19 @@ namespace Auth.Core.Migrations
                         {
                             Id = 1L,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "3e8e0d0f-d8f9-4375-a880-8aa99eff111f",
-                            CreationTime = new DateTime(2021, 9, 3, 11, 26, 12, 993, DateTimeKind.Local).AddTicks(8850),
+                            ConcurrencyStamp = "b9824a6b-308b-4c15-b629-246c63ac870c",
+                            CreationTime = new DateTime(2021, 9, 3, 12, 34, 0, 81, DateTimeKind.Local).AddTicks(880),
                             Email = "tester@gmail.com",
                             EmailConfirmed = true,
                             FirstName = "Tester",
                             IsDeleted = false,
                             IsFirstTimeLogin = true,
-                            LastLoginDate = new DateTime(2021, 9, 3, 11, 26, 12, 996, DateTimeKind.Local).AddTicks(7000),
+                            LastLoginDate = new DateTime(2021, 9, 3, 12, 34, 0, 82, DateTimeKind.Local).AddTicks(424),
                             LastName = "User",
                             LockoutEnabled = false,
                             NormalizedEmail = "TESTER@GMAIL.COM",
                             NormalizedUserName = "TESTER@GMAIL.COM",
-                            PasswordHash = "AQAAAAEAACcQAAAAEAiDQ9O6Hy50Cnyu6gMXpUFTTfPbNM2m6k6gFvz8RHH0UfPqFkAiHSUX3+mt17Poew==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEObpIFFhWPSbg1xjAfB1ceRCcL2ayd5emj5mjbluLHB7OetNCKI0RYPwXXdOGPmPBw==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "99ae0c45-d682-4542-9ba7-1281e471916b",
                             TwoFactorEnabled = false,
@@ -2020,9 +2020,7 @@ namespace Auth.Core.Migrations
 
                     b.HasOne("Auth.Core.Models.Student", "Student")
                         .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("StudentId");
                 });
 
             modelBuilder.Entity("Auth.Core.Models.School", b =>

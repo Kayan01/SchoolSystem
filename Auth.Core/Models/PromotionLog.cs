@@ -13,7 +13,7 @@ namespace Auth.Core.Models
         public PromotionStatus PromotionStatus { get; set; }
         public string Reason { get; set; }
 
-        public long StudentId { get; set; }
+        public long? StudentId { get; set; }
         public long SessionSetupId { get; set; }
         public long SchoolClassId { get; set; }
 
