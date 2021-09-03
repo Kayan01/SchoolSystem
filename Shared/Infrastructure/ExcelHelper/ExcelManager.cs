@@ -323,8 +323,16 @@ namespace ExcelManager
 
                     if (currProp.PropertyType.IsEnum)
                     {
+                        if (currentCell.CellType == CellType.Numeric)
+                        {
+                            currProp.SetValue(pvm,Convert.ToInt32( currentCell.NumericCellValue));
+                        }
+                        else
+                        {
+
                         var g = Enum.Parse(currProp.PropertyType, currentCell.StringCellValue, true);
                         currProp.SetValue(pvm, g);
+                        }
 
                     }
                     else if (currProp.PropertyType == typeof(DateTime))
@@ -335,8 +343,12 @@ namespace ExcelManager
                     }
                     else if(currProp.PropertyType == typeof(int))
                         {
-                        var Interger = int.Parse(currentCell.StringCellValue);
-                        currProp.SetValue(pvm, Interger);
+                        currProp.SetValue(pvm, Convert.ToInt32(currentCell.NumericCellValue));
+
+                    }
+                    else if (currProp.PropertyType == typeof(long))
+                    {
+                        currProp.SetValue(pvm, Convert.ToInt64(currentCell.NumericCellValue));
 
                     }
                     else
