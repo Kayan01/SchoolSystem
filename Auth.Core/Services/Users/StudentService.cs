@@ -773,11 +773,6 @@ namespace Auth.Core.Services
                     ClassId = student.ClassId,
                     TenantId = student.TenantId,
                     UserId = student.UserId,
-                    FirstName = student.User.FirstName,
-                    LastName = student.User.LastName,
-                    Email = student.User.Email,
-                    Phone = student.User.PhoneNumber,
-                    Sex = student.Sex,
                     DoB = student.DateOfBirth,
                     StudentStatusInSchool = student.StudentStatusInSchool,
                 });

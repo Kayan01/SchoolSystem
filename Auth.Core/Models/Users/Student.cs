@@ -27,7 +27,7 @@ namespace Auth.Core.Models
         public string Address { get; set; }
         public string State { get; set; }
         public long? ParentId { get; set; }
-        public long MedicalDetailID { get; set; }
+        public long? MedicalDetailID { get; set; }
         public long? ClassId { get; set; }
         public StudentStatusInSchool StudentStatusInSchool { get; set; } = StudentStatusInSchool.IsStudent;
         public bool IsActive { get; set; }

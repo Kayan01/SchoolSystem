@@ -27,7 +27,7 @@ namespace Auth.Core.Models.Alumni
             StudentId = student.Id;
             RegNumber = student.RegNumber;
             Nationality = student.Nationality;
-            ParentId = student.ParentId;
+            ParentId = student.ParentId.Value;
             Sex = student.Sex;
             Religion = student.Religion;
             StateOfOrigin = student.StateOfOrigin;
