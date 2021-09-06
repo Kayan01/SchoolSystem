@@ -722,13 +722,19 @@ namespace Auth.Core.Services.Users
                         State = model.State,
                         Address = model.Address,
                         Country = model.Country,
-                    }
+                    }, 
+                                         
                 };
 
                 _teacherRepo.Insert(teacher);
 
+
+                teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
+              
                 teachers.Add(teacher);
             }
+
+
             await _unitOfWork.SaveChangesAsync();
 
             _unitOfWork.Commit();
