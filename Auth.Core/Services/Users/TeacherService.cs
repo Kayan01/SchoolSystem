@@ -748,11 +748,6 @@ namespace Auth.Core.Services.Users
                     IsActive = true,
                     TenantId = teacher.TenantId,
                     UserId = teacher.Staff.UserId,
-                    Email = teacher.Staff.User.Email,
-                    FirstName = teacher.Staff.User.FirstName,
-                    LastName = teacher.Staff.User.LastName,
-                    Phone = teacher.Staff.User.PhoneNumber,
-                    RegNumber = teacher.Staff.RegNumber
                 });
             }
             result.Data = true;
