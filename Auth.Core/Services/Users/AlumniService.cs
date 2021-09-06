@@ -23,6 +23,9 @@ using Shared.DataAccess.Repository;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Auth.Core.ViewModels.Alumni;
 using Auth.Core.Models;
+using IPagedList;
+using Microsoft.EntityFrameworkCore;
+using Shared.Reflection;
 
 namespace Auth.Core.Services
 {
@@ -91,20 +94,55 @@ namespace Auth.Core.Services
             return new ResultModel<AlumniDetailVM>(data: alumni);
         }
 
-
-        public Task<ResultModel<PaginatedModel<AlumniDetailVM>>> GetAllAlumni(QueryModel model)
+        public async Task<ResultModel<PaginatedModel<AlumniDetailVM>>> GetAllAlumni(QueryModel model, GetAlumniQueryVM queryVM)
         {
-            throw new NotImplementedException();
+            var query = _alumniRepo.GetAll();
+
+            if (!string.IsNullOrWhiteSpace(queryVM.SessionName))
+            {
+                query = query.Where(x => x.SessionName == queryVM.SessionName);
+            }
+            if (!string.IsNullOrWhiteSpace(queryVM.TermName))
+            {
+                query = query.Where(x => x.TermName == queryVM.TermName);
+            }
+
+            var data = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+
+            //convert list using reflection
+            var vmList = data.Items.SetObjectPropertiesFromList(new List<AlumniDetailVM>());
+
+            return new ResultModel<PaginatedModel<AlumniDetailVM>> { Data = new PaginatedModel<AlumniDetailVM>(vmList, data.PageNumber, data.PageSize, data.TotalItemCount) };
+
+
         }
 
-        public Task<ResultModel<AlumniDetailVM>> GetAlumniById(long Id)
+        public async Task<ResultModel<AlumniDetailVM>> GetAlumniById(long Id)
         {
-            throw new NotImplementedException();
+            var query = await _alumniRepo.GetAll().Where(x => x.Id == Id).FirstOrDefaultAsync();
+
+            if (query == null)
+            {
+                return new ResultModel<AlumniDetailVM>($"No Alumni with Id : {Id}");
+            }
+
+            return new ResultModel<AlumniDetailVM>(query);
         }
 
-        public Task<ResultModel<AlumniDetailVM>> UpdateAlumni(UpdateAlumniVM model)
+        public async Task<ResultModel<AlumniDetailVM>> UpdateAlumni(UpdateAlumniVM model)
         {
-            throw new NotImplementedException();
+            var alumni = await _alumniRepo.GetAll().Where(x => x.Id == model.Id).FirstOrDefaultAsync();
+
+            if (alumni == null)
+            {
+                return new ResultModel<AlumniDetailVM>($"No Alumni with Id : {model.Id}");
+            }
+
+           alumni = model.SetObjectProperty(alumni);
+
+          await  _alumniRepo.UpdateAsync(alumni);
+
+            return new ResultModel<AlumniDetailVM>(alumni);
         }
 
         public Task<ResultModel<bool>> DeleteAlumni(long Id)
