@@ -7,7 +7,9 @@ using Auth.Core.Models.UserDetails;
 using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Staff;
+using ExcelManager;
 using IPagedList;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -649,7 +651,7 @@ namespace Auth.Core.Services.Users
         public async Task<ResultModel<byte[]>> GetTeachersExcelSheet()
         {
 
-            var data = new AddTeacherVM().ToExcel("Teachers Excel Sheet");
+            var data = new AddTeacherVMExcel().ToExcel("Teachers Excel Sheet");
 
             if (data == null)
             {
@@ -659,6 +661,98 @@ namespace Auth.Core.Services.Users
             {
                 return new ResultModel<byte[]>(data);
             }
+        }
+
+        public async Task<ResultModel<bool>> AddBulkTeacher(IFormFile excelfile)
+        {
+            var result = new ResultModel<bool>();
+            var stream = excelfile.OpenReadStream();
+            var excelReader = new ExcelReader(stream);
+
+            var importedData = ExcelReader.FromExcel<AddTeacherVMExcel>(excelfile);
+
+            //check if imported data contains any data
+            if(importedData.Count < 1)
+            {
+                result.AddError("No data was imported");
+
+                return result;
+            }
+
+            var teachers = new List<TeachingStaff>();
+
+            _unitOfWork.BeginTransaction();
+
+            foreach(var model in importedData)
+            {
+                //add admin for teacher user
+                var user = new User
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.EmailAddress,
+                    UserName = model.EmailAddress,
+                    PhoneNumber = model.PhoneNumber,
+                    UserType = UserType.Staff
+                };
+                var userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
+
+                if(!userResult.Succeeded)
+                {
+                    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                    return result;
+                }
+
+                //todo : add more props
+                var teacher = new TeachingStaff
+                {
+                    Staff = new Staff
+                    {
+                        UserId = user.Id,
+                        BloodGroup = model.BloodGroup,
+                        DateOfBirth = model.DateOfBirth,
+                        IsActive = model.IsActive,
+                        LocalGovernment = model.LocalGovernment,
+                        MaritalStatus = model.MaritalStatus,
+                        Nationality = model.Nationality,
+                        Religion = model.Religion,
+                        StateOfOrigin = model.StateOfOrigin,
+                        Sex = model.Sex,
+                        Town = model.Town,
+                        State = model.State,
+                        Address = model.Address,
+                        Country = model.Country,
+                    }, 
+                                         
+                };
+
+                _teacherRepo.Insert(teacher);
+
+
+                teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
+              
+                teachers.Add(teacher);
+            }
+
+
+            await _unitOfWork.SaveChangesAsync();
+
+            _unitOfWork.Commit();
+
+            foreach(var teacher in teachers)
+            {
+                //publish to services
+                await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
+                {
+                    Id = teacher.Id,
+                    IsActive = true,
+                    TenantId = teacher.TenantId,
+                    UserId = teacher.Staff.UserId,
+                });
+            }
+            result.Data = true;
+            
+            return result;
         }
 
         #region notification
