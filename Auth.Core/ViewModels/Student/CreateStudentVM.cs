@@ -61,7 +61,6 @@ namespace Auth.Core.ViewModels.Student
         public string BloodGroup { get; set; }
         [ExcelReaderCell]
         public string Genotype { get; set; }
-        [ExcelReaderCell]
         public bool Disability { get; set; }
         [ExcelReaderCell]
         public string Allergies { get; set; }
