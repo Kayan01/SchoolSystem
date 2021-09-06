@@ -320,6 +320,55 @@ namespace Auth.Core.Migrations
                     b.ToTable("MedicalDetail");
                 });
 
+            modelBuilder.Entity("Auth.Core.Models.PromotionLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<double>("AverageScore")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("PromotionStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("SchoolClassId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SessionSetupId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("StudentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SchoolClassId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("PromotionLogs");
+                });
+
             modelBuilder.Entity("Auth.Core.Models.School", b =>
                 {
                     b.Property<long>("Id")
@@ -398,7 +447,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 800, DateTimeKind.Local).AddTicks(2749),
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 413, DateTimeKind.Local).AddTicks(4029),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Johnson International"
@@ -406,7 +455,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 800, DateTimeKind.Local).AddTicks(4748),
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 413, DateTimeKind.Local).AddTicks(4671),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Bariga International"
@@ -414,7 +463,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 3L,
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 800, DateTimeKind.Local).AddTicks(4802),
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 413, DateTimeKind.Local).AddTicks(4696),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Ikeja International"
@@ -480,7 +529,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 801, DateTimeKind.Local).AddTicks(2771),
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 413, DateTimeKind.Local).AddTicks(8039),
                             IsActive = false,
                             IsDeleted = false,
                             IsTerminalClass = false,
@@ -492,7 +541,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 801, DateTimeKind.Local).AddTicks(5099),
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 413, DateTimeKind.Local).AddTicks(9157),
                             IsActive = false,
                             IsDeleted = false,
                             IsTerminalClass = false,
@@ -595,7 +644,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 800, DateTimeKind.Local).AddTicks(7884),
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 413, DateTimeKind.Local).AddTicks(5911),
                             IsDeleted = false,
                             Name = "A",
                             TenantId = 1L
@@ -603,7 +652,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 801, DateTimeKind.Local).AddTicks(228),
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 413, DateTimeKind.Local).AddTicks(6929),
                             IsDeleted = false,
                             Name = "B",
                             TenantId = 1L
@@ -908,7 +957,7 @@ namespace Auth.Core.Migrations
                     b.Property<string>("LocalGovernment")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("MedicalDetailID")
+                    b.Property<long?>("MedicalDetailID")
                         .HasColumnType("bigint");
 
                     b.Property<string>("MothersMaidenName")
@@ -917,7 +966,7 @@ namespace Auth.Core.Migrations
                     b.Property<string>("Nationality")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("ParentId")
+                    b.Property<long?>("ParentId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("RegNumber")
@@ -934,6 +983,9 @@ namespace Auth.Core.Migrations
 
                     b.Property<string>("StateOfOrigin")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentStatusInSchool")
+                        .HasColumnType("int");
 
                     b.Property<int>("StudentType")
                         .HasColumnType("int");
@@ -1011,7 +1063,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1,
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 797, DateTimeKind.Local).AddTicks(1151),
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 411, DateTimeKind.Local).AddTicks(8637),
                             Description = "Testing",
                             IsDeleted = false,
                             Title = "Debug"
@@ -1019,7 +1071,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2,
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 797, DateTimeKind.Local).AddTicks(5651),
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 412, DateTimeKind.Local).AddTicks(825),
                             Description = "Unit Test",
                             IsDeleted = false,
                             Title = "Test"
@@ -1233,7 +1285,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 786, DateTimeKind.Local).AddTicks(9366),
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 406, DateTimeKind.Local).AddTicks(3100),
                             IsDeleted = false,
                             UserId = 1L,
                             UserType = 1
@@ -1823,19 +1875,19 @@ namespace Auth.Core.Migrations
                         {
                             Id = 1L,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "7e8d35b9-9e7f-4132-bb62-37a28ba0b687",
-                            CreationTime = new DateTime(2021, 8, 23, 14, 58, 35, 700, DateTimeKind.Local).AddTicks(7159),
+                            ConcurrencyStamp = "8b0afa78-0ff5-41f8-a4fb-65cdea0e14e5",
+                            CreationTime = new DateTime(2021, 9, 3, 14, 32, 47, 341, DateTimeKind.Local).AddTicks(3164),
                             Email = "tester@gmail.com",
                             EmailConfirmed = true,
                             FirstName = "Tester",
                             IsDeleted = false,
                             IsFirstTimeLogin = true,
-                            LastLoginDate = new DateTime(2021, 8, 23, 14, 58, 35, 705, DateTimeKind.Local).AddTicks(8951),
+                            LastLoginDate = new DateTime(2021, 9, 3, 14, 32, 47, 342, DateTimeKind.Local).AddTicks(3895),
                             LastName = "User",
                             LockoutEnabled = false,
                             NormalizedEmail = "TESTER@GMAIL.COM",
                             NormalizedUserName = "TESTER@GMAIL.COM",
-                            PasswordHash = "AQAAAAEAACcQAAAAEJiUEITSv3vOdjj8jdoPov1CC8v/+1o2z2ZRvG8uyRvhCvSmQKocVkh1zxCK0RdWyw==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEKh7zyv87oELty3tCHHRT8LcHOPXrQu0WCL2ZyLyI5TcAOukbDHV+mD64VAitun8Bw==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "99ae0c45-d682-4542-9ba7-1281e471916b",
                             TwoFactorEnabled = false,
@@ -1958,6 +2010,19 @@ namespace Auth.Core.Migrations
                         .HasForeignKey("MedicalDetailId");
                 });
 
+            modelBuilder.Entity("Auth.Core.Models.PromotionLog", b =>
+                {
+                    b.HasOne("Auth.Core.Models.SchoolClass", "SchoolClass")
+                        .WithMany()
+                        .HasForeignKey("SchoolClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Auth.Core.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId");
+                });
+
             modelBuilder.Entity("Auth.Core.Models.School", b =>
                 {
                     b.HasOne("Auth.Core.Models.SchoolGroup", "SchoolGroup")
@@ -2014,15 +2079,12 @@ namespace Auth.Core.Migrations
 
                     b.HasOne("Auth.Core.Models.Medical.MedicalDetail", "MedicalDetail")
                         .WithMany()
-                        .HasForeignKey("MedicalDetailID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MedicalDetailID");
 
                     b.HasOne("Auth.Core.Models.Users.Parent", "Parent")
                         .WithMany("Students")
                         .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Auth.Core.Models.School", "School")
                         .WithMany("Students")

@@ -22,6 +22,7 @@ using Shared.Pagination;
 using Shared.DataAccess.Repository;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Auth.Core.ViewModels.Alumni;
+using Auth.Core.Models;
 using IPagedList;
 using Microsoft.EntityFrameworkCore;
 using Shared.Reflection;

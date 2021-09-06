@@ -1,4 +1,5 @@
 ﻿using Shared.Entities.Auditing;
+using Shared.Enums;
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ namespace LearningSvc.Core.Models
     {
         public long TenantId { get; set; }
         public long? ClassId { get; set; }
+        public StudentStatusInSchool StudentStatusInSchool { get; set; }
         public long ParentId { get; set; }
         public Parent Parent { get; set; }
 

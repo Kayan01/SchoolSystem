@@ -274,6 +274,45 @@ namespace AssessmentSvc.Core.Migrations
                     b.ToTable("GradeSetups");
                 });
 
+            modelBuilder.Entity("AssessmentSvc.Core.Models.PromotionSetup", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("MaxRepeat")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PromotionMethod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PromotionScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PromotionType")
+                        .HasColumnType("int");
+
+                    b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PromotionSetups");
+                });
+
             modelBuilder.Entity("AssessmentSvc.Core.Models.Result", b =>
                 {
                     b.Property<long>("Id")
@@ -330,6 +369,63 @@ namespace AssessmentSvc.Core.Migrations
                     b.HasIndex("SubjectId");
 
                     b.ToTable("Results");
+                });
+
+            modelBuilder.Entity("AssessmentSvc.Core.Models.ResultSummary", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ClassPosition")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("ResultApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("ResultTotal")
+                        .HasColumnType("float");
+
+                    b.Property<double>("ResultTotalAverage")
+                        .HasColumnType("float");
+
+                    b.Property<long>("SchoolClassId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SessionSetupId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("StudentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("TermSequenceNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SchoolClassId");
+
+                    b.HasIndex("SessionSetupId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("ResultSummaries");
                 });
 
             modelBuilder.Entity("AssessmentSvc.Core.Models.School", b =>
@@ -427,6 +523,81 @@ namespace AssessmentSvc.Core.Migrations
                     b.ToTable("SchoolClasses");
                 });
 
+            modelBuilder.Entity("AssessmentSvc.Core.Models.SchoolClassSubject", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SchoolClassId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("StudentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SubjectId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SchoolClassId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("SchoolClassSubjects");
+                });
+
+            modelBuilder.Entity("AssessmentSvc.Core.Models.SchoolPromotionLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Payload")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("SessionSetupId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionSetupId");
+
+                    b.ToTable("SchoolPromotionLogs");
+                });
+
             modelBuilder.Entity("AssessmentSvc.Core.Models.SessionSetup", b =>
                 {
                     b.Property<long>("Id")
@@ -515,6 +686,9 @@ namespace AssessmentSvc.Core.Migrations
 
                     b.Property<string>("Sex")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentStatusInSchool")
+                        .HasColumnType("int");
 
                     b.Property<long>("TenantId")
                         .HasColumnType("bigint");
@@ -761,6 +935,55 @@ namespace AssessmentSvc.Core.Migrations
                     b.HasOne("AssessmentSvc.Core.Models.Subject", "Subject")
                         .WithMany()
                         .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AssessmentSvc.Core.Models.ResultSummary", b =>
+                {
+                    b.HasOne("AssessmentSvc.Core.Models.SchoolClass", "SchoolClass")
+                        .WithMany()
+                        .HasForeignKey("SchoolClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AssessmentSvc.Core.Models.SessionSetup", "Session")
+                        .WithMany()
+                        .HasForeignKey("SessionSetupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AssessmentSvc.Core.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AssessmentSvc.Core.Models.SchoolClassSubject", b =>
+                {
+                    b.HasOne("AssessmentSvc.Core.Models.SchoolClass", "SchoolClass")
+                        .WithMany("SchoolClassSubjects")
+                        .HasForeignKey("SchoolClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AssessmentSvc.Core.Models.Student", null)
+                        .WithMany("SchoolClassSubjects")
+                        .HasForeignKey("StudentId");
+
+                    b.HasOne("AssessmentSvc.Core.Models.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AssessmentSvc.Core.Models.SchoolPromotionLog", b =>
+                {
+                    b.HasOne("AssessmentSvc.Core.Models.SessionSetup", "Session")
+                        .WithMany()
+                        .HasForeignKey("SessionSetupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

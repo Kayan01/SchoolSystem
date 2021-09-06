@@ -390,13 +390,13 @@ namespace LearningSvc.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 4, 26, 15, 18, 19, 724, DateTimeKind.Local).AddTicks(1456),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 14, 46, 484, DateTimeKind.Local).AddTicks(2002),
                             Description = "Testing"
                         },
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 4, 26, 15, 18, 19, 724, DateTimeKind.Local).AddTicks(5086),
+                            CreationTime = new DateTime(2021, 9, 3, 12, 14, 46, 484, DateTimeKind.Local).AddTicks(2803),
                             Description = "Unit Test"
                         });
                 });
@@ -639,6 +639,9 @@ namespace LearningSvc.Core.Migrations
 
                     b.Property<string>("RegNumber")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentStatusInSchool")
+                        .HasColumnType("int");
 
                     b.Property<long>("TenantId")
                         .HasColumnType("bigint");

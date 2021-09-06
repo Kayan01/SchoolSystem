@@ -35,5 +35,6 @@ namespace Auth.Core.Context
         public DbSet<SchoolTrackRole> SchoolTrackRoles { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Alumni> Alumnis{ get; set; }
+        public DbSet<PromotionLog> PromotionLogs{ get; set; }
     }
 }

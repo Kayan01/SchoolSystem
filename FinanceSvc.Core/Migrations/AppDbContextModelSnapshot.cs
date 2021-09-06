@@ -766,6 +766,9 @@ namespace FinanceSvc.Core.Migrations
                     b.Property<string>("RegNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("StudentStatusInSchool")
+                        .HasColumnType("int");
+
                     b.Property<long>("TenantId")
                         .HasColumnType("bigint");
 

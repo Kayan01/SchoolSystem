@@ -203,6 +203,45 @@ namespace Auth.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<List<ClassWithoutArmVM>>> GetClassesWithoutArm()
+        {
+            var allClasses = await _classRepo.GetAll()
+                .OrderByDescending(x => x.Sequence).ThenBy(x => x.CreationTime)
+                .Select(x => new ClassWithoutArmVM
+                {
+                    Name = x.Name,
+                    Sequence = x.Sequence,
+                    IsTerminal = x.IsTerminalClass
+                }).ToListAsync();
+
+            var distinctClasses = allClasses.GroupBy(m => m.Name).Select(m => m.First()).ToList();
+            return new ResultModel<List<ClassWithoutArmVM>>(distinctClasses);
+        }
+
+        public async Task<ResultModel<string>> UpdateClassSequenceAndTerminal(List<ClassWithoutArmVM> model)
+        {
+            var allClasses = await _classRepo.GetAll().ToListAsync();
+            var groupedClasses = allClasses.GroupBy(m => m.Name);
+
+            foreach (var classGroup in groupedClasses)
+            {
+                var modelClass = model.FirstOrDefault(m => m.Name == classGroup.Key);
+                if (modelClass == null)
+                {
+                    return new ResultModel<string>(errorMessage: "One or more classes were not found. Please try again.");
+                }
+
+                foreach (var clas in classGroup)
+                {
+                    clas.Sequence = modelClass.Sequence;
+                    clas.IsTerminalClass = modelClass.IsTerminal;
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new ResultModel<string>(data: "Successful");
+        }
+
         public async Task<ResultModel<ClassVM>> GetClassById(long Id)
         {
             var result = new ResultModel<ClassVM>();

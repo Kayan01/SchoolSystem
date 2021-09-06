@@ -37,16 +37,6 @@ namespace AssessmentSvc.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult PromotionStatus()
-        {
-            var SO = Enum.GetValues(typeof(PromotionStatus)).Cast<PromotionStatus>().Select(m => new {
-                val = m.ToString("d"),
-                name = m.ToString().Replace('_', ' ')
-            });
-            return Ok(SO);
-        }
-
-        [HttpGet]
         public IActionResult PromotionType()
         {
             var SO = Enum.GetValues(typeof(PromotionType)).Cast<PromotionType>().Select(m => new {

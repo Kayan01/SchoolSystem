@@ -114,7 +114,8 @@ namespace Auth.Core.Services
                 FileUploads = files,
                 IsActive = model.IsActive,
                 PrimaryColor = model.PrimaryColor,
-                SecondaryColor = model.SecondaryColor
+                SecondaryColor = model.SecondaryColor,
+                SchoolGroupId = model.GroupId
             };
 
             school.SchoolContactDetails.Add(contactDetails);

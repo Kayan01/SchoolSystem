@@ -12,7 +12,7 @@ namespace Shared.ViewModels
         public int MaxRepeats { get; set; }
         public int CutOff { get; set; }
 
-        public List<StudentPromotion> StudentPromotionStatus { get; set; }
+        public List<StudentPromotion> StudentPromotionList { get; set; }
     }
 
     public class StudentPromotion

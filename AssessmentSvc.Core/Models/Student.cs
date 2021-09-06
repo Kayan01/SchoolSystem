@@ -1,4 +1,5 @@
 ﻿using Shared.Entities.Auditing;
+using Shared.Enums;
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace AssessmentSvc.Core.Models
         public string Sex { get; set; }
         public string ParentName { get; set; }
         public string ParentEmail { get; set; }
+        public StudentStatusInSchool StudentStatusInSchool { get; set; }
 
         public SchoolClass Class { get; set; }
         public ICollection<SchoolClassSubject> SchoolClassSubjects { get; set; }

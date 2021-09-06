@@ -1,9 +1,11 @@
 ﻿using Auth.Core.Context;
+using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
 using Auth.Core.Services;
 using Auth.Core.Services.Class;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.Services.Interfaces.Class;
+using Auth.Core.Services.Users;
 using Auth.Core.Test.Mocks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -73,6 +75,8 @@ namespace Auth.Core.Test.Services.Setup
             services.RegisterGenericRepos(typeof(AppDbContext));
 
             services.AddScoped<ISchoolService, SchoolService>();
+            services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<ISectionService, SectionService>();
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider("/FileStore"));
             services.AddScoped<IFileStorageService, FileStorageService>();
