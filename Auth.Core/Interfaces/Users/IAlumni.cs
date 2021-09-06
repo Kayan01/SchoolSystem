@@ -14,7 +14,7 @@ namespace Auth.Core.Services.Interfaces
    public interface IAlumniService
     {
         Task<ResultModel<AlumniDetailVM>> AddAlumni(AddAlumniVM vM);
-        Task<ResultModel<PaginatedModel<AlumniDetailVM>>> GetAllAlumni(QueryModel model);
+        Task<ResultModel<PaginatedModel<AlumniDetailVM>>> GetAllAlumni(QueryModel model, GetAlumniQueryVM queryVM);
         Task<ResultModel<AlumniDetailVM>> GetAlumniById(long Id);
         Task<ResultModel<AlumniDetailVM>> UpdateAlumni(UpdateAlumniVM model );
         Task<ResultModel<bool>> DeleteAlumni(long Id);
