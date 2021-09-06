@@ -747,7 +747,6 @@ namespace Auth.Core.Services
                     TransportRoute = model.TransportRoute,
                     Town = model.ContactTown,
                     ClassId = model.ClassId,
-                    ParentId = model.ParentId,
                     Nationality = model.Nationality,
                     Religion = model.Religion,
                     EntryType = model.EntryType,
