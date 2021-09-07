@@ -39,6 +39,7 @@ namespace Auth.Core.Services
             _promotionLogRepo = promotionLogRepo;
             _alumniRepo = alumniRepo;
         }
+
         public async Task PromoteAllStudent(PromotionSharedModel model)
         {
             Random r = new Random();
@@ -61,7 +62,15 @@ namespace Auth.Core.Services
 
             var publishObj = new List<StudentSharedModel>();
 
-            foreach (var studentItem in model.StudentPromotionList)
+            var repeatingStudentIds = model.StudentPromotionInfoList.Where(m=>!m.PassedCutoff).Select(m => m.StudentId).ToList();
+
+            var previousRepeats = await _promotionLogRepo.GetAll().Where(m =>
+                repeatingStudentIds.Contains(m.StudentId.Value) &&
+                m.PromotionStatus == Enumeration.PromotionStatus.Repeated
+            ).ToListAsync();
+
+
+            foreach (var studentItem in model.StudentPromotionInfoList)
             {
                 var student = students.FirstOrDefault(m => m.Id == studentItem.StudentId);
 
@@ -70,11 +79,10 @@ namespace Auth.Core.Services
                     continue;
                 }
 
-                
                 if (studentItem.PassedCutoff) // if student passed cutoff mark
                 {
                     var curclass = classes.SingleOrDefault(m => m.Id == student.ClassId); //get current class
-                    
+
                     if (curclass == null) //Make sure class is valid
                     {
                         throw new Exception($"Current Class was not found for student {student.Id}");
@@ -89,41 +97,72 @@ namespace Auth.Core.Services
 
                     // Update this to tackle classpool.
                     var nextClasses = classes.Where(m => m.Sequence == curclass.Sequence + 1).ToList();
-                    if (nextClasses == null || nextClasses.Count<=0)
+                    if (nextClasses == null || nextClasses.Count <= 0)
                     {
-                        continue;
+                        _promotionLogRepo.Insert(new PromotionLog()
+                        {
+                            PromotionStatus = Enumeration.PromotionStatus.Graduated,
+                            SessionSetupId = model.SessionId,
+                            FromClassId = student.ClassId,
+                            ToClassId = null,
+                            StudentId = student.Id,
+                            AverageScore = studentItem.Average,
+                            TenantId = model.TenantId
+                        });
+
+                        student.ClassId = null;
+                        student.StudentStatusInSchool = StudentStatusInSchool.IsGraduated;
                     }
-
-                    var nextClass = nextClasses.FirstOrDefault(m => m.ClassArm == curclass.ClassArm) ?? nextClasses[r.Next(0, nextClasses.Count)];
-
-                    student.ClassId = nextClass.Id;
-
-                    _promotionLogRepo.Insert(new PromotionLog()
+                    else
                     {
-                        PromotionStatus = Enumeration.PromotionStatus.Promoted,
-                        SessionSetupId = model.SessionId,
-                        SchoolClassId = nextClass.Id,
-                        StudentId = student.Id,
-                        AverageScore = studentItem.Average,
-                        TenantId = model.TenantId
-                    });
+                        var nextClass = nextClasses.FirstOrDefault(m => m.ClassArm == curclass.ClassArm) ?? nextClasses[r.Next(0, nextClasses.Count)];
+
+                        if (model.IsAutomaticPromotion) // Automatic promotion
+                        {
+                            _promotionLogRepo.Insert(new PromotionLog()
+                            {
+                                PromotionStatus = Enumeration.PromotionStatus.Promoted,
+                                SessionSetupId = model.SessionId,
+                                FromClassId = student.ClassId,
+                                ToClassId = nextClass.Id,
+                                StudentId = student.Id,
+                                AverageScore = studentItem.Average,
+                                TenantId = model.TenantId
+                            });
+
+                            student.ClassId = nextClass.Id;
+                        }
+                        else // add to class pool
+                        {
+                            _promotionLogRepo.Insert(new PromotionLog()
+                            {
+                                PromotionStatus = Enumeration.PromotionStatus.Promoted_InPool,
+                                SessionSetupId = model.SessionId,
+                                FromClassId = student.ClassId,
+                                ToClassId = null,
+                                ClassPoolName = nextClass.Name,
+                                StudentId = student.Id,
+                                AverageScore = studentItem.Average,
+                                TenantId = model.TenantId
+                            });
+
+                            student.ClassId = null;
+                        }
+                    }
                 }
                 else // student did not meet cutoff mark
                 {
-                    var previousWithdrawals = await _promotionLogRepo.GetAll().Where(m => 
-                        m.StudentId == student.Id &&
-                        m.SchoolClassId == student.ClassId && 
-                        m.PromotionStatus == Enumeration.PromotionStatus.Repeated
-                    ).ToListAsync();
+                    var previousRepeat = previousRepeats.Where(m => m.StudentId == student.Id && m.ToClassId == student.ClassId).ToList();
 
-                    if (previousWithdrawals.Count >= model.MaxRepeats) // has reached max number of repeats
+                    if (previousRepeat.Count >= model.MaxRepeats) // has reached max number of repeats
                     {
                         // add repetition promotion log, remove student from class and set student status to withdrawn
                         _promotionLogRepo.Insert(new PromotionLog()
                         {
                             PromotionStatus = Enumeration.PromotionStatus.Withdrawn,
                             SessionSetupId = model.SessionId,
-                            SchoolClassId = student.ClassId.Value,
+                            FromClassId = student.ClassId,
+                            ToClassId = null,
                             StudentId = student.Id,
                             TenantId = model.TenantId
                         });
@@ -138,7 +177,8 @@ namespace Auth.Core.Services
                         {
                             PromotionStatus = Enumeration.PromotionStatus.Repeated,
                             SessionSetupId = model.SessionId,
-                            SchoolClassId = student.ClassId.Value,
+                            FromClassId = student.ClassId,
+                            ToClassId = student.ClassId,
                             StudentId = student.Id,
                             TenantId = model.TenantId
                         });
@@ -156,17 +196,15 @@ namespace Auth.Core.Services
                     Sex = student.Sex,
                     DoB = student.DateOfBirth,
                     StudentStatusInSchool = student.StudentStatusInSchool,
-                }
-                );
+                });
             }
 
             _unitOfWork.SaveChanges();
 
             // Publish updated Students.
-            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>{  });
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, publishObj);
 
         }
-
 
     }
 }

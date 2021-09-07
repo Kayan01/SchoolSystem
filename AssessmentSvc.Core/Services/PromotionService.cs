@@ -72,7 +72,7 @@ namespace AssessmentSvc.Core.Services
             var resultNotFoundMessage =new StringBuilder("Result not found for: \n\n");
             var missingStudentResult = false;
 
-            var promotionData = new List<StudentPromotion>();
+            var promotionData = new List<StudentPromotionInfo>();
 
             foreach (var student in allStudents)
             {
@@ -89,7 +89,7 @@ namespace AssessmentSvc.Core.Services
                 {
                     var allAverage = results.Average(m => m.ResultTotalAverage);
 
-                    promotionData.Add(new StudentPromotion()
+                    promotionData.Add(new StudentPromotionInfo()
                     {
                         Average = allAverage,
                         PassedCutoff = allAverage >= promoSetup.PromotionScore,
@@ -109,9 +109,9 @@ namespace AssessmentSvc.Core.Services
                 MaxRepeats = promoSetup.MaxRepeat,
                 SessionId = currSession.sessionId,
                 SessionName = currSession.SessionName,
-                StudentPromotionList = promotionData,
+                StudentPromotionInfoList = promotionData,
                 TenantId = allStudents.First().TenantId,
-
+                IsAutomaticPromotion = promoSetup.PromotionType == Enumeration.PromotionType.Automatic
             };
 
             await _publishService.PublishMessage(Topics.Promotion, BusMessageTypes.PROMOTION, publishPayload);
