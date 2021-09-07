@@ -40,6 +40,7 @@
 
   <ItemGroup>
     <Folder Include="Services\Background\" />
+    <Folder Include="ViewModels\AlumniEvent\" />
   </ItemGroup>
 
   <ItemGroup>
