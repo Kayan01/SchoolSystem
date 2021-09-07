@@ -145,6 +145,7 @@ namespace Auth.API
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ISchoolPropertyService, SchoolPropertyService>();
             services.AddScoped<IAlumniService, AlumniService>();
+            services.AddScoped<IAlumniEventService, AlumniEventService>();
             services.AddScoped<ISchoolGroupService, SchoolGroupService>();
             services.AddScoped<IPromotionService, PromotionService>();
             services.AddTransient<AuthHandler>();

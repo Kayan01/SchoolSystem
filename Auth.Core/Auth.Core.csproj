@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ViewModels\AlumniEvent\**" />
+    <EmbeddedResource Remove="ViewModels\AlumniEvent\**" />
+    <None Remove="ViewModels\AlumniEvent\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Migrations\20210903102614_promotionCurVersion.cs" />
     <Compile Remove="Migrations\20210903102614_promotionCurVersion.Designer.cs" />
   </ItemGroup>
@@ -40,7 +46,6 @@
 
   <ItemGroup>
     <Folder Include="Services\Background\" />
-    <Folder Include="ViewModels\AlumniEvent\" />
   </ItemGroup>
 
   <ItemGroup>
