@@ -54,7 +54,7 @@ namespace Auth.API.Controllers
         {
 
             if (alumniId < 1)
-                return ApiResponse<string>(errors: "Please provide Staff Id");
+                return ApiResponse<string>(errors: "Please provide a alummi Id");
 
             try
             {
