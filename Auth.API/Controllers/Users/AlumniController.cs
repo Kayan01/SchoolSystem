@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
@@ -25,19 +26,16 @@ namespace Auth.API.Controllers
             _alumniService = alumniService;
         }
 
-        [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<AlumniDetailVM>), 200)]
-        public async Task<IActionResult> AddAlumni(AddAlumniVM vm)
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<AlumniDetailVM>>), 200)]
+        public async Task<IActionResult> GetAllAlumni([FromQuery] QueryModel model,[FromQuery] GetAlumniQueryVM queryVM)
         {
-
-            if (vm == null)
-                return ApiResponse<string>(errors: "Empty payload");
 
             if (!ModelState.IsValid)
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
             try
             {
-                var result = await _alumniService.AddAlumni(vm);
+                var result = await _alumniService.GetAllAlumni(model, queryVM);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -49,7 +47,50 @@ namespace Auth.API.Controllers
             }
         }
 
-        
+
+        [HttpGet("{alumniId}")]
+        [ProducesResponseType(typeof(ApiResponse<AlumniDetailVM>), 200)]
+        public async Task<IActionResult> GetAllAlumniById(long alumniId)
+        {
+
+            if (alumniId < 1)
+                return ApiResponse<string>(errors: "Please provide Staff Id");
+
+            try
+            {
+                var result = await _alumniService.GetAlumniById(alumniId);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpPut]
+        [ProducesResponseType(typeof(ApiResponse<AlumniDetailVM>), 200)]
+        public async Task<IActionResult> UpdateStaff([FromForm] UpdateAlumniVM model)
+        {
+            if (!ModelState.IsValid)
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _alumniService.UpdateAlumni(model);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+
 
     }
 }
