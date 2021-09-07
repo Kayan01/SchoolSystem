@@ -72,7 +72,7 @@ namespace Auth.API.Controllers
 
         [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<AlumniDetailVM>), 200)]
-        public async Task<IActionResult> UpdateStaff([FromForm] UpdateAlumniVM model)
+        public async Task<IActionResult> UpdateAlumni([FromForm] UpdateAlumniVM model)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
