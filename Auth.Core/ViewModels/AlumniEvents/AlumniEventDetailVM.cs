@@ -10,9 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using static Shared.Reflection.ReflectionHelper;
-namespace Auth.Core.ViewModels
+namespace Auth.Core.ViewModels.AlumniEvent
 {
-    public class AlumniDetailVM
+    public class AlumniEventDetailVM
     {
         public long Id { get; set; }
         public string Email { get; set; }
@@ -22,29 +22,11 @@ namespace Auth.Core.ViewModels
         public DateTime DateCreated { get; set; }
         public byte[] Image { get; set; }
 
-        public static implicit operator AlumniDetailVM(Models.Alumni.Alumni model)
+        public static implicit operator AlumniEventDetailVM(Models.Alumni.AlumniEvent model)
         {
-            return model == null ? null : model.SetObjectProperty(new AlumniDetailVM());
+            return model == null ? null : model.SetObjectProperty(new AlumniEventDetailVM());
         }
 
-    }
-
-    public class AddAlumniExcelVM
-    {
-        [ExcelReaderCell()]
-        public string Email { get; set; }
-        [ExcelReaderCell()]
-        public string FirstName { get; set; }
-        [ExcelReaderCell()]
-        public string LastName { get; set; }
-        [ExcelReaderCell()]
-        public string UserName { get; set; }
-
-        [ExcelReaderCell()]
-        public string PhoneNumber { get; set; }
-
-        public List<DocumentType> DocumentTypes { get; set; }
-        public List<IFormFile> Files { get; set; }
     }
 
     public class UpdateAlumniVM

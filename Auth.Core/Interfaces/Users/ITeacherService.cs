@@ -1,4 +1,5 @@
 ﻿using Auth.Core.ViewModels.Staff;
+using Microsoft.AspNetCore.Http;
 using Shared.Pagination;
 using Shared.ViewModels;
 using System;
@@ -18,5 +19,6 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<string>> MakeClassTeacher(ClassTeacherVM model);
         Task<ResultModel<bool>> DeleteTeacher(long userId);
         Task<ResultModel<byte[]>> GetTeachersExcelSheet();
+        Task<ResultModel<bool>> AddBulkTeacher(IFormFile excelfile);
     }
 }

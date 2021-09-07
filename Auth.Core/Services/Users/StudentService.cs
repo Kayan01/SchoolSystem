@@ -4,7 +4,9 @@ using Auth.Core.Models.Medical;
 using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Student;
+using ExcelManager;
 using IPagedList;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Extensions;
@@ -419,7 +421,7 @@ namespace Auth.Core.Services
                 HomeAddress = std.Address,
                 Id = std.Id,
                 Level = std.Level,
-                ParentId = std.ParentId,
+                ParentId = std.ParentId.Value,
                 Image = _documentService.TryGetUploadedFile(std.image?.Path),
                 ImmunizationHistoryVMs = std.Immunization.Select(x=> new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine}).ToList(),
                 LastName = std.LastName,
@@ -695,6 +697,88 @@ namespace Auth.Core.Services
             {
                 return new ResultModel<byte[]>(data);
             }
+        }
+
+        public async Task<ResultModel<bool>> AddBulkStudent(IFormFile excelfile)
+        {
+            var result = new ResultModel<bool>();
+            
+            var importedData = ExcelReader.FromExcel<CreateStudentVM>(excelfile);
+
+            //check if imported data contains any data
+            if(importedData.Count < 1)
+            {
+
+                result.AddError("No data was imported");
+
+                return result;
+            }
+
+            var students = new List<Student>();
+
+            _unitOfWork.BeginTransaction();
+
+            foreach(var model in importedData)
+            {
+                var user = new User
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.ContactEmail.Trim(),
+                    UserName = model.ContactEmail.Trim(),
+                    PhoneNumber = model.ContactPhone,
+                    UserType = UserType.Student
+                };
+
+                var userResult = await _userManager.CreateAsync(user, model.ContactPhone);
+
+                if(!userResult.Succeeded)
+                {
+                    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                    return result;
+                }
+
+                //todo : add more props
+                var student = new Student
+                {   
+                    UserId = user.Id,
+                    State = model.ContactState,
+                    Address = model.ContactAddress,
+                    TransportRoute = model.TransportRoute,
+                    Town = model.ContactTown,
+                    ClassId = model.ClassId,
+                    Nationality = model.Nationality,
+                    Religion = model.Religion,
+                    EntryType = model.EntryType,
+                    StudentType = model.StudentType,
+                    AdmissionDate = model.AdmissionDate,
+                };
+
+                _studentRepo.Insert(student);
+
+                students.Add(student);
+            }
+            await _unitOfWork.SaveChangesAsync();
+
+            _unitOfWork.Commit();
+
+            foreach(var student in students)
+            {
+                //publish to services
+                await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
+                {
+                    Id = student.Id,
+                    IsActive = student.IsActive,
+                    ClassId = student.ClassId,
+                    TenantId = student.TenantId,
+                    UserId = student.UserId,
+                    DoB = student.DateOfBirth,
+                    StudentStatusInSchool = student.StudentStatusInSchool,
+                });
+            }
+            result.Data = true;
+
+            return result;
         }
     }
 }

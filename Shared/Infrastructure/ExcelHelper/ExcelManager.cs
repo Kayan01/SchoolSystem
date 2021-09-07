@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
+using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 
 namespace ExcelManager
 {
@@ -294,5 +297,105 @@ namespace ExcelManager
         {
             return type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));
         }
+
+        public static List<T> FromExcel<T>(IFormFile file) where T : new()
+        {
+            IWorkbook workbook = ReadWorkbook(file);
+            var sheet = workbook.GetSheetAt(0);
+
+            var vms = new List<T>();
+            var entProp = new T().GetType().GetProperties();
+            for (int i = (sheet.FirstRowNum + 1); i <= sheet.LastRowNum; i++)
+            {
+                var row = sheet.GetRow(i);
+                var pvm = new T();
+
+                for (int j = row.FirstCellNum; j < row.LastCellNum; j++)
+                {
+                    var currProp = entProp.FirstOrDefault(x => x.Name == sheet.GetRow(0).GetCell(j).ToString());
+
+                    if (currProp == null)
+                    {
+                        continue;
+                    }
+
+                    var currentCell = row.GetCell(j);
+
+                    if (currProp.PropertyType.IsEnum)
+                    {
+                        if (currentCell.CellType == CellType.Numeric)
+                        {
+                            currProp.SetValue(pvm,Convert.ToInt32( currentCell.NumericCellValue));
+                        }
+                        else
+                        {
+
+                        var g = Enum.Parse(currProp.PropertyType, currentCell.StringCellValue, true);
+                        currProp.SetValue(pvm, g);
+                        }
+
+                    }
+                    else if (currProp.PropertyType == typeof(DateTime))
+                    {
+                        
+                        currProp.SetValue(pvm, currentCell.DateCellValue);
+
+                    }
+                    else if(currProp.PropertyType == typeof(int))
+                        {
+                        currProp.SetValue(pvm, Convert.ToInt32(currentCell.NumericCellValue));
+
+                    }
+                    else if (currProp.PropertyType == typeof(long))
+                    {
+                        currProp.SetValue(pvm, Convert.ToInt64(currentCell.NumericCellValue));
+
+                    }
+                    else
+                    {
+                        currProp.SetValue(pvm, currentCell?.ToString());
+                    }
+
+                }
+
+                vms.Add(pvm);
+            }
+
+            return vms;
+        }
+
+        #region ProcessExcel
+        // Attemps to read workbook as XLSX, then XLS, then fails.
+        private static IWorkbook ReadWorkbook(IFormFile file)
+        {
+            IWorkbook book;
+
+            try
+            {
+                // Try to read workbook as XLSX:
+                try
+                {
+                    book = new XSSFWorkbook(file.OpenReadStream());
+                }
+                catch
+                {
+                    book = null;
+                }
+
+                // If reading fails, try to read workbook as XLS:
+                if (book == null)
+                {
+                    book = new HSSFWorkbook(file.OpenReadStream());
+                }
+
+                return book;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+        #endregion
     }
+
 }

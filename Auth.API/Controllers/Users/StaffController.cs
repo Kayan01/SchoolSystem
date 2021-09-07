@@ -6,6 +6,7 @@ using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Staff;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
 using Shared.ViewModels;
@@ -173,6 +174,7 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
+        
         [HttpGet]
         [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> GetStaffsExcelSheet()
@@ -189,6 +191,28 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
+        
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        public async Task<IActionResult> BulkAddStaff([FromForm]IFormFile file)
+        {
+            if (file == null)
+                return ApiResponse<string>(errors: "No file uploaded");
 
+            if(!ModelState.IsValid)
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _staffService.AddBulkStaff(file);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch(Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }

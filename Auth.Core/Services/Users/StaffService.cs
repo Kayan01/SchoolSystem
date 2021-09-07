@@ -30,6 +30,8 @@ using Shared.AspNetCore;
 using Shared.Extensions;
 using System.Data.SqlClient;
 using System.Text;
+using Microsoft.AspNetCore.Http;
+using ExcelManager;
 
 namespace Auth.Core.Services
 {
@@ -587,7 +589,7 @@ namespace Auth.Core.Services
         public async Task<ResultModel<byte[]>> GetStaffExcelSheet()
         {
 
-            var data = new AddStaffVM().ToExcel("Staff Excel Sheet");
+            var data = new AddStaffVMExcel().ToExcel("Staff Excel Sheet");
 
             if (data == null)
             {
@@ -597,6 +599,85 @@ namespace Auth.Core.Services
             {
                 return new ResultModel<byte[]>(data);
             }
+        }
+        public async Task<ResultModel<bool>> AddBulkStaff(IFormFile excelfile)
+        {
+            var result = new ResultModel<bool>();
+            //var stream = excelfile.OpenReadStream();
+            //var excelReader = new ExcelReader(stream);
+
+            var importedData = ExcelReader.FromExcel<AddStaffVMExcel>(excelfile);
+
+            //check if imported data contains any data
+            if(importedData.Count < 1)
+            {
+                result.AddError("No data was imported");
+
+                return result;
+            }
+
+            var staffs = new List<Staff>();
+
+            _unitOfWork.BeginTransaction();
+
+            foreach (var model in importedData)
+            {
+                //add admin for school user
+                var user = new User
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.EmailAddress,
+                    UserName = model.EmailAddress,
+                    PhoneNumber = model.PhoneNumber,
+                    UserType = UserType.Staff
+                };
+                var userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
+                if (!userResult.Succeeded)
+                {
+                    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                    return result;
+                }
+
+                //todo: add more props
+                var staff = new Staff
+                {
+                    UserId = user.Id,
+                    BloodGroup = model.BloodGroup,
+                    DateOfBirth = model.DateOfBirth,
+                    IsActive = model.IsActive,
+                    LocalGovernment = model.LocalGovernment,
+                    MaritalStatus = model.MaritalStatus,
+                    Nationality = model.Nationality,
+                    Religion = model.Religion,
+                    StateOfOrigin = model.StateOfOrigin,
+                    StaffType = StaffType.NonTeachingStaff
+                };
+
+                _staffRepo.Insert(staff);
+
+                staffs.Add(staff);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            _unitOfWork.Commit();
+
+            foreach(var staff in staffs)
+            {
+                //publish to services
+                await _publishService.PublishMessage(Topics.Staff, BusMessageTypes.STAFF, new StaffSharedModel
+                {
+                    Id = staff.Id,
+                    IsActive = staff.IsActive,
+                    StaffType = staff.StaffType,
+                    TenantId = staff.TenantId,
+                    UserId = staff.UserId,
+                    RegNumber = staff.RegNumber
+                });
+            }
+            result.Data = true;
+
+            return result;
         }
     }
 }
