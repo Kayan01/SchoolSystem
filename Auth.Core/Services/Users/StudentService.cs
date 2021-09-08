@@ -286,6 +286,7 @@ namespace Auth.Core.Services
             }
 
             //delete auth user
+            await _studentRepo.DeleteAsync(std);
 
             await _unitOfWork.SaveChangesAsync();
             result.Data = true;
