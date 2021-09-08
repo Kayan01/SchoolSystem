@@ -267,7 +267,8 @@ namespace Auth.Core.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
-                Id = stud.Id
+                Id = stud.Id,
+                UserId = stud.UserId
             };
             return result;
         }
@@ -438,7 +439,7 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StudentDetailVM>> GetStudentProfileById(long Id)
+        public async Task<ResultModel<StudentDetailVM>> GetStudentProfileByUserId(long Id)
         {
             var result = new ResultModel<StudentDetailVM>();
             var std = await _studentRepo.GetAll().Where(x => x.UserId == Id)
