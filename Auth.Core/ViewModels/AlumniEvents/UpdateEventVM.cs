@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 
 namespace Auth.Core.ViewModels.AlumniEvent
@@ -13,6 +14,7 @@ namespace Auth.Core.ViewModels.AlumniEvent
         public string Location { get; set; }
         public bool Status { get; set; }
         public List<string> EventTags { get; set; }
+        public IFormFile file { get; set; }
 
     }
 }
