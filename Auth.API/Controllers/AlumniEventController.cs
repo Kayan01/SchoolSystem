@@ -30,7 +30,7 @@ namespace Auth.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<AlumniEventDetailVM>), 200)]
-        public async Task<IActionResult> AddEvent([FromForm]AddEventVM vm, [FromForm] IFormFile file)
+        public async Task<IActionResult> AddEvent([FromForm] AddEventVM vm)
         {
 
             if (vm == null)
@@ -40,7 +40,7 @@ namespace Auth.API.Controllers
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
             try
             {
-                var result = await _alumniEventService.AddEvent(vm, file);
+                var result = await _alumniEventService.AddEvent(vm, vm.file);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -54,7 +54,7 @@ namespace Auth.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<AlumniEventDetailVM>), 200)]
-        public async Task<IActionResult> GetAllEvents([FromQuery]QueryModel vm)
+        public async Task<IActionResult> GetAllEvents([FromQuery] QueryModel vm)
         {
 
             if (vm == null)
@@ -99,7 +99,7 @@ namespace Auth.API.Controllers
 
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<AlumniEventDetailVM>), 200)]
-        public async Task<IActionResult> UpdateEventById(long id, [FromForm] UpdateEventVM vm, [FromForm] IFormFile file)
+        public async Task<IActionResult> UpdateEventById(long id, [FromForm] UpdateEventVM vm)
         {
             if (id < 1)
                 return ApiResponse<string>(errors: "Invalid student Id");
@@ -112,7 +112,7 @@ namespace Auth.API.Controllers
 
             try
             {
-                var result = await _alumniEventService.UpdateEventById(id, vm, file);
+                var result = await _alumniEventService.UpdateEventById(id, vm, vm.file);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

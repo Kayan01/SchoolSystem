@@ -15,5 +15,6 @@ namespace Auth.Core.ViewModels.AlumniEvent
         public bool Status { get; set; }
         public string Location { get; set; }
         public List<string> EventTags { get; set; }
+        public IFormFile file { get; set; }
     }
 }
