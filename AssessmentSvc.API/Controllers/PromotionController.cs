@@ -23,7 +23,7 @@ namespace AssessmentSvc.API.Controllers
             _promotionService = promotionService;
         }
 
-        [HttpGet]
+        [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> PromoteAllStudent()
         {

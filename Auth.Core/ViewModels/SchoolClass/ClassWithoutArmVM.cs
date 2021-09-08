@@ -9,6 +9,6 @@ namespace Auth.Core.ViewModels.SchoolClass
         public string Name { get; set; }
         public int Sequence { get; set; }
         public bool IsTerminal { get; set; }
-
+        public string Section { get; set; }
     }
 }

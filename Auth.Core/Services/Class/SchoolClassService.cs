@@ -211,7 +211,8 @@ namespace Auth.Core.Services
                 {
                     Name = x.Name,
                     Sequence = x.Sequence,
-                    IsTerminal = x.IsTerminalClass
+                    IsTerminal = x.IsTerminalClass,
+                    Section = x.SchoolSection.Name
                 }).ToListAsync();
 
             var distinctClasses = allClasses.GroupBy(m => m.Name).Select(m => m.First()).ToList();
