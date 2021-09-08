@@ -32,6 +32,7 @@ namespace Auth.Core.Services
     {
         private readonly IDocumentService _documentService;
         private readonly IRepository<School, long> _schoolRepo;
+        private readonly IRepository<SchoolGroup, long> _schoolGroupRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
@@ -41,6 +42,7 @@ namespace Auth.Core.Services
             IUnitOfWork unitOfWork,
          IPublishService publishService,
         IDocumentService documentService,
+        IRepository<SchoolGroup, long> schoolGroupRepo,
         IAuthUserManagement authUserManagement,
             UserManager<User> userManager)
         {
@@ -49,6 +51,7 @@ namespace Auth.Core.Services
             _documentService = documentService;
             _userManager = userManager;
             _publishService = publishService;
+            _schoolGroupRepo = schoolGroupRepo;
             _authUserManagement = authUserManagement;
         }
 
@@ -75,6 +78,14 @@ namespace Auth.Core.Services
 
             _unitOfWork.BeginTransaction();
             var files = new List<FileUpload>();
+          
+            //use school grouo files for school
+            if (model.GroupId.HasValue)
+            {
+                files = _schoolGroupRepo.GetAll().Include(x => x.FileUploads).Where(x => x.Id == model.GroupId.Value).Select(x => x.FileUploads).FirstOrDefault();
+            }
+
+
             //save filles
             if (model.Files != null && model.Files.Any())
             {
@@ -102,6 +113,10 @@ namespace Auth.Core.Services
                 PhoneNumber = model.ContactPhoneNo,
                 IsPrimaryContact = true
             };
+
+            //get school groupId if it exists
+
+
             var school = new School
             {
                 Name = model.Name,
