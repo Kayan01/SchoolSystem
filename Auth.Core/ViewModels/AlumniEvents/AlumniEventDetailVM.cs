@@ -2,6 +2,7 @@
 using ExcelManager;
 using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Extensions;
+using Shared.Entities;
 using Shared.Enums;
 using Shared.Utils;
 using System;
@@ -15,30 +16,25 @@ namespace Auth.Core.ViewModels.AlumniEvent
     public class AlumniEventDetailVM
     {
         public long Id { get; set; }
-        public string Email { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string Description { get; set; }
+        public string Location { get; set; }
         public bool Status { get; set; }
-        public DateTime DateCreated { get; set; }
-        public byte[] Image { get; set; }
+        public List<string> EventTags { get; set; }
+
+        public byte[] Image => EventImage.Path.GetBase64StringFromImage();
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public FileUpload EventImage { get; set; }
 
         public static implicit operator AlumniEventDetailVM(Models.Alumni.AlumniEvent model)
         {
-            return model == null ? null : model.SetObjectProperty(new AlumniEventDetailVM());
+            return model?.SetObjectProperty(new AlumniEventDetailVM());
         }
 
-    }
-
-    public class UpdateAlumniVM
-    {
-        public long Id { get; set; }
-        public string Email { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string UserName { get; set; }
-        public string PhoneNumber { get; set; }
-    }
-
-
-   
+    }   
 }

@@ -5,6 +5,7 @@ using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Alumni;
 using Auth.Core.ViewModels.AlumniEvent;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
 using Shared.AspNetCore.Policy;
@@ -29,7 +30,7 @@ namespace Auth.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<AlumniEventDetailVM>), 200)]
-        public async Task<IActionResult> AddEvent(AddEventVM vm)
+        public async Task<IActionResult> AddEvent([FromForm]AddEventVM vm, [FromForm] IFormFile file)
         {
 
             if (vm == null)
@@ -39,7 +40,7 @@ namespace Auth.API.Controllers
                 return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
             try
             {
-                var result = await _alumniEventService.AddEvent(vm);
+                var result = await _alumniEventService.AddEvent(vm, file);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -96,9 +97,9 @@ namespace Auth.API.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<AlumniEventDetailVM>), 200)]
-        public async Task<IActionResult> UpdateEventById(long id, [FromBody] UpdateEventVM vm)
+        public async Task<IActionResult> UpdateEventById(long id, [FromForm] UpdateEventVM vm, [FromForm] IFormFile file)
         {
             if (id < 1)
                 return ApiResponse<string>(errors: "Invalid student Id");
@@ -111,7 +112,7 @@ namespace Auth.API.Controllers
 
             try
             {
-                var result = await _alumniEventService.UpdateEventById(id, vm);
+                var result = await _alumniEventService.UpdateEventById(id, vm, file);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
