@@ -19,8 +19,7 @@ namespace AssessmentSvc.Core.ViewModels.PromotionSetup
             {
                 PromotionMethod = model.PromotionMethod,
                 PromotionType = model.PromotionType,
-                PromotionScore = model.PromotionScore,
-                MaxRepeat = model.MaxRepeat
+                PromotionScore = model.PromotionScore
             };
         }
     }
