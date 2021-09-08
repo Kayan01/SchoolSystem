@@ -7,7 +7,9 @@ namespace Auth.Core.Enumeration
 {
     public enum PromotionStatus
     {
-        Promoted, 
+        Promoted,
+        Promoted_InPool,
+        Graduated,
         Repeated, 
         Withdrawn, 
         [Display(Name = "Re-Instated")]

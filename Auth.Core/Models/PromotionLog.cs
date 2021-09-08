@@ -3,6 +3,7 @@ using Shared.Entities.Auditing;
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace Auth.Core.Models
@@ -15,9 +16,14 @@ namespace Auth.Core.Models
 
         public long? StudentId { get; set; }
         public long SessionSetupId { get; set; }
-        public long SchoolClassId { get; set; }
+        public long? FromClassId { get; set; }
+        public long? ToClassId { get; set; }
+        public string ClassPoolName { get; set; }
 
-        public SchoolClass SchoolClass { get; set; }
+        [ForeignKey("ToClassId")]
+        public SchoolClass ToClass { get; set; }
+        [ForeignKey("FromClassId")]
+        public SchoolClass FromClass { get; set; }
         public Student Student { get; set; }
         public double AverageScore { get; set; }
     }
