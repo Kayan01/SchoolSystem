@@ -504,7 +504,7 @@ namespace Auth.Core.Test.Services.Users
 
             var AddStudent = await studentService.AddStudentToSchool(studentData);
 
-            var result = await studentService.GetStudentProfileById(AddStudent.Data.Id);
+            var result = await studentService.GetStudentProfileByUserId(AddStudent.Data.UserId.Value);
 
             Assert.That(!(result.ErrorMessages.Contains("Student does not exist")));
             Assert.AreEqual(studentData.ContactEmail, result.Data.EmailAddress);
