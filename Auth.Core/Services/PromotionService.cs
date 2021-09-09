@@ -79,46 +79,46 @@ namespace Auth.Core.Services
                     continue;
                 }
 
-                if (studentItem.PassedCutoff) // if student passed cutoff mark
+                if (model.IsAutomaticPromotion) // Automatic promotion
                 {
-                    var curclass = classes.SingleOrDefault(m => m.Id == student.ClassId); //get current class
-
-                    if (curclass == null) //Make sure class is valid
+                    if (studentItem.PassedCutoff) // if student passed cutoff mark
                     {
-                        throw new Exception($"Current Class was not found for student {student.Id}");
-                    }
+                        var curclass = classes.SingleOrDefault(m => m.Id == student.ClassId); //get current class
 
-                    if (curclass.IsTerminalClass)
-                    {
-                        _alumniRepo.Insert(new Alumni(student, model.SessionName)); //if current class is a terminal class, create an alumni record.
-                    }
-
-                    //Promote Student
-
-                    // Update this to tackle classpool.
-                    var nextClasses = classes.Where(m => m.Sequence == curclass.Sequence + 1).ToList();
-                    if (nextClasses == null || nextClasses.Count <= 0)
-                    {
-                        _promotionLogRepo.Insert(new PromotionLog()
+                        if (curclass == null) //Make sure class is valid
                         {
-                            PromotionStatus = Enumeration.PromotionStatus.Graduated,
-                            SessionSetupId = model.SessionId,
-                            FromClassId = student.ClassId,
-                            ToClassId = null,
-                            StudentId = student.Id,
-                            AverageScore = studentItem.Average,
-                            TenantId = model.TenantId
-                        });
+                            throw new Exception($"Current Class was not found for student {student.Id}");
+                        }
 
-                        student.ClassId = null;
-                        student.StudentStatusInSchool = StudentStatusInSchool.IsGraduated;
-                    }
-                    else
-                    {
-                        var nextClass = nextClasses.FirstOrDefault(m => m.ClassArm == curclass.ClassArm) ?? nextClasses[r.Next(0, nextClasses.Count)];
-
-                        if (model.IsAutomaticPromotion) // Automatic promotion
+                        if (curclass.IsTerminalClass)
                         {
+                            _alumniRepo.Insert(new Alumni(student, model.SessionName)); //if current class is a terminal class, create an alumni record.
+                        }
+
+                        //Promote Student
+
+                        // Update this to tackle classpool.
+                        var nextClasses = classes.Where(m => m.Sequence == curclass.Sequence + 1).ToList();
+                        if (nextClasses == null || nextClasses.Count <= 0)
+                        {
+                            _promotionLogRepo.Insert(new PromotionLog()
+                            {
+                                PromotionStatus = Enumeration.PromotionStatus.Graduated,
+                                SessionSetupId = model.SessionId,
+                                FromClassId = student.ClassId,
+                                ToClassId = null,
+                                StudentId = student.Id,
+                                AverageScore = studentItem.Average,
+                                TenantId = model.TenantId
+                            });
+
+                            student.ClassId = null;
+                            student.StudentStatusInSchool = StudentStatusInSchool.IsGraduated;
+                        }
+                        else
+                        {
+                            var nextClass = nextClasses.FirstOrDefault(m => m.ClassArm == curclass.ClassArm) ?? nextClasses[r.Next(0, nextClasses.Count)];
+
                             _promotionLogRepo.Insert(new PromotionLog()
                             {
                                 PromotionStatus = Enumeration.PromotionStatus.Promoted,
@@ -132,25 +132,8 @@ namespace Auth.Core.Services
 
                             student.ClassId = nextClass.Id;
                         }
-                        else // add to class pool
-                        {
-                            _promotionLogRepo.Insert(new PromotionLog()
-                            {
-                                PromotionStatus = Enumeration.PromotionStatus.Promoted_InPool,
-                                SessionSetupId = model.SessionId,
-                                FromClassId = student.ClassId,
-                                ToClassId = null,
-                                ClassPoolName = nextClass.Name,
-                                StudentId = student.Id,
-                                AverageScore = studentItem.Average,
-                                TenantId = model.TenantId
-                            });
-
-                            student.ClassId = null;
-                        }
                     }
-                }
-                else // student did not meet cutoff mark
+                    else // student did not meet cutoff mark
                 {
                     var previousRepeat = previousRepeats.Where(m => m.StudentId == student.Id && m.ToClassId == student.ClassId).ToList();
 
@@ -183,6 +166,23 @@ namespace Auth.Core.Services
                             TenantId = model.TenantId
                         });
                     }
+                }
+
+                }
+                else // add to class pool
+                {
+                    _promotionLogRepo.Insert(new PromotionLog()
+                    {
+                        PromotionStatus = Enumeration.PromotionStatus.InPool,
+                        SessionSetupId = model.SessionId,
+                        FromClassId = student.ClassId,
+                        ToClassId = null,
+                        StudentId = student.Id,
+                        AverageScore = studentItem.Average,
+                        TenantId = model.TenantId
+                    });
+
+                    student.ClassId = null;
                 }
 
                 publishObj.Add(new StudentSharedModel
