@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Auth.Core.Interfaces;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Alumni;
 using Auth.Core.ViewModels.AlumniEvent;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -53,7 +55,7 @@ namespace Auth.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<AlumniEventDetailVM>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<AlumniEventDetailVM>>), 200)]
         public async Task<IActionResult> GetAllEvents([FromQuery] QueryModel vm)
         {
 
@@ -68,7 +70,7 @@ namespace Auth.API.Controllers
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
             }
             catch (Exception ex)
             {
