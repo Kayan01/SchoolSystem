@@ -30,7 +30,7 @@ namespace AssessmentSvc.Core.Services
 
             if (promotionSetup == null)
             {
-                promotionSetup = new PromotionSetup();
+                promotionSetup = _promotionSetupRepo.Insert(new PromotionSetup());
             }
 
             promotionSetup.PromotionMethod = vm.PromotionMethod;
@@ -48,14 +48,12 @@ namespace AssessmentSvc.Core.Services
 
             if (setup == null)
             {
-                setup = new PromotionSetup();
+                setup = _promotionSetupRepo.Insert(new PromotionSetup());
             }
 
             setup.MaxRepeat = vm.MaxRepeat;
 
             await _unitOfWork.SaveChangesAsync();
-
-            setup = await _promotionSetupRepo.GetAll().FirstOrDefaultAsync();
 
             return new ResultModel<WithdrawalSetupVM>((WithdrawalSetupVM)setup);
         }
