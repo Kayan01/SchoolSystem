@@ -75,6 +75,8 @@ namespace Auth.Core.Services.Users
 
            await _parentRepo.DeleteAsync(parent);
 
+           await _unitOfWork.SaveChangesAsync();
+
             resultModel.Data = "Deleted";
             return resultModel;
         }
