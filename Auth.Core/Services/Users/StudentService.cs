@@ -689,7 +689,7 @@ namespace Auth.Core.Services
         public async Task<ResultModel<byte[]>> GetStudentsExcelSheet()
         {
 
-            var data = new CreateStudentVM().ToExcel("Student");
+            var data = new StudentBulkUploadExcel().ToExcel("Student");
 
             if (data == null)
             {
@@ -705,7 +705,7 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<bool>();
             
-            var importedData = ExcelReader.FromExcel<CreateStudentVM>(excelfile);
+            var importedData = ExcelReader.FromExcel<StudentBulkUploadExcel>(excelfile);
 
             //check if imported data contains any data
             if(importedData.Count < 1)
@@ -748,8 +748,8 @@ namespace Auth.Core.Services
                     Address = model.ContactAddress,
                     TransportRoute = model.TransportRoute,
                     Town = model.ContactTown,
-                    ClassId = model.ClassId,
                     Nationality = model.Nationality,
+                    RegNumber = model.RegNumber, 
                     Religion = model.Religion,
                     EntryType = model.EntryType,
                     StudentType = model.StudentType,

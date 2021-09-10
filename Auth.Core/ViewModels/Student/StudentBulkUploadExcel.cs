@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ExcelManager;
+using Microsoft.AspNetCore.Http;
 using Shared.Enums;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using ExcelManager;
+using System.Text;
 
 namespace Auth.Core.ViewModels.Student
 {
-    public class CreateStudentVM
+    class StudentBulkUploadExcel
     {
         [ExcelReaderCell]
         public string FirstName { get; set; }
@@ -35,12 +35,6 @@ namespace Auth.Core.ViewModels.Student
         public string EntryType { get; set; }
         [ExcelReaderCell]
         public DateTime AdmissionDate { get; set; }
-        [Required]
-        [ExcelReaderCell]
-        public long SectionId { get; set; }
-        [Required]
-        [ExcelReaderCell]
-        public long ClassId { get; set; }
         [ExcelReaderCell]
         public StudentType StudentType { get; set; }
         [ExcelReaderCell]
@@ -66,15 +60,13 @@ namespace Auth.Core.ViewModels.Student
         public string Allergies { get; set; }
         [ExcelReaderCell]
         public string ConfidentialNotes { get; set; }
-        public List<ImmunizationVm> ImmunizationVms { get; set; } = new List<ImmunizationVm>();
-        [Required]
         [ExcelReaderCell]
-        public long ParentId { get; set; }
-
+        public string RegNumber { get; set; }
+        public List<ImmunizationVm> ImmunizationVms { get; set; } = new List<ImmunizationVm>();
         public bool IsActive { get; set; } = true;
+
 
         public List<IFormFile> Files { get; set; } = new List<IFormFile>();
         public List<DocumentType> DocumentTypes { get; set; } = new List<DocumentType>();
     }
-
 }
