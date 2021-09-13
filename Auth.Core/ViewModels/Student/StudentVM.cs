@@ -64,6 +64,7 @@ namespace Auth.Core.ViewModels.Student
         public bool IsActive { get; set; }
         public string Email { get;  set; }
         public string PhoneNumber { get; set; }
+        public long? UserId { get; set; }
         public byte[] Image => ImagePath?.GetBase64StringFromImage();
 
         [System.Text.Json.Serialization.JsonIgnore]

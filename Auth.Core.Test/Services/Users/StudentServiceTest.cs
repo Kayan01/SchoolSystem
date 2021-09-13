@@ -18,6 +18,7 @@ using Auth.Core.Context;
 using Auth.Core.ViewModels.SchoolClass;
 using Auth.Core.Models;
 using Auth.Core.ViewModels;
+using System.Linq;
 
 namespace Auth.Core.Test.Services.Users
 {
@@ -498,19 +499,86 @@ namespace Auth.Core.Test.Services.Users
 
             var AddParent = ParentService.AddNewParent(data);
             var studentData = AddStudentData();
-            studentData.ParentId = 1;
+            studentData.ParentId = 1; 
+
             studentData.SectionId = AddSection.Data.Id;
             studentData.ClassId = 3;
 
             var AddStudent = await studentService.AddStudentToSchool(studentData);
 
-            var result = await studentService.GetStudentProfileById(AddStudent.Data.Id);
+            var result = await studentService.GetStudentProfileByUserId(AddStudent.Data.UserId.Value);
 
             Assert.That(!(result.ErrorMessages.Contains("Student does not exist")));
             Assert.AreEqual(studentData.ContactEmail, result.Data.EmailAddress);
         }
 
-        
+        [Test]
+        public async Task UpdateStudentTest()
+        {
+            using ServicesDISetup _setup = new ServicesDISetup();
+            var studentService = _setup.ServiceProvider.GetService<IStudentService>();
+            var ParentService = _setup.ServiceProvider.GetService<IParentService>();
+            var SchoolPropertyService = _setup.ServiceProvider.GetService<ISchoolPropertyService>();
+            var ClassService = _setup.ServiceProvider.GetService<ISchoolClassService>();
+            var _sectionService = _setup.ServiceProvider.GetService<ISectionService>();
+            var _classArmService = _setup.ServiceProvider.GetService<IClassArmService>();
+            var _AuthService = _setup.ServiceProvider.GetService<IAuthUserManagement>();
+            var context = _setup.ServiceProvider.GetService<AppDbContext>();
+
+            var GetAllParent = GetAllParentData();
+            var updateData = updateStudentData();
+            var SectionModel = AddClassSectionData();
+            var ClassArmModel = AddClassArmData();
+            var ClassModel = AddClassData();
+
+            var checkSchoolCount = _AuthService.GetAllAuthUsersAsync();
+
+            var school = AddSchoolData();
+            context.Schools.Add(school);
+            await context.SaveChangesAsync();
+
+            var AddSection = await _sectionService.AddSection(SectionModel);
+            var AddClassArm = await _classArmService.AddClassArm(ClassArmModel);
+
+            ClassModel.SectionId = AddSection.Data.Id;
+
+            List<long> ListOfClassArms = new List<long>()
+            {
+                AddClassArm.Data.Id
+            };
+            ClassModel.ClassArmIds = ListOfClassArms;
+
+            var AddClass = await ClassService.AddClass(ClassModel);
+
+            var schoolPropertyData = SchoolPropertyVMData();
+
+            var AddSchoolProperty = await SchoolPropertyService.SetSchoolProperty(schoolPropertyData);
+            Assert.AreEqual(AddSchoolProperty.Data.EnrollmentAmount, schoolPropertyData.EnrollmentAmount);
+
+            var data = AddParentVMData();
+
+            var AddParent = ParentService.AddNewParent(data);
+            var studentData = AddStudentData();
+            studentData.ParentId = 1;
+            studentData.SectionId = AddSection.Data.Id;
+            studentData.ClassId = 3;
+
+            var AddStudent = await studentService.AddStudentToSchool(studentData);
+            var result = await studentService.UpdateStudent(AddStudent.Data.Id,updateData);
+
+            Assert.That(result.ErrorMessages.Count == 0);
+            Assert.AreEqual(updateData.ContactEmail,result.Data.Email);
+
+        }
+
+
+
+
+
+
+
+
+
 
         private CreateStudentVM AddStudentData()
         {
@@ -641,6 +709,31 @@ namespace Auth.Core.Test.Services.Users
             };
 
             return newAuthUserModel;
+        }
+
+        private StudentUpdateVM updateStudentData()
+        {
+            List<DocumentType> DocumentTypes = new List<DocumentType>() { DocumentType.Logo, DocumentType.ProfilePhoto };
+            var data = new StudentUpdateVM()
+            {
+                FirstName = "UpdatedSimi",
+                LastName = "UpdatedSegun",
+                Sex = "male",
+                Religion = "christian",
+                Nationality = "Nigeria",
+                ClassId = 3,
+                ParentId = 1,
+                StudentType = StudentType.DayStudent,
+                DocumentTypes = DocumentTypes,
+                ContactEmail = "updatedSegunSi@yahoo.com",
+                ContactPhone = "09023217867",
+                Allergies = "none",
+                BloodGroup = "O+",
+                Disability = false,
+                DateOfBirth = new DateTime(2001, 08, 12)
+            };
+
+            return data;
         }
     }
 }

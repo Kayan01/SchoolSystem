@@ -267,7 +267,8 @@ namespace Auth.Core.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
-                Id = stud.Id
+                Id = stud.Id,
+                UserId = stud.UserId
             };
             return result;
         }
@@ -438,7 +439,7 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StudentDetailVM>> GetStudentProfileById(long Id)
+        public async Task<ResultModel<StudentDetailVM>> GetStudentProfileByUserId(long Id)
         {
             var result = new ResultModel<StudentDetailVM>();
             var std = await _studentRepo.GetAll().Where(x => x.UserId == Id)
@@ -688,7 +689,7 @@ namespace Auth.Core.Services
         public async Task<ResultModel<byte[]>> GetStudentsExcelSheet()
         {
 
-            var data = new CreateStudentVM().ToExcel("Student");
+            var data = new StudentBulkUploadExcel().ToExcel("Student");
 
             if (data == null)
             {
@@ -704,7 +705,7 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<bool>();
             
-            var importedData = ExcelReader.FromExcel<CreateStudentVM>(excelfile);
+            var importedData = ExcelReader.FromExcel<StudentBulkUploadExcel>(excelfile);
 
             //check if imported data contains any data
             if(importedData.Count < 1)
@@ -747,8 +748,8 @@ namespace Auth.Core.Services
                     Address = model.ContactAddress,
                     TransportRoute = model.TransportRoute,
                     Town = model.ContactTown,
-                    ClassId = model.ClassId,
                     Nationality = model.Nationality,
+                    RegNumber = model.RegNumber, 
                     Religion = model.Religion,
                     EntryType = model.EntryType,
                     StudentType = model.StudentType,

@@ -35,7 +35,7 @@ namespace Auth.API.Controllers
            
             try
             {
-                var result = await _studentService.GetStudentProfileById(Id);
+                var result = await _studentService.GetStudentProfileByUserId(Id);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
