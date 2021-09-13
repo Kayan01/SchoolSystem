@@ -203,6 +203,8 @@ namespace Auth.Core.ViewModels.Staff
         [ExcelReaderCell]
 
         public string LocalGovernment { get; set; }
+        
+        public bool IsActive { get; set; }
 
         [ExcelReaderCell]
         public string PhoneNumber { get; set; }

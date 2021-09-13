@@ -37,6 +37,7 @@ namespace Auth.Core.ViewModels.Student
         public DateTime AdmissionDate { get; set; }
         [ExcelReaderCell]
         public StudentType StudentType { get; set; }
+        public string Level { get; set; }
         [ExcelReaderCell]
         public string ContactPhone { get; set; }
         [ExcelReaderCell]
