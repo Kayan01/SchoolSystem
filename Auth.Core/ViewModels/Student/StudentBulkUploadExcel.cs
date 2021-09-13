@@ -38,8 +38,6 @@ namespace Auth.Core.ViewModels.Student
         [ExcelReaderCell]
         public StudentType StudentType { get; set; }
         [ExcelReaderCell]
-        public string Level { get; set; }
-        [ExcelReaderCell]
         public string ContactPhone { get; set; }
         [ExcelReaderCell]
         public string ContactCountry { get; set; }

@@ -645,7 +645,6 @@ namespace Auth.Core.Services
                     UserId = user.Id,
                     BloodGroup = model.BloodGroup,
                     DateOfBirth = model.DateOfBirth,
-                    IsActive = model.IsActive,
                     LocalGovernment = model.LocalGovernment,
                     MaritalStatus = model.MaritalStatus,
                     Nationality = model.Nationality,
