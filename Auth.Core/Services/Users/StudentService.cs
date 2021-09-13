@@ -72,6 +72,52 @@ namespace Auth.Core.Services
             _authUserManagement = authUserManagement;
         }
 
+        private async Task<Student> SaveStudentWithSystemRegNumber(Student student, string schoolSeperator, string schoolPrefix)
+        {
+            var lastRegNumber = await _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
+            var lastNumber = 0;
+            var seperator = schoolSeperator;
+            if (!string.IsNullOrWhiteSpace(lastRegNumber))
+            {
+                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
+            }
+            var nextNumber = lastNumber;
+            var saved = false;
+            var firstTime = true;
+
+            while (!saved)
+            {
+                try
+                {
+                    nextNumber++;
+
+                    if (firstTime && !string.IsNullOrWhiteSpace(student.RegNumber))
+                    {
+                        firstTime = false;
+                        _studentRepo.Insert(student);
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        student.RegNumber = $"{schoolPrefix}{seperator}STT{seperator}{DateTime.Now.Year}{seperator}{nextNumber:00000}";
+
+                        firstTime = false;
+                        _studentRepo.Insert(student);
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+
+
+                    saved = true;
+                }
+                // 2627 is unique constraint (includes primary key), 2601 is unique index
+                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+                {
+                    saved = false;
+                }
+            }
+
+            return student;
+        }
         public async Task<ResultModel<StudentVM>> AddStudentToSchool(CreateStudentVM model)
         {
             var result = new ResultModel<StudentVM>();
@@ -196,35 +242,7 @@ namespace Auth.Core.Services
                  IsActive = true
             };
 
-            var lastRegNumber = await _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
-            var lastNumber = 0;
-            var seperator = schoolProperty.Data.Seperator;
-            if (!string.IsNullOrWhiteSpace(lastRegNumber))
-            {
-                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
-            }
-            var nextNumber = lastNumber;
-            var saved = false;
-
-            while (!saved)
-            {
-                try
-                {
-                    nextNumber++;
-                    stud.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STT{seperator}{DateTime.Now.Year}{seperator}{nextNumber:00000}";
-
-                    _studentRepo.Insert(stud);
-                    await _unitOfWork.SaveChangesAsync();
-
-                    saved = true;
-                }
-                // 2627 is unique constraint (includes primary key), 2601 is unique index
-                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
-                {
-                    saved = false;
-                }
-            }
-
+            stud = await SaveStudentWithSystemRegNumber(stud, schoolProperty.Data.Seperator, schoolProperty.Data.Prefix);
 
             //change user's username to reg number
             user.UserName = stud.RegNumber;
@@ -704,7 +722,14 @@ namespace Auth.Core.Services
         public async Task<ResultModel<bool>> AddBulkStudent(IFormFile excelfile)
         {
             var result = new ResultModel<bool>();
-            
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
+            {
+                result.AddError(schoolProperty.ValidationErrors);
+                return result;
+            }
+
+
             var importedData = ExcelReader.FromExcel<StudentBulkUploadExcel>(excelfile);
 
             //check if imported data contains any data
@@ -756,11 +781,22 @@ namespace Auth.Core.Services
                     AdmissionDate = model.AdmissionDate,
                 };
 
-                _studentRepo.Insert(student);
+                student = await SaveStudentWithSystemRegNumber(student, schoolProperty.Data.Seperator, schoolProperty.Data.Prefix);
 
-                students.Add(student);
+                //change user's username to reg number
+                user.UserName = student.RegNumber;
+                user.NormalizedUserName = student.RegNumber.ToUpper();
+                await _userManager.UpdateAsync(user);
+
+                //add classId to claims
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, student.ClassId.ToString()));
+
+                _unitOfWork.Commit();
+
+                var school = await _schoolRepo.GetAll().Where(m => m.Id == student.TenantId).FirstOrDefaultAsync();
+                //broadcast login detail to email
+                _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
             }
-            await _unitOfWork.SaveChangesAsync();
 
             _unitOfWork.Commit();
 
