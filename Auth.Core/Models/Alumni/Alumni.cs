@@ -49,7 +49,7 @@ namespace Auth.Core.Models.Alumni
         public string Town { get; set; }
         public string Address { get; set; }
         public string State { get; set; }
-        public long ParentId { get; set; }
+        public long? ParentId { get; set; }
         public long MedicalDetailID { get; set; }
         public string SessionName { get; set; }
         public string TermName { get; set; }
