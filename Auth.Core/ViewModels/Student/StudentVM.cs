@@ -16,8 +16,14 @@ namespace Auth.Core.ViewModels.Student
         public string MothersMaidenName { get; set; }
         public string Sex { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public string ParentName { get; set; }
-        public long ParentId { get; set; }
+        public string ParentName => $"{ParentFirstName} {ParentLastName}";
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public string ParentFirstName { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public string  ParentLastName { get; set; }
+        public long? ParentId { get; set; }
         public string Nationality { get; set; }
         public string Religion { get; set; }
         public string LocalGovernment { get; set; }
@@ -26,7 +32,11 @@ namespace Auth.Core.ViewModels.Student
         public DateTime AdmissionDate { get; set; }
         public string Level { get; set; }
         public string Section { get; set; }
-        public string Class { get; set; }
+        public string Class => SchoolClass?.FullName;
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public Models.SchoolClass SchoolClass { get; set; }
         public string BloodGroup { get; set; }
         public string Genotype { get; set; }
         public string Allergies { get; set; }
