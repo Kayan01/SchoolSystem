@@ -60,7 +60,7 @@ namespace Auth.Core.ViewModels.Student
         public string Sex { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string Section { get; set; }
-        public string Class { get; set; }
+        public string Class => SchoolClass?.FullName;
         public bool IsActive { get; set; }
         public string Email { get;  set; }
         public string PhoneNumber { get; set; }
@@ -70,6 +70,11 @@ namespace Auth.Core.ViewModels.Student
         [System.Text.Json.Serialization.JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
         public string ImagePath { get; set; }
+
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public Models.SchoolClass SchoolClass { get; set; }
         public static implicit operator StudentVM(Models.Student model)
         {
             return model == null ? null : new StudentVM
