@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Auth.API.Controllers
 {
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/[controller]/[action]")]
     [ApiController]
     [Authorize]
     public class PromotionController : BaseController
@@ -24,7 +24,7 @@ namespace Auth.API.Controllers
             _promotionService = promotionService;
         }
 
-        [HttpGet("sessionId")]
+        [HttpGet("{sessionId}")]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<ClassPoolVM>>), 200)]
         public async Task<IActionResult> GetClassPool(long sessionId, [FromQuery] QueryModel vM, [FromQuery] long? classId)
         {
@@ -64,7 +64,7 @@ namespace Auth.API.Controllers
             }
         }
 
-        [HttpGet("sessionId")]
+        [HttpGet("{sessionId}")]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<ClassPoolVM>>), 200)]
         public async Task<IActionResult> GetRepeatList(long sessionId, [FromQuery] QueryModel vM, [FromQuery] long? classId)
         {
@@ -81,7 +81,7 @@ namespace Auth.API.Controllers
             }
         }
 
-        [HttpGet("sessionId")]
+        [HttpGet("{sessionId}")]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<ClassPoolVM>>), 200)]
         public async Task<IActionResult> GetWithdrawnList(long sessionId, [FromQuery] QueryModel vM, [FromQuery] long? classId)
         {
@@ -98,7 +98,7 @@ namespace Auth.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("{sessionId}")]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<PromotionHighlightVM>>), 200)]
         public async Task<IActionResult> GetPromotionHighlight(long sessionId, [FromQuery] long? classId)
         {
