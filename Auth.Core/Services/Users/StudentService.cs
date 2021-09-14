@@ -323,7 +323,7 @@ namespace Auth.Core.Services
                 .Select(x => new StudentVM
                 {
                      Id = x.Id,
-                    Class = x.Class.FullName,
+                    SchoolClass = x.Class,
                     DateOfBirth = x.DateOfBirth,
                     FirstName = x.User.FirstName,
                     LastName = x.User.LastName,
@@ -345,21 +345,21 @@ namespace Auth.Core.Services
         {
             var query = _studentRepo.GetAll()
                 .Where(x => x.ClassId == classId)
-                .Select(x=> new StudentVM
-            {
-                Id = x.Id,
-                Class = x.Class.FullName,
+                .Select(x => new StudentVM
+                {
+                    Id = x.Id,
+                    SchoolClass = x.Class,
                 DateOfBirth = x.DateOfBirth,
-                FirstName = x.User.FirstName,
-                LastName = x.User.LastName,
-                StudentNumber = x.RegNumber,
-                Sex = x.Sex,
-                Email = x.User.Email,
-                PhoneNumber =  x.User.PhoneNumber  ,
-                Section = x.Class.SchoolSection.Name,
-                IsActive = x.IsActive,
-                ImagePath = x.FileUploads.Where(fileUpload => fileUpload.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
-            });
+                    FirstName = x.User.FirstName,
+                    LastName = x.User.LastName,
+                    StudentNumber = x.RegNumber,
+                    Sex = x.Sex,
+                    Email = x.User.Email,
+                    PhoneNumber = x.User.PhoneNumber,
+                    Section = x.Class.SchoolSection.Name,
+                    IsActive = x.IsActive,
+                    ImagePath = x.FileUploads.Where(fileUpload => fileUpload.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
+                }); ;
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
            
