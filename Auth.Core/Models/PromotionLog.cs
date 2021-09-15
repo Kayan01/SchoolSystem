@@ -3,6 +3,7 @@ using Shared.Entities.Auditing;
 using Shared.Tenancy;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
@@ -12,10 +13,15 @@ namespace Auth.Core.Models
     {
         public long TenantId { get; set; }
         public PromotionStatus PromotionStatus { get; set; }
-        public string Reason { get; set; }
+
+        [StringLength(300)]
+        public string WithdrawalReason { get; set; }
+        [StringLength(300)]
+        public string ReInstateReason { get; set; }
 
         public long? StudentId { get; set; }
         public long SessionSetupId { get; set; }
+        public string SessionName { get; set; }
         public long? FromClassId { get; set; }
         public long? ToClassId { get; set; }
         public string ClassPoolName { get; set; }
