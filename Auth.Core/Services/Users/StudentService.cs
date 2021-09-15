@@ -181,7 +181,18 @@ namespace Auth.Core.Services
                 UserType = UserType.Student,
             };
 
-            var userResult = await _userManager.CreateAsync(user, model.ContactPhone);
+            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+            IdentityResult userResult;
+
+            if (existingUser != null)
+            {
+                userResult = await _userManager.UpdateAsync(user);
+            }
+            else
+            {
+                userResult = await _userManager.CreateAsync(user, model.ContactPhone);
+            }
+
 
             if (!userResult.Succeeded)
             {
@@ -256,8 +267,12 @@ namespace Auth.Core.Services
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == stud.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
+            if (emailResult.HasError)
+            {
+                return new ResultModel<StudentVM>(emailResult.ErrorMessages);
+            }
             //PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>{ new StudentSharedModel
             {
@@ -761,7 +776,18 @@ namespace Auth.Core.Services
                     UserType = UserType.Student
                 };
 
-                var userResult = await _userManager.CreateAsync(user, model.ContactPhone);
+                var existingUser = await _userManager.FindByEmailAsync(user.Email);
+                IdentityResult userResult;
+
+                if (existingUser != null)
+                {
+                    userResult = await _userManager.UpdateAsync(user);
+
+                }
+                else
+                {
+                    userResult = await _userManager.CreateAsync(user, model.ContactPhone);
+                }
 
                 if(!userResult.Succeeded)
                 {
@@ -795,11 +821,17 @@ namespace Auth.Core.Services
                 //add classId to claims
                 await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, student.ClassId.ToString()));
 
-                _unitOfWork.Commit();
-
-                var school = await _schoolRepo.GetAll().Where(m => m.Id == student.TenantId).FirstOrDefaultAsync();
+              
+                var school = await _schoolRepo.GetAll()
+                                              .Where(m => m.Id == student.TenantId)
+                                              .FirstOrDefaultAsync();
                 //broadcast login detail to email
-                _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+                var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+
+                if (emailResult.HasError)
+                {
+                    return new ResultModel<bool>(emailResult.ErrorMessages);
+                }
             }
 
             _unitOfWork.Commit();
