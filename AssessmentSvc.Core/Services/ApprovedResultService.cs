@@ -171,6 +171,19 @@ namespace AssessmentSvc.Core.Services
 
             await _unitOfWork.SaveChangesAsync();
 
+            //ToDO: Optomize
+            if (vm.HeadTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved)
+            {
+                try
+                {
+                    await _resultSummaryService.CalculateResultSummaries();
+                }
+                catch (Exception ex)
+                {
+                    result.Message = $"Result summary error: {ex.Message}";
+                }
+            }
+
             result.Data = "Record updated";
 
             return result;
@@ -247,6 +260,19 @@ namespace AssessmentSvc.Core.Services
             }
 
             await _unitOfWork.SaveChangesAsync();
+
+            //ToDO: Optomize
+            if (vm.HeadTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved)
+            {
+                try
+                {
+                    await _resultSummaryService.CalculateResultSummaries();
+                }
+                catch (Exception ex)
+                {
+                    result.Message = $"Result summary error: {ex.Message}";
+                }
+            }
 
             result.Data = "Record updated";
 
