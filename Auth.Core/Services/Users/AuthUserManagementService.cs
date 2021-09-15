@@ -107,7 +107,13 @@ namespace Auth.Core.Services
             var sub = string.IsNullOrWhiteSpace(subdomain) ? "" : subdomain + ".";
             var clientURL = $"https://{sub}{_config["ClientURL"]}";
 
-            var callbackUrl = $"{new Uri(clientURL)}#/email-verified?userId={user.Id}&code={code}";
+
+            if (!Uri.TryCreate(clientURL, UriKind.Absolute, out Uri uri))
+            {
+                return new ResultModel<bool>("School domains name is invalid");
+            }
+
+            var callbackUrl = $"{uri}#/email-verified?userId={user.Id}&code={code}";
 
             CreateEmailModel emailModel;
 
