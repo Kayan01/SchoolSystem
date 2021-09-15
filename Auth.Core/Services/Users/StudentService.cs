@@ -186,7 +186,15 @@ namespace Auth.Core.Services
 
             if (existingUser != null)
             {
-                userResult = await _userManager.UpdateAsync(user);
+
+                existingUser.FirstName = model.FirstName;
+                existingUser.LastName = model.LastName;
+                existingUser.Email = model.ContactEmail.Trim();
+                existingUser.UserName = model.ContactEmail.Trim();
+                existingUser.PhoneNumber = model.ContactPhone;
+                existingUser.UserType = UserType.Student;
+
+                userResult = await _userManager.UpdateAsync(existingUser);
             }
             else
             {
@@ -781,7 +789,15 @@ namespace Auth.Core.Services
 
                 if (existingUser != null)
                 {
-                    userResult = await _userManager.UpdateAsync(user);
+
+                    existingUser.FirstName = model.FirstName;
+                    existingUser.LastName = model.LastName;
+                    existingUser.Email = model.ContactEmail.Trim();
+                    existingUser.UserName = model.ContactEmail.Trim();
+                    existingUser.PhoneNumber = model.ContactPhone;
+                    existingUser.UserType = UserType.Student;
+
+                    userResult = await _userManager.UpdateAsync(existingUser);
 
                 }
                 else
