@@ -209,9 +209,9 @@ namespace Auth.Core.Services
             }
 
             //Add TenantId to UserClaims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
             
             var medicalHistory = new MedicalDetail {
                 Allergies = model.Allergies,
@@ -237,7 +237,7 @@ namespace Auth.Core.Services
             var stud = new Student
             {
 
-                UserId = user.Id,
+                UserId = existingUser?.Id ?? user.Id ,
                 Address = model.ContactAddress,
                 AdmissionDate = model.AdmissionDate,
                 ClassId = model.ClassId,
@@ -266,16 +266,16 @@ namespace Auth.Core.Services
             //change user's username to reg number
             user.UserName = stud.RegNumber;
             user.NormalizedUserName = stud.RegNumber.ToUpper();
-            await _userManager.UpdateAsync(user);
+            await _userManager.UpdateAsync(existingUser ?? user);
 
             //add classId to claims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString()));
 
             _unitOfWork.Commit();
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == stud.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(existingUser ?? user, school.DomainName);
 
             if (emailResult.HasError)
             {
@@ -304,10 +304,10 @@ namespace Auth.Core.Services
 
             result.Data = new StudentVM
             {
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                PhoneNumber = user.PhoneNumber,
+                Email = existingUser?.Email ?? user.Email,
+                FirstName =existingUser?.FirstName ?? user.FirstName,
+                LastName = existingUser?.LastName ?? user.LastName,
+                PhoneNumber = existingUser?.PhoneNumber ?? user.PhoneNumber,
                 Id = stud.Id,
                 UserId = stud.UserId
             };
@@ -749,6 +749,13 @@ namespace Auth.Core.Services
         public async Task<ResultModel<bool>> AddBulkStudent(IFormFile excelfile)
         {
             var result = new ResultModel<bool>();
+            //var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            //if (schoolProperty.HasError)
+            //{
+            //    result.AddError(schoolProperty.ValidationErrors);
+            //    return result;
+            //}
+            ;
             var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
             if (schoolProperty.HasError)
             {
@@ -813,8 +820,8 @@ namespace Auth.Core.Services
 
                 //todo : add more props
                 var student = new Student
-                {   
-                    UserId = user.Id,
+                {
+                    UserId = existingUser?.Id ?? user.Id,
                     State = model.ContactState,
                     Address = model.ContactAddress,
                     TransportRoute = model.TransportRoute,
@@ -832,17 +839,17 @@ namespace Auth.Core.Services
                 //change user's username to reg number
                 user.UserName = student.RegNumber;
                 user.NormalizedUserName = student.RegNumber.ToUpper();
-                await _userManager.UpdateAsync(user);
+                await _userManager.UpdateAsync(existingUser ?? user);
 
                 //add classId to claims
-                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, student.ClassId.ToString()));
+                await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, student.ClassId.ToString()));
 
               
                 var school = await _schoolRepo.GetAll()
                                               .Where(m => m.Id == student.TenantId)
                                               .FirstOrDefaultAsync();
                 //broadcast login detail to email
-                var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+                var emailResult = await _authUserManagement.SendRegistrationEmail(existingUser ?? user, school.DomainName);
 
                 if (emailResult.HasError)
                 {
