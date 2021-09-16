@@ -206,7 +206,6 @@ namespace Auth.Core.Services
         public async Task<ResultModel<List<ClassWithoutArmVM>>> GetClassesWithoutArm()
         {
             var allClasses = await _classRepo.GetAll()
-                .OrderByDescending(x => x.Sequence).ThenBy(x => x.CreationTime)
                 .Select(x => new ClassWithoutArmVM
                 {
                     Name = x.Name,
@@ -215,7 +214,8 @@ namespace Auth.Core.Services
                     Section = x.SchoolSection.Name
                 }).ToListAsync();
 
-            var distinctClasses = allClasses.GroupBy(m => m.Name).Select(m => m.First()).ToList();
+            var distinctClasses = allClasses.GroupBy(m => m.Name).Select(m => m.First())
+                .OrderBy(x => x.Sequence).ToList();
             return new ResultModel<List<ClassWithoutArmVM>>(distinctClasses);
         }
 
