@@ -43,7 +43,7 @@ namespace Auth.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        public async Task<IActionResult> AddSchoolTrackAdmin([FromBody] List<ClassPoolVM> model)
+        public async Task<IActionResult> PostClassPool([FromBody] List<ClassPoolVM> model)
         {
             if (model == null)
                 return ApiResponse<string>(errors: "Empty payload");
