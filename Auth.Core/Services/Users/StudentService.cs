@@ -749,13 +749,7 @@ namespace Auth.Core.Services
         public async Task<ResultModel<bool>> AddBulkStudent(IFormFile excelfile)
         {
             var result = new ResultModel<bool>();
-            //var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
-            //if (schoolProperty.HasError)
-            //{
-            //    result.AddError(schoolProperty.ValidationErrors);
-            //    return result;
-            //}
-            ;
+
             var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
             if (schoolProperty.HasError)
             {
