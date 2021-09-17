@@ -231,7 +231,25 @@ namespace Auth.Core.Services
                 MiddleName = model.OtherNames,
                 UserType = UserType.Staff,
             };
-            var userResult = await _userManager.CreateAsync(user, model.ContactDetails.PhoneNumber);
+
+            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+            IdentityResult userResult;
+
+            if(existingUser != null)
+            {
+                existingUser.FirstName = model.FirstName;
+                existingUser.LastName = model.LastName;
+                existingUser.Email = model.ContactDetails.EmailAddress;
+                existingUser.UserName = model.ContactDetails.EmailAddress;
+                existingUser.PhoneNumber = model.ContactDetails.PhoneNumber;
+                existingUser.UserType = UserType.Staff;
+
+                userResult = await _userManager.UpdateAsync(existingUser);
+            }
+            else
+            {
+                userResult = await _userManager.CreateAsync(user, model.ContactDetails.PhoneNumber);
+            } 
 
             if (!userResult.Succeeded)
             {
@@ -240,9 +258,9 @@ namespace Auth.Core.Services
             }
 
             //Add TenantId to UserClaims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, StaffType.NonTeachingStaff.GetDescription()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, StaffType.NonTeachingStaff.GetDescription()));
 
             //create next of kin
             var nextOfKin = new NextOfKin
@@ -288,7 +306,7 @@ namespace Auth.Core.Services
             //create staff
             var staff = new Staff
             {
-                UserId = user.Id,
+                UserId = existingUser?.Id ?? user.Id,
                 BloodGroup = model.BloodGroup,
                 DateOfBirth = model.DateOfBirth,
                 IsActive = model.IsActive,
@@ -352,17 +370,17 @@ namespace Auth.Core.Services
             //change user's username to reg number
             user.UserName = staff.RegNumber;
             user.NormalizedUserName = staff.RegNumber.ToUpper();
-           await _userManager.UpdateAsync(user);
+           await _userManager.UpdateAsync(existingUser ?? user);
 
             _unitOfWork.Commit();
 
 
             result.Data = new StaffVM
             {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
+                FirstName = existingUser?.FirstName ?? user.FirstName,
+                LastName = existingUser?.LastName ?? user.LastName,
+                Email = existingUser?.Email ?? user.Email,
+                PhoneNumber = existingUser?.PhoneNumber ?? user.PhoneNumber,
                 StaffType = staff.StaffType.GetDisplayName(),
                 StaffNumber = staff.RegNumber,
                 EmploymentStatus = staff.EmploymentStatus,
@@ -373,7 +391,7 @@ namespace Auth.Core.Services
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == staff.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+            _ = await _authUserManagement.SendRegistrationEmail(existingUser ?? user, school.DomainName);
 
             
             //Publish Message
@@ -608,8 +626,14 @@ namespace Auth.Core.Services
 
             var importedData = ExcelReader.FromExcel<AddStaffVMExcel>(excelfile);
 
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
+            {
+                result.AddError(schoolProperty.ValidationErrors);
+                return result;
+            }
             //check if imported data contains any data
-            if(importedData.Count < 1)
+            if (importedData.Count < 1)
             {
                 result.AddError("No data was imported");
 
@@ -632,7 +656,26 @@ namespace Auth.Core.Services
                     PhoneNumber = model.PhoneNumber,
                     UserType = UserType.Staff
                 };
-                var userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
+
+                var existingUser = await _userManager.FindByEmailAsync(user.Email);
+                IdentityResult userResult;
+
+                if(existingUser != null)
+                {
+                    existingUser.FirstName = model.FirstName;
+                    existingUser.LastName = model.LastName;
+                    existingUser.Email = model.EmailAddress;
+                    existingUser.UserName = model.EmailAddress;
+                    existingUser.PhoneNumber = model.PhoneNumber;
+                    existingUser.UserType = UserType.Staff;
+
+                    userResult = await _userManager.UpdateAsync(existingUser);
+                }
+                else
+                {
+                    userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
+                }
+                
                 if (!userResult.Succeeded)
                 {
                     result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
@@ -642,7 +685,7 @@ namespace Auth.Core.Services
                 //todo: add more props
                 var staff = new Staff
                 {
-                    UserId = user.Id,
+                    UserId = existingUser?.Id ?? user.Id,
                     BloodGroup = model.BloodGroup,
                     DateOfBirth = model.DateOfBirth,
                     IsActive = model.IsActive,
@@ -654,12 +697,47 @@ namespace Auth.Core.Services
                     StaffType = StaffType.NonTeachingStaff
                 };
 
-                _staffRepo.Insert(staff);
+                //Adding the regNumber
+                var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
+                var lastNumber = 0;
+                var seperator = schoolProperty.Data.Seperator;
+                if (!string.IsNullOrWhiteSpace(lastRegNumber))
+                {
+                    lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
+                }
+                var nextNumber = lastNumber;
 
-                staffs.Add(staff);
+                var saved = false;
+
+                while (!saved)
+                {
+                    try
+                    {
+                        nextNumber++;
+                        staff.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STF{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+
+                        _staffRepo.Insert(staff);
+
+
+                        staff.TenantId = staff.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
+                        await _unitOfWork.SaveChangesAsync();
+
+                        saved = true;
+                    }
+                    // 2627 is unique constraint (includes primary key), 2601 is unique index
+                    catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+                    {
+                        saved = false;
+                    }
+                }
+
+                //change user's username to reg number
+                user.UserName = staff.RegNumber;
+                user.NormalizedUserName = staff.RegNumber.ToUpper();
+                await _userManager.UpdateAsync(existingUser ?? user);
             }
 
-            await _unitOfWork.SaveChangesAsync();
+           // await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Commit();
 
             foreach(var staff in staffs)
