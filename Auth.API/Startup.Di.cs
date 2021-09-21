@@ -74,12 +74,19 @@ namespace Auth.API
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<AuthHandler>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<AuthHandler>>();
-                handlers.Add((message) =>
+                handlers.Add(async (message) =>
                 {
                     try
                     {
                         switch (message.BusMessageType)
                         {
+                            case (int)BusMessageTypes.PROMOTION:
+                            case (int)BusMessageTypes.PROMOTION_UPDATE:
+                            case (int)BusMessageTypes.PROMOTION_DELETE:
+                                {
+                                    await handler.HandlePromotionAsync(message);
+                                    break;
+                                }
                             case (int)BusMessageTypes.TEACHER:
                                 {
                                     handler.HandleTest(message);
@@ -137,6 +144,11 @@ namespace Auth.API
             services.AddScoped<IFileStore, FileStore>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ISchoolPropertyService, SchoolPropertyService>();
+            services.AddScoped<IAlumniService, AlumniService>();
+            services.AddScoped<IAlumniEventService, AlumniEventService>();
+            services.AddScoped<ISchoolGroupService, SchoolGroupService>();
+            services.AddScoped<IPromotionService, PromotionService>();
+            services.AddScoped<ISchoolSubscriptionService, SchoolSubscriptionService>();
             services.AddTransient<AuthHandler>();
 
             // Registers required services for health checks

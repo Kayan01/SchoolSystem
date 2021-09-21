@@ -15,5 +15,6 @@ namespace AssessmentSvc.Core.Models
         public string ZoomRoomId { get; set; }
 
         public ICollection<Student> Students { get; set; }
+        public ICollection<SchoolClassSubject> SchoolClassSubjects { get; set; }
     }
 }

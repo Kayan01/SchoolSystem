@@ -14,7 +14,6 @@ using FacilitySvc.API.ViewModel;
 using FacilitySvc.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using FacilitySvc.Core.ViewModels;
-using FacilitySvc.Core.Services.Interfaces;
 
 namespace FacilitySvc.API.Controllers
 {

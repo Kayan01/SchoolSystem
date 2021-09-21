@@ -22,6 +22,8 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<List<ListClassVM>>> GetClassBySection(long levelId);
 
         Task<ResultModel<ListClassVM>> GetClassByIdWithStudents(long Id);
+        Task<ResultModel<List<ClassWithoutArmVM>>> GetClassesWithoutArm();
+        Task<ResultModel<string>> UpdateClassSequenceAndTerminal(List<ClassWithoutArmVM> model);
 
         Task<ResultModel<ClassUpdateVM>> UpdateClass(ClassUpdateVM model);
     }

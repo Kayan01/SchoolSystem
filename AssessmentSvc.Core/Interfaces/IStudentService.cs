@@ -9,7 +9,7 @@ namespace AssessmentSvc.Core.Interfaces
 {
     public interface IStudentService
     {
-        void AddOrUpdateStudentFromBroadcast(StudentSharedModel model);
+        void AddOrUpdateStudentFromBroadcast(List<StudentSharedModel> model);
         Task<long> GetStudentClassIdByUserId(long userId);
         Task<ResultModel<List<StudentVM>>> GetStudentsByClass(long classId);
         Task<ResultModel<List<StudentParentMailingInfo>>> GetParentsMailInfo(long[] ids);

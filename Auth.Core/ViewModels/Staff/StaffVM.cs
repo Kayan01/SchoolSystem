@@ -167,4 +167,61 @@ namespace Auth.Core.ViewModels.Staff
         public List<IFormFile> Files { get; set; }
 
     }
+
+
+    public class AddStaffVMExcel
+    {
+        [ExcelReaderCell]
+        public string FirstName { get; set; }
+        [ExcelReaderCell]
+
+        public string LastName { get; set; }
+        [ExcelReaderCell]
+
+        public string OtherNames { get; set; }
+        [ExcelReaderCell]
+
+        public string Sex { get; set; }
+        [ExcelReaderCell]
+
+        public string MaritalStatus { get; set; }
+        [ExcelReaderCell]
+
+        public DateTime DateOfBirth { get; set; }
+        [ExcelReaderCell]
+
+        public string BloodGroup { get; set; }
+        [ExcelReaderCell]
+
+        public string Religion { get; set; }
+        [ExcelReaderCell]
+
+        public string Nationality { get; set; }
+        [ExcelReaderCell]
+
+        public string StateOfOrigin { get; set; }
+        [ExcelReaderCell]
+
+        public string LocalGovernment { get; set; }
+        
+        public bool IsActive { get; set; }
+
+        [ExcelReaderCell]
+        public string PhoneNumber { get; set; }
+        [ExcelReaderCell]
+
+        public string EmailAddress { get; set; }
+        [ExcelReaderCell]
+
+        public string Country { get; set; }
+        [ExcelReaderCell]
+
+        public string Address { get; set; }
+        [ExcelReaderCell]
+
+        public string State { get; set; }
+        [ExcelReaderCell]
+        public string Town { get; set; }
+
+    }
 }

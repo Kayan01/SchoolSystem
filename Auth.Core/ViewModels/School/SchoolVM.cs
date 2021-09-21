@@ -21,6 +21,7 @@ namespace Auth.Core.ViewModels
         public DateTime DateCreated { get; set; }
         public string Logo { get; set; }
         public long? UsersCount { get; set; }
+        public long? SchoolGroupId { get; set; }
 
         public static implicit operator SchoolVM(Models.School model)
         {
@@ -39,6 +40,7 @@ namespace Auth.Core.ViewModels
                 State = model.State,
                 UsersCount = studentCount + teachersCount + staffCount,
                 ClientCode = model.ClientCode,
+                SchoolGroupId = model.SchoolGroupId
                // Logo = fileId.GetBase64StringFromImage(),
             };
         }

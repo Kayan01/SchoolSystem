@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Auth.Core.ViewModels.Student;
 using Shared.Utils;
 using Shared.Pagination;
+using Microsoft.AspNetCore.Http;
 
 namespace Auth.Core.Services.Interfaces
 {
@@ -19,7 +20,8 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInClass(QueryModel model, long classId);
         Task<ResultModel<StudentDetailVM>> GetStudentById(long Id);
         Task<ResultModel<StudentVM>> UpdateStudent(long Id, StudentUpdateVM model);
-        Task<ResultModel<StudentDetailVM>> GetStudentProfileById(long Id);
+        Task<ResultModel<StudentDetailVM>> GetStudentProfileByUserId(long Id);
         Task<ResultModel<byte[]>> GetStudentsExcelSheet();
+        Task<ResultModel<bool>> AddBulkStudent(IFormFile excelfile);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shared.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -14,5 +15,6 @@ namespace Shared.ViewModels
         public long ParentId { get; set; }
         public string Sex { get; set; }
         public DateTime DoB { get; set; }
+        public StudentStatusInSchool StudentStatusInSchool { get; set; }
     }
 }

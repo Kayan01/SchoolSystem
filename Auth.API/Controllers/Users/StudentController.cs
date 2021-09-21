@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Student;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
 using Shared.AspNetCore.Policy;
@@ -34,7 +35,7 @@ namespace Auth.API.Controllers
            
             try
             {
-                var result = await _studentService.GetStudentProfileById(Id);
+                var result = await _studentService.GetStudentProfileByUserId(Id);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
@@ -195,6 +196,29 @@ namespace Auth.API.Controllers
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: Convert.ToBase64String(result.Data), totalCount: 1);
             }
             catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<bool>),200)]
+        public async Task<IActionResult> AddBulkStudent([FromForm]IFormFile file)
+        {
+            if (file == null)
+                return ApiResponse<string>(errors: "No file uploaded");
+
+            if (!ModelState.IsValid)
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _studentService.AddBulkStudent(file);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch(Exception ex)
             {
                 return HandleError(ex);
             }

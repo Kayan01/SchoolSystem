@@ -33,6 +33,8 @@ namespace Auth.Core.ViewModels.SchoolClass
         public bool Status { get; set; }
         [Required]
         public List<long> ClassArmIds { get; set; }
+        [Required]
+        public bool IsTerminalClass { get; set; }
     }
 
 

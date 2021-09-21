@@ -19,6 +19,174 @@ namespace Auth.Core.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("Auth.Core.Models.Alumni.Alumni", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("AdmissionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Level")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LocalGovernment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("MedicalDetailID")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("MothersMaidenName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nationality")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("ParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("RegNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Religion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SessionName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sex")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("State")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StateOfOrigin")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("StudentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("StudentType")
+                        .HasColumnType("int");
+
+                    b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TermName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Town")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransportRoute")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Alumnis");
+                });
+
+            modelBuilder.Entity("Auth.Core.Models.Alumni.AlumniEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("EventImageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventImageId");
+
+                    b.ToTable("AlumniEvents");
+                });
+
             modelBuilder.Entity("Auth.Core.Models.ClassArm", b =>
                 {
                     b.Property<long>("Id")
@@ -104,10 +272,15 @@ namespace Auth.Core.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long?>("SchoolGroupId")
+                        .HasColumnType("bigint");
+
                     b.Property<long?>("SchoolId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SchoolGroupId");
 
                     b.HasIndex("SchoolId");
 
@@ -209,6 +382,71 @@ namespace Auth.Core.Migrations
                     b.ToTable("MedicalDetail");
                 });
 
+            modelBuilder.Entity("Auth.Core.Models.PromotionLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<double>("AverageScore")
+                        .HasColumnType("float");
+
+                    b.Property<string>("ClassPoolName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("FromClassId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("PromotionStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReInstateReason")
+                        .HasColumnType("nvarchar(300)")
+                        .HasMaxLength(300);
+
+                    b.Property<string>("SessionName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("SessionSetupId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("StudentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ToClassId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("WithdrawalReason")
+                        .HasColumnType("nvarchar(300)")
+                        .HasMaxLength(300);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromClassId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("ToClassId");
+
+                    b.ToTable("PromotionLogs");
+                });
+
             modelBuilder.Entity("Auth.Core.Models.School", b =>
                 {
                     b.Property<long>("Id")
@@ -261,6 +499,9 @@ namespace Auth.Core.Migrations
                     b.Property<string>("PrimaryColor")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long?>("SchoolGroupId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("SecondaryColor")
                         .HasColumnType("nvarchar(max)");
 
@@ -276,13 +517,15 @@ namespace Auth.Core.Migrations
                         .IsUnique()
                         .HasFilter("[DomainName] IS NOT NULL");
 
+                    b.HasIndex("SchoolGroupId");
+
                     b.ToTable("Schools");
 
                     b.HasData(
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 901, DateTimeKind.Local).AddTicks(6896),
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 153, DateTimeKind.Local).AddTicks(9245),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Johnson International"
@@ -290,7 +533,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 901, DateTimeKind.Local).AddTicks(8856),
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 153, DateTimeKind.Local).AddTicks(9567),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Bariga International"
@@ -298,7 +541,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 3L,
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 901, DateTimeKind.Local).AddTicks(8930),
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 153, DateTimeKind.Local).AddTicks(9580),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Ikeja International"
@@ -333,6 +576,9 @@ namespace Auth.Core.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsTerminalClass")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2");
 
@@ -361,9 +607,10 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 902, DateTimeKind.Local).AddTicks(4297),
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 154, DateTimeKind.Local).AddTicks(1208),
                             IsActive = false,
                             IsDeleted = false,
+                            IsTerminalClass = false,
                             Name = "Jss1A",
                             SchoolSectionId = 1L,
                             Sequence = 0,
@@ -372,14 +619,63 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 902, DateTimeKind.Local).AddTicks(5374),
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 154, DateTimeKind.Local).AddTicks(1714),
                             IsActive = false,
                             IsDeleted = false,
+                            IsTerminalClass = false,
                             Name = "Jss2A",
                             SchoolSectionId = 2L,
                             Sequence = 0,
                             TenantId = 0L
                         });
+                });
+
+            modelBuilder.Entity("Auth.Core.Models.SchoolGroup", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PrimaryColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SecondaryColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WebsiteAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SchoolGroups");
                 });
 
             modelBuilder.Entity("Auth.Core.Models.SchoolSection", b =>
@@ -426,7 +722,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 902, DateTimeKind.Local).AddTicks(1334),
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 154, DateTimeKind.Local).AddTicks(211),
                             IsDeleted = false,
                             Name = "A",
                             TenantId = 1L
@@ -434,11 +730,62 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 902, DateTimeKind.Local).AddTicks(2813),
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 154, DateTimeKind.Local).AddTicks(586),
                             IsDeleted = false,
                             Name = "B",
                             TenantId = 1L
                         });
+                });
+
+            modelBuilder.Entity("Auth.Core.Models.SchoolSubscription", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExpectedNumberOfStudent")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("PricePerStudent")
+                        .HasColumnType("int");
+
+                    b.Property<long>("SchoolId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SchoolId")
+                        .IsUnique();
+
+                    b.ToTable("SchoolSubscriptions");
                 });
 
             modelBuilder.Entity("Auth.Core.Models.SchoolTrackRole", b =>
@@ -739,7 +1086,7 @@ namespace Auth.Core.Migrations
                     b.Property<string>("LocalGovernment")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("MedicalDetailID")
+                    b.Property<long?>("MedicalDetailID")
                         .HasColumnType("bigint");
 
                     b.Property<string>("MothersMaidenName")
@@ -748,7 +1095,7 @@ namespace Auth.Core.Migrations
                     b.Property<string>("Nationality")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("ParentId")
+                    b.Property<long?>("ParentId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("RegNumber")
@@ -765,6 +1112,9 @@ namespace Auth.Core.Migrations
 
                     b.Property<string>("StateOfOrigin")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentStatusInSchool")
+                        .HasColumnType("int");
 
                     b.Property<int>("StudentType")
                         .HasColumnType("int");
@@ -842,7 +1192,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1,
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 899, DateTimeKind.Local).AddTicks(6820),
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 153, DateTimeKind.Local).AddTicks(891),
                             Description = "Testing",
                             IsDeleted = false,
                             Title = "Debug"
@@ -850,7 +1200,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2,
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 899, DateTimeKind.Local).AddTicks(9044),
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 153, DateTimeKind.Local).AddTicks(1754),
                             Description = "Unit Test",
                             IsDeleted = false,
                             Title = "Test"
@@ -1064,7 +1414,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 893, DateTimeKind.Local).AddTicks(7034),
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 149, DateTimeKind.Local).AddTicks(7893),
                             IsDeleted = false,
                             UserId = 1L,
                             UserType = 1
@@ -1384,6 +1734,9 @@ namespace Auth.Core.Migrations
                     b.Property<long?>("AdminId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("AlumniId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("ContentType")
                         .HasColumnType("nvarchar(max)");
 
@@ -1417,6 +1770,9 @@ namespace Auth.Core.Migrations
                     b.Property<string>("Path")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long?>("SchoolGroupId")
+                        .HasColumnType("bigint");
+
                     b.Property<long?>("SchoolId")
                         .HasColumnType("bigint");
 
@@ -1430,7 +1786,11 @@ namespace Auth.Core.Migrations
 
                     b.HasIndex("AdminId");
 
+                    b.HasIndex("AlumniId");
+
                     b.HasIndex("ParentId");
+
+                    b.HasIndex("SchoolGroupId");
 
                     b.HasIndex("SchoolId");
 
@@ -1644,19 +2004,19 @@ namespace Auth.Core.Migrations
                         {
                             Id = 1L,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "4f645828-96e9-4bdd-8db7-feb5f25a3f2f",
-                            CreationTime = new DateTime(2021, 7, 13, 10, 18, 4, 818, DateTimeKind.Local).AddTicks(374),
+                            ConcurrencyStamp = "02f092ca-3afe-4dad-aec1-d54362f4380a",
+                            CreationTime = new DateTime(2021, 9, 21, 15, 37, 42, 124, DateTimeKind.Local).AddTicks(3113),
                             Email = "root@myschooltrack.com",
                             EmailConfirmed = true,
                             FirstName = "Super Admin",
                             IsDeleted = false,
                             IsFirstTimeLogin = false,
-                            LastLoginDate = new DateTime(2021, 7, 13, 10, 18, 4, 822, DateTimeKind.Local).AddTicks(2586),
+                            LastLoginDate = new DateTime(2021, 9, 21, 15, 37, 42, 125, DateTimeKind.Local).AddTicks(5872),
                             LastName = "User",
                             LockoutEnabled = false,
                             NormalizedEmail = "ROOT@MYSCHOOLTRACK.COM",
                             NormalizedUserName = "ROOT@MYSCHOOLTRACK.COM",
-                            PasswordHash = "AQAAAAEAACcQAAAAELKosIo7lN0uLYXbQemOivgP1sk3B7XqBGFLlvHwzTIQ3VRnmdnOiTpoNndxO8bwvg==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEHMjEVc4lKbRk3hPHjjuGbKOovGOvlI219esHRuCDLnuOR3dgrgnI87TYtOcpycu5g==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "99ae0c45-d682-4542-9ba7-1281e471916b",
                             TwoFactorEnabled = false,
@@ -1746,8 +2106,34 @@ namespace Auth.Core.Migrations
                     b.ToTable("UserToken");
                 });
 
+            modelBuilder.Entity("Auth.Core.Models.Alumni.Alumni", b =>
+                {
+                    b.HasOne("Auth.Core.Models.School", "School")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Shared.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Auth.Core.Models.Alumni.AlumniEvent", b =>
+                {
+                    b.HasOne("Shared.Entities.FileUpload", "EventImage")
+                        .WithMany()
+                        .HasForeignKey("EventImageId");
+                });
+
             modelBuilder.Entity("Auth.Core.Models.Contact.SchoolContactDetails", b =>
                 {
+                    b.HasOne("Auth.Core.Models.SchoolGroup", null)
+                        .WithMany("SchoolContactDetails")
+                        .HasForeignKey("SchoolGroupId");
+
                     b.HasOne("Auth.Core.Models.School", null)
                         .WithMany("SchoolContactDetails")
                         .HasForeignKey("SchoolId");
@@ -1758,6 +2144,28 @@ namespace Auth.Core.Migrations
                     b.HasOne("Auth.Core.Models.Medical.MedicalDetail", null)
                         .WithMany("ImmunizationHistories")
                         .HasForeignKey("MedicalDetailId");
+                });
+
+            modelBuilder.Entity("Auth.Core.Models.PromotionLog", b =>
+                {
+                    b.HasOne("Auth.Core.Models.SchoolClass", "FromClass")
+                        .WithMany()
+                        .HasForeignKey("FromClassId");
+
+                    b.HasOne("Auth.Core.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId");
+
+                    b.HasOne("Auth.Core.Models.SchoolClass", "ToClass")
+                        .WithMany()
+                        .HasForeignKey("ToClassId");
+                });
+
+            modelBuilder.Entity("Auth.Core.Models.School", b =>
+                {
+                    b.HasOne("Auth.Core.Models.SchoolGroup", "SchoolGroup")
+                        .WithMany("Schools")
+                        .HasForeignKey("SchoolGroupId");
                 });
 
             modelBuilder.Entity("Auth.Core.Models.SchoolClass", b =>
@@ -1774,6 +2182,15 @@ namespace Auth.Core.Migrations
                     b.HasOne("Auth.Core.Models.School", "School")
                         .WithMany("SchoolSections")
                         .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Auth.Core.Models.SchoolSubscription", b =>
+                {
+                    b.HasOne("Auth.Core.Models.School", "School")
+                        .WithOne("SchoolSubscription")
+                        .HasForeignKey("Auth.Core.Models.SchoolSubscription", "SchoolId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1809,15 +2226,12 @@ namespace Auth.Core.Migrations
 
                     b.HasOne("Auth.Core.Models.Medical.MedicalDetail", "MedicalDetail")
                         .WithMany()
-                        .HasForeignKey("MedicalDetailID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MedicalDetailID");
 
                     b.HasOne("Auth.Core.Models.Users.Parent", "Parent")
                         .WithMany("Students")
                         .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Auth.Core.Models.School", "School")
                         .WithMany("Students")
@@ -1905,9 +2319,17 @@ namespace Auth.Core.Migrations
                         .WithMany("FileUploads")
                         .HasForeignKey("AdminId");
 
+                    b.HasOne("Auth.Core.Models.Alumni.Alumni", null)
+                        .WithMany("FileUploads")
+                        .HasForeignKey("AlumniId");
+
                     b.HasOne("Auth.Core.Models.Users.Parent", null)
                         .WithMany("FileUploads")
                         .HasForeignKey("ParentId");
+
+                    b.HasOne("Auth.Core.Models.SchoolGroup", null)
+                        .WithMany("FileUploads")
+                        .HasForeignKey("SchoolGroupId");
 
                     b.HasOne("Auth.Core.Models.School", null)
                         .WithMany("FileUploads")

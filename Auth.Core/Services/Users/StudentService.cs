@@ -4,7 +4,9 @@ using Auth.Core.Models.Medical;
 using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Student;
+using ExcelManager;
 using IPagedList;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Extensions;
@@ -70,6 +72,52 @@ namespace Auth.Core.Services
             _authUserManagement = authUserManagement;
         }
 
+        private async Task<Student> SaveStudentWithSystemRegNumber(Student student, string schoolSeperator, string schoolPrefix)
+        {
+            var lastRegNumber = await _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
+            var lastNumber = 0;
+            var seperator = schoolSeperator;
+            if (!string.IsNullOrWhiteSpace(lastRegNumber))
+            {
+                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
+            }
+            var nextNumber = lastNumber;
+            var saved = false;
+            var firstTime = true;
+
+            while (!saved)
+            {
+                try
+                {
+                    nextNumber++;
+
+                    if (firstTime && !string.IsNullOrWhiteSpace(student.RegNumber))
+                    {
+                        firstTime = false;
+                        _studentRepo.Insert(student);
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        student.RegNumber = $"{schoolPrefix}{seperator}STT{seperator}{DateTime.Now.Year}{seperator}{nextNumber:00000}";
+
+                        firstTime = false;
+                        _studentRepo.Insert(student);
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+
+
+                    saved = true;
+                }
+                // 2627 is unique constraint (includes primary key), 2601 is unique index
+                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+                {
+                    saved = false;
+                }
+            }
+
+            return student;
+        }
         public async Task<ResultModel<StudentVM>> AddStudentToSchool(CreateStudentVM model)
         {
             var result = new ResultModel<StudentVM>();
@@ -133,7 +181,26 @@ namespace Auth.Core.Services
                 UserType = UserType.Student,
             };
 
-            var userResult = await _userManager.CreateAsync(user, model.ContactPhone);
+            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+            IdentityResult userResult;
+
+            if (existingUser != null)
+            {
+
+                existingUser.FirstName = model.FirstName;
+                existingUser.LastName = model.LastName;
+                existingUser.Email = model.ContactEmail.Trim();
+                existingUser.UserName = model.ContactEmail.Trim();
+                existingUser.PhoneNumber = model.ContactPhone;
+                existingUser.UserType = UserType.Student;
+
+                userResult = await _userManager.UpdateAsync(existingUser);
+            }
+            else
+            {
+                userResult = await _userManager.CreateAsync(user, model.ContactPhone);
+            }
+
 
             if (!userResult.Succeeded)
             {
@@ -142,9 +209,9 @@ namespace Auth.Core.Services
             }
 
             //Add TenantId to UserClaims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
             
             var medicalHistory = new MedicalDetail {
                 Allergies = model.Allergies,
@@ -170,7 +237,7 @@ namespace Auth.Core.Services
             var stud = new Student
             {
 
-                UserId = user.Id,
+                UserId = existingUser?.Id ?? user.Id ,
                 Address = model.ContactAddress,
                 AdmissionDate = model.AdmissionDate,
                 ClassId = model.ClassId,
@@ -194,52 +261,28 @@ namespace Auth.Core.Services
                  IsActive = true
             };
 
-            var lastRegNumber = await _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
-            var lastNumber = 0;
-            var seperator = schoolProperty.Data.Seperator;
-            if (!string.IsNullOrWhiteSpace(lastRegNumber))
-            {
-                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
-            }
-            var nextNumber = lastNumber;
-            var saved = false;
-
-            while (!saved)
-            {
-                try
-                {
-                    nextNumber++;
-                    stud.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STT{seperator}{DateTime.Now.Year}{seperator}{nextNumber:00000}";
-
-                    _studentRepo.Insert(stud);
-                    await _unitOfWork.SaveChangesAsync();
-
-                    saved = true;
-                }
-                // 2627 is unique constraint (includes primary key), 2601 is unique index
-                catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
-                {
-                    saved = false;
-                }
-            }
-
+            stud = await SaveStudentWithSystemRegNumber(stud, schoolProperty.Data.Seperator, schoolProperty.Data.Prefix);
 
             //change user's username to reg number
             user.UserName = stud.RegNumber;
             user.NormalizedUserName = stud.RegNumber.ToUpper();
-            await _userManager.UpdateAsync(user);
+            await _userManager.UpdateAsync(existingUser ?? user);
 
             //add classId to claims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString()));
 
             _unitOfWork.Commit();
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == stud.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(existingUser ?? user, school.DomainName);
 
+            if (emailResult.HasError)
+            {
+                return new ResultModel<StudentVM>(emailResult.ErrorMessages);
+            }
             //PublishMessage
-            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>{ new StudentSharedModel
             {
                 Id = stud.Id,
                 RegNumber = stud.RegNumber,
@@ -256,15 +299,17 @@ namespace Auth.Core.Services
                 ParentId = parent.Id,
                 Sex = model.Sex,
                 DoB = model.DateOfBirth,
-            });
+                StudentStatusInSchool = stud.StudentStatusInSchool,
+            } });
 
             result.Data = new StudentVM
             {
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                PhoneNumber = user.PhoneNumber,
-                Id = stud.Id
+                Email = existingUser?.Email ?? user.Email,
+                FirstName =existingUser?.FirstName ?? user.FirstName,
+                LastName = existingUser?.LastName ?? user.LastName,
+                PhoneNumber = existingUser?.PhoneNumber ?? user.PhoneNumber,
+                Id = stud.Id,
+                UserId = stud.UserId
             };
             return result;
         }
@@ -283,6 +328,7 @@ namespace Auth.Core.Services
             }
 
             //delete auth user
+            await _studentRepo.DeleteAsync(std);
 
             await _unitOfWork.SaveChangesAsync();
             result.Data = true;
@@ -300,7 +346,7 @@ namespace Auth.Core.Services
                 .Select(x => new StudentVM
                 {
                      Id = x.Id,
-                    Class = x.Class.FullName,
+                    SchoolClass = x.Class,
                     DateOfBirth = x.DateOfBirth,
                     FirstName = x.User.FirstName,
                     LastName = x.User.LastName,
@@ -325,18 +371,18 @@ namespace Auth.Core.Services
                 .Select(x=> new StudentVM
             {
                 Id = x.Id,
-                Class = x.Class.FullName,
+                SchoolClass = x.Class,
                 DateOfBirth = x.DateOfBirth,
-                FirstName = x.User.FirstName,
-                LastName = x.User.LastName,
-                StudentNumber = x.RegNumber,
-                Sex = x.Sex,
-                Email = x.User.Email,
-                PhoneNumber =  x.User.PhoneNumber  ,
-                Section = x.Class.SchoolSection.Name,
-                IsActive = x.IsActive,
-                ImagePath = x.FileUploads.Where(fileUpload => fileUpload.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
-            });
+                    FirstName = x.User.FirstName,
+                    LastName = x.User.LastName,
+                    StudentNumber = x.RegNumber,
+                    Sex = x.Sex,
+                    Email = x.User.Email,
+                    PhoneNumber = x.User.PhoneNumber,
+                    Section = x.Class.SchoolSection.Name,
+                    IsActive = x.IsActive,
+                    ImagePath = x.FileUploads.Where(fileUpload => fileUpload.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
+                }); ;
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
            
@@ -350,6 +396,7 @@ namespace Auth.Core.Services
             var std = await _studentRepo.GetAll().Where(x => x.Id == Id)
                         .Select(x => new
                         {
+                            x.TenantId,
                             x.Id,
                             x.User.FirstName,
                             x.User.LastName,
@@ -357,7 +404,8 @@ namespace Auth.Core.Services
                             x.Sex,
                             x.RegNumber,
                             x.DateOfBirth,
-                            ParentName =  x.Parent.User.FullName,
+                            ParentFirstName = x.Parent.User.FirstName,
+                            ParentLastName = x.Parent.User.LastName,
                             x.ParentId,
                             x.Nationality,
                             x.Religion,
@@ -366,7 +414,7 @@ namespace Auth.Core.Services
                             x.EntryType,
                             x.AdmissionDate,
                             x.Level,
-                            ClassName = x.Class.FullName,
+                           SchoolClass = x.Class,
                             SchoolSection =  x.Class.SchoolSection.Name,
                             x.StudentType,
                             x.MedicalDetail.BloodGroup,
@@ -406,7 +454,7 @@ namespace Auth.Core.Services
                 AdmissionDate = std.AdmissionDate,
                 Allergies = std.Allergies,
                 BloodGroup = std.BloodGroup,
-                Class = std.ClassName,
+                SchoolClass = std.SchoolClass,
                 City = std.Town,
                 ConfidentialNote = std.ConfidentialNotes,
                 DateOfBirth = std.DateOfBirth,
@@ -416,6 +464,7 @@ namespace Auth.Core.Services
                 Genotype = std.Genotype,
                 HomeAddress = std.Address,
                 Id = std.Id,
+                Level = std.Level,
                 ParentId = std.ParentId,
                 Image = _documentService.TryGetUploadedFile(std.image?.Path),
                 ImmunizationHistoryVMs = std.Immunization.Select(x=> new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine}).ToList(),
@@ -423,7 +472,8 @@ namespace Auth.Core.Services
                 LocalGovernment = std.LocalGovernment,
                 MothersMaidenName = std.MothersMaidenName,
                 Nationality = std.Nationality,
-                ParentName = std.ParentName,
+                ParentFirstName = std.ParentFirstName,
+                ParentLastName = std.ParentLastName,
                 PhoneNumber = std.PhoneNumber,
                 Religion = std.Religion,
                 IsActive = std.IsActive
@@ -432,7 +482,7 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<StudentDetailVM>> GetStudentProfileById(long Id)
+        public async Task<ResultModel<StudentDetailVM>> GetStudentProfileByUserId(long Id)
         {
             var result = new ResultModel<StudentDetailVM>();
             var std = await _studentRepo.GetAll().Where(x => x.UserId == Id)
@@ -445,7 +495,8 @@ namespace Auth.Core.Services
                             x.MothersMaidenName,
                             x.Sex,
                             x.DateOfBirth,
-                            ParentName = x.Parent.User.FullName,
+                            ParentFirstName = x.Parent.User.FirstName,
+                            ParentLastName = x.Parent.User.LastName,
                             x.Nationality,
                             x.Religion,
                             x.LocalGovernment,
@@ -453,7 +504,7 @@ namespace Auth.Core.Services
                             x.EntryType,
                             x.AdmissionDate,
                             x.Level,
-                            ClassName = x.Class.FullName,
+                            ClassName = x.Class,
                             SchoolSection = x.Class.SchoolSection.Name,
                             x.StudentType,
                             x.MedicalDetail.BloodGroup,
@@ -488,7 +539,7 @@ namespace Auth.Core.Services
                 AdmissionDate = std.AdmissionDate,
                 Allergies = std.Allergies,
                 BloodGroup = std.BloodGroup,
-                Class = std.ClassName,
+                SchoolClass = std.ClassName,
                 City = std.Town,
                 ConfidentialNote = std.ConfidentialNotes,
                 DateOfBirth = std.DateOfBirth,
@@ -504,7 +555,8 @@ namespace Auth.Core.Services
                 LocalGovernment = std.LocalGovernment,
                 MothersMaidenName = std.MothersMaidenName,
                 Nationality = std.Nationality,
-                ParentName = std.ParentName,
+                ParentFirstName = std.ParentFirstName,
+                ParentLastName = std.ParentLastName,
                 PhoneNumber = std.PhoneNumber,
                 Religion = std.Religion,
                 RegNumber = std.RegNumber,
@@ -653,23 +705,26 @@ namespace Auth.Core.Services
           
 
             ////PublishMessage
-            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
-            {
-                Id = stud.Id,
-                RegNumber = stud.RegNumber,
-                IsActive = true,
-                ClassId = stud.ClassId,
-                TenantId = stud.TenantId,
-                UserId = stud.UserId,
-                FirstName = stud.User.FirstName,
-                LastName = stud.User.LastName,
-                Email = stud.User.Email,
-                Phone = stud.User.PhoneNumber,
-                ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
-                ParentEmail = parent.User.Email,
-                ParentId = parent.Id,
-                Sex = model.Sex,
-                DoB = model.DateOfBirth,
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>{ 
+                new StudentSharedModel
+                {
+                    Id = stud.Id,
+                    RegNumber = stud.RegNumber,
+                    IsActive = true,
+                    ClassId = stud.ClassId,
+                    TenantId = stud.TenantId,
+                    UserId = stud.UserId,
+                    FirstName = stud.User.FirstName,
+                    LastName = stud.User.LastName,
+                    Email = stud.User.Email,
+                    Phone = stud.User.PhoneNumber,
+                    ParentName = $"{parent.User.FirstName} {parent.User.LastName}",
+                    ParentEmail = parent.User.Email,
+                    ParentId = parent.Id,
+                    Sex = model.Sex,
+                    DoB = model.DateOfBirth,
+                    StudentStatusInSchool = stud.StudentStatusInSchool,
+                } 
             });
 
             result.Data = stud;
@@ -679,7 +734,7 @@ namespace Auth.Core.Services
         public async Task<ResultModel<byte[]>> GetStudentsExcelSheet()
         {
 
-            var data = new CreateStudentVM().ToExcel("Student");
+            var data = new StudentBulkUploadExcel().ToExcel("Student");
 
             if (data == null)
             {
@@ -689,6 +744,132 @@ namespace Auth.Core.Services
             {
                 return new ResultModel<byte[]>(data);
             }
+        }
+
+        public async Task<ResultModel<bool>> AddBulkStudent(IFormFile excelfile)
+        {
+            var result = new ResultModel<bool>();
+
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
+            {
+                result.AddError(schoolProperty.ValidationErrors);
+                return result;
+            }
+
+
+            var importedData = ExcelReader.FromExcel<StudentBulkUploadExcel>(excelfile);
+
+            //check if imported data contains any data
+            if(importedData.Count < 1)
+            {
+
+                result.AddError("No data was imported");
+
+                return result;
+            }
+
+            var students = new List<Student>();
+
+            _unitOfWork.BeginTransaction();
+
+            foreach(var model in importedData)
+            {
+                var user = new User
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.ContactEmail.Trim(),
+                    UserName = model.ContactEmail.Trim(),
+                    PhoneNumber = model.ContactPhone,
+                    UserType = UserType.Student
+                };
+
+                var existingUser = await _userManager.FindByEmailAsync(user.Email);
+                IdentityResult userResult;
+
+                if (existingUser != null)
+                {
+
+                    existingUser.FirstName = model.FirstName;
+                    existingUser.LastName = model.LastName;
+                    existingUser.Email = model.ContactEmail.Trim();
+                    existingUser.UserName = model.ContactEmail.Trim();
+                    existingUser.PhoneNumber = model.ContactPhone;
+                    existingUser.UserType = UserType.Student;
+
+                    userResult = await _userManager.UpdateAsync(existingUser);
+
+                }
+                else
+                {
+                    userResult = await _userManager.CreateAsync(user, model.ContactPhone);
+                }
+
+                if(!userResult.Succeeded)
+                {
+                    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                    return result;
+                }
+
+                //todo : add more props
+                var student = new Student
+                {
+                    UserId = existingUser?.Id ?? user.Id,
+                    State = model.ContactState,
+                    Address = model.ContactAddress,
+                    TransportRoute = model.TransportRoute,
+                    Town = model.ContactTown,
+                    Nationality = model.Nationality,
+                    RegNumber = model.RegNumber, 
+                    Religion = model.Religion,
+                    EntryType = model.EntryType,
+                    StudentType = model.StudentType,
+                    AdmissionDate = model.AdmissionDate,
+                };
+
+                student = await SaveStudentWithSystemRegNumber(student, schoolProperty.Data.Seperator, schoolProperty.Data.Prefix);
+
+                //change user's username to reg number
+                user.UserName = student.RegNumber;
+                user.NormalizedUserName = student.RegNumber.ToUpper();
+                await _userManager.UpdateAsync(existingUser ?? user);
+
+                //add classId to claims
+                await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, student.ClassId.ToString()));
+
+              
+                var school = await _schoolRepo.GetAll()
+                                              .Where(m => m.Id == student.TenantId)
+                                              .FirstOrDefaultAsync();
+                //broadcast login detail to email
+                var emailResult = await _authUserManagement.SendRegistrationEmail(existingUser ?? user, school.DomainName);
+
+                if (emailResult.HasError)
+                {
+                    return new ResultModel<bool>(emailResult.ErrorMessages);
+                }
+            }
+
+            _unitOfWork.Commit();
+
+            foreach(var student in students)
+            {
+                //publish to services
+                await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
+                {
+                    Id = student.Id,
+                    IsActive = student.IsActive,
+                    ClassId = student.ClassId,
+                    TenantId = student.TenantId,
+                    UserId = student.UserId,
+                    DoB = student.DateOfBirth,
+                    StudentStatusInSchool = student.StudentStatusInSchool,
+                });
+            }
+            result.Data = true;
+
+            return result;
         }
     }
 }

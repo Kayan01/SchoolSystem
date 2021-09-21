@@ -21,6 +21,9 @@ namespace Shared.PubSub
         CLASS,
         CLASS_UPDATE,
         CLASS_DELETE,
+        CLASSSUBJECT,
+        CLASSSUBJECT_UPDATE,
+        CLASSSUBJECT_DELETE,
         ADMIN,
         ADMIN_DELETE,
         SUBJECT,
@@ -35,5 +38,8 @@ namespace Shared.PubSub
         SCHOOL,
         SCHOOL_UPDATE,
         SCHOOL_DELETE,
+        PROMOTION,
+        PROMOTION_UPDATE,
+        PROMOTION_DELETE,
     }
 }

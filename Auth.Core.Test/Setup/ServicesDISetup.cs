@@ -1,8 +1,15 @@
 ﻿using Auth.Core.Context;
+using Auth.Core.Interfaces.Setup;
+using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
 using Auth.Core.Services;
+using Auth.Core.Services.Class;
 using Auth.Core.Services.Interfaces;
+using Auth.Core.Services.Interfaces.Class;
+using Auth.Core.Services.Setup;
+using Auth.Core.Services.Users;
 using Auth.Core.Test.Mocks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +19,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Shared.AspNetCore;
 using Shared.DataAccess.EfCore;
 using Shared.DataAccess.EfCore.Context;
 using Shared.DataAccess.EfCore.UnitOfWork;
@@ -22,7 +30,9 @@ using Shared.PubSub;
 using Shared.Utils;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text;
+using static Shared.Utils.CoreConstants;
 
 namespace Auth.Core.Test.Services.Setup
 {
@@ -47,6 +57,9 @@ namespace Auth.Core.Test.Services.Setup
             services.AddTransient<DbContext, AppDbContext>();
             services.AddDbContextPool<AppDbContext>(options => options.UseSqlite(_connection));
             
+            services.AddScoped<IHttpUserService, HttpUserService>();
+            services.AddHttpContextAccessor();
+
             services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
             services.AddScoped(typeof(IDbContextProvider<>), typeof(UnitOfWorkDbContextProvider<>));
 
@@ -65,18 +78,31 @@ namespace Auth.Core.Test.Services.Setup
             }).AddEntityFrameworkStores<AppDbContext>()
            .AddDefaultTokenProviders();
 
-
-            services.AddHttpContextAccessor();
             services.RegisterGenericRepos(typeof(AppDbContext));
 
             services.AddScoped<ISchoolService, SchoolService>();
+            services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<ISectionService, SectionService>();
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider("/FileStore"));
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<ISchoolGroupService, SchoolGroupService>();
+            services.AddScoped<ISchoolClassService, SchoolClassService>();
+            services.AddScoped<IClassArmService, ClassArmService>();
+           
+            services.AddScoped<IParentService, ParentService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<ISchoolPropertyService, SchoolPropertyService>();
 
             var moqPublish = new MockPublishService();
+            var moqFileUpload = new MockFileUploadService();
+            var moqHttpAccessor = new MockhttpContextAccessorclass();
 
-            services.AddScoped<IPublishService>(_ => moqPublish.Mock.Object); 
+            services.AddScoped<IPublishService>(_ => moqPublish.Mock.Object);
+            services.AddScoped<IDocumentService>(_ => moqFileUpload.Mock.Object);
+            services.AddScoped<IHttpContextAccessor>(_ => moqHttpAccessor.Mock.Object);
+
             services.AddScoped<IAuthUserManagement, AuthUserManagementService>();
             var builder = new ConfigurationBuilder()
                 //.SetBasePath("path here") //<--You would need to set the path

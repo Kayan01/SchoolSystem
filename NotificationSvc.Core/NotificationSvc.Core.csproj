@@ -5,18 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\**" />
     <Compile Remove="Services\Background\**" />
-    <EmbeddedResource Remove="Migrations\**" />
     <EmbeddedResource Remove="Services\Background\**" />
-    <None Remove="Migrations\**" />
     <None Remove="Services\Background\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Migrations\20210706084941_initial.cs" />
-    <Compile Include="Migrations\20210706084941_initial.Designer.cs" />
-    <Compile Include="Migrations\AppDbContextModelSnapshot.cs" />
   </ItemGroup>
 
   <ItemGroup>

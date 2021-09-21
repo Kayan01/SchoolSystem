@@ -31,6 +31,9 @@ namespace Auth.Core.ViewModels.Staff
     {
     }
 
+    public class AddTeacherVMExcel : AddStaffVMExcel
+    {
+    }
     public class UpdateTeacherVM : AddTeacherVM
     {
     }

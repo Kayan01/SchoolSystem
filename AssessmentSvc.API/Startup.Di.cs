@@ -140,7 +140,16 @@ namespace AssessmentSvc.API
             services.AddScoped<IApprovedResultService, ApprovedResultService>();
             services.AddScoped<ISchoolService, SchoolService>();
             services.AddScoped<IIncidenceService, IncidenceService>();
-            services.AddSingleton<IToPDF, ToPDF>();
+            services.AddScoped<IPromotionSetupService, PromotionSetupService>();
+            services.AddScoped<IPromotionService, PromotionService>();
+            services.AddScoped<IResultSummaryService, ResultSummaryService>();
+
+            services.AddScoped<IToPDF, ToPDF>();
+
+            services.AddHttpClient("localclient", c =>
+            {
+                c.BaseAddress = new Uri(Configuration["AuthBaseUrl"]);
+            });
 
             // Registers required services for health checks
             services.AddCustomHealthChecks(Configuration, "Assessment Service");

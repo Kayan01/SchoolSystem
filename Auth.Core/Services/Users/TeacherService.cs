@@ -7,7 +7,9 @@ using Auth.Core.Models.UserDetails;
 using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Staff;
+using ExcelManager;
 using IPagedList;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -78,6 +80,7 @@ namespace Auth.Core.Services.Users
             _httpUserService = httpUserService;
             _schoolPropertyService = schoolPropertyService;
         }
+
 
         public async Task<ResultModel<PaginatedModel<TeacherVM>>> GetTeachers(QueryModel model)
         {
@@ -194,7 +197,25 @@ namespace Auth.Core.Services.Users
                 UserType = UserType.Staff,
             };
 
-            var userResult = await _userManager.CreateAsync(user, model.ContactDetails.PhoneNumber);
+            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+            IdentityResult userResult;
+            if(existingUser != null)
+            {
+                existingUser.FirstName = model.FirstName;
+                existingUser.LastName = model.LastName;
+                existingUser.Email = model.ContactDetails.EmailAddress;
+                existingUser.UserName = model.ContactDetails.EmailAddress;
+                existingUser.PhoneNumber = model.ContactDetails.PhoneNumber;
+                existingUser.MiddleName = model.OtherNames;
+                existingUser.UserType = UserType.Staff;
+
+                userResult = await _userManager.UpdateAsync(existingUser);
+            }
+            else
+            {
+                userResult = await _userManager.CreateAsync(user, model.ContactDetails.PhoneNumber);
+            }
+            
 
             if (!userResult.Succeeded)
             {
@@ -203,9 +224,9 @@ namespace Auth.Core.Services.Users
             }
 
             //Add TenantId to UserClaims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, StaffType.TeachingStaff.GetDescription()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, StaffType.TeachingStaff.GetDescription()));
 
             //create next of kin
             var nextOfKin = new NextOfKin
@@ -254,7 +275,7 @@ namespace Auth.Core.Services.Users
                 Staff = new Staff
                 {
 
-                    UserId = user.Id,
+                    UserId = existingUser?.Id ?? user.Id,
                     BloodGroup = model.BloodGroup,
                     DateOfBirth = model.DateOfBirth,
                     IsActive = model.IsActive,
@@ -322,14 +343,14 @@ namespace Auth.Core.Services.Users
             //change user's username to reg number
             user.UserName = teacher.Staff.RegNumber;
             user.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
-            await _userManager.UpdateAsync(user);
+            await _userManager.UpdateAsync(existingUser ?? user);
 
             _unitOfWork.Commit();
 
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == teacher.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+            _ = await _authUserManagement.SendRegistrationEmail(existingUser ?? user, school.DomainName);
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
@@ -337,13 +358,13 @@ namespace Auth.Core.Services.Users
                 IsActive = true,
                 StaffType = StaffType.TeachingStaff,
                 TenantId = teacher.TenantId,
-                UserId = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Phone = user.PhoneNumber,
+                UserId = existingUser?.Id ?? user.Id,
+                Email = existingUser?.Email ?? user.Email,
+                FirstName = existingUser?.FirstName ?? user.FirstName,
+                LastName = existingUser?.LastName ?? user.LastName,
+                Phone = existingUser?.PhoneNumber ?? user.PhoneNumber,
                 RegNumber = teacher.Staff.RegNumber,
-                Signature = teacher.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Signature.GetDisplayName()).Path
+                Signature = teacher.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Signature.GetDisplayName())?.Path
             });
 
             //Email and Notifications
@@ -649,7 +670,7 @@ namespace Auth.Core.Services.Users
         public async Task<ResultModel<byte[]>> GetTeachersExcelSheet()
         {
 
-            var data = new AddTeacherVM().ToExcel("Teachers Excel Sheet");
+            var data = new AddTeacherVMExcel().ToExcel("Teachers Excel Sheet");
 
             if (data == null)
             {
@@ -659,6 +680,161 @@ namespace Auth.Core.Services.Users
             {
                 return new ResultModel<byte[]>(data);
             }
+        }
+
+        public async Task<ResultModel<bool>> AddBulkTeacher(IFormFile excelfile)
+        {
+            var result = new ResultModel<bool>();
+            var stream = excelfile.OpenReadStream();
+            var excelReader = new ExcelReader(stream);
+
+            var importedData = ExcelReader.FromExcel<AddTeacherVMExcel>(excelfile);
+
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
+            {
+                result.AddError(schoolProperty.ValidationErrors);
+                return result;
+            }
+            //check if imported data contains any data
+            if (importedData.Count < 1)
+            {
+                result.AddError("No data was imported");
+
+                return result;
+            }
+
+            var teachers = new List<TeachingStaff>();
+
+            _unitOfWork.BeginTransaction();
+
+            foreach(var model in importedData)
+            {
+                //add admin for teacher user
+                var user = new User
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.EmailAddress,
+                    UserName = model.EmailAddress,
+                    PhoneNumber = model.PhoneNumber,
+                    UserType = UserType.Staff
+                };
+
+                var existingUser = await _userManager.FindByEmailAsync(user.Email);
+                IdentityResult userResult;
+                if(existingUser != null)
+                {
+                    existingUser.FirstName = model.FirstName;
+                    existingUser.LastName = model.LastName;
+                    existingUser.Email = model.EmailAddress;
+                    existingUser.UserName = model.EmailAddress;
+                    existingUser.PhoneNumber = model.PhoneNumber;
+                    existingUser.UserType = UserType.Staff;
+
+                    userResult = await _userManager.UpdateAsync(existingUser);
+                }
+                else
+                {
+                    userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
+                }
+
+                if(!userResult.Succeeded)
+                {
+                    result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                    return result;
+                }
+
+                //todo : add more props
+                var teacher = new TeachingStaff
+                {
+                    Staff = new Staff
+                    {
+                        UserId = existingUser?.Id ?? user.Id,
+                        BloodGroup = model.BloodGroup,
+                        DateOfBirth = model.DateOfBirth,
+                        IsActive = model.IsActive,
+                        LocalGovernment = model.LocalGovernment,
+                        MaritalStatus = model.MaritalStatus,
+                        Nationality = model.Nationality,
+                        Religion = model.Religion,
+                        StateOfOrigin = model.StateOfOrigin,
+                        Sex = model.Sex,
+                        Town = model.Town,
+                        State = model.State,
+                        Address = model.Address,
+                        Country = model.Country,
+                    }, 
+                                         
+                };
+
+                var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
+                var lastNumber = 0;
+                var seperator = schoolProperty.Data.Seperator;
+                if (!string.IsNullOrWhiteSpace(lastRegNumber))
+                {
+                    lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
+                }
+                var nextNumber = lastNumber;
+
+                var saved = false;
+
+                while (!saved)
+                {
+                    try
+                    {
+                        nextNumber++;
+                        teacher.Staff.RegNumber = $"{schoolProperty.Data.Prefix}{seperator}STF{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+
+                        _teacherRepo.Insert(teacher);
+
+
+                        teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
+                        await _unitOfWork.SaveChangesAsync();
+
+                        saved = true;
+                    }
+                    // 2627 is unique constraint (includes primary key), 2601 is unique index
+                    catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+                    {
+                        saved = false;
+                    }
+                }
+
+                //change user's username to reg number
+                user.UserName = teacher.Staff.RegNumber;
+                user.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
+                await _userManager.UpdateAsync(existingUser ?? user);
+
+               
+
+                // _teacherRepo.Insert(teacher);
+
+
+                // teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
+
+                // teachers.Add(teacher);
+            }
+
+            _unitOfWork.Commit();
+
+            // await _unitOfWork.SaveChangesAsync();
+
+
+            foreach (var teacher in teachers)
+            {
+                //publish to services
+                await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
+                {
+                    Id = teacher.Id,
+                    IsActive = true,
+                    TenantId = teacher.TenantId,
+                    UserId = teacher.Staff.UserId,
+                });
+            }
+            result.Data = true;
+            
+            return result;
         }
 
         #region notification

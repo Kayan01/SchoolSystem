@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Shared.AspNetCore;
 using Shared.DataAccess.EfCore;
 using Shared.DataAccess.EfCore.Context;
 using Shared.DataAccess.EfCore.UnitOfWork;
@@ -20,6 +21,7 @@ using Shared.PubSub;
 using Shared.Utils;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 
 namespace AssessmentSvc.Core.Test.Setup
@@ -84,6 +86,7 @@ namespace AssessmentSvc.Core.Test.Setup
             services.AddScoped<ISessionSetup, SessionService>();
             services.AddScoped<IAssessmentSetupService, AssessmentSetupService>();
             services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<IHttpUserService, HttpUserService>();
             services.AddScoped<ISchoolClassService, SchoolClassService>();
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<ISubjectService, SubjectService>();
@@ -91,9 +94,17 @@ namespace AssessmentSvc.Core.Test.Setup
             services.AddScoped<IGradeSetupService, GradeSetupService>();
             services.AddScoped<IApprovedResultService, ApprovedResultService>();
             services.AddScoped<IIncidenceService, IncidenceService>();
+            services.AddScoped<IPromotionSetupService, PromotionSetupService>();
+            services.AddScoped<IPromotionService, PromotionService>();
+            services.AddScoped<IResultSummaryService, ResultSummaryService>();
 
             var moqToPDF = new MockToPDF();
             services.AddSingleton<IToPDF>(_ => moqToPDF.Mock.Object);
+
+            var httpClientFactory = new MockHttpClientFactory();
+            services.AddScoped<IHttpClientFactory>(_ => httpClientFactory.Mock.Object);
+
+
 
             ServiceProvider = services.AddLogging().BuildServiceProvider();
 

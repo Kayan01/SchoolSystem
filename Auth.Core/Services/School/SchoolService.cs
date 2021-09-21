@@ -32,6 +32,7 @@ namespace Auth.Core.Services
     {
         private readonly IDocumentService _documentService;
         private readonly IRepository<School, long> _schoolRepo;
+        private readonly IRepository<SchoolGroup, long> _schoolGroupRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
@@ -41,6 +42,7 @@ namespace Auth.Core.Services
             IUnitOfWork unitOfWork,
          IPublishService publishService,
         IDocumentService documentService,
+        IRepository<SchoolGroup, long> schoolGroupRepo,
         IAuthUserManagement authUserManagement,
             UserManager<User> userManager)
         {
@@ -49,7 +51,19 @@ namespace Auth.Core.Services
             _documentService = documentService;
             _userManager = userManager;
             _publishService = publishService;
+            _schoolGroupRepo = schoolGroupRepo;
             _authUserManagement = authUserManagement;
+        }
+
+        public async Task<ResultModel<bool>> CheckSchoolDomain(CreateSchoolVM model)
+        {
+            var domainCheck = await _schoolRepo.GetAll().FirstOrDefaultAsync(x => x.DomainName == model.DomainName);
+
+            if (domainCheck != null)
+            {
+                return new ResultModel<bool>("Unique name required for domain");
+            }
+            return new ResultModel<bool>(data : true);
         }
 
         public async Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model)
@@ -57,15 +71,21 @@ namespace Auth.Core.Services
             var result = new ResultModel<SchoolVM>();
 
 
-            var domainCheck = await _schoolRepo.GetAll().FirstOrDefaultAsync(x => x.DomainName == model.DomainName);
+            var check = await CheckSchoolDomain(model);
 
-            if (domainCheck != null)
-            {
-                return new ResultModel<SchoolVM>("Unique name required for domain");
-            }
+            if (check.HasError)
+                return new ResultModel<SchoolVM>(check.ErrorMessages);
 
             _unitOfWork.BeginTransaction();
             var files = new List<FileUpload>();
+          
+            //use school grouo files for school
+            if (model.GroupId.HasValue)
+            {
+                files = _schoolGroupRepo.GetAll().Include(x => x.FileUploads).Where(x => x.Id == model.GroupId.Value).Select(x => x.FileUploads).FirstOrDefault();
+            }
+
+
             //save filles
             if (model.Files != null && model.Files.Any())
             {
@@ -93,6 +113,10 @@ namespace Auth.Core.Services
                 PhoneNumber = model.ContactPhoneNo,
                 IsPrimaryContact = true
             };
+
+            //get school groupId if it exists
+
+
             var school = new School
             {
                 Name = model.Name,
@@ -105,7 +129,8 @@ namespace Auth.Core.Services
                 FileUploads = files,
                 IsActive = model.IsActive,
                 PrimaryColor = model.PrimaryColor,
-                SecondaryColor = model.SecondaryColor
+                SecondaryColor = model.SecondaryColor,
+                SchoolGroupId = model.GroupId
             };
 
             school.SchoolContactDetails.Add(contactDetails);
@@ -188,10 +213,16 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model)
+        public async Task<ResultModel<PaginatedModel<SchoolVM>>> GetAllSchools(QueryModel model, long? groupId = null)
         {
-            var query = _schoolRepo.GetAll()
-                .Include(x => x.Staffs)
+            var firstQuery = _schoolRepo.GetAll();
+
+            //add where clause to filter schools
+            if (groupId != null)
+            {
+                firstQuery = firstQuery.Where(x => x.SchoolGroupId == groupId);
+            }
+           var query = firstQuery.Include(x => x.Staffs)
                 .Include(x => x.FileUploads)
                 .Include(x => x.Students)
                 .Include(x => x.TeachingStaffs)
@@ -213,8 +244,10 @@ namespace Auth.Core.Services
                     studentCount = x.Students.Count,
                     teacherCount = x.Students.Count,
                     x.WebsiteAddress,
-                    x.IsActive
+                    x.IsActive,
+                    x.SchoolGroupId
                 });
+
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
@@ -227,7 +260,8 @@ namespace Auth.Core.Services
                 ClientCode = x.ClientCode,
                 DateCreated = x.CreationTime,
                 Status = x.IsActive,
-                UsersCount = x.staffCount + x.studentCount + x.teacherCount
+                UsersCount = x.staffCount + x.studentCount + x.teacherCount,
+                SchoolGroupId = x.SchoolGroupId
 
             }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
@@ -242,6 +276,8 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<SchoolNameAndLogoVM>> GetSchoolNameAndLogoById(long Id)
         {
+            string logo = default;
+
             var schoolInfo = await _schoolRepo
                 .GetAll()
                 .Where(y => y.Id == Id)
@@ -258,8 +294,11 @@ namespace Auth.Core.Services
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "School not found.");
             }
 
-            var logo = _documentService.TryGetUploadedFile(schoolInfo.path);
-
+            if(!(schoolInfo.path == null))
+            {
+                logo = _documentService.TryGetUploadedFile(schoolInfo.path);
+            }
+            
             if (string.IsNullOrWhiteSpace(logo))
             {
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
@@ -276,6 +315,8 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<SchoolNameAndLogoVM>> GetSchoolNameAndLogoByDomain(string domain)
         {
+
+            string logo = default;
             var schoolInfo = await _schoolRepo
                 .GetAll()
                 .Where(y => y.DomainName == domain.ToLower())
@@ -292,8 +333,11 @@ namespace Auth.Core.Services
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "School not found.");
             }
 
-            var logo = _documentService.TryGetUploadedFile(schoolInfo.path);
-
+            if(!(schoolInfo.path == null))
+            {
+                logo = _documentService.TryGetUploadedFile(schoolInfo.path);
+            }
+            
             if (string.IsNullOrWhiteSpace(logo))
             {
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");

@@ -340,6 +340,7 @@ ASALocalRun/
 healthchecksdb
 
 
+
 */Log/*
 /UserManagement/UserManagement.Core/Migrations
 /Auth.Tests

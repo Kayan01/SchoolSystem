@@ -38,7 +38,7 @@ namespace FinanceSvc.Core.EventHandlers
         {
             try
             {
-                var data = JsonConvert.DeserializeObject<StudentSharedModel>(message.Data);
+                var data = JsonConvert.DeserializeObject<List<StudentSharedModel>>(message.Data);
                 _studentService.AddOrUpdateStudentFromBroadcast(data);
             }
             catch (Exception e)

@@ -9,22 +9,34 @@ namespace Auth.Core.ViewModels.Student
 {
     public class StudentDetailVM
     {
+        public long TenantId { get; set; }
         public string Title { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string MothersMaidenName { get; set; }
         public string Sex { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public string ParentName { get; set; }
-        public long ParentId { get; set; }
+        public string ParentName => $"{ParentFirstName} {ParentLastName}";
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public string ParentFirstName { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public string  ParentLastName { get; set; }
+        public long? ParentId { get; set; }
         public string Nationality { get; set; }
         public string Religion { get; set; }
         public string LocalGovernment { get; set; }
         public string StateOfOrigin { get; set; }
         public string StudentType { get; set; }
         public DateTime AdmissionDate { get; set; }
+        public string Level { get; set; }
         public string Section { get; set; }
-        public string Class { get; set; }
+        public string Class => SchoolClass?.FullName;
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public Models.SchoolClass SchoolClass { get; set; }
         public string BloodGroup { get; set; }
         public string Genotype { get; set; }
         public string Allergies { get; set; }
@@ -58,15 +70,21 @@ namespace Auth.Core.ViewModels.Student
         public string Sex { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string Section { get; set; }
-        public string Class { get; set; }
+        public string Class => SchoolClass?.FullName;
         public bool IsActive { get; set; }
         public string Email { get;  set; }
         public string PhoneNumber { get; set; }
+        public long? UserId { get; set; }
         public byte[] Image => ImagePath?.GetBase64StringFromImage();
 
         [System.Text.Json.Serialization.JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
         public string ImagePath { get; set; }
+
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public Models.SchoolClass SchoolClass { get; set; }
         public static implicit operator StudentVM(Models.Student model)
         {
             return model == null ? null : new StudentVM

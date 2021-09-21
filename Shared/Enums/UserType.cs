@@ -10,6 +10,7 @@ namespace Shared.Enums
         SchoolAdmin,
         Student,
         Staff,
-        Parent
+        Parent,
+        SchoolGroupManager
     }
 }

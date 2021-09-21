@@ -61,7 +61,6 @@ namespace Auth.Core.ViewModels.Student
         public string BloodGroup { get; set; }
         [ExcelReaderCell]
         public string Genotype { get; set; }
-        [ExcelReaderCell]
         public bool Disability { get; set; }
         [ExcelReaderCell]
         public string Allergies { get; set; }
@@ -77,4 +76,5 @@ namespace Auth.Core.ViewModels.Student
         public List<IFormFile> Files { get; set; } = new List<IFormFile>();
         public List<DocumentType> DocumentTypes { get; set; } = new List<DocumentType>();
     }
+
 }

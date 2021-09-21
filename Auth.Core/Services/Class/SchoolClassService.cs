@@ -75,7 +75,7 @@ namespace Auth.Core.Services
                     IsActive = model.Status,
                     TenantId = schoolSection.TenantId,
                     Sequence = model.Sequence,
-
+                    IsTerminalClass = model.IsTerminalClass
                 });
 
             }
@@ -100,7 +100,9 @@ namespace Auth.Core.Services
                 ClassArm = x.ClassArm,
                 Id = x.Id,
                 Name = x.Name,
-                TenantId = x.TenantId
+                TenantId = x.TenantId,
+                IsTerminalClass = x.IsTerminalClass,
+                Sequence = x.Sequence
             }).ToList();
 
 
@@ -183,7 +185,7 @@ namespace Auth.Core.Services
 
 
             var query = _classRepo.GetAll()
-                .OrderByDescending(x => x.CreationTime)
+                .OrderByDescending(x => x.Sequence).ThenBy(x => x.CreationTime)
                 .Select(x => new ListClassVM
                 {
                     Name = x.Name,
@@ -199,6 +201,46 @@ namespace Auth.Core.Services
             result.Data = new PaginatedModel<ListClassVM>(pagedData, vm.PageIndex, vm.PageSize, pagedData.TotalItemCount);
 
             return result;
+        }
+
+        public async Task<ResultModel<List<ClassWithoutArmVM>>> GetClassesWithoutArm()
+        {
+            var allClasses = await _classRepo.GetAll()
+                .Select(x => new ClassWithoutArmVM
+                {
+                    Name = x.Name,
+                    Sequence = x.Sequence,
+                    IsTerminal = x.IsTerminalClass,
+                    Section = x.SchoolSection.Name
+                }).ToListAsync();
+
+            var distinctClasses = allClasses.GroupBy(m => m.Name).Select(m => m.First())
+                .OrderBy(x => x.Sequence).ToList();
+            return new ResultModel<List<ClassWithoutArmVM>>(distinctClasses);
+        }
+
+        public async Task<ResultModel<string>> UpdateClassSequenceAndTerminal(List<ClassWithoutArmVM> model)
+        {
+            var allClasses = await _classRepo.GetAll().ToListAsync();
+            var groupedClasses = allClasses.GroupBy(m => m.Name);
+
+            foreach (var classGroup in groupedClasses)
+            {
+                var modelClass = model.FirstOrDefault(m => m.Name == classGroup.Key);
+                if (modelClass == null)
+                {
+                    return new ResultModel<string>(errorMessage: "One or more classes were not found. Please try again.");
+                }
+
+                foreach (var clas in classGroup)
+                {
+                    clas.Sequence = modelClass.Sequence;
+                    clas.IsTerminalClass = modelClass.IsTerminal;
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new ResultModel<string>(data: "Successful");
         }
 
         public async Task<ResultModel<ClassVM>> GetClassById(long Id)
@@ -272,6 +314,8 @@ namespace Auth.Core.Services
 
             //TODO: add more props
             @class.Name = model.Name;
+            @class.Sequence = model.Sequence;
+            @class.IsTerminalClass = model.IsTerminalClass;
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -282,7 +326,9 @@ namespace Auth.Core.Services
                     ClassArm = @class.ClassArm,
                     Id = @class.Id,
                     Name = @class.Name,
-                    TenantId = @class.TenantId
+                    TenantId = @class.TenantId,
+                    IsTerminalClass = @class.IsTerminalClass,
+                    Sequence = @class.Sequence
                 }
             };
 

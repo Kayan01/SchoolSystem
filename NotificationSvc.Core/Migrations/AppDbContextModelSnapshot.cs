@@ -79,13 +79,13 @@ namespace NotificationSvc.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 7, 6, 9, 49, 40, 652, DateTimeKind.Local).AddTicks(5015),
+                            CreationTime = new DateTime(2021, 9, 21, 12, 44, 46, 50, DateTimeKind.Local).AddTicks(250),
                             Description = "Testing"
                         },
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 7, 6, 9, 49, 40, 652, DateTimeKind.Local).AddTicks(7352),
+                            CreationTime = new DateTime(2021, 9, 21, 12, 44, 46, 50, DateTimeKind.Local).AddTicks(3285),
                             Description = "Unit Test"
                         });
                 });
@@ -113,7 +113,7 @@ namespace NotificationSvc.Core.Migrations
                         {
                             NotificationId = 1L,
                             UserId = 1L,
-                            DateRead = new DateTime(2021, 7, 6, 9, 49, 40, 657, DateTimeKind.Local).AddTicks(9454),
+                            DateRead = new DateTime(2021, 9, 21, 12, 44, 46, 56, DateTimeKind.Local).AddTicks(2496),
                             IsRead = true
                         },
                         new

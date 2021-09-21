@@ -10,6 +10,7 @@ namespace Auth.Core.Models
 {
     public class School : FullAuditedEntity<long>
     {
+        public long? SchoolGroupId { get; set; }
         public string Name { get; set; }
         public string DomainName { get; set; }
         public string WebsiteAddress { get; set; }
@@ -29,5 +30,7 @@ namespace Auth.Core.Models
         public List<Staff> Staffs { get; set; }
         public List<TeachingStaff> TeachingStaffs { get; set; }
         public List<SchoolSection> SchoolSections { get; set; }
+        public SchoolGroup SchoolGroup { get; set; }
+        public SchoolSubscription SchoolSubscription { get; set; }
     }
 }

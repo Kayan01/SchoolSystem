@@ -75,6 +75,8 @@ namespace Auth.Core.Services.Users
 
            await _parentRepo.DeleteAsync(parent);
 
+           await _unitOfWork.SaveChangesAsync();
+
             resultModel.Data = "Deleted";
             return resultModel;
         }
@@ -121,7 +123,7 @@ namespace Auth.Core.Services.Users
                 Email = x.FirstOrDefault()?.Email,
                 FullName = x.FirstOrDefault()?.FullName,
                 ParentCode = x.FirstOrDefault()?.ParentCode,
-                Id = x.FirstOrDefault().Id,
+                Id = x.FirstOrDefault().Id.Value,
                 PhoneNumber = x.FirstOrDefault()?.PhoneNumber,
                 Status = x.FirstOrDefault().Status,
                 Image = x.FirstOrDefault().Image == null ? null : _documentService.TryGetUploadedFile(x.FirstOrDefault().Image),

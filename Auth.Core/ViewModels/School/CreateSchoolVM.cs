@@ -50,9 +50,12 @@ namespace Auth.Core.ViewModels.School
         public bool IsActive { get; set; }
         public string PrimaryColor { get; set; }
         public string SecondaryColor { get; set; }
+        public long? GroupId { get; set; }
 
         public List<DocumentType> DocumentTypes { get; set; }
         public List<IFormFile> Files { get; set; }
+
+
 
     }
 }

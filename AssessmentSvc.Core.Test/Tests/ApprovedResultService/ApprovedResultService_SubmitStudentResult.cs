@@ -15,7 +15,7 @@ namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
 {
     public class ApprovedResultService_SubmitStudentResult
     {
-        [Test]
+          [Test]
         public async Task SubmitStudentResult_NewApprovedResult()
         {
             using (ServicesDISetup _setup = new ServicesDISetup())
@@ -142,7 +142,7 @@ namespace AssessmentSvc.Core.Test.Tests.ApprovedResultService
 
                 var check = context.ApprovedResults.SingleOrDefault();
 
-                Assert.AreNotEqual( check.ClassTeacherComment, oldapprovedResult.ClassTeacherComment);
+                Assert.AreNotEqual("old comment", check.ClassTeacherComment);
                 Assert.AreEqual(check.ClassTeacherComment, model.ClassTeacherComment);
 
             }
