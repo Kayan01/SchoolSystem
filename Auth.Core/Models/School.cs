@@ -31,5 +31,6 @@ namespace Auth.Core.Models
         public List<TeachingStaff> TeachingStaffs { get; set; }
         public List<SchoolSection> SchoolSections { get; set; }
         public SchoolGroup SchoolGroup { get; set; }
+        public SchoolSubscription SchoolSubscription { get; set; }
     }
 }
