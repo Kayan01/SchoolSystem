@@ -5,11 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\**" />
     <Compile Remove="Services\Background\**" />
-    <EmbeddedResource Remove="Migrations\**" />
     <EmbeddedResource Remove="Services\Background\**" />
-    <None Remove="Migrations\**" />
     <None Remove="Services\Background\**" />
   </ItemGroup>
 
