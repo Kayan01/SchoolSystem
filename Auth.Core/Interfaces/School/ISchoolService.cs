@@ -24,5 +24,7 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<SchoolVM>> UpdateSchool(UpdateSchoolVM model, long Id);
         Task<ResultModel<bool>> DeleteSchool(long Id);
         Task<ResultModel<bool>> CheckSchoolDomain(CreateSchoolVM model);
+        Task<ResultModel<bool>> DeActivateSchool(long Id);
+        Task<ResultModel<bool>> EnableSchool(long Id);
     }
 }
