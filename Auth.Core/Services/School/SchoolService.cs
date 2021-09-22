@@ -728,7 +728,7 @@ namespace Auth.Core.Services
               
         }
 
-        public async Task<ResultModel<bool>> EnableSchool(long Id)
+        public async Task<ResultModel<bool>> ActivateSchool(long Id)
         {
             var users = await _schoolRepo.GetAll().Select(x =>
             new
