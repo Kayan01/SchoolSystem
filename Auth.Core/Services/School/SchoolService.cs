@@ -713,7 +713,7 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<bool>> DeActivateSchool(long Id)
         {
-            var users = await _schoolRepo.GetAll().Select(x =>
+            var users = await _schoolRepo.GetAll().Where(x => x.Id == Id).Select(x =>
             new
             {
                 studentUserIds = x.Students.Select(x => x.UserId),
@@ -730,7 +730,7 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<bool>> ActivateSchool(long Id)
         {
-            var users = await _schoolRepo.GetAll().Select(x =>
+            var users = await _schoolRepo.GetAll().Where(x => x.Id == Id).Select(x =>
             new
             {
                 studentUserIds = x.Students.Select(x => x.UserId),
