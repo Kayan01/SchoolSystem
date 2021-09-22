@@ -18,6 +18,9 @@ using Microsoft.Extensions.Logging;
 using Shared.Enums;
 using static Shared.Utils.CoreConstants;
 using Microsoft.Extensions.Configuration;
+using Shared.DataAccess.Repository;
+using Auth.Core.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Auth.Core.Services
 {
@@ -26,13 +29,12 @@ namespace Auth.Core.Services
         private readonly UserManager<User> _userManager;
         private readonly IDataProtector _protector;
         private readonly IPublishService _publishService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ILogger<AuthUserManagementService> _logger;
         private readonly IConfiguration _config;
-
+        private AppDbContext _context;
 
         public AuthUserManagementService(
             UserManager<User> userManager,
+            AppDbContext context,
             IDataProtectionProvider provider,
             IPublishService publishService,
             IHttpContextAccessor httpContextAccessor,
@@ -42,9 +44,8 @@ namespace Auth.Core.Services
             _userManager = userManager;
             _protector = provider.CreateProtector("Auth");
             _publishService = publishService;
-            _httpContextAccessor = httpContextAccessor;
             _config = config;
-            _logger = logger;
+            _context = context;
         }
 
 
@@ -256,6 +257,30 @@ namespace Auth.Core.Services
             });
         }
 
-       
+        public async Task EnableUsersAsync(IEnumerable<long> ids)
+        {
+           var users = await _context.Users.Where(x => ids.Contains(x.Id)).ToListAsync();
+
+            foreach (var user in users)
+            {
+                user.UserStatus = UserStatus.Activated;
+                _context.Update(user);
+            }
+
+           await _context.SaveChangesAsync();
+        }
+
+        public async Task DisableUsersAsync(IEnumerable<long> ids)
+        {
+            var users = await _context.Users.Where(x => ids.Contains(x.Id)).ToListAsync();
+
+            foreach (var user in users)
+            {
+                user.UserStatus = UserStatus.Deactivated;
+                _context.Update(user);
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }
