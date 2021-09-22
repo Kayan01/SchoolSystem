@@ -20,6 +20,7 @@ namespace Shared.Entities
         public DateTime? LastModificationTime { get; set; }
         public DateTime? LastLoginDate { get; set; }
         public UserType UserType { get; set; }
+        public UserStatus UserStatus { get; set; }
 
         [NotMapped]
         public string FullName

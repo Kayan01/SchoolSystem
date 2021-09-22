@@ -15,6 +15,8 @@ namespace Auth.Core.Services.Interfaces
         Task<long?> AddUserAsync(AuthUserModel model);
         Task<bool> UpdateUserAsync(long id, AuthUserModel model);
         Task<bool> DeleteUserAsync(long id);
+        Task EnableUsersAsync(IEnumerable<long> id);
+        Task DisableUsersAsync(IEnumerable<long> id);
         IQueryable<User> GetAllAuthUsersAsync();
 
         Task<ResultModel<bool>> SendRegistrationEmail(User user, string subdomain, string emailTitle = "Confirm your email");

@@ -218,5 +218,46 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
+
+        [HttpGet("{id}")]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        public async Task<IActionResult> EnableSchool(long id)
+        {
+            if (id < 1)
+                return ApiResponse<string>(errors: "Invalid school Id");
+
+            try
+            {
+                var result = await _schoolService.ActivateSchool(id);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+        [HttpGet("{id}")]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        public async Task<IActionResult> DisableSchool(long id)
+        {
+            if (id < 1)
+                return ApiResponse<string>(errors: "Invalid school Id");
+
+            try
+            {
+                var result = await _schoolService.DeActivateSchool(id);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }
