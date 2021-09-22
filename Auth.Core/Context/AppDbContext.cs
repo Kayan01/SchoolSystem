@@ -38,5 +38,6 @@ namespace Auth.Core.Context
         public DbSet<PromotionLog> PromotionLogs{ get; set; }
         public DbSet<AlumniEvent> AlumniEvents { get; set; }
         public DbSet<SchoolSubscription> SchoolSubscriptions { get; set; }
+        public DbSet<SubscriptionInvoice> SubscriptionInvoices { get; set; }
     }
 }
