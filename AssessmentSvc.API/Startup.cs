@@ -45,7 +45,7 @@ namespace AssessmentSvc.API
    )
                 );
             services.AddSwagger("Assessment Service");
-            services.AddControllers();
+            services.AddControllers().ConfigureApiBehaviorOptions(c => c.SuppressModelStateInvalidFilter = true);
 
             AddEntityFrameworkDbContext(services);
             AddIdentityProvider(services);

@@ -33,7 +33,7 @@ namespace NotificationSvc.API
         {
             services.AddCors();
             services.AddSwagger("Notification Service");
-            services.AddControllers();
+            services.AddControllers().ConfigureApiBehaviorOptions(c => c.SuppressModelStateInvalidFilter = true);
 
             AddEntityFrameworkDbContext(services);
             AddIdentityProvider(services);

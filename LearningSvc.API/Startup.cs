@@ -46,7 +46,7 @@ namespace LearningSvc.API
    )
                 );
             services.AddSwagger("Learning Service");
-            services.AddControllers();
+            services.AddControllers().ConfigureApiBehaviorOptions(c => c.SuppressModelStateInvalidFilter = true);
 
             AddEntityFrameworkDbContext(services);
             AddIdentityProvider(services);
