@@ -122,11 +122,11 @@ namespace Auth.API.Controllers
 
         [HttpPut("{invoiceId}")]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        public async Task<IActionResult> MarkInvoiceAsPaid(long invoiceId)
+        public async Task<IActionResult> MarkInvoiceAsPaid(PayInvoiceVM vm)
         {
             try
             {
-                var result = await _invoiceService.MarkInvoiceAsPaid(invoiceId);
+                var result = await _invoiceService.MarkInvoiceAsPaid(vm);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
