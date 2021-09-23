@@ -47,7 +47,7 @@ namespace Auth.API
    )
                 );
             services.AddSwagger("Authentication Service");
-            services.AddControllers();
+            services.AddControllers().ConfigureApiBehaviorOptions(c => c.SuppressModelStateInvalidFilter = true);
 
             AddEntityFrameworkDbContext(services);
             ConfigureIdentity(services);
