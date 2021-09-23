@@ -14,6 +14,6 @@ namespace Auth.Core.Interfaces
         Task<ResultModel<SubcriptionInvoiceVM>> GetArrearsSubsciptionInvoice(long schoolId);
         Task<ResultModel<string>> PostArrearsSubsciptionInvoice(SubcriptionInvoiceVM invoice);
         Task<ResultModel<List<GetSubcriptionInvoiceVM>>> GetUnpaidSubsciptionInvoice(long schoolId);
-        Task<ResultModel<string>> MarkInvoiceAsPaid(long invoiceId);
+        Task<ResultModel<string>> MarkInvoiceAsPaid(PayInvoiceVM vm);
     }
 }
