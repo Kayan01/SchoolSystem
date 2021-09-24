@@ -26,6 +26,7 @@ using Shared.ViewModels.Enums;
 using Auth.Core.ViewModels;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
+using Shared.Enums;
 
 namespace Auth.API.Controllers
 {
@@ -121,6 +122,16 @@ namespace Auth.API.Controllers
                             Error = "first_time_login",
                             ErrorDescription = "First time login. The user should change his password.",
                             PasswordResetCode = (await _authUserService.GetPasswordRestCode(applicationUser.Email)).Data.code
+                        });
+                    }
+
+                    //check if school is disabled
+                    if (applicationUser.UserStatus == UserStatus.Deactivated)
+                    {
+                        return BadRequest(new OpenIdConnectResponse
+                        {
+                            Error = OpenIdConnectConstants.Errors.AccessDenied,
+                            ErrorDescription = "You have been disabled. Please contact admin."
                         });
                     }
 
