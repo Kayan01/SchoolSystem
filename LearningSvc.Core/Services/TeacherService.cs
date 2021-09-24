@@ -24,7 +24,7 @@ namespace LearningSvc.Core.Services
             _teacherRepo = teacherRepo;
         }
 
-        public async void AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model)
+        public async Task AddOrUpdateTeacherFromBroadcast(TeacherSharedModel model)
         {
             var teacher = await _teacherRepo.FirstOrDefaultAsync(x => x.Id == model.Id && x.TenantId == model.TenantId);
             if (teacher == null)
