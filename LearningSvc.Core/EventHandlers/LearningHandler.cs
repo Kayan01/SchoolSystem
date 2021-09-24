@@ -51,7 +51,7 @@ namespace LearningSvc.Core.EventHandlers
             try
             {
                 var data = JsonConvert.DeserializeObject<TeacherSharedModel>(message.Data);
-                _teacherService.AddOrUpdateTeacherFromBroadcast(data);
+               await _teacherService.AddOrUpdateTeacherFromBroadcast(data);
             }
             catch (Exception e)
             {
