@@ -744,7 +744,7 @@ namespace Auth.Core.Services
 
             await _authUserManagement.EnableUsersAsync(users.staffUserIds.Concat(users.studentUserIds.Concat(users.teachingUserIds)));
 
-            _schoolRepo.Update(Id, x => x.IsActive = false);
+            _schoolRepo.Update(Id, x => x.IsActive = true);
             await _unitOfWork.SaveChangesAsync();
 
             return new ResultModel<bool>(data: true, message: "School was activated");
