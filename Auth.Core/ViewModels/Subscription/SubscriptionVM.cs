@@ -14,5 +14,6 @@ namespace Auth.Core.ViewModels.Subscription
         public string School { get; set; }
         public string SchoolGroup { get; set; }
         public bool IsActive { get; set; }
+        public long SchoolId { get; set; }
     }
 }

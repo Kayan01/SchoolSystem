@@ -86,6 +86,7 @@ namespace Auth.Core.Services
                     EndDate = x.EndDate,
                     ExpectedNumberOfStudent = x.ExpectedNumberOfStudent,
                     PricePerStudent = x.PricePerStudent,
+                    SchoolId = x.SchoolId,
                     School = x.School.Name,
                     SchoolGroup = x.School.SchoolGroup.Name,
                     StartDate = x.StartDate,
