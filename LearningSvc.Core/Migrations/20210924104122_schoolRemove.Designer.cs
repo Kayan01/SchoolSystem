@@ -4,14 +4,16 @@ using LearningSvc.Core.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace LearningSvc.Core.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210924104122_schoolRemove")]
+    partial class schoolRemove
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -390,13 +392,13 @@ namespace LearningSvc.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 24, 11, 41, 55, 769, DateTimeKind.Local).AddTicks(9122),
+                            CreationTime = new DateTime(2021, 9, 24, 11, 41, 21, 562, DateTimeKind.Local).AddTicks(9825),
                             Description = "Testing"
                         },
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 9, 24, 11, 41, 55, 770, DateTimeKind.Local).AddTicks(688),
+                            CreationTime = new DateTime(2021, 9, 24, 11, 41, 21, 563, DateTimeKind.Local).AddTicks(1953),
                             Description = "Unit Test"
                         });
                 });
@@ -457,67 +459,6 @@ namespace LearningSvc.Core.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Parents");
-                });
-
-            modelBuilder.Entity("LearningSvc.Core.Models.School", b =>
-                {
-                    b.Property<long>("Id")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("City")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("CreatorUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("DeleterUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DomainName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("LastModifierUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Logo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("State")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WebsiteAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Schools");
                 });
 
             modelBuilder.Entity("LearningSvc.Core.Models.SchoolClass", b =>
