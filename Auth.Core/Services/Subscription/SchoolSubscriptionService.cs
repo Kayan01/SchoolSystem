@@ -88,7 +88,8 @@ namespace Auth.Core.Services
                     PricePerStudent = x.PricePerStudent,
                     School = x.School.Name,
                     SchoolGroup = x.School.SchoolGroup.Name,
-                    StartDate = x.StartDate
+                    StartDate = x.StartDate,
+                    IsActive = x.School.IsActive
                  });
 
 

@@ -714,15 +714,18 @@ namespace Auth.Core.Services
         public async Task<ResultModel<bool>> DeActivateSchool(long Id)
         {
             var users = await _schoolRepo.GetAll().Where(x => x.Id == Id).Select(x =>
-            new
-            {
-                studentUserIds = x.Students.Select(x => x.UserId),
-                staffUserIds = x.Staffs.Select(x => x.UserId),
-                teachingUserIds = x.TeachingStaffs.Select(x => x.Staff.UserId)
-            }
+                new
+                {
+                    studentUserIds = x.Students.Select(x => x.UserId),
+                    staffUserIds = x.Staffs.Select(x => x.UserId),
+                    teachingUserIds = x.TeachingStaffs.Select(x => x.Staff.UserId)
+                }
             ).FirstOrDefaultAsync();
 
             await _authUserManagement.DisableUsersAsync(users.staffUserIds.Concat(users.studentUserIds.Concat(users.teachingUserIds)));
+
+            _schoolRepo.Update(Id, x => x.IsActive = false);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ResultModel<bool>(data: true, message: "School was deactivated");
               
@@ -740,6 +743,9 @@ namespace Auth.Core.Services
             ).FirstOrDefaultAsync();
 
             await _authUserManagement.EnableUsersAsync(users.staffUserIds.Concat(users.studentUserIds.Concat(users.teachingUserIds)));
+
+            _schoolRepo.Update(Id, x => x.IsActive = false);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ResultModel<bool>(data: true, message: "School was activated");
         }
