@@ -248,22 +248,32 @@ namespace Auth.Core.Services
             return new ResultModel<List<GetSubcriptionInvoiceVM>>(invoices);
         }
 
-        public async Task<ResultModel<string>> MarkInvoiceAsPaid(long invoiceId)
+        public async Task<ResultModel<string>> MarkInvoiceAsPaid(PayInvoiceVM vm)
         {
-            if (invoiceId == 0)
+            if (vm.InvoiceId == 0)
             {
                 return new ResultModel<string>(errorMessage: "Invalid school Id");
             }
 
-            var invoice = await _invoiceRepo.GetAll().FirstOrDefaultAsync(m => m.Id == invoiceId);
+            var invoice = await _invoiceRepo.GetAll().FirstOrDefaultAsync(m => m.Id == vm.InvoiceId);
 
             if (invoice is null)
             {
                 return new ResultModel<string>(errorMessage: "Invoice not found");
             }
 
+            var subscriptionSetup = await _subscriptionRepo.GetAll().FirstOrDefaultAsync(m => m.SchoolId == invoice.SchoolId);
+
+            if (subscriptionSetup is null)
+            {
+                return new ResultModel<string>(errorMessage: "Subscription setup not found for invoice school");
+            }
+
             invoice.Paid = true;
             invoice.PaidDate = DateTime.Today;
+
+            subscriptionSetup.StartDate = subscriptionSetup.EndDate;
+            subscriptionSetup.EndDate = vm.ExpiryDate;
 
             await _unitOfWork.SaveChangesAsync();
 
