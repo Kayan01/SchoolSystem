@@ -120,7 +120,7 @@ namespace Auth.API.Controllers
             }
         }
 
-        [HttpPut("{invoiceId}")]
+        [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> MarkInvoiceAsPaid(PayInvoiceVM vm)
         {
