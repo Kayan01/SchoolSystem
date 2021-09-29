@@ -223,14 +223,14 @@ namespace Auth.Core.Services
         }
 
 
-        public async Task<ResultModel<List<GetSubcriptionInvoiceVM>>> GetUnpaidSubsciptionInvoice(long schoolId)
+        public async Task<ResultModel<List<GetSubcriptionInvoiceVM>>> GetSchoolSubsciptionInvoice(long schoolId)
         {
             if (schoolId == 0)
             {
                 return new ResultModel<List<GetSubcriptionInvoiceVM>>(errorMessage: "Invalid school Id");
             }
 
-            var invoices = await _invoiceRepo.GetAll().Where(m => m.SchoolId == schoolId && !m.Paid)
+            var invoices = await _invoiceRepo.GetAll().Where(m => m.SchoolId == schoolId)
                 .Select(m=>new GetSubcriptionInvoiceVM() 
                 { 
                     AmountPerStudent = m.AmountPerStudent,

@@ -88,6 +88,38 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<SubjectVM>> UpdateSubject(SubjectUpdateVM model)
+        {
+            var result = new ResultModel<SubjectVM>();
+
+            var subject = await _subjectRepo.GetAll().Where(m => m.Id == model.Id).FirstOrDefaultAsync();
+            if (subject is null)
+            {
+                result.AddError("Subject not found.");
+                return result;
+            }
+
+            subject.Name = model.Name;
+            subject.IsActive = model.IsActive;
+
+            _subjectRepo.Insert(subject);
+            await _unitOfWork.SaveChangesAsync();
+
+            var subjectSharedModel = new SubjectSharedModel
+            {
+                Id = subject.Id,
+                Name = subject.Name,
+                TenantId = subject.TenantId,
+                IsActive = subject.IsActive,
+            };
+
+
+            await _publishService.PublishMessage(Topics.Subject, BusMessageTypes.SUBJECT, subjectSharedModel);
+
+            result.Data = new SubjectVM() { Id = subject.Id, Name = model.Name.ToLower(), IsActive = model.IsActive };
+            return result;
+        }
+
         public async Task<ResultModel<PaginatedModel<SubjectVM>>> GetAllSubjects(QueryModel queryModel)
         {
             var query = await _subjectRepo.GetAll().Select(x => (SubjectVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
