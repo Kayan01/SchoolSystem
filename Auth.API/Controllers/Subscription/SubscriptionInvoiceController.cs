@@ -104,7 +104,7 @@ namespace Auth.API.Controllers
         }
 
         [HttpGet("{schoolId}")]
-        [ProducesResponseType(typeof(ApiResponse<SubcriptionInvoiceVM>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<GetSubcriptionInvoiceVM>>), 200)]
         public async Task<IActionResult> GetSchoolSubsciptionInvoice(long schoolId)
         {
             try
