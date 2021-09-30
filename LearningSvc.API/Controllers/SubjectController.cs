@@ -80,5 +80,29 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpPut]
+        [ProducesResponseType(typeof(ApiResponse<SubjectVM>), 200)]
+        public async Task<IActionResult> UpdateSubject([FromBody] SubjectUpdateVM model)
+        {
+            if (model == null)
+                return ApiResponse<SubjectVM>(errors: "Empty payload");
+
+            if (!ModelState.IsValid)
+                return ApiResponse<SubjectVM>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _subjectService.UpdateSubject(model);
+
+                if (result.HasError)
+                    return ApiResponse<SubjectVM>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<SubjectVM>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
     }
 }

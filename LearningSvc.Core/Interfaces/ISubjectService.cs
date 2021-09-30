@@ -13,5 +13,6 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<PaginatedModel<SubjectVM>>> GetAllSubjects(QueryModel queryModel);
         Task<ResultModel<SubjectVM>> AddSubject(SubjectInsertVM model);
         Task<ResultModel<List<SubjectVM>>> GetAllSubjects();
+        Task<ResultModel<SubjectVM>> UpdateSubject(SubjectUpdateVM model);
     }
 }

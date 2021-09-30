@@ -13,7 +13,7 @@ namespace Auth.Core.Interfaces
         Task<ResultModel<string>> PostNextSubsciptionInvoice(SubcriptionInvoiceVM invoice);
         Task<ResultModel<SubcriptionInvoiceVM>> GetArrearsSubsciptionInvoice(long schoolId);
         Task<ResultModel<string>> PostArrearsSubsciptionInvoice(SubcriptionInvoiceVM invoice);
-        Task<ResultModel<List<GetSubcriptionInvoiceVM>>> GetUnpaidSubsciptionInvoice(long schoolId);
+        Task<ResultModel<List<GetSubcriptionInvoiceVM>>> GetSchoolSubsciptionInvoice(long schoolId);
         Task<ResultModel<string>> MarkInvoiceAsPaid(PayInvoiceVM vm);
     }
 }

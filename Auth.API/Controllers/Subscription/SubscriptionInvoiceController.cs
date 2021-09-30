@@ -104,12 +104,12 @@ namespace Auth.API.Controllers
         }
 
         [HttpGet("{schoolId}")]
-        [ProducesResponseType(typeof(ApiResponse<SubcriptionInvoiceVM>), 200)]
-        public async Task<IActionResult> GetUnpaidSubsciptionInvoice(long schoolId)
+        [ProducesResponseType(typeof(ApiResponse<List<GetSubcriptionInvoiceVM>>), 200)]
+        public async Task<IActionResult> GetSchoolSubsciptionInvoice(long schoolId)
         {
             try
             {
-                var result = await _invoiceService.GetUnpaidSubsciptionInvoice(schoolId);
+                var result = await _invoiceService.GetSchoolSubsciptionInvoice(schoolId);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
