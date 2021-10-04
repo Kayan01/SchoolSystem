@@ -335,7 +335,25 @@ namespace Auth.Core.Services.Users
                 UserType = UserType.Parent,
             };
 
-            var userResult = await _userManager.CreateAsync(user, vm.PhoneNumber);
+
+            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+            IdentityResult userResult;
+
+            if(existingUser != null)
+            {
+                existingUser.FirstName = vm.FirstName;
+                existingUser.LastName = vm.LastName;
+                existingUser.Email = vm.EmailAddress.Trim();
+                existingUser.UserName = vm.EmailAddress.Trim();
+                existingUser.PhoneNumber = vm.PhoneNumber;
+                existingUser.UserType = UserType.Parent;
+
+                userResult = await _userManager.UpdateAsync(existingUser);
+            }
+            else
+            {
+                userResult = await _userManager.CreateAsync(user, vm.PhoneNumber);
+            }
 
             if (!userResult.Succeeded)
             {
@@ -369,17 +387,28 @@ namespace Auth.Core.Services.Users
                 lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
             }
             var nextNumber = lastNumber;
-
+            var firstTime = true;
             var saved = false;
+
             while (!saved)
             {
                 try
                 {
                     nextNumber++;
-                    parent.RegNumber = $"PAT{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
-                    await _parentRepo.InsertAsync(parent);
+                    if(firstTime && !string.IsNullOrWhiteSpace(parent.RegNumber))
+                    {
+                        firstTime = false;
+                        _parentRepo.Insert(parent);
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        parent.RegNumber = $"PAT{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+                        firstTime = false;
+                        _parentRepo.Insert(parent);
+                        await _unitOfWork.SaveChangesAsync();
+                    }
 
-                    await _unitOfWork.SaveChangesAsync();
                     saved = true;
                 }
                 // 2627 is unique constraint (includes primary key), 2601 is unique index
@@ -390,19 +419,19 @@ namespace Auth.Core.Services.Users
             }
 
             //add usertype to claims
-            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
+            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
 
 
             //change user's username to reg number
             user.UserName = parent.RegNumber;
             user.NormalizedUserName = parent.RegNumber.ToUpper();
-            await _userManager.UpdateAsync(user);
+            await _userManager.UpdateAsync(existingUser ?? user);
 
             _unitOfWork.Commit();
 
 
             //broadcast login detail to email
-            _ = await _authUserManagementService.SendRegistrationEmail(user, "");
+            _ = await _authUserManagementService.SendRegistrationEmail(existingUser ?? user, "");
 
             //Publish to services
             await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
@@ -415,14 +444,14 @@ namespace Auth.Core.Services.Users
                 UserId = parent.UserId,
                 IsDeleted = parent.IsDeleted,
                 OfficeAddress = parent.OfficeAddress,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Phone = user.PhoneNumber,
+                FirstName = existingUser?.FirstName ?? user.FirstName,
+                LastName = existingUser?.LastName ?? user.LastName,
+                Email = existingUser?.Email ?? user.Email,
+                Phone = existingUser?.PhoneNumber ?? user.PhoneNumber,
                 RegNumber = parent.RegNumber
             });
 
-            parent.User = user;
+            parent.User = existingUser ?? user;
             var returnModel = (ParentDetailVM)parent;
             resultModel.Data = returnModel;
             return resultModel;
