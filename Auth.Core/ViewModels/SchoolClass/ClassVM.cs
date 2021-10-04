@@ -7,6 +7,8 @@ namespace Auth.Core.ViewModels.SchoolClass
     {
         public long Id { get; internal set; }
         public string  Name { get; set; }
+        public string ClassName { get; set; }
+        public string ClassArm { get; set; }
         public long SectionId { get; set; }
         public long ClassGroupId { get; set; }
 
@@ -15,7 +17,9 @@ namespace Auth.Core.ViewModels.SchoolClass
             return model == null ? null : new ClassVM
             {
                 Id = model.Id,
-                Name = model.Name + model.ClassArm,
+                ClassName = model.Name,
+                ClassArm = model.ClassArm,
+                Name = $"{model.Name} {model.ClassArm}",
                 SectionId = model.SchoolSectionId,
             };
         }
