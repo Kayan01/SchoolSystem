@@ -465,6 +465,8 @@ namespace Auth.Core.Services
                 HomeAddress = std.Address,
                 Id = std.Id,
                 Level = std.Level,
+                EntryType = std.EntryType,
+                SectionId = std.SchoolClass.SchoolSectionId,
                 ParentId = std.ParentId,
                 Image = _documentService.TryGetUploadedFile(std.image?.Path),
                 ImmunizationHistoryVMs = std.Immunization.Select(x=> new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine}).ToList(),
