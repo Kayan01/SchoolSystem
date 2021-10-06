@@ -35,7 +35,7 @@ namespace LearningSvc.API
         {
            //services.AddTransient<TenantInfo>();
 
-            services.AddTransient<DbContext, AppDbContext>();
+           // services.AddTransient<DbContext, AppDbContext>();
 
             services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
             services.AddScoped(typeof(IDbContextProvider<>), typeof(UnitOfWorkDbContextProvider<>));

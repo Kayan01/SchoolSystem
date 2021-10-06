@@ -85,7 +85,7 @@ namespace LearningSvc.API
         {
             string dbConnStr = Configuration.GetConnectionString("Default");
 
-            services.AddDbContextPool<AppDbContext>(options =>
+            services.AddDbContext<AppDbContext>(options =>
             {
                 options.UseSqlServer(dbConnStr,
                  b => b.MigrationsAssembly(typeof(AppDbContext).FullName));

@@ -40,7 +40,7 @@ namespace LearningSvc.Core.Test.Setup
             _connection.Open();
 
             services.AddDbContext<DbContext, AppDbContext>(options => options.UseSqlite(_connection));
-            //services.AddDbContextPool<AppDbContext>(options => options.UseSqlite(_connection));
+            //services.AddDbContext<AppDbContext>(options => options.UseSqlite(_connection));
 
             services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
             services.AddScoped(typeof(IDbContextProvider<>), typeof(UnitOfWorkDbContextProvider<>));
