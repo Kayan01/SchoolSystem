@@ -63,9 +63,9 @@ namespace Auth.Core.Services
             }
 
             //check if class  exist
-            var clas = _classRepo.GetAll().Where(x => x.Name == model.Name).FirstOrDefaultAsync();
+            var clas = await _classRepo.GetAll().Where(x => x.Name == model.Name).FirstOrDefaultAsync();
 
-            if (!(clas is null))
+            if (clas != null)
             {
                 result.AddError("Duplicate class not allowed");
                 return result;
