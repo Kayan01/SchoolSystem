@@ -62,6 +62,16 @@ namespace Auth.Core.Services
                 return result;
             }
 
+            //check if class  exist
+            var clas = _classRepo.GetAll().Where(x => x.Name == model.Name).FirstOrDefaultAsync();
+
+            if (!(clas is null))
+            {
+                result.AddError("Duplicate class not allowed");
+                return result;
+            }
+
+
             //todo: add more props
             var classList = new List<SchoolClass>();
 
