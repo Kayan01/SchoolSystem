@@ -12,8 +12,9 @@ namespace LearningSvc.Core.Models
         public long TenantId { get; set; }
         public long? ClassId { get; set; }
         public StudentStatusInSchool StudentStatusInSchool { get; set; }
-        public long ParentId { get; set; }
-        public Parent Parent { get; set; }
+        public long? ParentId { get; set; }
+        public string ParentName { get; set; }
+        public string ParentEmail { get; set; }
 
         public SchoolClass Class { get; set; }
         public ICollection<AssignmentAnswer> AssignmentAnswers { get; set; }
