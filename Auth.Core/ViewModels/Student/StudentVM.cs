@@ -31,8 +31,11 @@ namespace Auth.Core.ViewModels.Student
         public string StudentType { get; set; }
         public DateTime AdmissionDate { get; set; }
         public string Level { get; set; }
+        public string EntryType { get; set; }
+        public long SectionId { get; set; }
         public string Section { get; set; }
         public string Class => SchoolClass?.FullName;
+        public long? ClassId => SchoolClass?.Id;
 
         [System.Text.Json.Serialization.JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
@@ -52,6 +55,7 @@ namespace Auth.Core.ViewModels.Student
         public long Id { get; set; }
         public string RegNumber { get; internal set; }
         public bool IsActive { get; set; }
+        public bool Disability { get; set; }
     }
 
     public class ImmunizationHistoryVM
