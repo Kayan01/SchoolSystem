@@ -52,7 +52,7 @@ namespace Auth.Core.Test.Services.ClassTest
             //Assert
 
             Assert.That(AddClass.ErrorMessages.Count == 0);
-            Assert.That(AddClass.Data == true);
+            Assert.That(AddClass.Data.Contains("Processed Successfully"));
         }
 
         private School AddSchoolData()

@@ -41,9 +41,9 @@ namespace Auth.Core.Services
             _publishService = publishService;
         }
 
-        public async Task<ResultModel<bool>> AddClass(AddClassVM model)
+        public async Task<ResultModel<string>> AddClass(AddClassVM model)
         {
-            var result = new ResultModel<bool>();
+            var result = new ResultModel<string>();
 
             //check if section exists
             var schoolSection = await _schoolSectionsRepo.FirstOrDefaultAsync(model.SectionId);
@@ -62,39 +62,38 @@ namespace Auth.Core.Services
                 return result;
             }
 
-            //check if class  exist
-            var clas = _classRepo.GetAll().Where(x => x.Name == model.Name).FirstOrDefaultAsync();
-
-            if (!(clas is null))
-            {
-                result.AddError("Duplicate class not allowed");
-                return result;
-            }
-
+            //Get all existing class with current classname
+            var classes = await _classRepo.GetAll().Where(x => x.Name == model.Name.ToUpper()).ToListAsync();
 
             //todo: add more props
             var classList = new List<SchoolClass>();
 
             foreach (var arm in classArms)
             {
-                classList.Add(new SchoolClass
+                if (!classes.Any(m=>m.ClassArm == arm.Name))
                 {
-                    ClassArm = arm.Name,
-                    Name = model.Name,
-                    SchoolSectionId = model.SectionId,
-                    IsActive = model.Status,
-                    TenantId = schoolSection.TenantId,
-                    Sequence = model.Sequence,
-                    IsTerminalClass = model.IsTerminalClass
-                });
-
+                    classList.Add(new SchoolClass
+                    {
+                        ClassArm = arm.Name,
+                        Name = model.Name.ToUpper(),
+                        SchoolSectionId = model.SectionId,
+                        IsActive = model.Status,
+                        TenantId = schoolSection.TenantId,
+                        Sequence = model.Sequence,
+                        IsTerminalClass = model.IsTerminalClass
+                    });
+                }
+                else
+                {
+                    result.Data += $"Could not add class \"{model.Name.ToUpper()} {arm.Name}\" bacause it already exists. \n";
+                }
             }
             schoolSection.Classes = classList;
 
             _schoolSectionsRepo.Update(schoolSection);
 
             await _unitOfWork.SaveChangesAsync();
-            result.Data = true;
+            result.Data += "\n Processed Successfully.";
 
             //PublishMessage for all classes
             //classList.Select(x => _publishService.PublishMessage(Topics.Class, BusMessageTypes.CLASS, new ClassSharedModel
@@ -109,7 +108,7 @@ namespace Auth.Core.Services
             {
                 ClassArm = x.ClassArm,
                 Id = x.Id,
-                Name = x.Name,
+                Name = x.Name.ToUpper(),
                 TenantId = x.TenantId,
                 IsTerminalClass = x.IsTerminalClass,
                 Sequence = x.Sequence
@@ -323,7 +322,7 @@ namespace Auth.Core.Services
             }
 
             //TODO: add more props
-            @class.Name = model.Name;
+            @class.Name = model.Name.ToUpper();
             @class.Sequence = model.Sequence;
             @class.IsTerminalClass = model.IsTerminalClass;
 
@@ -335,7 +334,7 @@ namespace Auth.Core.Services
                 {
                     ClassArm = @class.ClassArm,
                     Id = @class.Id,
-                    Name = @class.Name,
+                    Name = @class.Name.ToUpper(),
                     TenantId = @class.TenantId,
                     IsTerminalClass = @class.IsTerminalClass,
                     Sequence = @class.Sequence

@@ -88,7 +88,6 @@ namespace LearningSvc.Core.Test.Setup
             services.AddScoped<IClassSubjectService, ClassSubjectService>();
             services.AddScoped<ISchoolClassService, SchoolClassService>();
             services.AddScoped<IStudentService, StudentService>();
-            services.AddScoped<IParentService, ParentService>();
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ITeacherService, TeacherService>();
             services.AddScoped<ISchoolService, SchoolService>();

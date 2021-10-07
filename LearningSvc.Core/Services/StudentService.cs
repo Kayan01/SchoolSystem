@@ -44,6 +44,8 @@ namespace LearningSvc.Core.Services
                 student.LastName = string.IsNullOrEmpty(model.LastName) ? student.LastName : model.LastName;
                 student.Email = string.IsNullOrEmpty(model.Email) ? student.Email : model.Email;
                 student.Phone = string.IsNullOrEmpty(model.Phone) ? student.Phone : model.Phone;
+                student.ParentEmail = string.IsNullOrEmpty(model.ParentEmail) ? student.ParentEmail : model.ParentEmail;
+                student.ParentName = string.IsNullOrEmpty(model.ParentName) ? student.ParentName : model.ParentName;
                 student.ParentId = model.ParentId == 0 ? student.ParentId : model.ParentId;
                 student.UserId = model.UserId;
                 student.IsActive = model.IsActive;
