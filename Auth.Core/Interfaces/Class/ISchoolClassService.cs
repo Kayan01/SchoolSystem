@@ -8,7 +8,7 @@ namespace Auth.Core.Services.Interfaces
 {
     public interface ISchoolClassService
     {
-        Task<ResultModel<bool>> AddClass(AddClassVM model);
+        Task<ResultModel<string>> AddClass(AddClassVM model);
 
         Task<ResultModel<string>> AddStudentToClass(ClassStudentVM vm);
 

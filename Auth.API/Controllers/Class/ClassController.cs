@@ -29,7 +29,7 @@ namespace UserManagement.API.Controllers
 
         [HttpPost]
         //[Authorize]
-        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> AddClass([FromBody]AddClassVM model)
         {
             if (!ModelState.IsValid)
@@ -39,7 +39,7 @@ namespace UserManagement.API.Controllers
 
             try
             {
-            var result = await _classService.AddClass(model);
+                var result = await _classService.AddClass(model);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
