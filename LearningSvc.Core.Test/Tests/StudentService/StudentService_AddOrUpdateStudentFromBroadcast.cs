@@ -29,14 +29,7 @@ namespace LearningSvc.Core.Test.Tests.StudentService
                     Name = "SS1"
                 };
 
-                var Parent = new Parent()
-                {
-                    Id = 1,
-                    FirstName = "Parent",
-                };
-
                 context.Add(Class);
-                context.Add(Parent);
                 context.SaveChanges();
 
                 var newStudent = new StudentSharedModel()
@@ -45,6 +38,7 @@ namespace LearningSvc.Core.Test.Tests.StudentService
                     FirstName = "firstname",
                     Id = 1,
                     ParentId = 1,
+                    ParentName = "Parent",
                     ClassId = 1
                 };
 
@@ -76,11 +70,6 @@ namespace LearningSvc.Core.Test.Tests.StudentService
                         Id = 1,
                         ClassArm = "primary",
                         Name = "SS1"
-                    },
-                    Parent = new Parent()
-                    {
-                        Id = 1,
-                        FirstName = "Parent",
                     }
                 };
                 context.Add(oldStudent);

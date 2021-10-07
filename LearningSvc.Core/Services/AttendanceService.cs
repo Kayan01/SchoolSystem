@@ -21,7 +21,6 @@ namespace LearningSvc.Core.Services
         private readonly IRepository<AttendanceSubject, long> _subjectAttendanceRepo;
         private readonly IRepository<AttendanceClass, long> _classAttendanceRepo;
         private readonly IRepository<Student, long> _studentRepository;
-        private readonly IRepository<Parent, long> _parentRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPublishService _publishService;
 
@@ -29,7 +28,6 @@ namespace LearningSvc.Core.Services
             IRepository<AttendanceSubject, long> subjectAttendanceRepo,
             IRepository<AttendanceClass, long> classAttendanceRepo,
             IRepository<Student, long> studentRepository,
-            IRepository<Parent, long> parentRepository,
             IPublishService publishService,
             IUnitOfWork unitOfWork
             )
@@ -38,7 +36,6 @@ namespace LearningSvc.Core.Services
             _subjectAttendanceRepo = subjectAttendanceRepo;
             _studentRepository = studentRepository;
             _publishService = publishService;
-            _parentRepository = parentRepository;
             _unitOfWork = unitOfWork;
         }
         public async Task<ResultModel<string>> AddAttendanceForClass(AddClassAttendanceVM model)
@@ -285,7 +282,12 @@ namespace LearningSvc.Core.Services
         {
             var data = await _studentRepository.GetAll()
                 .Where(x => studentIds.Contains(x.Id))
-                .Select(x => new { ParentFullName = x.Parent.FullName, StudentFullName = x.FirstName + x.LastName, x.RegNumber })
+                .Select(x => new { 
+                    ParentFullName = x.ParentName, 
+                    x.ParentId,
+                    x.ParentEmail,
+                    StudentFullName = $"{x.FirstName} {x.LastName}",
+                    x.RegNumber })
                 .ToListAsync();
 
             var emaildata = new List<CreateEmailModel>();
@@ -293,6 +295,7 @@ namespace LearningSvc.Core.Services
             {
                 emaildata.Add(new CreateEmailModel
                 {
+                    User = new UserVM() { FullName = item.ParentFullName, Email = item.ParentEmail, Id = item.ParentId ?? 0},
                     EmailTemplateType = EmailTemplateType.AttendanceReport,
                     ReplacementData = new Dictionary<string, string>
                     {

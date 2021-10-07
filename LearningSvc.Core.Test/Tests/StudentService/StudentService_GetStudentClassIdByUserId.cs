@@ -31,11 +31,6 @@ namespace LearningSvc.Core.Test.Tests.StudentService
                         Id = 1,
                         ClassArm = "primary",
                         Name = "SS1"
-                    },
-                    Parent = new Parent()
-                    {
-                        Id = 1,
-                        FirstName = "Parent",
                     }
                 };
 
@@ -67,11 +62,6 @@ namespace LearningSvc.Core.Test.Tests.StudentService
                         Id = 1,
                         ClassArm = "primary",
                         Name = "SS1"
-                    },
-                    Parent = new Parent()
-                    {
-                        Id = 1,
-                        FirstName = "Parent",
                     }
                 };
 
