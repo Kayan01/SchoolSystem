@@ -88,7 +88,8 @@ namespace Auth.Core.Services
                     result.Data += $"Could not add class \"{model.Name.ToUpper()} {arm.Name}\" bacause it already exists. \n";
                 }
             }
-            schoolSection.Classes = classList;
+            schoolSection.Classes ??= new List<SchoolClass>();
+            schoolSection.Classes.AddRange(classList);
 
             _schoolSectionsRepo.Update(schoolSection);
 
