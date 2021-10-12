@@ -31,12 +31,14 @@ namespace Auth.Core.ViewModels.Student
         public string StudentType { get; set; }
         public DateTime AdmissionDate { get; set; }
         public string Level { get; set; }
-        public string EntryType { get; set; }
+        public string EntryType { get; set; }        
         public long SectionId { get; set; }
         public string Section { get; set; }
         public string Class => SchoolClass?.FullName;
         public long? ClassId => SchoolClass?.Id;
 
+        public long? SchoolSectionid => SchoolClass?.SchoolSectionId;
+        
         [System.Text.Json.Serialization.JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
         public Models.SchoolClass SchoolClass { get; set; }
