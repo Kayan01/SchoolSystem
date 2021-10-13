@@ -200,7 +200,7 @@ namespace Auth.API.Controllers.Users
         public async Task<IActionResult> BulkAddTeacher([FromForm] IFormFile file)
         {
             if (file == null)
-                return ApiResponse<string>(errors: "No fie Uploaded");
+                return ApiResponse<string>(errors: "No file Uploaded");
 
             if (!ModelState.IsValid)
                 return ApiResponse<Object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
