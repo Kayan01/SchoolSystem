@@ -879,37 +879,29 @@ namespace Auth.Core.Services
                 {
                     return new ResultModel<bool>(emailResult.ErrorMessages);
                 }
-            //}
+                students.Add(student);
+            }
 
             _unitOfWork.Commit();
 
-            students.Add(student);
-
-            foreach (var singlestudent in students)
+            foreach (var student in students)
             {
                 //publish to services
                 await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>
                 { new StudentSharedModel
                     {
-                        Id = singlestudent.Id,
+                        Id = student.Id,
                         IsActive = true,
-                        FirstName = model.FirstName,
-                        LastName = model.LastName,
-                        ClassId = singlestudent.ClassId,
-                        Email = model.ContactEmail,
-                        Phone = model.ContactPhone,
-                        TenantId = singlestudent.TenantId,
-                        UserId = existingUser?.Id ?? user.Id,
-                        DoB = model.DateOfBirth,
-                        Sex = model.Sex,
-                        RegNumber = singlestudent.RegNumber,
-                        StudentStatusInSchool = singlestudent.StudentStatusInSchool,
+                        ClassId = student.ClassId,
+                        TenantId = student.TenantId,
+                        UserId = student.UserId,
+                        DoB = student.DateOfBirth,
+                        Sex = student.Sex,
+                        RegNumber = student.RegNumber,
+                        StudentStatusInSchool = student.StudentStatusInSchool,
                     }
-
-
                 });
             }
-        }
             result.Data = true;
 
             return result;
