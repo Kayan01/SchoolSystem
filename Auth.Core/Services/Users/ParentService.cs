@@ -100,38 +100,54 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParentsInSchool(QueryModel vm)
+        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParentsInSchool(long schoolId,QueryModel vm)
         {
 
             var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
 
-            var query =  await _studentRepo.GetAll()
-                .Include(x => x.Parent)
+            var query = await _parentRepo.GetAll().Where(x => x.Students.Any(n => n.TenantId == schoolId))
                 .Select(x => new
                 {
-                    Email = x.Parent.User.Email,
-                    FullName = x.Parent.User.FullName,
-                    Id = x.ParentId,
-                    ParentCode = $"PRT/{x.Parent.CreationTime.Year}/{x.Parent.Id}",
-                    PhoneNumber = x.Parent.User.PhoneNumber,
-                    Status = x.Parent.Status,
-                    Image = x.Parent.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                    Email = x.User.Email,
+                    FullName = x.User.FullName,
+                    Id = x.Id,
+                    ParentCreationYear = x.CreationTime.Year,
+                    PhoneNumber = x.User.PhoneNumber,
+                    Status = x.Status,
+                    Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
                 }).ToListAsync();
 
-            var parents = query.GroupBy(x => x.Id).Select(x => new ParentListVM
+            //var query = await _studentRepo.GetAll()
+            //    .Select(x => new
+            //    {
+            //        Email = x.Parent.User.Email,
+            //        FullName = x.Parent.User.FullName,
+            //        Id = x.ParentId,
+            //        ParentCreationYear = x.Parent.CreationTime.Year,
+            //        PhoneNumber = x.Parent.User.PhoneNumber,
+            //        Status = x.Parent.Status,
+            //        Image = x.Parent.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+            //    })
+            //     .ToListAsync();
+
+            if (query != null)
             {
-                Email = x.FirstOrDefault()?.Email,
-                FullName = x.FirstOrDefault()?.FullName,
-                ParentCode = x.FirstOrDefault()?.ParentCode,
-                Id = x.FirstOrDefault().Id.Value,
-                PhoneNumber = x.FirstOrDefault()?.PhoneNumber,
-                Status = x.FirstOrDefault().Status,
-                Image = x.FirstOrDefault().Image == null ? null : _documentService.TryGetUploadedFile(x.FirstOrDefault().Image),
-            }).ToPagedList(vm.PageIndex, vm.PageSize);
+                var parents = query.Select(x => new ParentListVM
+                {
+                    Email = x.Email,
+                    FullName = x.FullName,
+                    ParentCode = $"PRT/{x.ParentCreationYear}/{x.Id}",
+                    Id = x.Id,
+                    PhoneNumber = x.PhoneNumber,
+                    Status = x.Status,
+                    Image = x.Image == null ? null : _documentService.TryGetUploadedFile(x.Image),
+                }).ToPagedList(vm.PageIndex, vm.PageSize);
 
-            var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, parents.Count);
+                var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, parents.Count);
+                resultModel.Data = data;
 
-            resultModel.Data = data;
+                return resultModel;
+            }
 
             return resultModel;
         }

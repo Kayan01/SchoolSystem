@@ -52,9 +52,9 @@ namespace Auth.API.Controllers.Users
 
         }
 
-        [HttpGet]
+        [HttpGet("{schoolid}")]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<ParentListVM>>), 200)]
-        public async Task<IActionResult> GetAllParentsInSchool(QueryModel model)
+        public async Task<IActionResult> GetAllParentsInSchool(long schoolid, QueryModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -64,7 +64,7 @@ namespace Auth.API.Controllers.Users
 
             try
             {
-                var result = await _parentService.GetAllParentsInSchool(model);
+                var result = await _parentService.GetAllParentsInSchool(schoolid,model);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
