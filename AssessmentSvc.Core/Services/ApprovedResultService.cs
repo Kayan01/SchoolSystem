@@ -355,7 +355,7 @@ namespace AssessmentSvc.Core.Services
             //get current term
             //get results for current term
             var result = new ResultModel<List<ResultBroadSheet>>();
-            var sessionResult = await _sessionService.GetCurrentSchoolSession();
+            var sessionResult = await _sessionService.GetCurrentSessionAndTerm();
 
             if (sessionResult.HasError)
             {
@@ -364,17 +364,10 @@ namespace AssessmentSvc.Core.Services
 
             var currSession = sessionResult.Data;
 
-            var currTermSequence = currSession.Terms.FirstOrDefault(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now)?.SequenceNumber;
-
-            if (currTermSequence == null)
-            {
-                result.AddError("Current term date has expired or its not setup");
-            }
-
             var query = _resultRepo.GetAll()
-                 .Where(x => x.SessionSetupId == currSession.Id &&
+                 .Where(x => x.SessionSetupId == currSession.sessionId &&
                     x.SchoolClassId == classId &&
-                    x.TermSequenceNumber == currTermSequence &&
+                    x.TermSequenceNumber == currSession.TermSequence &&
                     x.ApprovedResult.ClassTeacherApprovalStatus == Enumeration.ApprovalStatus.Approved
                     )
                  .Select(x => new
