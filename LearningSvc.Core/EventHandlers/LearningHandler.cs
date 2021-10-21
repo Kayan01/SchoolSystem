@@ -60,8 +60,10 @@ namespace LearningSvc.Core.EventHandlers
         {
             try
             {
+                _logger.LogInformation("Class added event: \n" + message.Data);
                 var data = JsonConvert.DeserializeObject<List<ClassSharedModel>>(message.Data);
                 _schoolClassService.AddOrUpdateClassFromBroadcast(data);
+                _logger.LogInformation("Class added successfully");
             }
             catch (Exception e)
             {

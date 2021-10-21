@@ -131,6 +131,28 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<List<TimeTableCellVM>>), 200)]
+        public async Task<IActionResult> AddTimetableCells([FromBody] List<TimeTableCellInsertVM> model)
+        {
+            if (model == null)
+                return ApiResponse<List<TimeTableCellVM>>(errors: "Empty payload");
+
+            if (!ModelState.IsValid)
+                return ApiResponse<List<TimeTableCellVM>>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _timeTableService.AddTimeTableCells(model);
+
+                return ApiResponse<List<TimeTableCellVM>>(message: "Successful", errors:result.ErrorMessages.ToArray(), codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<ClassSessionOutputVM>>), 200)]
         public async Task<IActionResult> GetAllClassesForTeacherByDay(WeekDays day)

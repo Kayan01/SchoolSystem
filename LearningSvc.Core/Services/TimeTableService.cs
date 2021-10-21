@@ -326,6 +326,92 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
+        public async Task<ResultModel<List<TimeTableCellVM>>> AddTimeTableCells(List<TimeTableCellInsertVM> models)
+        {
+            var result = new ResultModel<List<TimeTableCellVM>>();
+
+            var teacherClassSubjects = await _teacherClassSubjectRepo.GetAll().Where(m=> models.Select(n=> n.TeacherClassSubjectId).Contains(m.Id)).Select(o=> new { 
+                o.TeacherId,
+                Name = $"{o.Teacher.LastName} {o.Teacher.FirstName}",
+                o.Id
+            })
+                .AsNoTracking().ToListAsync();
+
+            var periods = await _periodRepo.GetAll().Where(m => models.Select(n => n.PeriodId).Contains(m.Id)).AsNoTracking().ToListAsync();
+
+            var cells = new List<TimeTableCell>();
+
+            foreach (var model in models)
+            {
+                var teacherClassSubject = teacherClassSubjects.FirstOrDefault(m => m.Id == model.TeacherClassSubjectId);
+                if (teacherClassSubject == null)
+                {
+                    result.AddError($"Invaild TeacherClassSubjectId : {model.TeacherClassSubjectId}.");
+                    continue;
+                }
+
+                var period = periods.FirstOrDefault(m=> m.Id == model.PeriodId);
+                if (period == null)
+                {
+                    result.AddError($"Invaild PeriodId : {model.PeriodId}.");
+                    continue;
+                }
+
+                var checkTeacherHasOtherClassForPeriod = await _timeTableRepo.GetAll()
+                    .Where(m => m.TeacherClassSubject.TeacherId == teacherClassSubject.TeacherId &&
+                    m.PeriodId == period.Id &&
+                    m.Day == model.Day)
+                    .FirstOrDefaultAsync();
+
+                if (checkTeacherHasOtherClassForPeriod != null)
+                {
+                    result.AddError($"Teacher ({teacherClassSubject.Name}) has another class for this period.");
+                    continue;
+                }
+
+                cells.Add( new TimeTableCell
+                {
+                    Day = model.Day,
+                    HasVirtual = model.HasVirtual,
+                    NoOfPeriod = 1,
+                    PeriodId = model.PeriodId,
+                    TeacherClassSubjectId = model.TeacherClassSubjectId,
+                });
+            }
+
+            var ids = new List<long>();
+
+            foreach (var item in cells)
+            {
+                ids.Add(await _timeTableRepo.InsertAndGetIdAsync(item));
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            result.Data = await _timeTableRepo.GetAll().Where(m => ids.Contains(m.Id))
+                .Select(x => new TimeTableCellVM
+                {
+                    Id = x.Id,
+                    PeriodId = x.PeriodId,
+                    PeriodName = x.Period.Name,
+                    Day = x.Day,
+                    TeacherClassSubjectId = x.TeacherClassSubjectId,
+                    TeacherId = x.TeacherClassSubject.TeacherId,
+                    TeacherName = $"{x.TeacherClassSubject.Teacher.FirstName} {x.TeacherClassSubject.Teacher.LastName}",
+                    SubjectId = x.TeacherClassSubject.SchoolClassSubject.SubjectId,
+                    SubjectName = x.TeacherClassSubject.SchoolClassSubject.Subject.Name,
+                    SchoolClassId = x.TeacherClassSubject.SchoolClassSubject.SchoolClassId,
+                    ClassName = $"{x.TeacherClassSubject.SchoolClassSubject.SchoolClass.Name} {x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ClassArm}",
+                    NoOfPeriod = x.NoOfPeriod,
+                    HasVirtual = x.HasVirtual,
+                    ZoomId = x.TeacherClassSubject.SchoolClassSubject.SchoolClass.ZoomRoomId,
+
+                }).ToListAsync();
+            
+
+            return result;
+        }
+
         public async Task<ResultModel<string>> DeleteTimeTableCell(long TimeTableCellId)
         {
             var result = new ResultModel<string>();

@@ -400,7 +400,9 @@ namespace Auth.Core.Services.Users
             var seperator = schoolProperty.Data.Seperator;
             if (!string.IsNullOrWhiteSpace(lastRegNumber))
             {
-                lastNumber = int.Parse(lastRegNumber.Split(seperator).Last());
+                var rtn = int.TryParse(lastRegNumber.Split(seperator).Last(), out var num);
+
+                lastNumber = rtn ? num : 0;
             }
             var nextNumber = lastNumber;
             var firstTime = true;

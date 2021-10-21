@@ -55,7 +55,9 @@ namespace LearningSvc.API
             services.AddSingleton<IConsumerClient<BusMessage>>(service =>
             {
                 var env = service.GetRequiredService<IWebHostEnvironment>();
+                var logger = service.GetRequiredService<ILogger<BusMessage>>();
                 var consumerClient = new ConsumerClient<BusMessage>(env, Configuration);
+                logger.LogInformation("Consumer registered");
                 return consumerClient;
             });
 
@@ -101,6 +103,7 @@ namespace LearningSvc.API
                                     break;
                                 }
                         }
+                        logger.LogInformation("Event handler registered");
                     }
                     catch (Exception e)
                     {

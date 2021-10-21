@@ -13,6 +13,7 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<List<PeriodVM>>> SetupSchoolPeriods(List<PeriodInsertVM> model);
         Task<ResultModel<List<PeriodVM>>> GetAllPeriodForSchool();
         Task<ResultModel<TimeTableCellVM>> AddTimeTableCell(TimeTableCellInsertVM model);
+        Task<ResultModel<List<TimeTableCellVM>>> AddTimeTableCells(List<TimeTableCellInsertVM> models);
         Task<ResultModel<string>> DeleteTimeTableCell(long TimeTableCellId);
         Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForTeacher(long currentUserId);
         Task<ResultModel<List<TimeTableCellVM>>> GetTimeTableCellsForClass(long classId);
