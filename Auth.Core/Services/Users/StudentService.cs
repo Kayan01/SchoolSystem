@@ -212,14 +212,7 @@ namespace Auth.Core.Services
             await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
             await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
-            
-            var medicalHistory = new MedicalDetail {
-                Allergies = model.Allergies,
-                BloodGroup = model.BloodGroup,
-                ConfidentialNotes = model.ConfidentialNotes,
-                Disability = model.Disability,
-                Genotype = model.Genotype
-            };
+           
             var immunizations = new List<ImmunizationHistory>();
 
             foreach (var im in model.ImmunizationVms)
@@ -232,7 +225,15 @@ namespace Auth.Core.Services
                 });
             }
 
-            medicalHistory.ImmunizationHistories = immunizations;
+            var medicalHistory = new MedicalDetail {
+                Allergies = model.Allergies,
+                BloodGroup = model.BloodGroup,
+                ConfidentialNotes = model.ConfidentialNotes,
+                Disability = model.Disability,
+                Genotype = model.Genotype,
+                ImmunizationHistories = immunizations
+            };
+           // medicalHistory.ImmunizationHistories = immunizations;
 
             var stud = new Student
             {
