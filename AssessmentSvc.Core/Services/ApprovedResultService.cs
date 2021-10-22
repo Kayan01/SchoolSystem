@@ -94,7 +94,7 @@ namespace AssessmentSvc.Core.Services
         {
             var result = new ResultModel<string>();
 
-            var sessionResult = await _sessionService.GetCurrentSchoolSession();
+            var sessionResult = await _sessionService.GetCurrentSessionAndTerm();
 
             if (sessionResult.HasError)
             {
@@ -108,17 +108,9 @@ namespace AssessmentSvc.Core.Services
 
             var currSession = sessionResult.Data;
 
-            var currTermSequence = currSession.Terms.FirstOrDefault(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now)?.SequenceNumber;
-
-            if (currTermSequence == null)
-            {
-                result.AddError("Current term date has expired or its not setup");
-            }
-
-
             //fetch results
             var studResults = await _resultRepo.GetAll()
-                .Where(x => x.SessionSetupId == currSession.Id && x.TermSequenceNumber == currTermSequence && x.StudentId == vm.StudentId)
+                .Where(x => x.SessionSetupId == currSession.sessionId && x.TermSequenceNumber == currSession.TermSequence && x.StudentId == vm.StudentId)
                 .ToListAsync();
 
             if (studResults.Count < 1)
@@ -128,7 +120,7 @@ namespace AssessmentSvc.Core.Services
             }
 
             //check if result has been sent for approval
-            var oldApprovedResult = await _approvedResultRepo.GetAll().Where(x => x.StudentId == vm.StudentId && x.SessionId == currSession.Id && x.TermSequence == currTermSequence).FirstOrDefaultAsync();
+            var oldApprovedResult = await _approvedResultRepo.GetAll().Where(x => x.StudentId == vm.StudentId && x.SessionId == currSession.sessionId && x.TermSequence == currSession.TermSequence).FirstOrDefaultAsync();
 
             //update record if it exist
             if (oldApprovedResult != null)
@@ -137,8 +129,8 @@ namespace AssessmentSvc.Core.Services
                 oldApprovedResult.HeadTeacherComment = vm.HeadTeacherComment;
                 oldApprovedResult.Results = studResults;
                 oldApprovedResult.SchoolClassId = vm.ClassId;
-                oldApprovedResult.SessionId = currSession.Id;
-                oldApprovedResult.TermSequence = currTermSequence.Value;
+                oldApprovedResult.SessionId = currSession.sessionId;
+                oldApprovedResult.TermSequence = currSession.TermSequence;
                 oldApprovedResult.StudentId = vm.StudentId;
                 oldApprovedResult.ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus;
                 oldApprovedResult.SchoolAdminApprovalStatus = vm.AdminApprovalStatus;
@@ -156,8 +148,8 @@ namespace AssessmentSvc.Core.Services
                     HeadTeacherComment = vm.HeadTeacherComment,
                     Results = studResults,
                     SchoolClassId = vm.ClassId,
-                    SessionId = currSession.Id,
-                    TermSequence = currTermSequence.Value,
+                    SessionId = currSession.sessionId,
+                    TermSequence = currSession.TermSequence,
                     StudentId = vm.StudentId,
                     ClassTeacherApprovalStatus = vm.ClassTeacherApprovalStatus,
                     SchoolAdminApprovalStatus = vm.AdminApprovalStatus,
