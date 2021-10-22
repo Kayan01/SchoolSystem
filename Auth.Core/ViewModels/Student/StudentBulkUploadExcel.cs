@@ -59,7 +59,7 @@ namespace Auth.Core.ViewModels.Student
         public string Allergies { get; set; }
         [ExcelReaderCell]
         public string ConfidentialNotes { get; set; }
-        [ExcelReaderCell]
+        
         public string RegNumber { get; set; }
         public List<ImmunizationVm> ImmunizationVms { get; set; } = new List<ImmunizationVm>();
         public bool IsActive { get; set; } = true;

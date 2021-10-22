@@ -212,14 +212,7 @@ namespace Auth.Core.Services
             await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
             await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
-            
-            var medicalHistory = new MedicalDetail {
-                Allergies = model.Allergies,
-                BloodGroup = model.BloodGroup,
-                ConfidentialNotes = model.ConfidentialNotes,
-                Disability = model.Disability,
-                Genotype = model.Genotype
-            };
+           
             var immunizations = new List<ImmunizationHistory>();
 
             foreach (var im in model.ImmunizationVms)
@@ -232,7 +225,15 @@ namespace Auth.Core.Services
                 });
             }
 
-            medicalHistory.ImmunizationHistories = immunizations;
+            var medicalHistory = new MedicalDetail {
+                Allergies = model.Allergies,
+                BloodGroup = model.BloodGroup,
+                ConfidentialNotes = model.ConfidentialNotes,
+                Disability = model.Disability,
+                Genotype = model.Genotype,
+                ImmunizationHistories = immunizations
+            };
+           // medicalHistory.ImmunizationHistories = immunizations;
 
             var stud = new Student
             {
@@ -409,13 +410,14 @@ namespace Auth.Core.Services
                             x.ParentId,
                             x.Nationality,
                             x.Religion,
+                            SchoolSectionid = x.Class.SchoolSectionId,
                             x.LocalGovernment,
                             x.StateOfOrigin,
                             x.EntryType,
                             x.AdmissionDate,
                             x.Level,
-                           SchoolClass = x.Class,
-                            SchoolSection =  x.Class.SchoolSection.Name,
+                            SchoolClass = x.Class,
+                            Section = x.Class.SchoolSection.Name,
                             x.StudentType,
                             x.MedicalDetail.BloodGroup,
                             x.MedicalDetail.Genotype,
@@ -444,14 +446,15 @@ namespace Auth.Core.Services
             {
                 sb.AppendLine($"{item.DateImmunized} {item.Vaccine}");
             }
-            result.Data = new StudentDetailVM
+
+            var data = new StudentDetailVM()
             {
                 StudentType = std.StudentType.GetDisplayName(),
                 StateOfOrigin = std.StateOfOrigin,
                 State = std.State,
                 Sex = std.Sex,
                 RegNumber = std.RegNumber,
-                Section = std.SchoolSection,
+                Section = std.Section,
                 AdmissionDate = std.AdmissionDate,
                 Allergies = std.Allergies,
                 Disability = std.Disability,
@@ -468,7 +471,7 @@ namespace Auth.Core.Services
                 Id = std.Id,
                 Level = std.Level,
                 EntryType = std.EntryType,
-                SectionId = std.SchoolClass.SchoolSectionId,
+                SectionId = std.SchoolSectionid,
                 ParentId = std.ParentId,
                 Image = _documentService.TryGetUploadedFile(std.image?.Path),
                 ImmunizationHistoryVMs = std.Immunization.Select(x=> new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine}).ToList(),
@@ -483,6 +486,8 @@ namespace Auth.Core.Services
                 IsActive = std.IsActive
 
             };
+
+            result.Data = data;
             return result;
         }
 
@@ -816,7 +821,21 @@ namespace Auth.Core.Services
                     return result;
                 }
 
+                //Add TenantId to UserClaims
+                await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+                //add stafftype to claims
+                await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
+
+                var medicalHistory = new MedicalDetail
+                {
+                    Allergies = model.Allergies,
+                    BloodGroup = model.BloodGroup,
+                    ConfidentialNotes = model.ConfidentialNotes,
+                    Disability = model.Disability,
+                    Genotype = model.Genotype
+                };
                 //todo : add more props
+
                 var student = new Student
                 {
                     UserId = existingUser?.Id ?? user.Id,
@@ -824,12 +843,20 @@ namespace Auth.Core.Services
                     Address = model.ContactAddress,
                     TransportRoute = model.TransportRoute,
                     Town = model.ContactTown,
+                    Country = model.ContactCountry,
                     Nationality = model.Nationality,
-                    RegNumber = model.RegNumber, 
                     Religion = model.Religion,
                     EntryType = model.EntryType,
                     StudentType = model.StudentType,
                     AdmissionDate = model.AdmissionDate,
+                    IsActive = true,
+                    StateOfOrigin = model.StateOfOrigin,
+                    LocalGovernment = model.LocalGovt,
+                    Sex = model.Sex,
+                    DateOfBirth = model.DateOfBirth,
+                    MothersMaidenName = model.MothersMaidenName,
+                    StudentStatusInSchool = StudentStatusInSchool.IsStudent,
+                    MedicalDetail = medicalHistory
                 };
 
                 student = await SaveStudentWithSystemRegNumber(student, schoolProperty.Data.Seperator, schoolProperty.Data.Prefix);
@@ -842,7 +869,7 @@ namespace Auth.Core.Services
                 //add classId to claims
                 await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, student.ClassId.ToString()));
 
-              
+
                 var school = await _schoolRepo.GetAll()
                                               .Where(m => m.Id == student.TenantId)
                                               .FirstOrDefaultAsync();
@@ -853,22 +880,27 @@ namespace Auth.Core.Services
                 {
                     return new ResultModel<bool>(emailResult.ErrorMessages);
                 }
+                students.Add(student);
             }
 
             _unitOfWork.Commit();
 
-            foreach(var student in students)
+            foreach (var student in students)
             {
                 //publish to services
-                await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new StudentSharedModel
-                {
-                    Id = student.Id,
-                    IsActive = student.IsActive,
-                    ClassId = student.ClassId,
-                    TenantId = student.TenantId,
-                    UserId = student.UserId,
-                    DoB = student.DateOfBirth,
-                    StudentStatusInSchool = student.StudentStatusInSchool,
+                await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>
+                { new StudentSharedModel
+                    {
+                        Id = student.Id,
+                        IsActive = true,
+                        ClassId = student.ClassId,
+                        TenantId = student.TenantId,
+                        UserId = student.UserId,
+                        DoB = student.DateOfBirth,
+                        Sex = student.Sex,
+                        RegNumber = student.RegNumber,
+                        StudentStatusInSchool = student.StudentStatusInSchool,
+                    }
                 });
             }
             result.Data = true;

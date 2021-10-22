@@ -697,6 +697,8 @@ namespace Auth.Core.Services
                     StaffType = StaffType.NonTeachingStaff
                 };
 
+                staffs.Add((staff));
+
                 //Adding the regNumber
                 var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
                 var lastNumber = 0;
