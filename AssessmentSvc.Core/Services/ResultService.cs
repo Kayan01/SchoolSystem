@@ -496,7 +496,7 @@ namespace AssessmentSvc.Core.Services
             }
 
 
-            var sessionResult = await _sessionService.GetCurrentSchoolSession();
+            var sessionResult = await _sessionService.GetCurrentSessionAndTerm();
 
             if (sessionResult.HasError)
             {
@@ -510,16 +510,8 @@ namespace AssessmentSvc.Core.Services
 
             var currSession = sessionResult.Data;
 
-            var currTermSequence = currSession.Terms.Where(x => x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now).FirstOrDefault()?.SequenceNumber;
-
-            if (currTermSequence == null)
-            {
-                result.AddError("Current term date has expired or its not setup");
-                return result;
-            }
-
             var classResults = await _resultRepo.GetAll()
-                .Where(x => x.SessionSetupId == currSession.Id && x.SchoolClassId == classId && x.TermSequenceNumber == currTermSequence)
+                .Where(x => x.SessionSetupId == currSession.sessionId && x.SchoolClassId == classId && x.TermSequenceNumber == currSession.TermSequence)
                 .Include(x=> x.Subject).Include(m=>m.ApprovedResult)
                 .ToListAsync();
 

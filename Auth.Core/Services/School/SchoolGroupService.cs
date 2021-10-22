@@ -147,19 +147,6 @@ namespace Auth.Core.Services
                 result.Message = sb.ToString();
             }
 
-            //Publish to services
-            await _publishService.PublishMessage(Topics.School, BusMessageTypes.SCHOOL, new SchoolSharedModel
-            {
-                Id = schGroup.Id,
-                IsActive = schGroup.IsActive,
-                Email = contactDetails.Email,
-                PhoneNumber = contactDetails.PhoneNumber,
-                WebsiteAddress = schGroup.WebsiteAddress,
-                Name = schGroup.Name,
-                Logo = schGroup.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName())?.Path
-            });
-
-
             result.Data = schGroup;
             return result;
 

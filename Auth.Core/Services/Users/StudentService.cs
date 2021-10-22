@@ -309,6 +309,7 @@ namespace Auth.Core.Services
                 FirstName =existingUser?.FirstName ?? user.FirstName,
                 LastName = existingUser?.LastName ?? user.LastName,
                 PhoneNumber = existingUser?.PhoneNumber ?? user.PhoneNumber,
+                DateOfBirth = stud.DateOfBirth,
                 Id = stud.Id,
                 UserId = stud.UserId
             };
