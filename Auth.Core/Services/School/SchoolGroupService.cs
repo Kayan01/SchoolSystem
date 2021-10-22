@@ -117,6 +117,7 @@ namespace Auth.Core.Services
                 PhoneNumber = model.ContactPhoneNo,
                 UserType = UserType.SchoolGroupManager,
             };
+
             var userResult = await _userManager.CreateAsync(user, model.ContactPhoneNo);
 
             if (!userResult.Succeeded)
@@ -136,7 +137,27 @@ namespace Auth.Core.Services
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.SchoolGroupManager.GetDescription()));
 
             //broadcast login detail to email
-            await _authUserManagement.SendRegistrationEmail(user, "");
+             var emailResult = await _authUserManagement.SendRegistrationEmail(user,"");
+
+            if (emailResult.HasError)
+            {
+                var sb = new StringBuilder();
+                _ = emailResult.ErrorMessages.Select(x => { sb.AppendLine(x); return x; }).ToList();
+
+                result.Message = sb.ToString();
+            }
+
+            //Publish to services
+            await _publishService.PublishMessage(Topics.School, BusMessageTypes.SCHOOL, new SchoolSharedModel
+            {
+                Id = schGroup.Id,
+                IsActive = schGroup.IsActive,
+                Email = contactDetails.Email,
+                PhoneNumber = contactDetails.PhoneNumber,
+                WebsiteAddress = schGroup.WebsiteAddress,
+                Name = schGroup.Name,
+                Logo = schGroup.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName())?.Path
+            });
 
 
             result.Data = schGroup;
