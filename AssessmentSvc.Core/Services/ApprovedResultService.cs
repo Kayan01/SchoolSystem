@@ -1039,7 +1039,7 @@ namespace AssessmentSvc.Core.Services
                 {
                     studentResult = schoolApprovedResultSummaries.FirstOrDefault(m => m.StudentId == classStudent.Id);
                     
-                    if (studentResult != null && studentResult.ResultApproved)
+                    if (studentResult != null && studentResult.ResultApproved == true)
                     {
                         allStudentApproved = true;
                     }
