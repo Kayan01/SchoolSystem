@@ -1053,7 +1053,7 @@ namespace AssessmentSvc.Core.Services
                 rtnData.Add(new ClassResultApprovalVM()
                 {
                     ClassName = $"{clas.Name} {clas.ClassArm}",
-                    isApproved = studentResult.ResultApproved,
+                    isApproved = allStudentApproved,
                     DateCreated = studentResult==null ? "" : studentResult.CreationTime.ToShortDateString()
                 } ) ;
             }
