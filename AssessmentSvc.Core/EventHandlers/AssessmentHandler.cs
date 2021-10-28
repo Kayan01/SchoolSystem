@@ -19,13 +19,15 @@ namespace AssessmentSvc.Core.EventHandlers
         private readonly ITeacherService _teacherService;
         private readonly ISubjectService _subjectService;
         private readonly ISchoolService _schoolService;
+        private readonly ISchoolClassSubjectService _schoolClassSubjectService;
 
         public AssessmentHandler(ILogger<AssessmentHandler> logger,
             ISchoolClassService schoolClassService,
             IStudentService studentService,
             ITeacherService teacherService,
             ISubjectService subjectService,
-            ISchoolService schoolService
+            ISchoolService schoolService,
+            ISchoolClassSubjectService schoolClassSubjectService
             )
         {
             _logger = logger;
@@ -34,6 +36,7 @@ namespace AssessmentSvc.Core.EventHandlers
             _schoolClassService = schoolClassService;
             _subjectService = subjectService;
             _schoolService = schoolService;
+            _schoolClassSubjectService = schoolClassSubjectService;
         }
 
         public async Task HandleAddOrUpdateStudentAsync(BusMessage message)
@@ -96,6 +99,18 @@ namespace AssessmentSvc.Core.EventHandlers
                 _schoolService.AddOrUpdateSchoolFromBroadcast(data);
             }
             catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+            }
+        }
+        public async Task HandleAddOrUpdateClassSubjectFromBroadcast(BusMessage message)
+        {
+            try
+            {
+                var data = JsonConvert.DeserializeObject<List<SchoolClassSubjectSharedModel>>(message.Data);
+                _schoolClassSubjectService.AddOrUpdateClassSubjectFromBroadcast(data);
+            }
+            catch(Exception e)
             {
                 _logger.LogError(e.Message, e);
             }
