@@ -102,6 +102,13 @@ namespace AssessmentSvc.API
                                     await handler.HandleAddOrUpdateSchoolAsync(message);
                                     break;
                                 }
+                            case (int)BusMessageTypes.CLASSSUBJECT:
+                            case (int)BusMessageTypes.CLASSSUBJECT_UPDATE:
+                            case (int)BusMessageTypes.CLASSSUBJECT_DELETE:
+                                {
+                                    await handler.HandleAddOrUpdateClassSubjectFromBroadcast(message);
+                                    break;
+                                }
                         }
                     }
                     catch (Exception e)
@@ -143,6 +150,7 @@ namespace AssessmentSvc.API
             services.AddScoped<IPromotionSetupService, PromotionSetupService>();
             services.AddScoped<IPromotionService, PromotionService>();
             services.AddScoped<IResultSummaryService, ResultSummaryService>();
+            services.AddScoped<ISchoolClassSubjectService, SchoolClassSubjectService>();
 
             services.AddScoped<IToPDF, ToPDF>();
 
