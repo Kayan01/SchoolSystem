@@ -43,28 +43,32 @@ namespace AssessmentSvc.Core.Services
             _publishService = publishService;
         }
 
-        public async Task<ResultModel<string>> PromoteAllStudent()
+        public async Task<ResultModel<PromotionSharedModel>> PromoteAllStudent()
         {
             var curSessionResult = await _sessionService.GetCurrentSessionAndTerm();
             if (curSessionResult.HasError)
             {
-                return new ResultModel<string>(curSessionResult.ErrorMessages);
+                //return new ResultModel<string>(curSessionResult.ErrorMessages);
+                return new ResultModel<PromotionSharedModel>(curSessionResult.ErrorMessages);
             }
             var currSession = curSessionResult.Data;
 
             var check = await _schoolPromotionLogRepo.GetAll().Where(m => m.SessionSetupId == currSession.sessionId).ToListAsync();
             if (check.Count > 0)
             {
-                return new ResultModel<string>("Promotion has already been done for this session. Promotion can not be done twice per semester.");
+                //return new ResultModel<string>("Promotion has already been done for this session. Promotion can not be done twice per semester.");
+                return new ResultModel<PromotionSharedModel>("Promotion has already been done for this session. Promotion can not be done twice per semester.");
             }
 
             var promoSetup = await _promotionSetupRepo.GetAll().FirstOrDefaultAsync();
             if (promoSetup == null)
             {
-                return new ResultModel<string>(errorMessage: "Promotion setup not done.");
+                //return new ResultModel<string>(errorMessage: "Promotion setup not done.");
+                return new ResultModel<PromotionSharedModel>(errorMessage: "Promotion setup not done.");
+                
             }
 
-            var allStudents = await _studentRepo.GetAll().AsNoTracking().ToListAsync();
+            var allStudents = await _studentRepo.GetAll().Where(m=>m.ClassId != null).AsNoTracking().ToListAsync();
 
             var allResultSummary = await _resultSummaryRepo.GetAll().Where(m => m.SessionSetupId == currSession.sessionId).AsNoTracking().ToListAsync();
             var summaryGroupedByStudentId = allResultSummary.GroupBy(m => m.StudentId).ToDictionary(m => m.Key, m=> m.ToList());
@@ -100,10 +104,10 @@ namespace AssessmentSvc.Core.Services
 
             if (missingStudentResult)
             {
-                return new ResultModel<string>(errorMessage: $"{resultNotFoundMessage.ToString()} \n Please add student's result or update=");
+                //return new ResultModel<string>(errorMessage: $"{resultNotFoundMessage.ToString()} \n Please add student's result or update=");
+                return new ResultModel<PromotionSharedModel>(errorMessage: $"{resultNotFoundMessage.ToString()} \n Please add student's result or update=");
             }
-
-            var publishPayload = new PromotionSharedModel
+             var publishPayload = new PromotionSharedModel
             {
                 CutOff = promoSetup.PromotionScore,
                 MaxRepeats = promoSetup.MaxRepeat,
@@ -114,8 +118,7 @@ namespace AssessmentSvc.Core.Services
                 IsAutomaticPromotion = promoSetup.PromotionType == Enumeration.PromotionType.Automatic
             };
 
-            await _publishService.PublishMessage(Topics.Promotion, BusMessageTypes.PROMOTION, publishPayload);
-
+            //await _publishService.PublishMessage(Topics.Promotion, BusMessageTypes.PROMOTION, publishPayload);
             var log = new SchoolPromotionLog()
             {
                 Payload = JsonConvert.SerializeObject(publishPayload),
@@ -123,9 +126,13 @@ namespace AssessmentSvc.Core.Services
             };
 
             _schoolPromotionLogRepo.Insert(log);
+            
             await _unitOfWork.SaveChangesAsync();
 
-            return new ResultModel<string>(data: "Successful");
+            //Broadcast nessage to Auth handler for promotions.
+           // await _publishService.PublishMessage(Topics.Promotion, BusMessageTypes.PROMOTION, publishPayload);
+
+            return new ResultModel<PromotionSharedModel>(data: publishPayload);
         }
     }
 }

@@ -8,6 +8,7 @@ namespace AssessmentSvc.Core.Interfaces
 {
     public interface IPromotionService
     {
-        Task<ResultModel<string>> PromoteAllStudent();
+        //Task<ResultModel<string>> PromoteAllStudent();
+        Task<ResultModel<PromotionSharedModel>> PromoteAllStudent();
     }
 }
