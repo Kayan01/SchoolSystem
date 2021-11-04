@@ -36,16 +36,23 @@ namespace Auth.Core.Services
 
         private readonly IRepository<Alumni,long> _alumniRepo;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IRepository<Student, long> _studentRepo;
+        private readonly IRepository<School, long> _schoolRepo;
 
         public AlumniService(
             IPublishService publishService, IStudentService studentService,
             IRepository<Alumni, long> alumniRepo,
-             IUnitOfWork unitOfWork)
+            IRepository<Student, long> studentRepo,
+            IUnitOfWork unitOfWork,
+            IRepository<School, long> schoolRepo
+            )
         {
             _publishService = publishService;
             _studentService = studentService;
             _alumniRepo = alumniRepo;
             _unitOfWork = unitOfWork;
+            _studentRepo = studentRepo;
+            _schoolRepo = schoolRepo;
 
 
         }
@@ -54,40 +61,21 @@ namespace Auth.Core.Services
     
         public async Task<ResultModel<AlumniDetailVM>> AddAlumni(AddAlumniVM vm)
         {
-            var studentResult = await _studentService.GetStudentById(vm.StudId);
+            //var studentResult =await _studentService.GetStudentById(vm.StudId);
+            
+            var student = await _studentRepo.GetAll().Where(m => m.Id == vm.StudId).FirstOrDefaultAsync();
 
-            if (studentResult.HasError)
+            if (student == null)
             {
-                return new ResultModel<AlumniDetailVM>(studentResult.ErrorMessages);
+                return new ResultModel<AlumniDetailVM>("Student not found");
+                //return new ResultModel<AlumniDetailVM>(studentResult.ErrorMessages);
             }
 
-            var student = studentResult.Data;
+            //var student = studentResult.Data;
 
-            var alumni = new Alumni
-            {
-                DateOfBirth = student.DateOfBirth,
-                Address = student.HomeAddress,
-                AdmissionDate = student.AdmissionDate,
-                Country = student.Country,
-                Level = student.Level,
-                LocalGovernment = student.LocalGovernment,
-                MothersMaidenName = student.MothersMaidenName,
-                State = student.State,
-                TenantId = student.TenantId,
-                StudentType = (StudentType)Enum.Parse(typeof(StudentType), student.StudentType),
-                StudentId = student.Id,
-                RegNumber = student.RegNumber,
-                Nationality = student.Nationality,
-                ParentId = student.ParentId,
-                Sex = student.Sex,
-                Religion = student.Religion,
-                StateOfOrigin = student.StateOfOrigin,
-                SessionName = vm.SessionName,
-                TermName = vm.TermName,
-                
-            };
-
-           await _alumniRepo.InsertAsync(alumni);
+            var alumni = new Alumni(student, vm.SessionName);
+           
+            await _alumniRepo.InsertAsync(alumni);
 
             await _unitOfWork.SaveChangesAsync();
 

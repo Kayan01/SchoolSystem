@@ -178,7 +178,7 @@ namespace Auth.Core.Services
             }
             catch (Exception e)
             {
-                return new ResultModel<bool>("Invalid Token");
+                return new ResultModel<bool>($"Invalid Token {e.Message}");
             }
 
             var passwordResetModel = JsonConvert.DeserializeObject<PasswordResetQueryModel>(passwordResetModelString);

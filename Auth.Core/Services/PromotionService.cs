@@ -2,6 +2,7 @@
 using Auth.Core.Models;
 using Auth.Core.Models.Alumni;
 using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels.Alumni;
 using Auth.Core.ViewModels.Promotion;
 using IPagedList;
 using Microsoft.EntityFrameworkCore;
@@ -26,14 +27,19 @@ namespace Auth.Core.Services
         private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly IRepository<PromotionLog, long> _promotionLogRepo;
         private readonly IRepository<Alumni, long> _alumniRepo;
+        private readonly IAlumniService _alumniService;
         private readonly IPublishService _publishService;
+        private readonly IRepository<School, long> _schoolRepo;
 
         public PromotionService(
             IUnitOfWork unitOfWork,
             IRepository<Student, long> studentRepo,
             IRepository<SchoolClass, long> schoolClassRepo,
             IRepository<PromotionLog, long> promotionLogRepo,
-            IRepository<Alumni, long> alumniRepo
+            IRepository<Alumni, long> alumniRepo,
+            IAlumniService alumniService,
+            IPublishService publishService,
+            IRepository<School, long> schoolRepo
             )
         {
             _unitOfWork = unitOfWork;
@@ -41,9 +47,12 @@ namespace Auth.Core.Services
             _studentRepo = studentRepo;
             _promotionLogRepo = promotionLogRepo;
             _alumniRepo = alumniRepo;
+            _alumniService = alumniService;
+            _publishService = publishService;
+            _schoolRepo = schoolRepo;
         }
 
-        public async Task PromoteAllStudent(PromotionSharedModel model)
+        public async Task<ResultModel<string>> PromoteAllStudent(PromotionSharedModel model)
         {
             Random r = new Random();
             //get all classes in school
@@ -96,8 +105,18 @@ namespace Auth.Core.Services
                         if (curclass.IsTerminalClass)
                         {
                             _alumniRepo.Insert(new Alumni(student, model.SessionName)); //if current class is a terminal class, create an alumni record.
-                        }
 
+                            try
+                            {
+                                _unitOfWork.SaveChanges();
+                            }
+                            catch (Exception ex)
+                            {
+
+                                throw new DbUpdateException(ex.Message);
+                            }
+                        }
+                        
                         //Promote Student
 
                         // Update this to tackle classpool.
@@ -132,7 +151,7 @@ namespace Auth.Core.Services
                                 StudentId = student.Id,
                                 AverageScore = studentItem.Average,
                                 TenantId = model.TenantId
-                            }); ;
+                            });
 
                             student.ClassId = nextClass.Id;
                         }
@@ -207,10 +226,20 @@ namespace Auth.Core.Services
                 });
             }
 
-            _unitOfWork.SaveChanges();
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
 
+                throw new DbUpdateException(ex.Message);
+            }
+           
             // Publish updated Students.
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, publishObj);
+
+            return new ResultModel<string>(data: "Students Promoted successfully");
 
         }
 

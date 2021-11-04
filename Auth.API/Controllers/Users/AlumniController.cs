@@ -91,6 +91,27 @@ namespace Auth.API.Controllers
         }
 
 
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<AlumniDetailVM>), 200)]
+        public async Task<IActionResult> AddAlumni([FromForm] AddAlumniVM model)
+        {
+            if (!ModelState.IsValid)
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _alumniService.AddAlumni(model);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
+
 
     }
 }

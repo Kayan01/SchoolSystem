@@ -10,7 +10,7 @@ namespace Auth.Core.Interfaces
 {
     public interface IPromotionService
     {
-        public Task PromoteAllStudent(PromotionSharedModel model);
+        public Task<ResultModel<string>> PromoteAllStudent(PromotionSharedModel model);
         Task<ResultModel<PaginatedModel<ClassPoolVM>>> GetClassPool(QueryModel vm, long sessionId, long? fromClassId);
         Task<ResultModel<string>> PostClassPool(List<ClassPoolVM> VMs);
         Task<ResultModel<PaginatedModel<ClassPoolVM>>> GetWithdrawnList(QueryModel vm, long sessionId, long? fromClassId);

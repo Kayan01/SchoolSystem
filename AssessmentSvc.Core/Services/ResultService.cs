@@ -40,7 +40,8 @@ namespace AssessmentSvc.Core.Services
             IStudentService studentServive,
             ISessionSetup sessionService,
             IGradeSetupService gradeService,
-            IRepository<BehaviourResult, long> behaviourRepository)
+            IRepository<BehaviourResult, long> behaviourRepository,
+            IRepository<Student, long> studentRepository)
         {
             _unitOfWork = unitOfWork;
             _resultRepo = resultRepo;
@@ -49,6 +50,7 @@ namespace AssessmentSvc.Core.Services
             _gradeService = gradeService;
             _sessionService = sessionService;
             _behaviourRepository = behaviourRepository;
+            _studentRepository = studentRepository;
         }
 
         public async Task<ResultModel<ResultUploadFormData>> FetchResultUploadFormData(long SchoolClassId)
