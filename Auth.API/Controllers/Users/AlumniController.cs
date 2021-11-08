@@ -39,7 +39,7 @@ namespace Auth.API.Controllers
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
-                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.TotalCount);
             }
             catch (Exception ex)
             {
