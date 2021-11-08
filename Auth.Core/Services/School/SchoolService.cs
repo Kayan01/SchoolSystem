@@ -425,9 +425,9 @@ namespace Auth.Core.Services
 
             var domainCheck = await _schoolRepo.GetAll().FirstOrDefaultAsync(x => x.DomainName == model.DomainName);
 
-            if (domainCheck != null)
+            if (domainCheck != null && domainCheck.Id != id)
             {
-                return new ResultModel<SchoolVM>("Unique name required for domain");
+                return new ResultModel<SchoolVM>("Domain Name already exist. A Unique name is required for domain");
             }
 
 

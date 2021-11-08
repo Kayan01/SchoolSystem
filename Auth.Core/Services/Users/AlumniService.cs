@@ -26,6 +26,8 @@ using Auth.Core.Models;
 using IPagedList;
 using Microsoft.EntityFrameworkCore;
 using Shared.Reflection;
+using Microsoft.OpenApi.Extensions;
+using Shared.FileStorage;
 
 namespace Auth.Core.Services
 {
@@ -38,13 +40,16 @@ namespace Auth.Core.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRepository<Student, long> _studentRepo;
         private readonly IRepository<School, long> _schoolRepo;
+        private readonly IDocumentService _documentService;
+
 
         public AlumniService(
             IPublishService publishService, IStudentService studentService,
             IRepository<Alumni, long> alumniRepo,
             IRepository<Student, long> studentRepo,
             IUnitOfWork unitOfWork,
-            IRepository<School, long> schoolRepo
+            IRepository<School, long> schoolRepo,
+            IDocumentService documentService
             )
         {
             _publishService = publishService;
@@ -53,6 +58,7 @@ namespace Auth.Core.Services
             _unitOfWork = unitOfWork;
             _studentRepo = studentRepo;
             _schoolRepo = schoolRepo;
+            _documentService = documentService;
 
 
         }
@@ -82,25 +88,33 @@ namespace Auth.Core.Services
             return new ResultModel<AlumniDetailVM>(data: alumni);
         }
 
-        public async Task<ResultModel<PaginatedModel<AlumniDetailVM>>> GetAllAlumni(QueryModel model, GetAlumniQueryVM queryVM)
+        public async Task<ResultModel<List<AlumniDetailVM>>> GetAllAlumni(QueryModel model, GetAlumniQueryVM queryVM)
         {
+
+            var resultmodel = new ResultModel<List<AlumniDetailVM>>();
             var query = _alumniRepo.GetAll();
+            var vmList = new List<AlumniDetailVM>();
+            if (!query.Any())
+                return resultmodel;
 
             if (!string.IsNullOrWhiteSpace(queryVM.SessionName))
             {
-                query = query.Where(x => x.SessionName == queryVM.SessionName);
+                query = query.Where(x => x.SessionName == queryVM.SessionName).Include(x => x.User);
             }
-            if (!string.IsNullOrWhiteSpace(queryVM.TermName))
-            {
-                query = query.Where(x => x.TermName == queryVM.TermName);
-            }
+           
+            resultmodel.TotalCount = query.Count();
+            var data = await query.Select(x => new AlumniDetailVM() { 
+                FirstName = x.User.FirstName,
+                LastName = x.User.LastName,
+                Email = x.User.Email,
+                Id = x.Id
+            }).ToPagedListAsync(model.PageIndex, model.PageSize);
 
-            var data = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+            vmList = data.Select(x => (AlumniDetailVM)x).ToList();
 
-            //convert list using reflection
-            var vmList = data.Items.SetObjectPropertiesFromList(new List<AlumniDetailVM>());
+            resultmodel.Data = vmList;
 
-            return new ResultModel<PaginatedModel<AlumniDetailVM>> { Data = new PaginatedModel<AlumniDetailVM>(vmList, data.PageNumber, data.PageSize, data.TotalItemCount) };
+            return resultmodel;
 
 
         }

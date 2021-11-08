@@ -187,14 +187,17 @@ namespace Auth.Core.Services
             if (existingUser != null)
             {
 
-                existingUser.FirstName = model.FirstName;
-                existingUser.LastName = model.LastName;
-                existingUser.Email = model.ContactEmail.Trim();
-                existingUser.UserName = model.ContactEmail.Trim();
-                existingUser.PhoneNumber = model.ContactPhone;
-                existingUser.UserType = UserType.Student;
+                result.AddError($"User with Email : {existingUser.Email} already exist");
+                return result;
 
-                userResult = await _userManager.UpdateAsync(existingUser);
+                //existingUser.FirstName = model.FirstName;
+                //existingUser.LastName = model.LastName;
+                //existingUser.Email = model.ContactEmail.Trim();
+                //existingUser.UserName = model.ContactEmail.Trim();
+                //existingUser.PhoneNumber = model.ContactPhone;
+                //existingUser.UserType = UserType.Student;
+
+                //userResult = await _userManager.UpdateAsync(existingUser);
             }
             else
             {
@@ -209,9 +212,9 @@ namespace Auth.Core.Services
             }
 
             //Add TenantId to UserClaims
-            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
-            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
            
             var immunizations = new List<ImmunizationHistory>();
 
@@ -238,7 +241,7 @@ namespace Auth.Core.Services
             var stud = new Student
             {
 
-                UserId = existingUser?.Id ?? user.Id ,
+                UserId = user.Id ,
                 Address = model.ContactAddress,
                 AdmissionDate = model.AdmissionDate,
                 ClassId = model.ClassId,
@@ -267,16 +270,16 @@ namespace Auth.Core.Services
             //change user's username to reg number
             user.UserName = stud.RegNumber;
             user.NormalizedUserName = stud.RegNumber.ToUpper();
-            await _userManager.UpdateAsync(existingUser ?? user);
+            await _userManager.UpdateAsync(user);
 
             //add classId to claims
-            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString()));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, stud.ClassId.ToString()));
 
             _unitOfWork.Commit();
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == stud.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            var emailResult = await _authUserManagement.SendRegistrationEmail(existingUser ?? user, school.DomainName);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
             if (emailResult.HasError)
             {
@@ -305,10 +308,10 @@ namespace Auth.Core.Services
 
             result.Data = new StudentVM
             {
-                Email = existingUser?.Email ?? user.Email,
-                FirstName =existingUser?.FirstName ?? user.FirstName,
-                LastName = existingUser?.LastName ?? user.LastName,
-                PhoneNumber = existingUser?.PhoneNumber ?? user.PhoneNumber,
+                Email = user.Email,
+                FirstName =user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber,
                 DateOfBirth = stud.DateOfBirth,
                 Id = stud.Id,
                 UserId = stud.UserId
@@ -800,15 +803,17 @@ namespace Auth.Core.Services
 
                 if (existingUser != null)
                 {
+                    result.AddError($"User with Email : {existingUser.Email} already exist");
+                    return result;
 
-                    existingUser.FirstName = model.FirstName;
-                    existingUser.LastName = model.LastName;
-                    existingUser.Email = model.ContactEmail.Trim();
-                    existingUser.UserName = model.ContactEmail.Trim();
-                    existingUser.PhoneNumber = model.ContactPhone;
-                    existingUser.UserType = UserType.Student;
+                    //existingUser.FirstName = model.FirstName;
+                    //existingUser.LastName = model.LastName;
+                    //existingUser.Email = model.ContactEmail.Trim();
+                    //existingUser.UserName = model.ContactEmail.Trim();
+                    //existingUser.PhoneNumber = model.ContactPhone;
+                    //existingUser.UserType = UserType.Student;
 
-                    userResult = await _userManager.UpdateAsync(existingUser);
+                    //userResult = await _userManager.UpdateAsync(existingUser);
 
                 }
                 else
@@ -823,9 +828,9 @@ namespace Auth.Core.Services
                 }
 
                 //Add TenantId to UserClaims
-                await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
                 //add stafftype to claims
-                await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
 
                 var medicalHistory = new MedicalDetail
                 {
@@ -839,7 +844,7 @@ namespace Auth.Core.Services
 
                 var student = new Student
                 {
-                    UserId = existingUser?.Id ?? user.Id,
+                    UserId = user.Id,
                     State = model.ContactState,
                     Address = model.ContactAddress,
                     TransportRoute = model.TransportRoute,
@@ -865,17 +870,17 @@ namespace Auth.Core.Services
                 //change user's username to reg number
                 user.UserName = student.RegNumber;
                 user.NormalizedUserName = student.RegNumber.ToUpper();
-                await _userManager.UpdateAsync(existingUser ?? user);
+                await _userManager.UpdateAsync(user);
 
                 //add classId to claims
-                await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, student.ClassId.ToString()));
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, student.ClassId.ToString()));
 
 
                 var school = await _schoolRepo.GetAll()
                                               .Where(m => m.Id == student.TenantId)
                                               .FirstOrDefaultAsync();
                 //broadcast login detail to email
-                var emailResult = await _authUserManagement.SendRegistrationEmail(existingUser ?? user, school.DomainName);
+                var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
                 if (emailResult.HasError)
                 {

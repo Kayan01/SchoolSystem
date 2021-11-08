@@ -199,17 +199,21 @@ namespace Auth.Core.Services.Users
 
             var existingUser = await _userManager.FindByEmailAsync(user.Email);
             IdentityResult userResult;
+
             if(existingUser != null)
             {
-                existingUser.FirstName = model.FirstName;
-                existingUser.LastName = model.LastName;
-                existingUser.Email = model.ContactDetails.EmailAddress;
-                existingUser.UserName = model.ContactDetails.EmailAddress;
-                existingUser.PhoneNumber = model.ContactDetails.PhoneNumber;
-                existingUser.MiddleName = model.OtherNames;
-                existingUser.UserType = UserType.Staff;
+                result.AddError($"User with  Email : {existingUser.Email} already exist");
+                return result;
 
-                userResult = await _userManager.UpdateAsync(existingUser);
+                //existingUser.FirstName = model.FirstName;
+                //existingUser.LastName = model.LastName;
+                //existingUser.Email = model.ContactDetails.EmailAddress;
+                //existingUser.UserName = model.ContactDetails.EmailAddress;
+                //existingUser.PhoneNumber = model.ContactDetails.PhoneNumber;
+                //existingUser.MiddleName = model.OtherNames;
+                //existingUser.UserType = UserType.Staff;
+
+                //userResult = await _userManager.UpdateAsync(existingUser);
             }
             else
             {
@@ -224,9 +228,9 @@ namespace Auth.Core.Services.Users
             }
 
             //Add TenantId to UserClaims
-            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
-            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, StaffType.TeachingStaff.GetDescription()));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, StaffType.TeachingStaff.GetDescription()));
 
             //create next of kin
             var nextOfKin = new NextOfKin
@@ -275,7 +279,7 @@ namespace Auth.Core.Services.Users
                 Staff = new Staff
                 {
 
-                    UserId = existingUser?.Id ?? user.Id,
+                    UserId = user.Id,
                     BloodGroup = model.BloodGroup,
                     DateOfBirth = model.DateOfBirth,
                     IsActive = model.IsActive,
@@ -343,14 +347,14 @@ namespace Auth.Core.Services.Users
             //change user's username to reg number
             user.UserName = teacher.Staff.RegNumber;
             user.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
-            await _userManager.UpdateAsync(existingUser ?? user);
+            await _userManager.UpdateAsync(user);
 
             _unitOfWork.Commit();
 
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == teacher.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(existingUser ?? user, school.DomainName);
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
@@ -358,11 +362,11 @@ namespace Auth.Core.Services.Users
                 IsActive = true,
                 StaffType = StaffType.TeachingStaff,
                 TenantId = teacher.TenantId,
-                UserId = existingUser?.Id ?? user.Id,
-                Email = existingUser?.Email ?? user.Email,
-                FirstName = existingUser?.FirstName ?? user.FirstName,
-                LastName = existingUser?.LastName ?? user.LastName,
-                Phone = existingUser?.PhoneNumber ?? user.PhoneNumber,
+                UserId = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Phone = user.PhoneNumber,
                 RegNumber = teacher.Staff.RegNumber,
                 Signature = teacher.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Signature.GetDisplayName())?.Path
             });
@@ -725,14 +729,17 @@ namespace Auth.Core.Services.Users
                 IdentityResult userResult;
                 if(existingUser != null)
                 {
-                    existingUser.FirstName = model.FirstName;
-                    existingUser.LastName = model.LastName;
-                    existingUser.Email = model.EmailAddress;
-                    existingUser.UserName = model.EmailAddress;
-                    existingUser.PhoneNumber = model.PhoneNumber;
-                    existingUser.UserType = UserType.Staff;
+                    result.AddError($"USer with Email : {existingUser.Email} already exist");
+                    return result;
 
-                    userResult = await _userManager.UpdateAsync(existingUser);
+                    //existingUser.FirstName = model.FirstName;
+                    //existingUser.LastName = model.LastName;
+                    //existingUser.Email = model.EmailAddress;
+                    //existingUser.UserName = model.EmailAddress;
+                    //existingUser.PhoneNumber = model.PhoneNumber;
+                    //existingUser.UserType = UserType.Staff;
+
+                    //userResult = await _userManager.UpdateAsync(existingUser);
                 }
                 else
                 {
@@ -750,7 +757,7 @@ namespace Auth.Core.Services.Users
                 {
                     Staff = new Staff
                     {
-                        UserId = existingUser?.Id ?? user.Id,
+                        UserId = user.Id,
                         BloodGroup = model.BloodGroup,
                         DateOfBirth = model.DateOfBirth,
                         IsActive = model.IsActive,
@@ -804,7 +811,7 @@ namespace Auth.Core.Services.Users
                 //change user's username to reg number
                 user.UserName = teacher.Staff.RegNumber;
                 user.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
-                await _userManager.UpdateAsync(existingUser ?? user);
+                await _userManager.UpdateAsync(user);
 
                
 

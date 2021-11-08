@@ -37,6 +37,7 @@ namespace Shared.ViewModels
         public string Message { get; set; }
 
         public T Data { get; set; } = default;
+        public int TotalCount { get; set; }
 
         public string this[string columnName]
         {
