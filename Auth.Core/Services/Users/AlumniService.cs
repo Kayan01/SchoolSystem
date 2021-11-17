@@ -107,7 +107,11 @@ namespace Auth.Core.Services
                 FirstName = x.User.FirstName,
                 LastName = x.User.LastName,
                 Email = x.User.Email,
-                Id = x.Id
+                Id = x.Id,
+                RegNumber = x.RegNumber,
+                Sex = x.Sex,
+                DateOfBirth = x.DateOfBirth
+
             }).ToPagedListAsync(model.PageIndex, model.PageSize);
 
             vmList = data.Select(x => (AlumniDetailVM)x).ToList();

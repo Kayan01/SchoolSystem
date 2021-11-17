@@ -21,6 +21,10 @@ namespace Auth.Core.ViewModels
         public bool Status { get; set; }
         public DateTime DateCreated { get; set; }
         public byte[] Image { get; set; }
+        public string Sex { get; set; }
+        public string RegNumber { get; set; }
+        public DateTime DateOfBirth { get; set; }
+
 
         public static implicit operator AlumniDetailVM(Models.Alumni.Alumni model)
         {

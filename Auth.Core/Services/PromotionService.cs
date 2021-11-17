@@ -262,7 +262,7 @@ namespace Auth.Core.Services
                     StudentName = $"{m.Student.User.FirstName} {m.Student.User.LastName}",
                     Level = m.FromClass.SchoolSection.Name,
                     PreviousClass = $"{m.FromClass.Name} {m.FromClass.ClassArm}",
-                    RegNumber = m.Student.RegNumber,
+                    RegNumber = m.Student.RegNumber
                 });
 
             var pagedData = await newQuery.ToPagedListAsync(vm.PageIndex, vm.PageSize);
