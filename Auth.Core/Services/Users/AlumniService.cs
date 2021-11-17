@@ -26,6 +26,8 @@ using Auth.Core.Models;
 using IPagedList;
 using Microsoft.EntityFrameworkCore;
 using Shared.Reflection;
+using Microsoft.OpenApi.Extensions;
+using Shared.FileStorage;
 
 namespace Auth.Core.Services
 {
@@ -36,16 +38,27 @@ namespace Auth.Core.Services
 
         private readonly IRepository<Alumni,long> _alumniRepo;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IRepository<Student, long> _studentRepo;
+        private readonly IRepository<School, long> _schoolRepo;
+        private readonly IDocumentService _documentService;
+
 
         public AlumniService(
             IPublishService publishService, IStudentService studentService,
             IRepository<Alumni, long> alumniRepo,
-             IUnitOfWork unitOfWork)
+            IRepository<Student, long> studentRepo,
+            IUnitOfWork unitOfWork,
+            IRepository<School, long> schoolRepo,
+            IDocumentService documentService
+            )
         {
             _publishService = publishService;
             _studentService = studentService;
             _alumniRepo = alumniRepo;
             _unitOfWork = unitOfWork;
+            _studentRepo = studentRepo;
+            _schoolRepo = schoolRepo;
+            _documentService = documentService;
 
 
         }
@@ -54,65 +67,58 @@ namespace Auth.Core.Services
     
         public async Task<ResultModel<AlumniDetailVM>> AddAlumni(AddAlumniVM vm)
         {
-            var studentResult = await _studentService.GetStudentById(vm.StudId);
+            //var studentResult =await _studentService.GetStudentById(vm.StudId);
+            
+            var student = await _studentRepo.GetAll().Where(m => m.Id == vm.StudId).FirstOrDefaultAsync();
 
-            if (studentResult.HasError)
+            if (student == null)
             {
-                return new ResultModel<AlumniDetailVM>(studentResult.ErrorMessages);
+                return new ResultModel<AlumniDetailVM>("Student not found");
+                //return new ResultModel<AlumniDetailVM>(studentResult.ErrorMessages);
             }
 
-            var student = studentResult.Data;
+            //var student = studentResult.Data;
 
-            var alumni = new Alumni
-            {
-                DateOfBirth = student.DateOfBirth,
-                Address = student.HomeAddress,
-                AdmissionDate = student.AdmissionDate,
-                Country = student.Country,
-                Level = student.Level,
-                LocalGovernment = student.LocalGovernment,
-                MothersMaidenName = student.MothersMaidenName,
-                State = student.State,
-                TenantId = student.TenantId,
-                StudentType = (StudentType)Enum.Parse(typeof(StudentType), student.StudentType),
-                StudentId = student.Id,
-                RegNumber = student.RegNumber,
-                Nationality = student.Nationality,
-                ParentId = student.ParentId,
-                Sex = student.Sex,
-                Religion = student.Religion,
-                StateOfOrigin = student.StateOfOrigin,
-                SessionName = vm.SessionName,
-                TermName = vm.TermName,
-                
-            };
-
-           await _alumniRepo.InsertAsync(alumni);
+            var alumni = new Alumni(student, vm.SessionName);
+           
+            await _alumniRepo.InsertAsync(alumni);
 
             await _unitOfWork.SaveChangesAsync();
 
             return new ResultModel<AlumniDetailVM>(data: alumni);
         }
 
-        public async Task<ResultModel<PaginatedModel<AlumniDetailVM>>> GetAllAlumni(QueryModel model, GetAlumniQueryVM queryVM)
+        public async Task<ResultModel<List<AlumniDetailVM>>> GetAllAlumni(QueryModel model, GetAlumniQueryVM queryVM)
         {
+
+            var resultmodel = new ResultModel<List<AlumniDetailVM>>();
             var query = _alumniRepo.GetAll();
+            var vmList = new List<AlumniDetailVM>();
+            if (!query.Any())
+                return resultmodel;
 
             if (!string.IsNullOrWhiteSpace(queryVM.SessionName))
             {
-                query = query.Where(x => x.SessionName == queryVM.SessionName);
+                query = query.Where(x => x.SessionName == queryVM.SessionName).Include(x => x.User);
             }
-            if (!string.IsNullOrWhiteSpace(queryVM.TermName))
-            {
-                query = query.Where(x => x.TermName == queryVM.TermName);
-            }
+           
+            resultmodel.TotalCount = query.Count();
+            var data = await query.Select(x => new AlumniDetailVM() { 
+                FirstName = x.User.FirstName,
+                LastName = x.User.LastName,
+                Email = x.User.Email,
+                Id = x.Id,
+                RegNumber = x.RegNumber,
+                Sex = x.Sex,
+                DateOfBirth = x.DateOfBirth
 
-            var data = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+            }).ToPagedListAsync(model.PageIndex, model.PageSize);
 
-            //convert list using reflection
-            var vmList = data.Items.SetObjectPropertiesFromList(new List<AlumniDetailVM>());
+            vmList = data.Select(x => (AlumniDetailVM)x).ToList();
 
-            return new ResultModel<PaginatedModel<AlumniDetailVM>> { Data = new PaginatedModel<AlumniDetailVM>(vmList, data.PageNumber, data.PageSize, data.TotalItemCount) };
+            resultmodel.Data = vmList;
+
+            return resultmodel;
 
 
         }

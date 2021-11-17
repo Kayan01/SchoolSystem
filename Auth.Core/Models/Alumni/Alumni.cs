@@ -32,6 +32,7 @@ namespace Auth.Core.Models.Alumni
             Religion = student.Religion;
             StateOfOrigin = student.StateOfOrigin;
             SessionName = sessionName;
+            UserId = student.UserId;
         }
 
 

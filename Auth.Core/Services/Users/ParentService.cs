@@ -357,14 +357,17 @@ namespace Auth.Core.Services.Users
 
             if(existingUser != null)
             {
-                existingUser.FirstName = vm.FirstName;
-                existingUser.LastName = vm.LastName;
-                existingUser.Email = vm.EmailAddress.Trim();
-                existingUser.UserName = vm.EmailAddress.Trim();
-                existingUser.PhoneNumber = vm.PhoneNumber;
-                existingUser.UserType = UserType.Parent;
 
-                userResult = await _userManager.UpdateAsync(existingUser);
+                return new ResultModel<ParentDetailVM>($"User with Email {existingUser.Email} already exist");
+
+                //existingUser.FirstName = vm.FirstName;
+                //existingUser.LastName = vm.LastName;
+                //existingUser.Email = vm.EmailAddress.Trim();
+                //existingUser.UserName = vm.EmailAddress.Trim();
+                //existingUser.PhoneNumber = vm.PhoneNumber;
+                //existingUser.UserType = UserType.Parent;
+
+                //userResult = await _userManager.UpdateAsync(existingUser);
             }
             else
             {
@@ -437,19 +440,19 @@ namespace Auth.Core.Services.Users
             }
 
             //add usertype to claims
-            await _userManager.AddClaimAsync(existingUser ?? user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
+            await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
 
 
             //change user's username to reg number
             user.UserName = parent.RegNumber;
             user.NormalizedUserName = parent.RegNumber.ToUpper();
-            await _userManager.UpdateAsync(existingUser ?? user);
+            await _userManager.UpdateAsync(user);
 
             _unitOfWork.Commit();
 
 
             //broadcast login detail to email
-            _ = await _authUserManagementService.SendRegistrationEmail(existingUser ?? user, "");
+            _ = await _authUserManagementService.SendRegistrationEmail(user, "");
 
             //Publish to services
             await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
@@ -462,14 +465,14 @@ namespace Auth.Core.Services.Users
                 UserId = parent.UserId,
                 IsDeleted = parent.IsDeleted,
                 OfficeAddress = parent.OfficeAddress,
-                FirstName = existingUser?.FirstName ?? user.FirstName,
-                LastName = existingUser?.LastName ?? user.LastName,
-                Email = existingUser?.Email ?? user.Email,
-                Phone = existingUser?.PhoneNumber ?? user.PhoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Phone = user.PhoneNumber,
                 RegNumber = parent.RegNumber
             });
 
-            parent.User = existingUser ?? user;
+            parent.User = user;
             var returnModel = (ParentDetailVM)parent;
             resultModel.Data = returnModel;
             return resultModel;
