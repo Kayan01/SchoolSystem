@@ -123,7 +123,7 @@ namespace Auth.Core.Services
                 emailModel = new CreateEmailModel(EmailTemplateType.NewSchool, new Dictionary<string, string>
                 {
                     {"link", callbackUrl},
-                    {"School Name", schoolName }
+                    {"schoolName", schoolName }
                 }, user);
             }
             else if (user.UserType == UserType.SchoolGroupManager)
@@ -131,7 +131,7 @@ namespace Auth.Core.Services
                 emailModel = new CreateEmailModel(EmailTemplateType.NewManager, new Dictionary<string, string>
                 {
                     {"link", callbackUrl},
-                    {"School Name", schoolName }
+                    {"schoolName", schoolName }
                 }, user);
             }
             else
@@ -141,7 +141,7 @@ namespace Auth.Core.Services
                     {"link", callbackUrl},
                     {"FullName", user.FullName },
                     {"Username", user.UserName},
-                    {"School Name", schoolName }
+                    {"schoolName", schoolName }
                 }, user);
             }
 
