@@ -513,6 +513,66 @@ namespace Auth.Core.Test.Services.Users
         }
 
         [Test]
+        public async Task GetStudentProfileById_Student_Not_Found_Test()
+        {
+            using ServicesDISetup _Setup = new ServicesDISetup();
+            var studentService = _Setup.ServiceProvider.GetService<IStudentService>();
+            var context = _Setup.ServiceProvider.GetService<AppDbContext>();
+            var ParentService = _Setup.ServiceProvider.GetService<IParentService>();
+            var SchoolPropertyService = _Setup.ServiceProvider.GetService<ISchoolPropertyService>();
+            var ClassService = _Setup.ServiceProvider.GetService<ISchoolClassService>();
+            var _sectionService = _Setup.ServiceProvider.GetService<ISectionService>();
+            var _classArmService = _Setup.ServiceProvider.GetService<IClassArmService>();
+            var _AuthUserManagementService = _Setup.ServiceProvider.GetService<IAuthUserManagement>();
+
+            var newAuthUserModel = AuthUserModelData();
+
+            var GetAllParent = GetAllParentData();
+
+            var SectionModel = AddClassSectionData();
+            var ClassArmModel = AddClassArmData();
+            var ClassModel = AddClassData();
+
+            var school = AddSchoolData();
+            context.Schools.Add(school);
+            await context.SaveChangesAsync();
+
+            var AddSection = await _sectionService.AddSection(SectionModel);
+            var AddClassArm = await _classArmService.AddClassArm(ClassArmModel);
+            var AddUser = await _AuthUserManagementService.AddUserAsync(newAuthUserModel);
+
+            ClassModel.SectionId = AddSection.Data.Id;
+
+            List<long> ListOfClassArms = new List<long>()
+            {
+                AddClassArm.Data.Id
+            };
+            ClassModel.ClassArmIds = ListOfClassArms;
+
+            var AddClass = await ClassService.AddClass(ClassModel);
+
+            var schoolPropertyData = SchoolPropertyVMData();
+
+            var AddSchoolProperty = await SchoolPropertyService.SetSchoolProperty(schoolPropertyData);
+            Assert.AreEqual(AddSchoolProperty.Data.EnrollmentAmount, schoolPropertyData.EnrollmentAmount);
+
+            var data = AddParentVMData();
+
+            var AddParent = ParentService.AddNewParent(data);
+            var studentData = AddStudentData();
+            studentData.ParentId = 1;
+
+            studentData.SectionId = AddSection.Data.Id;
+            studentData.ClassId = 3;
+
+            var AddStudent = await studentService.AddStudentToSchool(studentData);
+            var removeStudent = await studentService.DeleteStudent(AddStudent.Data.Id);
+            var result = await studentService.GetStudentProfileByUserId(AddStudent.Data.UserId.Value);
+
+            Assert.That(result.ErrorMessages.Contains("Student does not exist"));
+        }
+
+        [Test]
         public async Task UpdateStudentTest()
         {
             using ServicesDISetup _setup = new ServicesDISetup();
@@ -571,10 +631,182 @@ namespace Auth.Core.Test.Services.Users
 
         }
 
+        [Test]
+        public async Task UpdateStudent_Student_Does_Not_Exist_Test()
+        {
+            using ServicesDISetup _setup = new ServicesDISetup();
+            var studentService = _setup.ServiceProvider.GetService<IStudentService>();
+            var ParentService = _setup.ServiceProvider.GetService<IParentService>();
+            var SchoolPropertyService = _setup.ServiceProvider.GetService<ISchoolPropertyService>();
+            var ClassService = _setup.ServiceProvider.GetService<ISchoolClassService>();
+            var _sectionService = _setup.ServiceProvider.GetService<ISectionService>();
+            var _classArmService = _setup.ServiceProvider.GetService<IClassArmService>();
+            var _AuthService = _setup.ServiceProvider.GetService<IAuthUserManagement>();
+            var context = _setup.ServiceProvider.GetService<AppDbContext>();
 
+            var GetAllParent = GetAllParentData();
+            var updateData = updateStudentData();
+            var SectionModel = AddClassSectionData();
+            var ClassArmModel = AddClassArmData();
+            var ClassModel = AddClassData();
 
+            var checkSchoolCount = _AuthService.GetAllAuthUsersAsync();
 
+            var school = AddSchoolData();
+            context.Schools.Add(school);
+            await context.SaveChangesAsync();
 
+            var AddSection = await _sectionService.AddSection(SectionModel);
+            var AddClassArm = await _classArmService.AddClassArm(ClassArmModel);
+
+            ClassModel.SectionId = AddSection.Data.Id;
+
+            List<long> ListOfClassArms = new List<long>()
+            {
+                AddClassArm.Data.Id
+            };
+            ClassModel.ClassArmIds = ListOfClassArms;
+
+            var AddClass = await ClassService.AddClass(ClassModel);
+
+            var schoolPropertyData = SchoolPropertyVMData();
+
+            var AddSchoolProperty = await SchoolPropertyService.SetSchoolProperty(schoolPropertyData);
+            Assert.AreEqual(AddSchoolProperty.Data.EnrollmentAmount, schoolPropertyData.EnrollmentAmount);
+
+            var data = AddParentVMData();
+
+            var AddParent = ParentService.AddNewParent(data);
+            var studentData = AddStudentData();
+            studentData.ParentId = 1;
+            studentData.SectionId = AddSection.Data.Id;
+            studentData.ClassId = 3;
+
+            //Add student
+            var AddStudent = await studentService.AddStudentToSchool(studentData);
+            //remove student
+            var removeStudent = await studentService.DeleteStudent(AddStudent.Data.Id);
+            //Trying to update using the id of the deleted student
+            var result = await studentService.UpdateStudent(AddStudent.Data.Id, updateData);
+
+            Assert.That(result.ErrorMessages.Contains("Student does not exist"));
+        }
+
+        [Test]
+        public async Task UpdateStudent_No_Parent_Exist_Test()
+        {
+            using ServicesDISetup _setup = new ServicesDISetup();
+            var studentService = _setup.ServiceProvider.GetService<IStudentService>();
+            var ParentService = _setup.ServiceProvider.GetService<IParentService>();
+            var SchoolPropertyService = _setup.ServiceProvider.GetService<ISchoolPropertyService>();
+            var ClassService = _setup.ServiceProvider.GetService<ISchoolClassService>();
+            var _sectionService = _setup.ServiceProvider.GetService<ISectionService>();
+            var _classArmService = _setup.ServiceProvider.GetService<IClassArmService>();
+            var _AuthService = _setup.ServiceProvider.GetService<IAuthUserManagement>();
+            var context = _setup.ServiceProvider.GetService<AppDbContext>();
+
+            var GetAllParent = GetAllParentData();
+            var updateData = second_UpdateStudentData();
+            var SectionModel = AddClassSectionData();
+            var ClassArmModel = AddClassArmData();
+            var ClassModel = AddClassData();
+
+            var checkSchoolCount = _AuthService.GetAllAuthUsersAsync();
+
+            var school = AddSchoolData();
+            context.Schools.Add(school);
+            await context.SaveChangesAsync();
+
+            var AddSection = await _sectionService.AddSection(SectionModel);
+            var AddClassArm = await _classArmService.AddClassArm(ClassArmModel);
+
+            ClassModel.SectionId = AddSection.Data.Id;
+
+            List<long> ListOfClassArms = new List<long>()
+            {
+                AddClassArm.Data.Id
+            };
+            ClassModel.ClassArmIds = ListOfClassArms;
+
+            var AddClass = await ClassService.AddClass(ClassModel);
+
+            var schoolPropertyData = SchoolPropertyVMData();
+
+            var AddSchoolProperty = await SchoolPropertyService.SetSchoolProperty(schoolPropertyData);
+            Assert.AreEqual(AddSchoolProperty.Data.EnrollmentAmount, schoolPropertyData.EnrollmentAmount);
+
+            var data = AddParentVMData();
+
+            var AddParent = ParentService.AddNewParent(data);
+            var studentData = AddStudentData();
+            studentData.ParentId = 1;
+            studentData.SectionId = AddSection.Data.Id;
+            studentData.ClassId = 3;
+            updateData.ClassId = 3;
+
+            var AddStudent = await studentService.AddStudentToSchool(studentData);
+            var result = await studentService.UpdateStudent(AddStudent.Data.Id, updateData);
+
+            Assert.That(result.ErrorMessages.Contains("No parent exists"));
+        }
+
+        [Test]
+        public async Task UpdateStudent_No_Class_Exist_Test()
+        {
+            using ServicesDISetup _setup = new ServicesDISetup();
+            var studentService = _setup.ServiceProvider.GetService<IStudentService>();
+            var ParentService = _setup.ServiceProvider.GetService<IParentService>();
+            var SchoolPropertyService = _setup.ServiceProvider.GetService<ISchoolPropertyService>();
+            var ClassService = _setup.ServiceProvider.GetService<ISchoolClassService>();
+            var _sectionService = _setup.ServiceProvider.GetService<ISectionService>();
+            var _classArmService = _setup.ServiceProvider.GetService<IClassArmService>();
+            var _AuthService = _setup.ServiceProvider.GetService<IAuthUserManagement>();
+            var context = _setup.ServiceProvider.GetService<AppDbContext>();
+
+            var GetAllParent = GetAllParentData();
+            var updateData = second_UpdateStudentData();
+            var SectionModel = AddClassSectionData();
+            var ClassArmModel = AddClassArmData();
+            var ClassModel = AddClassData();
+
+            var checkSchoolCount = _AuthService.GetAllAuthUsersAsync();
+
+            var school = AddSchoolData();
+            context.Schools.Add(school);
+            await context.SaveChangesAsync();
+
+            var AddSection = await _sectionService.AddSection(SectionModel);
+            var AddClassArm = await _classArmService.AddClassArm(ClassArmModel);
+
+            ClassModel.SectionId = AddSection.Data.Id;
+
+            List<long> ListOfClassArms = new List<long>()
+            {
+                AddClassArm.Data.Id
+            };
+            ClassModel.ClassArmIds = ListOfClassArms;
+
+            var AddClass = await ClassService.AddClass(ClassModel);
+
+            var schoolPropertyData = SchoolPropertyVMData();
+
+            var AddSchoolProperty = await SchoolPropertyService.SetSchoolProperty(schoolPropertyData);
+            Assert.AreEqual(AddSchoolProperty.Data.EnrollmentAmount, schoolPropertyData.EnrollmentAmount);
+
+            var data = AddParentVMData();
+
+            var AddParent = ParentService.AddNewParent(data);
+            var studentData = AddStudentData();
+            studentData.ParentId = 1;
+            studentData.SectionId = AddSection.Data.Id;
+            studentData.ClassId = 3;
+            updateData.ParentId = 1;
+
+            var AddStudent = await studentService.AddStudentToSchool(studentData);
+            var result = await studentService.UpdateStudent(AddStudent.Data.Id, updateData);
+
+            Assert.That(result.ErrorMessages.Contains("class does not exists"));
+        }
 
 
 
@@ -723,6 +955,29 @@ namespace Auth.Core.Test.Services.Users
                 Nationality = "Nigeria",
                 ClassId = 3,
                 ParentId = 1,
+                StudentType = StudentType.DayStudent,
+                DocumentTypes = DocumentTypes,
+                ContactEmail = "updatedSegunSi@yahoo.com",
+                ContactPhone = "09023217867",
+                Allergies = "none",
+                BloodGroup = "O+",
+                Disability = false,
+                DateOfBirth = new DateTime(2001, 08, 12)
+            };
+
+            return data;
+        }
+
+        private StudentUpdateVM second_UpdateStudentData()
+        {
+            List<DocumentType> DocumentTypes = new List<DocumentType>() { DocumentType.Logo, DocumentType.ProfilePhoto };
+            var data = new StudentUpdateVM()
+            {
+                FirstName = "UpdatedSimi",
+                LastName = "UpdatedSegun",
+                Sex = "male",
+                Religion = "christian",
+                Nationality = "Nigeria",
                 StudentType = StudentType.DayStudent,
                 DocumentTypes = DocumentTypes,
                 ContactEmail = "updatedSegunSi@yahoo.com",
