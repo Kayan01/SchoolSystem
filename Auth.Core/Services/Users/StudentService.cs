@@ -279,7 +279,7 @@ namespace Auth.Core.Services
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == stud.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name);
 
             if (emailResult.HasError)
             {
@@ -880,7 +880,7 @@ namespace Auth.Core.Services
                                               .Where(m => m.Id == student.TenantId)
                                               .FirstOrDefaultAsync();
                 //broadcast login detail to email
-                var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+                var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name);
 
                 if (emailResult.HasError)
                 {

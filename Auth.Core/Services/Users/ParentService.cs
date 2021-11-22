@@ -316,6 +316,7 @@ namespace Auth.Core.Services.Users
                 return resultModel;
             }
 
+            
             _unitOfWork.BeginTransaction();
 
             var file = new FileUpload();
@@ -449,10 +450,10 @@ namespace Auth.Core.Services.Users
             await _userManager.UpdateAsync(user);
 
             _unitOfWork.Commit();
-
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == schoolProperty.Data.TenantId).FirstOrDefaultAsync();
 
             //broadcast login detail to email
-            _ = await _authUserManagementService.SendRegistrationEmail(user, "");
+            _ = await _authUserManagementService.SendRegistrationEmail(user, "",school.Name);
 
             //Publish to services
             await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel

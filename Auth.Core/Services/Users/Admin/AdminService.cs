@@ -120,7 +120,7 @@ namespace Auth.Core.Services
 
 
                 //broadcast login detail to email
-                _ = await _authUserManagement.SendRegistrationEmail(user, "");
+                _ = await _authUserManagement.SendRegistrationEmail(user, "","");
 
                 await _publishService.PublishMessage(Topics.Admin, BusMessageTypes.ADMIN, new AdminSharedModel
                 {
