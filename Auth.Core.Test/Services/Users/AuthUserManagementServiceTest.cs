@@ -118,7 +118,7 @@ namespace Auth.Core.Test.Services.Users
                     data.Add(item);
                 }
 
-                var result = await _AuthUserManagementService.SendRegistrationEmail(data[1], "");
+                var result = await _AuthUserManagementService.SendRegistrationEmail(data[1], "","");
 
                 Assert.That(result.ErrorMessages.Count == 0);
                 Assert.That(result.Data == true);

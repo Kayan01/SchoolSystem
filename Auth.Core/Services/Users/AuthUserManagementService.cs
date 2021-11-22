@@ -98,7 +98,7 @@ namespace Auth.Core.Services
 
             return false;
         }
-        public async Task<ResultModel<bool>> SendRegistrationEmail(User user, string subdomain, string emailTitle = "Confirm your email")
+        public async Task<ResultModel<bool>> SendRegistrationEmail(User user, string subdomain, string schoolName, string emailTitle = "Confirm your email")
         {
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -123,6 +123,7 @@ namespace Auth.Core.Services
                 emailModel = new CreateEmailModel(EmailTemplateType.NewSchool, new Dictionary<string, string>
                 {
                     {"link", callbackUrl},
+                    {"School Name", schoolName }
                 }, user);
             }
             else if (user.UserType == UserType.SchoolGroupManager)
@@ -130,6 +131,7 @@ namespace Auth.Core.Services
                 emailModel = new CreateEmailModel(EmailTemplateType.NewManager, new Dictionary<string, string>
                 {
                     {"link", callbackUrl},
+                    {"School Name", schoolName }
                 }, user);
             }
             else
@@ -138,7 +140,8 @@ namespace Auth.Core.Services
                 {
                     {"link", callbackUrl},
                     {"FullName", user.FullName },
-                    {"Username", user.UserName }
+                    {"Username", user.UserName},
+                    {"School Name", schoolName }
                 }, user);
             }
 

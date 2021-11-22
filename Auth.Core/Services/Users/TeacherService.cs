@@ -354,7 +354,7 @@ namespace Auth.Core.Services.Users
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == teacher.TenantId).FirstOrDefaultAsync();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name);
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
