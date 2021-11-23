@@ -49,6 +49,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IDocumentService _documentService;
         private readonly IHttpClientFactory _clientFactory;
         private readonly IToPDF _toPDF;
+        private readonly IRepository<School, long> _schoolRepo;
 
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
@@ -68,7 +69,9 @@ namespace AssessmentSvc.Core.Services
             IDocumentService documentService,
             IToPDF toPDF,
             IHttpClientFactory clientFactory,
-        IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IRepository<School, long> schoolRepo
+        )
         {
             _unitOfWork = unitOfWork;
             _resultService = resultService;
@@ -88,6 +91,7 @@ namespace AssessmentSvc.Core.Services
             _documentService = documentService;
             _toPDF = toPDF;
             _clientFactory = clientFactory;
+            _schoolRepo = schoolRepo;
         }
 
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
@@ -974,6 +978,7 @@ namespace AssessmentSvc.Core.Services
             //generate pdf
             var pdfPaths = await GetStudentsResultPDFS(resultData.Data, vm.classId, currSessionAndTerm.sessionId, currSessionAndTerm.TermSequence, currSessionAndTerm.TenantId);
 
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == currSessionAndTerm.TenantId).FirstOrDefaultAsync();
 
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
             {
@@ -983,6 +988,10 @@ namespace AssessmentSvc.Core.Services
                             { "link", $"{vm.ResultPageURL}?studId={m.StudentId}&classId={vm.classId}&sessionId={currSessionAndTerm.sessionId}&termSequenceNumber={currSessionAndTerm.TermSequence}" },
                             { "ParentName", m.ParentName },
                             {"Studentname", m.StudentName},
+                            {"schoolName",school.Name },
+                           {"Email", school.Email },
+                           {"address", school.Address },
+                           {"phoneNumber",school.PhoneNumber }
                    },
                    new UserVM() { FullName = m.ParentName, Email = m.Email },
                    new List<string> { pdfPaths[m.StudentId] }
