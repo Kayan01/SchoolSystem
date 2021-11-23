@@ -182,7 +182,7 @@ namespace Auth.Core.Services
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.SchoolAdmin.GetDescription()));
 
             //broadcast login detail to email
-            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name,contactDetails.Email,school.Address,contactDetails.PhoneNumber);
 
             if (emailResult.HasError)
             {

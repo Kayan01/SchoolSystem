@@ -278,8 +278,9 @@ namespace Auth.Core.Services
             _unitOfWork.Commit();
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == stud.TenantId).FirstOrDefaultAsync();
+            var contactDetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
             //broadcast login detail to email
-            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name, contactDetails.Email,school.Address,contactDetails.PhoneNumber);
 
             if (emailResult.HasError)
             {
@@ -876,11 +877,11 @@ namespace Auth.Core.Services
                 await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, student.ClassId.ToString()));
 
 
-                var school = await _schoolRepo.GetAll()
-                                              .Where(m => m.Id == student.TenantId)
-                                              .FirstOrDefaultAsync();
+                var school = await _schoolRepo.GetAll().Where(m => m.Id == schoolProperty.Data.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
+                var contactdetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
+
                 //broadcast login detail to email
-                var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+                var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name, contactdetails.Email,school.Address,contactdetails.PhoneNumber);
 
                 if (emailResult.HasError)
                 {

@@ -352,9 +352,11 @@ namespace Auth.Core.Services.Users
             _unitOfWork.Commit();
 
 
-            var school = await _schoolRepo.GetAll().Where(m => m.Id == teacher.TenantId).FirstOrDefaultAsync();
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == schoolProperty.Data.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
+            var contactDetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName);
+            
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name, contactDetails.Email,school.Address, contactDetails.PhoneNumber);
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {

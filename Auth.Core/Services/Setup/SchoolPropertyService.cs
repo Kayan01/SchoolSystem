@@ -40,6 +40,7 @@ namespace Auth.Core.Services.Setup
 
             result.Data = new SchoolPropertyVM
             {
+                TenantId = schProp.TenantId,
                 ClassDays = schProp.ClassDays,
                 EnrollmentAmount = schProp.EnrollmentAmount,
                 NumberOfTerms = schProp.NumberOfTerms,
