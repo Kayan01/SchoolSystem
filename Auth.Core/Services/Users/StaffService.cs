@@ -393,9 +393,10 @@ namespace Auth.Core.Services
                 UserId = staff.UserId
             };
 
-            var school = await _schoolRepo.GetAll().Where(m => m.Id == staff.TenantId).FirstOrDefaultAsync();
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == schoolProperty.Data.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
+            var contactdetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName, school.Name);
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName, school.Name, contactdetails.Email,school.Address,contactdetails.PhoneNumber);
 
             
             //Publish Message

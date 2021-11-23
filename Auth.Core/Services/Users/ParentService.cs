@@ -1,6 +1,7 @@
 ﻿using Auth.Core.Interfaces.Setup;
 using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
+using Auth.Core.Models.Contact;
 using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Parent;
@@ -38,6 +39,7 @@ namespace Auth.Core.Services.Users
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
         private readonly ISchoolPropertyService _schoolPropertyService;
+        
 
         private readonly IAuthUserManagement _authUserManagementService;
         public ParentService(
@@ -49,7 +51,8 @@ namespace Auth.Core.Services.Users
             UserManager<User> userManager,
             IDocumentService documentService,
             ISchoolPropertyService schoolPropertyService,
-            IAuthUserManagement authUserManagementService)
+            IAuthUserManagement authUserManagementService
+            )
         {
             _publishService = publishService;
             _parentRepo = parentRepo;
@@ -450,10 +453,11 @@ namespace Auth.Core.Services.Users
             await _userManager.UpdateAsync(user);
 
             _unitOfWork.Commit();
-            var school = await _schoolRepo.GetAll().Where(m => m.Id == schoolProperty.Data.TenantId).FirstOrDefaultAsync();
+            var school = await _schoolRepo.GetAll().Where(m=> m.Id == schoolProperty.Data.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
+            var contactdetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
 
             //broadcast login detail to email
-            _ = await _authUserManagementService.SendRegistrationEmail(user, "",school.Name);
+            _ = await _authUserManagementService.SendRegistrationEmail(user, "",school.Name,contactdetails.Email,school.Address, contactdetails.PhoneNumber);
 
             //Publish to services
             await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
