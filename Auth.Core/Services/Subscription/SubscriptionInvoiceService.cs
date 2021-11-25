@@ -4,12 +4,15 @@ using Auth.Core.ViewModels.Subscription;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
+using Shared.PubSub;
 using Shared.ViewModels;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Shared.Utils.CoreConstants;
 
 namespace Auth.Core.Services
 {
@@ -19,17 +22,20 @@ namespace Auth.Core.Services
         public readonly IRepository<SchoolSubscription, long> _subscriptionRepo;
         public readonly IRepository<School, long> _schoolRepo;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPublishService _publishService;
 
         public SubscriptionInvoiceService(
             IRepository<SubscriptionInvoice, long> invoiceRepo,
             IRepository<SchoolSubscription, long> subscriptionRepo,
             IRepository<School, long> schoolRepo,
-             IUnitOfWork unitOfWork)
+             IUnitOfWork unitOfWork,
+             IPublishService publishService)
         {
             _invoiceRepo = invoiceRepo;
             _subscriptionRepo = subscriptionRepo;
             _schoolRepo = schoolRepo;
             _unitOfWork = unitOfWork;
+            _publishService = publishService;
         }
 
 
@@ -124,6 +130,33 @@ namespace Auth.Core.Services
             await _unitOfWork.SaveChangesAsync();
 
             //Todo: Send email
+            var schoolData = await _schoolRepo.GetAll().Where(x => x.Id == invoice.SchoolId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
+            var contactDetails = schoolData.SchoolContactDetails.Where(m => m.SchoolId == schoolData.Id).FirstOrDefault();
+
+            var InvoiceData = await _invoiceRepo.GetAll().Where(x => x.SchoolId == invoice.SchoolId).FirstOrDefaultAsync();
+
+            var Invoice = new CreateEmailModel(
+                EmailTemplateType.NextSubcription,
+                new Dictionary<string, string>
+                {
+                    { "invoiceDate", InvoiceData.CreationTime.ToString() },
+                    {"schoolName", InvoiceData.School.Name },
+                    {"TotalAmount", invoice.AmountToBePaid.ToString() },
+                    {"InvoiceDueDate", InvoiceData.DueDate.ToString() },
+                    {"NumberOfStudents", invoice.NumberOfStudent.ToString() },
+                    {"PricePerUser", invoice.AmountPerStudent.ToString()}
+
+                },
+                new UserVM() { FullName = contactDetails.FirstName + " " + contactDetails.LastName, Email = contactDetails.Email });
+
+            await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel { 
+                Emails = new List<CreateEmailModel>
+                {
+                    Invoice
+                }
+            }
+            );
+
             return new ResultModel<string>(data: "Saved successfully");
         }
 
@@ -219,6 +252,35 @@ namespace Auth.Core.Services
             await _unitOfWork.SaveChangesAsync();
 
             //Todo: Send email
+            var schoolData = await _schoolRepo.GetAll().Where(x => x.Id == invoice.SchoolId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
+            var contactDetails = schoolData.SchoolContactDetails.Where(m => m.SchoolId == schoolData.Id).FirstOrDefault();
+
+            var InvoiceData = await _invoiceRepo.GetAll().Where(x => x.SchoolId == invoice.SchoolId).FirstOrDefaultAsync();
+
+            var Invoice = new CreateEmailModel(
+                EmailTemplateType.NextSubcription,
+                new Dictionary<string, string>
+                {
+                    { "invoiceDate", InvoiceData.CreationTime.ToString() },
+                    {"schoolName", InvoiceData.School.Name },
+                    {"TotalAmount", invoice.AmountToBePaid.ToString() },
+                    {"InvoiceDueDate", InvoiceData.DueDate.ToString() },
+                    {"NumberOfStudents", invoice.NumberOfStudent.ToString() },
+                    {"PricePerUser", invoice.AmountPerStudent.ToString()}
+
+                },
+                new UserVM() { FullName = contactDetails.FirstName + " " + contactDetails.LastName, Email = contactDetails.Email });
+
+            await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
+            {
+                Emails = new List<CreateEmailModel>
+                {
+                    Invoice
+                }
+            }
+            );
+
+
             return new ResultModel<string>(data: "Saved successfully");
         }
 
