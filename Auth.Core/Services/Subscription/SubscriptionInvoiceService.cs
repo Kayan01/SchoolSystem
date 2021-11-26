@@ -142,7 +142,7 @@ namespace Auth.Core.Services
                     { "invoiceDate", InvoiceData.CreationTime.ToString() },
                     {"schoolName", InvoiceData.School.Name },
                     {"TotalAmount", invoice.AmountToBePaid.ToString() },
-                    {"InvoiceDueDate", InvoiceData.DueDate.ToString() },
+                    {"InvoiceDueDate", invoice.DueDate.ToString() },
                     {"NumberOfStudents", invoice.NumberOfStudent.ToString() },
                     {"PricePerUser", invoice.AmountPerStudent.ToString()}
 
