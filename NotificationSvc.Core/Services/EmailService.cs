@@ -73,9 +73,16 @@ namespace NotificationSvc.Core.Services
                 throw new FileNotFoundException($"Email Template not found for {emailTemplate}");
 
             _logger.LogInformation($"email template {template.Name} {template.TemplatePath}");
-            
-            var mailBase = new Mail(senderName,
-                                template.Subject, emailAddresses);
+            Mail mailBase;
+            if (senderName != null)
+            {
+                mailBase = new Mail(senderName, template.Subject, emailAddresses);
+            }
+            else
+            {
+                mailBase = new Mail(_appSettingsConfiguration.SystemEmail, template.Subject, emailAddresses);
+            }
+
             mailBase.IsBodyHtml = true;
             mailBase.BodyIsFile = true;
             mailBase.BodyPath = _documentService.GetFile(template.TemplatePath).PhysicalPath;
