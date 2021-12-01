@@ -123,7 +123,7 @@ namespace Auth.Core.Services
                 emailModel = new CreateEmailModel(EmailTemplateType.NewSchool, new Dictionary<string, string>
                 {
                     {"link", callbackUrl},
-                }, user);
+                }, user,schoolEmail);
             }
             else if (user.UserType == UserType.SchoolGroupManager)
             {
@@ -134,7 +134,7 @@ namespace Auth.Core.Services
                     {"Email", schoolEmail},
                     {"address", address },
                     {"phoneNumber", phoneNumber }
-                }, user);
+                }, user,schoolEmail);
             }
             else
             {
@@ -147,7 +147,7 @@ namespace Auth.Core.Services
                     {"Email", schoolEmail},
                     {"address", address },
                     {"phoneNumber", phoneNumber }
-                }, user);
+                }, user,schoolEmail);
             }
 
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel

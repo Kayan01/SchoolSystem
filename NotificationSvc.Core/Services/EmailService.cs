@@ -65,7 +65,7 @@ namespace NotificationSvc.Core.Services
             return new List<EmailVM>();
         }
 
-        public async Task SendEmail(string[] emailAddresses, string emailTemplate, Dictionary<string, string> replacements, IEnumerable<string> attachments = null)
+        public async Task SendEmail(string[] emailAddresses, string emailTemplate, Dictionary<string, string> replacements,string senderName, IEnumerable<string> attachments = null)
         {
             var template = CoreConstants.EmailTemplates.FirstOrDefault(x => x.Name.Equals(emailTemplate, StringComparison.InvariantCultureIgnoreCase));
 
@@ -73,8 +73,8 @@ namespace NotificationSvc.Core.Services
                 throw new FileNotFoundException($"Email Template not found for {emailTemplate}");
 
             _logger.LogInformation($"email template {template.Name} {template.TemplatePath}");
-
-            var mailBase = new Mail(_appSettingsConfiguration.SystemEmail,
+            
+            var mailBase = new Mail(senderName,
                                 template.Subject, emailAddresses);
             mailBase.IsBodyHtml = true;
             mailBase.BodyIsFile = true;
