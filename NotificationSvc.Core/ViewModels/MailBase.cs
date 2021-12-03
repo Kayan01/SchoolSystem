@@ -16,6 +16,7 @@ namespace NotificationSvc.Core.ViewModels
         public ICollection<string> Bcc { get; set; }
         public ICollection<string> CC { get; set; }
         public ICollection<Attachment> Attachments { get; set; }
+        public string EmailPassword { get; set; }
     }
 
     public sealed class Mail : MailBase
@@ -29,11 +30,12 @@ namespace NotificationSvc.Core.ViewModels
             Attachments = new List<Attachment>();
         }
 
-        public Mail(string sender, string subject, params string[] to)
+        public Mail(string sender, string subject, string emailPassword, params string[] to)
             : this()
         {
             Sender = sender;
             Subject = subject;
+            EmailPassword = emailPassword;
 
             foreach (var rec in to)
                 To.Add(rec);

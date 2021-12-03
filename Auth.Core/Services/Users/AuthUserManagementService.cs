@@ -98,7 +98,7 @@ namespace Auth.Core.Services
 
             return false;
         }
-        public async Task<ResultModel<bool>> SendRegistrationEmail(User user, string subdomain, string schoolName,string schoolEmail, string address,string phoneNumber,string emailTitle = "Confirm your email")
+        public async Task<ResultModel<bool>> SendRegistrationEmail(User user, string subdomain, string schoolName, string schoolEmail, string address, string phoneNumber, string EmailPassword, string emailTitle = "Confirm your email")
         {
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -123,7 +123,7 @@ namespace Auth.Core.Services
                 emailModel = new CreateEmailModel(EmailTemplateType.NewSchool, new Dictionary<string, string>
                 {
                     {"link", callbackUrl},
-                }, user,schoolEmail);
+                }, user);
             }
             else if (user.UserType == UserType.SchoolGroupManager)
             {
@@ -134,7 +134,7 @@ namespace Auth.Core.Services
                     {"Email", schoolEmail},
                     {"address", address },
                     {"phoneNumber", phoneNumber }
-                }, user,schoolEmail);
+                }, user, schoolEmail, EmailPassword);
             }
             else
             {
@@ -147,7 +147,7 @@ namespace Auth.Core.Services
                     {"Email", schoolEmail},
                     {"address", address },
                     {"phoneNumber", phoneNumber }
-                }, user,schoolEmail);
+                }, user, schoolEmail, EmailPassword);
             }
 
             await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel
@@ -163,7 +163,6 @@ namespace Auth.Core.Services
             });
 
             return new ResultModel<bool>(true, "Success");
-
         }
         public async Task<ResultModel<string>> RequestPasswordReset(string email)
         {
@@ -178,7 +177,7 @@ namespace Auth.Core.Services
         }
 
         public async Task<ResultModel<bool>> PassworReset(PasswordResetModel model)
-        {            
+        {
             var passwordResetModelString = "";
             try
             {
@@ -229,7 +228,7 @@ namespace Auth.Core.Services
             var tokenQueryModel = new PasswordResetQueryModel { Email = user.Email, Token = code };
             var tokenQueryModelString = JsonConvert.SerializeObject(tokenQueryModel);
             code = _protector.Protect(tokenQueryModelString);
-           
+
             return new ResultModel<(User user, string code)>((user, code), "Success");
         }
 
@@ -267,7 +266,7 @@ namespace Auth.Core.Services
 
         public async Task EnableUsersAsync(IEnumerable<long> ids)
         {
-           var users = await _context.Users.Where(x => ids.Contains(x.Id)).ToListAsync();
+            var users = await _context.Users.Where(x => ids.Contains(x.Id)).ToListAsync();
 
             foreach (var user in users)
             {
@@ -275,7 +274,7 @@ namespace Auth.Core.Services
                 _context.Update(user);
             }
 
-           await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task DisableUsersAsync(IEnumerable<long> ids)

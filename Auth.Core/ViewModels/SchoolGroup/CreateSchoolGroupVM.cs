@@ -33,6 +33,9 @@ namespace Auth.Core.ViewModels.SchoolGroup
         [Required]
         [ExcelReaderCell]
         public string ContactEmail { get; set; }
+        [Required]
+        [ExcelReaderCell]
+        public string ContactEmailPassword { get; set; }
         public bool IsActive { get; set; } = true;
         public List<DocumentType> DocumentTypes { get; set; }
         public List<IFormFile> Files { get; set; }

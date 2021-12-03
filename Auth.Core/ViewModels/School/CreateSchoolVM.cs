@@ -47,6 +47,9 @@ namespace Auth.Core.ViewModels.School
         [Required]
         [ExcelReaderCell]
         public string Username { get; set; }
+        [Required]
+        [ExcelReaderCell]
+        public string ContactEmailPassword { get; set; }
         public bool IsActive { get; set; }
         public string PrimaryColor { get; set; }
         public string SecondaryColor { get; set; }

@@ -20,11 +20,11 @@ namespace Auth.Core.Test.Services.Users
         public void SetUp()
         {
         }
-    
+
         [Test]
         public async Task AddUserTest()
         {
-            using(ServicesDISetup _setup = new ServicesDISetup())
+            using (ServicesDISetup _setup = new ServicesDISetup())
             {
                 var _AuthUserManagementService = _setup.ServiceProvider.GetService<IAuthUserManagement>();
                 var context = _setup.ServiceProvider.GetService<AppDbContext>();
@@ -32,11 +32,11 @@ namespace Auth.Core.Test.Services.Users
                 var newAuthUserModel = AuthUserModelData();
 
                 var result = await _AuthUserManagementService.AddUserAsync(newAuthUserModel);
-                
+
                 Assert.That(result.HasValue);
                 Assert.That(result.GetValueOrDefault() == 2);
             }
-            
+
         }
 
         [Test]
@@ -69,15 +69,15 @@ namespace Auth.Core.Test.Services.Users
                 context.Users.Add(newAuthUser);
                 await context.SaveChangesAsync();
 
-                var result =_AuthUserManagementService.GetAllAuthUsersAsync();
+                var result = _AuthUserManagementService.GetAllAuthUsersAsync();
                 List<User> data = new List<User>();
-                foreach(var item in result)
+                foreach (var item in result)
                 {
                     data.Add(item);
                 }
 
                 Assert.That(data.Count == 2);
-                Assert.AreEqual(newAuthUser.FullName,data[1].FullName);
+                Assert.AreEqual(newAuthUser.FullName, data[1].FullName);
 
             }
         }
@@ -104,7 +104,7 @@ namespace Auth.Core.Test.Services.Users
         [Test]
         public async Task SendRegistrationEmailTest()
         {
-            using(ServicesDISetup _setup = new ServicesDISetup())
+            using (ServicesDISetup _setup = new ServicesDISetup())
             {
                 var _AuthUserManagementService = _setup.ServiceProvider.GetService<IAuthUserManagement>();
                 var context = _setup.ServiceProvider.GetService<AppDbContext>();
@@ -118,7 +118,7 @@ namespace Auth.Core.Test.Services.Users
                     data.Add(item);
                 }
 
-                var result = await _AuthUserManagementService.SendRegistrationEmail(data[1], "","Ollie","info@schoolTrack.com","schoolTrack","schoolTrack");
+                var result = await _AuthUserManagementService.SendRegistrationEmail(data[1], "", "Ollie", "info@schoolTrack.com", "schoolTrack", "", "schoolTrack");
 
                 Assert.That(result.ErrorMessages.Count == 0);
                 Assert.That(result.Data == true);
@@ -127,7 +127,7 @@ namespace Auth.Core.Test.Services.Users
         [Test]
         public async Task RequestPasswordReset()
         {
-            using(ServicesDISetup _Setup = new ServicesDISetup())
+            using (ServicesDISetup _Setup = new ServicesDISetup())
             {
                 var _AuthUserManagement = _Setup.ServiceProvider.GetService<IAuthUserManagement>();
                 var context = _Setup.ServiceProvider.GetService<AppDbContext>();
@@ -145,7 +145,7 @@ namespace Auth.Core.Test.Services.Users
         [Test]
         public async Task GetPasswordResetCode_Test()
         {
-            using(ServicesDISetup _setup = new ServicesDISetup())
+            using (ServicesDISetup _setup = new ServicesDISetup())
             {
                 var AuthUserManagement = _setup.ServiceProvider.GetService<IAuthUserManagement>();
                 var context = _setup.ServiceProvider.GetService<AppDbContext>();
@@ -154,7 +154,7 @@ namespace Auth.Core.Test.Services.Users
                 var addAdmin = await AuthUserManagement.AddUserAsync(newAuthUserModel);
                 var Id = addAdmin.GetValueOrDefault();
 
-                var result =await AuthUserManagement.GetPasswordRestCode(newAuthUserModel.Email);
+                var result = await AuthUserManagement.GetPasswordRestCode(newAuthUserModel.Email);
 
                 Assert.That(result.Message == "Success");
                 Assert.That(result.Data.user.Email == newAuthUserModel.Email);

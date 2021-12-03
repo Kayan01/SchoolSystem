@@ -120,7 +120,7 @@ namespace Auth.Core.Services
 
 
                 //broadcast login detail to email
-                _ = await _authUserManagement.SendRegistrationEmail(user, "","SchoolTrack", "SchoolTrack", "SchoolTrack", "SchoolTrack");
+                _ = await _authUserManagement.SendRegistrationEmail(user, "", "SchoolTrack", "", "", "", "");
 
                 await _publishService.PublishMessage(Topics.Admin, BusMessageTypes.ADMIN, new AdminSharedModel
                 {
@@ -145,7 +145,7 @@ namespace Auth.Core.Services
             }
             catch (Exception)
             {
-                
+
                 _unitOfWork.Rollback();
                 throw;
             }
@@ -203,7 +203,7 @@ namespace Auth.Core.Services
                     UserType = UserType.GlobalAdmin
                 };
 
-            
+
                 _adminRepo.Insert(admin);
             }
 
@@ -253,7 +253,7 @@ namespace Auth.Core.Services
             var query = _adminRepo.GetAll()
                             .Include(x => x.User)
                             .Where(x => x.Id == Id)
-                            .Include(x=> x.FileUploads)
+                            .Include(x => x.FileUploads)
                             .FirstOrDefault();
 
             result.Data = query;

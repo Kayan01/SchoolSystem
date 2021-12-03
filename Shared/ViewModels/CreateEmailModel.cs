@@ -18,13 +18,15 @@ namespace Shared.ViewModels
             User = user;
             Attachments = attachments;
         }
-        public CreateEmailModel(string templateType, Dictionary<string, string> replacementDictionary, UserVM user,string senderName,  IEnumerable<string> attachments = null)
+        public CreateEmailModel(string templateType, Dictionary<string, string> replacementDictionary, UserVM user, string senderName, string emailPassword, IEnumerable<string> attachments = null)
         {
             EmailTemplateType = templateType;
             ReplacementData = replacementDictionary;
             User = user;
             Attachments = attachments;
             SenderName = senderName;
+            EmailPassword = emailPassword;
+
         }
 
         public string EmailTemplateType { get; set; }
@@ -32,5 +34,6 @@ namespace Shared.ViewModels
         public UserVM User { get; set; }
         public IEnumerable<string> Attachments { get; set; }
         public string SenderName { get; set; }
+        public string EmailPassword { get; set; }
     }
 }
