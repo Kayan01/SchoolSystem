@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LearningSvc.Core.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20210921114157_LearningMig")]
+    [Migration("20211207090220_LearningMig")]
     partial class LearningMig
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -392,81 +392,21 @@ namespace LearningSvc.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 21, 12, 41, 54, 458, DateTimeKind.Local).AddTicks(609),
+                            CreationTime = new DateTime(2021, 12, 7, 10, 2, 18, 956, DateTimeKind.Local).AddTicks(9522),
                             Description = "Testing"
                         },
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 9, 21, 12, 41, 54, 459, DateTimeKind.Local).AddTicks(7481),
+                            CreationTime = new DateTime(2021, 12, 7, 10, 2, 18, 957, DateTimeKind.Local).AddTicks(2247),
                             Description = "Unit Test"
                         });
-                });
-
-            modelBuilder.Entity("LearningSvc.Core.Models.Parent", b =>
-                {
-                    b.Property<long>("Id")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("CreatorUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HomeAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("LastModifierUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OfficeAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RegNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SecondaryEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SecondaryPhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Parents");
                 });
 
             modelBuilder.Entity("LearningSvc.Core.Models.School", b =>
                 {
                     b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
@@ -490,6 +430,9 @@ namespace LearningSvc.Core.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailPassword")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -633,8 +576,14 @@ namespace LearningSvc.Core.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("ParentId")
+                    b.Property<string>("ParentEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("ParentId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("ParentName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
@@ -654,8 +603,6 @@ namespace LearningSvc.Core.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClassId");
-
-                    b.HasIndex("ParentId");
 
                     b.ToTable("Students");
                 });
@@ -1101,12 +1048,6 @@ namespace LearningSvc.Core.Migrations
                     b.HasOne("LearningSvc.Core.Models.SchoolClass", "Class")
                         .WithMany("Students")
                         .HasForeignKey("ClassId");
-
-                    b.HasOne("LearningSvc.Core.Models.Parent", "Parent")
-                        .WithMany("Students")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("LearningSvc.Core.Models.Teacher", b =>

@@ -67,12 +67,12 @@ namespace FacilitySvc.Core.Migrations
             migrationBuilder.InsertData(
                 table: "MyNotice",
                 columns: new[] { "Id", "CreationTime", "CreatorUserId", "Description", "LastModificationTime", "LastModifierUserId" },
-                values: new object[] { 1L, new DateTime(2021, 9, 21, 12, 36, 42, 105, DateTimeKind.Local).AddTicks(1795), null, "Testing", null, null });
+                values: new object[] { 1L, new DateTime(2021, 12, 7, 9, 58, 51, 859, DateTimeKind.Local).AddTicks(7479), null, "Testing", null, null });
 
             migrationBuilder.InsertData(
                 table: "MyNotice",
                 columns: new[] { "Id", "CreationTime", "CreatorUserId", "Description", "LastModificationTime", "LastModifierUserId" },
-                values: new object[] { 2L, new DateTime(2021, 9, 21, 12, 36, 42, 105, DateTimeKind.Local).AddTicks(4800), null, "Unit Test", null, null });
+                values: new object[] { 2L, new DateTime(2021, 12, 7, 9, 58, 51, 860, DateTimeKind.Local).AddTicks(293), null, "Unit Test", null, null });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

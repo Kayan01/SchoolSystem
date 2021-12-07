@@ -46,33 +46,6 @@ namespace LearningSvc.Core.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Parents",
-                columns: table => new
-                {
-                    Id = table.Column<long>(nullable: false),
-                    CreationTime = table.Column<DateTime>(nullable: false),
-                    CreatorUserId = table.Column<long>(nullable: true),
-                    LastModificationTime = table.Column<DateTime>(nullable: true),
-                    LastModifierUserId = table.Column<long>(nullable: true),
-                    UserId = table.Column<long>(nullable: false),
-                    IsDeleted = table.Column<bool>(nullable: false),
-                    IsActive = table.Column<bool>(nullable: false),
-                    FirstName = table.Column<string>(nullable: true),
-                    LastName = table.Column<string>(nullable: true),
-                    Email = table.Column<string>(nullable: true),
-                    Phone = table.Column<string>(nullable: true),
-                    RegNumber = table.Column<string>(nullable: true),
-                    SecondaryPhoneNumber = table.Column<string>(nullable: true),
-                    SecondaryEmail = table.Column<string>(nullable: true),
-                    HomeAddress = table.Column<string>(nullable: true),
-                    OfficeAddress = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Parents", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Periods",
                 columns: table => new
                 {
@@ -137,8 +110,7 @@ namespace LearningSvc.Core.Migrations
                 name: "Schools",
                 columns: table => new
                 {
-                    Id = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<long>(nullable: false),
                     CreationTime = table.Column<DateTime>(nullable: false),
                     CreatorUserId = table.Column<long>(nullable: true),
                     LastModificationTime = table.Column<DateTime>(nullable: true),
@@ -155,7 +127,8 @@ namespace LearningSvc.Core.Migrations
                     Logo = table.Column<string>(nullable: true),
                     Email = table.Column<string>(nullable: true),
                     PhoneNumber = table.Column<string>(nullable: true),
-                    IsActive = table.Column<bool>(nullable: false)
+                    IsActive = table.Column<bool>(nullable: false),
+                    EmailPassword = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -201,7 +174,9 @@ namespace LearningSvc.Core.Migrations
                     TenantId = table.Column<long>(nullable: false),
                     ClassId = table.Column<long>(nullable: true),
                     StudentStatusInSchool = table.Column<int>(nullable: false),
-                    ParentId = table.Column<long>(nullable: false)
+                    ParentId = table.Column<long>(nullable: true),
+                    ParentName = table.Column<string>(nullable: true),
+                    ParentEmail = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -212,12 +187,6 @@ namespace LearningSvc.Core.Migrations
                         principalTable: "SchoolClasses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Students_Parents_ParentId",
-                        column: x => x.ParentId,
-                        principalTable: "Parents",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -619,12 +588,12 @@ namespace LearningSvc.Core.Migrations
             migrationBuilder.InsertData(
                 table: "MyNotice",
                 columns: new[] { "Id", "CreationTime", "CreatorUserId", "Description", "LastModificationTime", "LastModifierUserId" },
-                values: new object[] { 1L, new DateTime(2021, 9, 21, 12, 41, 54, 458, DateTimeKind.Local).AddTicks(609), null, "Testing", null, null });
+                values: new object[] { 1L, new DateTime(2021, 12, 7, 10, 2, 18, 956, DateTimeKind.Local).AddTicks(9522), null, "Testing", null, null });
 
             migrationBuilder.InsertData(
                 table: "MyNotice",
                 columns: new[] { "Id", "CreationTime", "CreatorUserId", "Description", "LastModificationTime", "LastModifierUserId" },
-                values: new object[] { 2L, new DateTime(2021, 9, 21, 12, 41, 54, 459, DateTimeKind.Local).AddTicks(7481), null, "Unit Test", null, null });
+                values: new object[] { 2L, new DateTime(2021, 12, 7, 10, 2, 18, 957, DateTimeKind.Local).AddTicks(2247), null, "Unit Test", null, null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AssignmentAnswers_AssignmentId",
@@ -733,11 +702,6 @@ namespace LearningSvc.Core.Migrations
                 column: "ClassId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Students_ParentId",
-                table: "Students",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_SubjectAttendance_StudentId",
                 table: "SubjectAttendance",
                 column: "StudentId");
@@ -819,9 +783,6 @@ namespace LearningSvc.Core.Migrations
 
             migrationBuilder.DropTable(
                 name: "FileUploads");
-
-            migrationBuilder.DropTable(
-                name: "Parents");
 
             migrationBuilder.DropTable(
                 name: "SchoolClassSubjects");

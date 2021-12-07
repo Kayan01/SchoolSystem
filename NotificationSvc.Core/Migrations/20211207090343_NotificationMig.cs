@@ -107,17 +107,17 @@ namespace NotificationSvc.Core.Migrations
             migrationBuilder.InsertData(
                 table: "Notification",
                 columns: new[] { "Id", "CreationTime", "CreatorUserId", "Description", "Entity", "EntityId" },
-                values: new object[] { 1L, new DateTime(2021, 9, 21, 12, 44, 46, 50, DateTimeKind.Local).AddTicks(250), null, "Testing", null, null });
+                values: new object[] { 1L, new DateTime(2021, 12, 7, 10, 3, 42, 388, DateTimeKind.Local).AddTicks(3014), null, "Testing", null, null });
 
             migrationBuilder.InsertData(
                 table: "Notification",
                 columns: new[] { "Id", "CreationTime", "CreatorUserId", "Description", "Entity", "EntityId" },
-                values: new object[] { 2L, new DateTime(2021, 9, 21, 12, 44, 46, 50, DateTimeKind.Local).AddTicks(3285), null, "Unit Test", null, null });
+                values: new object[] { 2L, new DateTime(2021, 12, 7, 10, 3, 42, 388, DateTimeKind.Local).AddTicks(6113), null, "Unit Test", null, null });
 
             migrationBuilder.InsertData(
                 table: "UserNotification",
                 columns: new[] { "NotificationId", "UserId", "DateRead", "IsRead" },
-                values: new object[] { 1L, 1L, new DateTime(2021, 9, 21, 12, 44, 46, 56, DateTimeKind.Local).AddTicks(2496), true });
+                values: new object[] { 1L, 1L, new DateTime(2021, 12, 7, 10, 3, 42, 394, DateTimeKind.Local).AddTicks(4692), true });
 
             migrationBuilder.InsertData(
                 table: "UserNotification",

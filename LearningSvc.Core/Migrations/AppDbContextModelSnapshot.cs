@@ -390,13 +390,13 @@ namespace LearningSvc.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 12, 3, 13, 35, 57, 557, DateTimeKind.Local).AddTicks(8050),
+                            CreationTime = new DateTime(2021, 12, 7, 10, 2, 18, 956, DateTimeKind.Local).AddTicks(9522),
                             Description = "Testing"
                         },
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 12, 3, 13, 35, 57, 557, DateTimeKind.Local).AddTicks(9952),
+                            CreationTime = new DateTime(2021, 12, 7, 10, 2, 18, 957, DateTimeKind.Local).AddTicks(2247),
                             Description = "Unit Test"
                         });
                 });
