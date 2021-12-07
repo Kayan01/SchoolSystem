@@ -49,13 +49,13 @@ namespace FacilitySvc.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 21, 12, 36, 42, 105, DateTimeKind.Local).AddTicks(1795),
+                            CreationTime = new DateTime(2021, 12, 7, 9, 58, 51, 859, DateTimeKind.Local).AddTicks(7479),
                             Description = "Testing"
                         },
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 9, 21, 12, 36, 42, 105, DateTimeKind.Local).AddTicks(4800),
+                            CreationTime = new DateTime(2021, 12, 7, 9, 58, 51, 860, DateTimeKind.Local).AddTicks(293),
                             Description = "Unit Test"
                         });
                 });
