@@ -9,7 +9,7 @@ namespace NotificationSvc.Core.Services.Interfaces
 {
     public interface IEmailService
     {
-        Task SendEmail(string[] emailAddresses, string emailTemplate, Dictionary<string, string> replacements,string senderName, IEnumerable<string> attachments = null);
+        Task SendEmail(string[] emailAddresses, string emailTemplate, Dictionary<string, string> replacements, string senderName, string emailPassword, IEnumerable<string> attachments = null);
 
         Task<IEnumerable<EmailVM>> GetEmails(string recipient, string subject);
     }

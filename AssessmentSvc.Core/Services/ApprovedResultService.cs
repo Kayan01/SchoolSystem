@@ -994,6 +994,7 @@ namespace AssessmentSvc.Core.Services
                            {"phoneNumber",school.PhoneNumber }
                    },
                    new UserVM() { FullName = m.ParentName, Email = m.Email },
+                   school.Email,school.EmailPassword,
                    new List<string> { pdfPaths[m.StudentId] }
                 )).ToList()
             });

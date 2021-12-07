@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Auth.Core.Migrations
 {
-    public partial class AnewMigrations : Migration
+    public partial class AuthMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -293,7 +293,8 @@ namespace Auth.Core.Migrations
                     IsDeleted = table.Column<bool>(nullable: false),
                     LastModificationTime = table.Column<DateTime>(nullable: true),
                     LastLoginDate = table.Column<DateTime>(nullable: true),
-                    UserType = table.Column<int>(nullable: false)
+                    UserType = table.Column<int>(nullable: false),
+                    UserStatus = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -664,11 +665,12 @@ namespace Auth.Core.Migrations
                     DeletionTime = table.Column<DateTime>(nullable: true),
                     FirstName = table.Column<string>(nullable: true),
                     LastName = table.Column<string>(nullable: true),
-                    Email = table.Column<string>(nullable: true),
+                    Email = table.Column<string>(nullable: false),
                     PhoneNumber = table.Column<string>(nullable: true),
+                    EmailPassword = table.Column<string>(nullable: false),
                     IsPrimaryContact = table.Column<bool>(nullable: false),
-                    SchoolGroupId = table.Column<long>(nullable: true),
-                    SchoolId = table.Column<long>(nullable: true)
+                    SchoolId = table.Column<long>(nullable: false),
+                    SchoolGroupId = table.Column<long>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -684,7 +686,7 @@ namespace Auth.Core.Migrations
                         column: x => x.SchoolId,
                         principalTable: "Schools",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -709,6 +711,36 @@ namespace Auth.Core.Migrations
                     table.ForeignKey(
                         name: "FK_SchoolSections_Schools_TenantId",
                         column: x => x.TenantId,
+                        principalTable: "Schools",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SchoolSubscriptions",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreationTime = table.Column<DateTime>(nullable: false),
+                    CreatorUserId = table.Column<long>(nullable: true),
+                    LastModificationTime = table.Column<DateTime>(nullable: true),
+                    LastModifierUserId = table.Column<long>(nullable: true),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    DeleterUserId = table.Column<long>(nullable: true),
+                    DeletionTime = table.Column<DateTime>(nullable: true),
+                    StartDate = table.Column<DateTime>(nullable: false),
+                    EndDate = table.Column<DateTime>(nullable: false),
+                    PricePerStudent = table.Column<int>(nullable: false),
+                    ExpectedNumberOfStudent = table.Column<int>(nullable: false),
+                    SchoolId = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SchoolSubscriptions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SchoolSubscriptions_Schools_SchoolId",
+                        column: x => x.SchoolId,
                         principalTable: "Schools",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -782,6 +814,38 @@ namespace Auth.Core.Migrations
                         name: "FK_Staffs_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SubscriptionInvoices",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreationTime = table.Column<DateTime>(nullable: false),
+                    CreatorUserId = table.Column<long>(nullable: true),
+                    LastModificationTime = table.Column<DateTime>(nullable: true),
+                    LastModifierUserId = table.Column<long>(nullable: true),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    DeleterUserId = table.Column<long>(nullable: true),
+                    DeletionTime = table.Column<DateTime>(nullable: true),
+                    NumberOfStudent = table.Column<int>(nullable: false),
+                    AmountPerStudent = table.Column<int>(nullable: false),
+                    InvoiceType = table.Column<int>(nullable: false),
+                    DueDate = table.Column<DateTime>(nullable: false),
+                    Paid = table.Column<bool>(nullable: false),
+                    PaidDate = table.Column<DateTime>(nullable: false),
+                    SchoolId = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SubscriptionInvoices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SubscriptionInvoices_Schools_SchoolId",
+                        column: x => x.SchoolId,
+                        principalTable: "Schools",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1143,8 +1207,8 @@ namespace Auth.Core.Migrations
                 columns: new[] { "Id", "CreationTime", "CreatorUserId", "DeleterUserId", "DeletionTime", "Description", "IsDeleted", "LastModificationTime", "LastModifierUserId", "Title" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2021, 9, 21, 12, 29, 21, 746, DateTimeKind.Local).AddTicks(2009), null, null, null, "Testing", false, null, null, "Debug" },
-                    { 2, new DateTime(2021, 9, 21, 12, 29, 21, 746, DateTimeKind.Local).AddTicks(5323), null, null, null, "Unit Test", false, null, null, "Test" }
+                    { 1, new DateTime(2021, 12, 6, 14, 52, 57, 232, DateTimeKind.Local).AddTicks(2970), null, null, null, "Testing", false, null, null, "Debug" },
+                    { 2, new DateTime(2021, 12, 6, 14, 52, 57, 232, DateTimeKind.Local).AddTicks(8255), null, null, null, "Unit Test", false, null, null, "Test" }
                 });
 
             migrationBuilder.InsertData(
@@ -1152,40 +1216,40 @@ namespace Auth.Core.Migrations
                 columns: new[] { "Id", "Address", "City", "ClientCode", "Country", "CreationTime", "CreatorUserId", "DeleterUserId", "DeletionTime", "DomainName", "IsActive", "IsDeleted", "LastModificationTime", "LastModifierUserId", "Name", "PrimaryColor", "SchoolGroupId", "SecondaryColor", "State", "WebsiteAddress" },
                 values: new object[,]
                 {
-                    { 1L, null, null, null, null, new DateTime(2021, 9, 21, 12, 29, 21, 749, DateTimeKind.Local).AddTicks(6892), null, null, null, null, false, false, null, null, "Johnson International", null, null, null, null, null },
-                    { 2L, null, null, null, null, new DateTime(2021, 9, 21, 12, 29, 21, 749, DateTimeKind.Local).AddTicks(7766), null, null, null, null, false, false, null, null, "Bariga International", null, null, null, null, null },
-                    { 3L, null, null, null, null, new DateTime(2021, 9, 21, 12, 29, 21, 749, DateTimeKind.Local).AddTicks(7805), null, null, null, null, false, false, null, null, "Ikeja International", null, null, null, null, null }
+                    { 1L, null, null, null, null, new DateTime(2021, 12, 6, 14, 52, 57, 236, DateTimeKind.Local).AddTicks(6827), null, null, null, null, false, false, null, null, "Johnson International", null, null, null, null, null },
+                    { 2L, null, null, null, null, new DateTime(2021, 12, 6, 14, 52, 57, 236, DateTimeKind.Local).AddTicks(7851), null, null, null, null, false, false, null, null, "Bariga International", null, null, null, null, null },
+                    { 3L, null, null, null, null, new DateTime(2021, 12, 6, 14, 52, 57, 236, DateTimeKind.Local).AddTicks(7903), null, null, null, null, false, false, null, null, "Ikeja International", null, null, null, null, null }
                 });
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "CreationTime", "DeletionTime", "Email", "EmailConfirmed", "FirstName", "IsDeleted", "IsFirstTimeLogin", "LastLoginDate", "LastModificationTime", "LastName", "LockoutEnabled", "LockoutEnd", "MiddleName", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "Unit", "UserName", "UserType" },
-                values: new object[] { 1L, 0, "5469b22a-2448-412d-a386-22578a19662e", new DateTime(2021, 9, 21, 12, 29, 21, 643, DateTimeKind.Local).AddTicks(2144), null, "root@myschooltrack.com", true, "Super Admin", false, false, new DateTime(2021, 9, 21, 12, 29, 21, 644, DateTimeKind.Local).AddTicks(5155), null, "User", false, null, null, "ROOT@MYSCHOOLTRACK.COM", "ROOT@MYSCHOOLTRACK.COM", "AQAAAAEAACcQAAAAEPy9SX1yKkeykACCYFXEP5egYywlIp/s6Qs17zhl3M1BYrSwY3VRTVCk1qCaFiU1+Q==", null, false, "99ae0c45-d682-4542-9ba7-1281e471916b", false, null, "root@myschooltrack.com", 0 });
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "CreationTime", "DeletionTime", "Email", "EmailConfirmed", "FirstName", "IsDeleted", "IsFirstTimeLogin", "LastLoginDate", "LastModificationTime", "LastName", "LockoutEnabled", "LockoutEnd", "MiddleName", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "Unit", "UserName", "UserStatus", "UserType" },
+                values: new object[] { 1L, 0, "b5ec81aa-0b38-4610-a618-b099b1ee4a37", new DateTime(2021, 12, 6, 14, 52, 57, 117, DateTimeKind.Local).AddTicks(8485), null, "root@myschooltrack.com", true, "Super Admin", false, false, new DateTime(2021, 12, 6, 14, 52, 57, 119, DateTimeKind.Local).AddTicks(1451), null, "User", false, null, null, "ROOT@MYSCHOOLTRACK.COM", "ROOT@MYSCHOOLTRACK.COM", "AQAAAAEAACcQAAAAEODiPPnn1G2aR4kS2KVWhwLww0nndr6EtLaOmG9TlKCBM8/9Ai+13e6QdolhkUcU/Q==", null, false, "99ae0c45-d682-4542-9ba7-1281e471916b", false, null, "root@myschooltrack.com", 0, 0 });
 
             migrationBuilder.InsertData(
                 table: "Admins",
                 columns: new[] { "Id", "CreationTime", "CreatorUserId", "DeleterUserId", "DeletionTime", "IsDeleted", "LastModificationTime", "LastModifierUserId", "UserId", "UserType" },
-                values: new object[] { 1L, new DateTime(2021, 9, 21, 12, 29, 21, 738, DateTimeKind.Local).AddTicks(977), null, null, null, false, null, null, 1L, 1 });
+                values: new object[] { 1L, new DateTime(2021, 12, 6, 14, 52, 57, 224, DateTimeKind.Local).AddTicks(5622), null, null, null, false, null, null, 1L, 1 });
 
             migrationBuilder.InsertData(
                 table: "SchoolSections",
                 columns: new[] { "Id", "CreationTime", "CreatorUserId", "DeleterUserId", "DeletionTime", "IsDeleted", "LastModificationTime", "LastModifierUserId", "Name", "TenantId" },
-                values: new object[] { 2L, new DateTime(2021, 9, 21, 12, 29, 21, 750, DateTimeKind.Local).AddTicks(971), null, null, null, false, null, null, "B", 1L });
+                values: new object[] { 2L, new DateTime(2021, 12, 6, 14, 52, 57, 237, DateTimeKind.Local).AddTicks(2041), null, null, null, false, null, null, "B", 1L });
 
             migrationBuilder.InsertData(
                 table: "SchoolSections",
                 columns: new[] { "Id", "CreationTime", "CreatorUserId", "DeleterUserId", "DeletionTime", "IsDeleted", "LastModificationTime", "LastModifierUserId", "Name", "TenantId" },
-                values: new object[] { 1L, new DateTime(2021, 9, 21, 12, 29, 21, 749, DateTimeKind.Local).AddTicks(9732), null, null, null, false, null, null, "A", 1L });
+                values: new object[] { 1L, new DateTime(2021, 12, 6, 14, 52, 57, 237, DateTimeKind.Local).AddTicks(392), null, null, null, false, null, null, "A", 1L });
 
             migrationBuilder.InsertData(
                 table: "Classes",
                 columns: new[] { "Id", "ClassArm", "CreationTime", "CreatorUserId", "DeleterUserId", "DeletionTime", "IsActive", "IsDeleted", "IsTerminalClass", "LastModificationTime", "LastModifierUserId", "Name", "SchoolSectionId", "Sequence", "TenantId" },
-                values: new object[] { 1L, null, new DateTime(2021, 9, 21, 12, 29, 21, 750, DateTimeKind.Local).AddTicks(2582), null, null, null, false, false, false, null, null, "Jss1A", 1L, 0, 0L });
+                values: new object[] { 1L, null, new DateTime(2021, 12, 6, 14, 52, 57, 237, DateTimeKind.Local).AddTicks(3894), null, null, null, false, false, false, null, null, "Jss1A", 1L, 0, 0L });
 
             migrationBuilder.InsertData(
                 table: "Classes",
                 columns: new[] { "Id", "ClassArm", "CreationTime", "CreatorUserId", "DeleterUserId", "DeletionTime", "IsActive", "IsDeleted", "IsTerminalClass", "LastModificationTime", "LastModifierUserId", "Name", "SchoolSectionId", "Sequence", "TenantId" },
-                values: new object[] { 2L, null, new DateTime(2021, 9, 21, 12, 29, 21, 750, DateTimeKind.Local).AddTicks(3941), null, null, null, false, false, false, null, null, "Jss2A", 2L, 0, 0L });
+                values: new object[] { 2L, null, new DateTime(2021, 12, 6, 14, 52, 57, 238, DateTimeKind.Local).AddTicks(9654), null, null, null, false, false, false, null, null, "Jss2A", 2L, 0, 0L });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Admins_UserId",
@@ -1358,6 +1422,12 @@ namespace Auth.Core.Migrations
                 column: "TenantId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SchoolSubscriptions_SchoolId",
+                table: "SchoolSubscriptions",
+                column: "SchoolId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Staffs_DepartmentId1",
                 table: "Staffs",
                 column: "DepartmentId1");
@@ -1415,6 +1485,11 @@ namespace Auth.Core.Migrations
                 name: "IX_Students_UserId",
                 table: "Students",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SubscriptionInvoices_SchoolId",
+                table: "SubscriptionInvoices",
+                column: "SchoolId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TeachingStaffs_ClassId",
@@ -1498,7 +1573,13 @@ namespace Auth.Core.Migrations
                 name: "SchoolProperties");
 
             migrationBuilder.DropTable(
+                name: "SchoolSubscriptions");
+
+            migrationBuilder.DropTable(
                 name: "SchoolTrackRoles");
+
+            migrationBuilder.DropTable(
+                name: "SubscriptionInvoices");
 
             migrationBuilder.DropTable(
                 name: "TeachingStaffs");

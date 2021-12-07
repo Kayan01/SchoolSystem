@@ -63,7 +63,7 @@ namespace Auth.Core.Services
             {
                 return new ResultModel<bool>("Unique name required for domain");
             }
-            return new ResultModel<bool>(data : true);
+            return new ResultModel<bool>(data: true);
         }
 
         public async Task<ResultModel<SchoolVM>> AddSchool(CreateSchoolVM model)
@@ -78,7 +78,7 @@ namespace Auth.Core.Services
 
             _unitOfWork.BeginTransaction();
             var files = new List<FileUpload>();
-          
+
             //use school grouo files for school
             if (model.GroupId.HasValue)
             {
@@ -111,7 +111,8 @@ namespace Auth.Core.Services
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
                 PhoneNumber = model.ContactPhoneNo,
-                IsPrimaryContact = true
+                IsPrimaryContact = true,
+                EmailPassword = model.ContactEmailPassword
             };
 
             //get school groupId if it exists
@@ -182,7 +183,7 @@ namespace Auth.Core.Services
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.SchoolAdmin.GetDescription()));
 
             //broadcast login detail to email
-            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name,contactDetails.Email,school.Address,contactDetails.PhoneNumber);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName, school.Name, contactDetails.Email, school.Address, contactDetails.PhoneNumber, "");
 
             if (emailResult.HasError)
             {
@@ -205,7 +206,8 @@ namespace Auth.Core.Services
                 DomainName = school.DomainName,
                 Name = school.Name,
                 State = school.State,
-                Logo = school.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName())?.Path
+                Logo = school.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName())?.Path,
+                EmailPassword = contactDetails.EmailPassword
             });
 
 
@@ -222,31 +224,31 @@ namespace Auth.Core.Services
             {
                 firstQuery = firstQuery.Where(x => x.SchoolGroupId == groupId);
             }
-           var query = firstQuery.Include(x => x.Staffs)
-                .Include(x => x.FileUploads)
-                .Include(x => x.Students)
-                .Include(x => x.TeachingStaffs)
-                .OrderByDescending(x => x.CreationTime)
-                .Select(x => new
-                {
-                    x.Address,
-                    x.City,
-                    x.ClientCode,
-                    x.Country,
-                    x.CreationTime,
-                    x.DomainName,
-                    logoPath = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path,
-                    x.Id,
-                    x.Name,
-                    x.SchoolSections,
-                    x.State,
-                    staffCount = x.Staffs.Count,
-                    studentCount = x.Students.Count,
-                    teacherCount = x.Students.Count,
-                    x.WebsiteAddress,
-                    x.IsActive,
-                    x.SchoolGroupId
-                });
+            var query = firstQuery.Include(x => x.Staffs)
+                 .Include(x => x.FileUploads)
+                 .Include(x => x.Students)
+                 .Include(x => x.TeachingStaffs)
+                 .OrderByDescending(x => x.CreationTime)
+                 .Select(x => new
+                 {
+                     x.Address,
+                     x.City,
+                     x.ClientCode,
+                     x.Country,
+                     x.CreationTime,
+                     x.DomainName,
+                     logoPath = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path,
+                     x.Id,
+                     x.Name,
+                     x.SchoolSections,
+                     x.State,
+                     staffCount = x.Staffs.Count,
+                     studentCount = x.Students.Count,
+                     teacherCount = x.Students.Count,
+                     x.WebsiteAddress,
+                     x.IsActive,
+                     x.SchoolGroupId
+                 });
 
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
@@ -294,11 +296,11 @@ namespace Auth.Core.Services
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "School not found.");
             }
 
-            if(!(schoolInfo.path == null))
+            if (!(schoolInfo.path == null))
             {
                 logo = _documentService.TryGetUploadedFile(schoolInfo.path);
             }
-            
+
             if (string.IsNullOrWhiteSpace(logo))
             {
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
@@ -333,11 +335,11 @@ namespace Auth.Core.Services
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "School not found.");
             }
 
-            if(!(schoolInfo.path == null))
+            if (!(schoolInfo.path == null))
             {
                 logo = _documentService.TryGetUploadedFile(schoolInfo.path);
             }
-            
+
             if (string.IsNullOrWhiteSpace(logo))
             {
                 return new ResultModel<SchoolNameAndLogoVM>(errorMessage: "Logo not found.");
@@ -414,7 +416,8 @@ namespace Auth.Core.Services
                     TeachersCount = school.teachingStaffCount,
                     TotalUsersCount = school.teachingStaffCount + school.staffCount + school.studentCount,
                     PrimaryColor = school.PrimaryColor,
-                    SecondaryColor = school.SecondaryColor
+                    SecondaryColor = school.SecondaryColor,
+                    ContactEmailPassword = school.contactDetails.EmailPassword
                 }
             };
         }
@@ -482,7 +485,8 @@ namespace Auth.Core.Services
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
                 PhoneNumber = model.ContactPhoneNo,
-                IsPrimaryContact = true
+                IsPrimaryContact = true,
+                EmailPassword = model.ContactEmailPassword
             };
 
             sch.Name = model.Name;
@@ -547,7 +551,8 @@ namespace Auth.Core.Services
                 DomainName = sch.DomainName,
                 Name = sch.Name,
                 State = sch.State,
-                Logo = sch.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName())?.Path
+                Logo = sch.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName())?.Path,
+                EmailPassword = contactDetails.EmailPassword
             });
 
             result.Data = sch;
@@ -634,7 +639,8 @@ namespace Auth.Core.Services
                     FirstName = model.ContactFirstName,
                     LastName = model.ContactLastName,
                     PhoneNumber = model.ContactPhoneNo,
-                    IsPrimaryContact = true
+                    IsPrimaryContact = true,
+                    EmailPassword = model.ContactEmailPassword
                 };
                 var school = new School
                 {
@@ -673,7 +679,8 @@ namespace Auth.Core.Services
                     DomainName = school.DomainName,
                     Name = school.Name,
                     State = school.State,
-                    Logo = school.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path
+                    Logo = school.FileUploads.FirstOrDefault(x => x.Name == DocumentType.Logo.GetDisplayName()).Path,
+                    EmailPassword = school.SchoolContactDetails[0].EmailPassword
                 });
             }
 
@@ -728,7 +735,7 @@ namespace Auth.Core.Services
             await _unitOfWork.SaveChangesAsync();
 
             return new ResultModel<bool>(data: true, message: "School was deactivated");
-              
+
         }
 
         public async Task<ResultModel<bool>> ActivateSchool(long Id)

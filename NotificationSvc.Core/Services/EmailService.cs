@@ -65,7 +65,7 @@ namespace NotificationSvc.Core.Services
             return new List<EmailVM>();
         }
 
-        public async Task SendEmail(string[] emailAddresses, string emailTemplate, Dictionary<string, string> replacements,string senderName, IEnumerable<string> attachments = null)
+        public async Task SendEmail(string[] emailAddresses, string emailTemplate, Dictionary<string, string> replacements, string senderName, string emailPassword, IEnumerable<string> attachments = null)
         {
             var template = CoreConstants.EmailTemplates.FirstOrDefault(x => x.Name.Equals(emailTemplate, StringComparison.InvariantCultureIgnoreCase));
 
@@ -74,25 +74,26 @@ namespace NotificationSvc.Core.Services
 
             _logger.LogInformation($"email template {template.Name} {template.TemplatePath}");
             Mail mailBase;
-            if (senderName != null)
+            if (senderName == null)
             {
-                mailBase = new Mail(senderName, template.Subject, emailAddresses);
+                mailBase = new Mail(_appSettingsConfiguration.SystemEmail, template.Subject, emailPassword, emailAddresses);
+
             }
             else
             {
-                mailBase = new Mail(_appSettingsConfiguration.SystemEmail, template.Subject, emailAddresses);
+                mailBase = new Mail(senderName, template.Subject, emailPassword, emailAddresses);
             }
 
             mailBase.IsBodyHtml = true;
             mailBase.BodyIsFile = true;
             mailBase.BodyPath = _documentService.GetFile(template.TemplatePath).PhysicalPath;
-            
+
             if (attachments != null)
             {
                 mailBase.Attachments = new List<Attachment>();
                 foreach (var item in attachments)
                 {
-                   var fileInfo = _fileStorageService.GetFile(item);
+                    var fileInfo = _fileStorageService.GetFile(item);
                     mailBase.Attachments.Add(new Attachment(fileInfo.PhysicalPath));
                 }
             }

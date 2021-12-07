@@ -12,27 +12,29 @@ namespace Auth.Core.ViewModels.SchoolGroup
     public class UpdateSchoolGroupVM
     {
         [Required]
-        
+
         public string Name { get; set; }
         [Required]
-        
+
         public string WebsiteAddress { get; set; }
-        
+
         public string PrimaryColor { get; set; }
-        
+
         public string SecondaryColor { get; set; }
         [Required]
-        
+
         public string ContactFirstName { get; set; }
         [Required]
-        
+
         public string ContactLastName { get; set; }
         [Required]
-        
+
         public string ContactPhoneNo { get; set; }
         [Required]
-        
+
         public string ContactEmail { get; set; }
+        [Required]
+        public string ContactEmailPassword { get; set; }
         public bool IsActive { get; set; } = true;
         public List<DocumentType> DocumentTypes { get; set; }
         public List<IFormFile> Files { get; set; }

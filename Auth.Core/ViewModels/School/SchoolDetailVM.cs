@@ -27,6 +27,7 @@ namespace Auth.Core.ViewModels
         public DateTime DateCreated { get; set; }
         public string Icon { get; set; }
         public string Logo { get; set; }
+        public string ContactEmailPassword { get; set; }
 
         public long? TotalUsersCount { get; set; }
         public long? StaffCount { get; set; }
