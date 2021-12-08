@@ -8,6 +8,6 @@ namespace Auth.Core.Models.Contact
     {
 
         public bool IsPrimaryContact { get; set; }
-        public  long SchoolId { get; set; }
+        public  long? SchoolId { get; set; }
     }
 }
