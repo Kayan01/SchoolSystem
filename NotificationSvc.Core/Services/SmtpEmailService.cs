@@ -43,6 +43,29 @@ namespace NotificationSvc.Core.Services
             return client;
         }
 
+        private SmtpClient GetSmtpClient2(string userName, string password)
+        {
+            var client = new SmtpClient
+            {
+                Host = _smtpsettings.Server,
+                Port = _smtpsettings.Port,
+                EnableSsl = _smtpsettings.UseSSl,
+                UseDefaultCredentials = _smtpsettings.UseDefaultCredentials
+            };
+
+            if (!_smtpsettings.UseDefaultCredentials)
+                if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+                {
+                    client.Credentials = new NetworkCredential(userName, password);
+                }
+                else
+                {
+                    client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
+                }
+
+            return client;
+        }
+
         private async Task<MailMessage> BuildMailMessage(MailBase mail, Dictionary<string, string> replacements = null)
         {
             ValidateMail(mail);
@@ -115,7 +138,7 @@ namespace NotificationSvc.Core.Services
             var message = BuildMailMessage(mail, replacements).Result;
             try
             {
-                using (var _smtpClient = GetSmtpClient())
+                using (var _smtpClient = GetSmtpClient2(mail.Sender, mail.EmailPassword))
                 {
                     _smtpClient.Send(message);
                 }
@@ -132,7 +155,7 @@ namespace NotificationSvc.Core.Services
             var message = await BuildMailMessage(mail, replacements);
             try
             {
-                using (var _smtpClient = GetSmtpClient())
+                using (var _smtpClient = GetSmtpClient2(mail.Sender, mail.EmailPassword))
                 {
                     await _smtpClient.SendMailAsync(message);
                 }

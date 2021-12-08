@@ -54,7 +54,7 @@ namespace Auth.Core.Services
             IUnitOfWork unitOfWork,
             UserManager<User> userManagement,
             IPublishService publishService,
-            IRepository<Department,long> departmentRepo,
+            IRepository<Department, long> departmentRepo,
             IHttpUserService httpUserService,
             IDocumentService documentService,
             ISchoolPropertyService schoolPropertyService,
@@ -91,7 +91,7 @@ namespace Auth.Core.Services
 
 
 
-            
+
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
             result.Data = new PaginatedModel<StaffVM>(pagedData.Select(x => new StaffVM
@@ -114,12 +114,12 @@ namespace Auth.Core.Services
             var result = new ResultModel<StaffDetailVM>();
             var staff = await _staffRepo.GetAll()
                             .Include(x => x.User)
-                            .Include(x=> x.WorkExperiences)
-                            .Include(x=> x.EducationExperiences)
-                            .Include(x=> x.NextOfKin)
-                            .Include(x=> x.Department)
-                            .Where(x=> x.Id == Id && x.StaffType == StaffType.NonTeachingStaff)
-                            .Select(x=> new {x , image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path })
+                            .Include(x => x.WorkExperiences)
+                            .Include(x => x.EducationExperiences)
+                            .Include(x => x.NextOfKin)
+                            .Include(x => x.Department)
+                            .Where(x => x.Id == Id && x.StaffType == StaffType.NonTeachingStaff)
+                            .Select(x => new { x, image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path })
                             .FirstOrDefaultAsync();
 
 
@@ -132,12 +132,12 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<StaffNameAndSignatureVM>();
             var staff = await _staffRepo.GetAll()
-                            .Where(x=> x.UserId == userId)
-                            .Select(n=> new StaffNameAndSignatureVM()
+                            .Where(x => x.UserId == userId)
+                            .Select(n => new StaffNameAndSignatureVM()
                             {
                                 FirstName = n.User.FirstName,
                                 LastName = n.User.LastName,
-                                Signature = n.FileUploads.Where(m=>m.Name == DocumentType.Signature.GetDisplayName()).FirstOrDefault().Path
+                                Signature = n.FileUploads.Where(m => m.Name == DocumentType.Signature.GetDisplayName()).FirstOrDefault().Path
                             })
                             .FirstOrDefaultAsync();
             if (staff == null)
@@ -147,7 +147,7 @@ namespace Auth.Core.Services
 
             var sign = _documentService.TryGetUploadedFile(staff.Signature);
             staff.Signature = sign;
-            
+
             result.Data = staff;
             return result;
         }
@@ -156,13 +156,13 @@ namespace Auth.Core.Services
         {
             var result = new ResultModel<List<StaffNameAndSignatureVM>>();
             var staffs = await _staffRepo.GetAll()
-                            .Where(x=>userIds.Contains(x.UserId))
-                            .Select(n=> new StaffNameAndSignatureVM()
+                            .Where(x => userIds.Contains(x.UserId))
+                            .Select(n => new StaffNameAndSignatureVM()
                             {
                                 FirstName = n.User.FirstName,
                                 LastName = n.User.LastName,
                                 UserId = n.UserId,
-                                Signature = n.FileUploads.Where(m=>m.Name == DocumentType.Signature.GetDisplayName()).FirstOrDefault().Path
+                                Signature = n.FileUploads.Where(m => m.Name == DocumentType.Signature.GetDisplayName()).FirstOrDefault().Path
                             })
                             .ToListAsync();
             if (getBytes)
@@ -203,7 +203,7 @@ namespace Auth.Core.Services
 
             //save filles
             var files = new List<FileUpload>();
-            
+
             if (model.Files != null && model.Files.Any())
             {
                 if (model.Files.Count != model.DocumentTypes.Count)
@@ -226,7 +226,7 @@ namespace Auth.Core.Services
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 Email = model.ContactDetails.EmailAddress,
-               UserName = model.ContactDetails.EmailAddress,
+                UserName = model.ContactDetails.EmailAddress,
                 PhoneNumber = model.ContactDetails.PhoneNumber,
                 MiddleName = model.OtherNames,
                 UserType = UserType.Staff,
@@ -235,7 +235,7 @@ namespace Auth.Core.Services
             var existingUser = await _userManager.FindByEmailAsync(user.Email);
             IdentityResult userResult;
 
-            if(existingUser != null)
+            if (existingUser != null)
             {
 
                 result.AddError($"User with Email : {existingUser.Email} already exist");
@@ -253,7 +253,7 @@ namespace Auth.Core.Services
             else
             {
                 userResult = await _userManager.CreateAsync(user, model.ContactDetails.PhoneNumber);
-            } 
+            }
 
             if (!userResult.Succeeded)
             {
@@ -269,16 +269,16 @@ namespace Auth.Core.Services
             //create next of kin
             var nextOfKin = new NextOfKin
             {
-                 Address = model.NextOfKin.NextKinAddress,
-                 Country = model.NextOfKin.NextKinCountry,
-                 FirstName = model.NextOfKin.NextKinFirstName,
-                 LastName = model.NextOfKin.NextKinLastName,
-                 Occupation = model.NextOfKin.NextKinOccupation,
-                 OtherName = model.NextOfKin.NextKinOtherName,
-                 Phone = model.NextOfKin.NextKinPhone,
-                 Relationship = model.NextOfKin.NextKinRelationship,
-                 State = model.NextOfKin.NextKinState,
-                 Town = model.NextOfKin.NextKinTown
+                Address = model.NextOfKin.NextKinAddress,
+                Country = model.NextOfKin.NextKinCountry,
+                FirstName = model.NextOfKin.NextKinFirstName,
+                LastName = model.NextOfKin.NextKinLastName,
+                Occupation = model.NextOfKin.NextKinOccupation,
+                OtherName = model.NextOfKin.NextKinOtherName,
+                Phone = model.NextOfKin.NextKinPhone,
+                Relationship = model.NextOfKin.NextKinRelationship,
+                State = model.NextOfKin.NextKinState,
+                Town = model.NextOfKin.NextKinTown
             };
 
             //get all workexperiences
@@ -374,7 +374,7 @@ namespace Auth.Core.Services
             //change user's username to reg number
             user.UserName = staff.RegNumber;
             user.NormalizedUserName = staff.RegNumber.ToUpper();
-           await _userManager.UpdateAsync(user);
+            await _userManager.UpdateAsync(user);
 
             _unitOfWork.Commit();
 
@@ -396,20 +396,20 @@ namespace Auth.Core.Services
             var school = await _schoolRepo.GetAll().Where(m => m.Id == schoolProperty.Data.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
             var contactdetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
             //broadcast login detail to email
-            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName, school.Name, contactdetails.Email,school.Address,contactdetails.PhoneNumber);
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName, school.Name, contactdetails.Email, school.Address, contactdetails.PhoneNumber, contactdetails.EmailPassword);
 
-            
+
             //Publish Message
             await _publishService.PublishMessage(Topics.Staff, BusMessageTypes.STAFF, new StaffSharedModel
-                {
-                    Id = staff.Id,
-                    IsActive = true,
-                    StaffType = staff.StaffType,
-                    TenantId = staff.TenantId,
-                    UserId = staff.UserId,
-                    RegNumber = staff.RegNumber
-                });
-            
+            {
+                Id = staff.Id,
+                IsActive = true,
+                StaffType = staff.StaffType,
+                TenantId = staff.TenantId,
+                UserId = staff.UserId,
+                RegNumber = staff.RegNumber
+            });
+
             return result;
         }
 
@@ -588,7 +588,7 @@ namespace Auth.Core.Services
                 staff.FileUploads = files;
             }
 
-           await _staffRepo.UpdateAsync(staff);
+            await _staffRepo.UpdateAsync(staff);
 
             _unitOfWork.SaveChanges();
             _unitOfWork.Commit();
@@ -665,7 +665,7 @@ namespace Auth.Core.Services
                 var existingUser = await _userManager.FindByEmailAsync(user.Email);
                 IdentityResult userResult;
 
-                if(existingUser != null)
+                if (existingUser != null)
                 {
                     result.AddError($"User with Email : {existingUser.Email} already exist");
                     return result;
@@ -683,7 +683,7 @@ namespace Auth.Core.Services
                 {
                     userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
                 }
-                
+
                 if (!userResult.Succeeded)
                 {
                     result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
@@ -747,10 +747,10 @@ namespace Auth.Core.Services
                 await _userManager.UpdateAsync(user);
             }
 
-           // await _unitOfWork.SaveChangesAsync();
+            // await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Commit();
 
-            foreach(var staff in staffs)
+            foreach (var staff in staffs)
             {
                 //publish to services
                 await _publishService.PublishMessage(Topics.Staff, BusMessageTypes.STAFF, new StaffSharedModel

@@ -132,7 +132,7 @@ namespace Auth.Core.Services
             _unitOfWork.BeginTransaction();
 
             //check if parent exists
-            var parent = await _parentRepo.GetAll().Include(m=>m.User)
+            var parent = await _parentRepo.GetAll().Include(m => m.User)
                 .Where(x => x.Id == model.ParentId)
                 .FirstOrDefaultAsync();
 
@@ -215,7 +215,7 @@ namespace Auth.Core.Services
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
             //add stafftype to claims
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Student.GetDescription()));
-           
+
             var immunizations = new List<ImmunizationHistory>();
 
             foreach (var im in model.ImmunizationVms)
@@ -228,7 +228,8 @@ namespace Auth.Core.Services
                 });
             }
 
-            var medicalHistory = new MedicalDetail {
+            var medicalHistory = new MedicalDetail
+            {
                 Allergies = model.Allergies,
                 BloodGroup = model.BloodGroup,
                 ConfidentialNotes = model.ConfidentialNotes,
@@ -236,12 +237,12 @@ namespace Auth.Core.Services
                 Genotype = model.Genotype,
                 ImmunizationHistories = immunizations
             };
-           // medicalHistory.ImmunizationHistories = immunizations;
+            // medicalHistory.ImmunizationHistories = immunizations;
 
             var stud = new Student
             {
 
-                UserId = user.Id ,
+                UserId = user.Id,
                 Address = model.ContactAddress,
                 AdmissionDate = model.AdmissionDate,
                 ClassId = model.ClassId,
@@ -262,7 +263,7 @@ namespace Auth.Core.Services
                 StateOfOrigin = model.StateOfOrigin,
                 StudentType = model.StudentType,
                 Town = model.ContactTown,
-                 IsActive = true
+                IsActive = true
             };
 
             stud = await SaveStudentWithSystemRegNumber(stud, schoolProperty.Data.Seperator, schoolProperty.Data.Prefix);
@@ -277,10 +278,10 @@ namespace Auth.Core.Services
 
             _unitOfWork.Commit();
 
-            var school = await _schoolRepo.GetAll().Where(m => m.Id == stud.TenantId).FirstOrDefaultAsync();
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == stud.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
             var contactDetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
             //broadcast login detail to email
-            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name, contactDetails.Email,school.Address,contactDetails.PhoneNumber);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName, school.Name, contactDetails.Email, school.Address, contactDetails.PhoneNumber, contactDetails.EmailPassword);
 
             if (emailResult.HasError)
             {
@@ -310,7 +311,7 @@ namespace Auth.Core.Services
             result.Data = new StudentVM
             {
                 Email = user.Email,
-                FirstName =user.FirstName,
+                FirstName = user.FirstName,
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
                 DateOfBirth = stud.DateOfBirth,
@@ -348,10 +349,10 @@ namespace Auth.Core.Services
             var result = new ResultModel<PaginatedModel<StudentVM>>();
 
             var query = _studentRepo.GetAll()
-                .OrderByDescending(x=> x.CreationTime)
+                .OrderByDescending(x => x.CreationTime)
                 .Select(x => new StudentVM
                 {
-                     Id = x.Id,
+                    Id = x.Id,
                     SchoolClass = x.Class,
                     DateOfBirth = x.DateOfBirth,
                     FirstName = x.User.FirstName,
@@ -364,7 +365,7 @@ namespace Auth.Core.Services
                 });
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
-            
+
             result.Data = new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
@@ -374,11 +375,11 @@ namespace Auth.Core.Services
         {
             var query = _studentRepo.GetAll()
                 .Where(x => x.ClassId == classId)
-                .Select(x=> new StudentVM
-            {
-                Id = x.Id,
-                SchoolClass = x.Class,
-                DateOfBirth = x.DateOfBirth,
+                .Select(x => new StudentVM
+                {
+                    Id = x.Id,
+                    SchoolClass = x.Class,
+                    DateOfBirth = x.DateOfBirth,
                     FirstName = x.User.FirstName,
                     LastName = x.User.LastName,
                     StudentNumber = x.RegNumber,
@@ -391,7 +392,7 @@ namespace Auth.Core.Services
                 }); ;
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
-           
+
 
             return new ResultModel<PaginatedModel<StudentVM>>(data: new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount));
         }
@@ -479,7 +480,7 @@ namespace Auth.Core.Services
                 SectionId = std.SchoolSectionid,
                 ParentId = std.ParentId,
                 Image = _documentService.TryGetUploadedFile(std.image?.Path),
-                ImmunizationHistoryVMs = std.Immunization.Select(x=> new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine}).ToList(),
+                ImmunizationHistoryVMs = std.Immunization.Select(x => new ImmunizationHistoryVM { Age = x.Age, DateImmunized = x.DateImmunized, Vaccine = x.Vaccine }).ToList(),
                 LastName = std.LastName,
                 LocalGovernment = std.LocalGovernment,
                 MothersMaidenName = std.MothersMaidenName,
@@ -542,7 +543,7 @@ namespace Auth.Core.Services
                 return result;
             }
 
-           
+
             result.Data = new StudentDetailVM
             {
                 StudentType = std.StudentType.GetDisplayName(),
@@ -596,7 +597,7 @@ namespace Auth.Core.Services
             }
 
             //check if parent exists
-            var parent = await _parentRepo.GetAll().Include(m=>m.User)
+            var parent = await _parentRepo.GetAll().Include(m => m.User)
                 .Where(x => x.Id == model.ParentId)
                 .FirstOrDefaultAsync();
 
@@ -640,7 +641,7 @@ namespace Auth.Core.Services
 
             stud.User.FirstName = model.FirstName;
             stud.User.LastName = model.LastName;
-               stud.User.Email = model.ContactEmail.Trim();
+            stud.User.Email = model.ContactEmail.Trim();
             stud.User.NormalizedEmail = model.ContactEmail.Trim().ToUpper();
             stud.User.UserName = stud.RegNumber;
             stud.User.NormalizedUserName = stud.RegNumber.ToUpper();
@@ -671,8 +672,8 @@ namespace Auth.Core.Services
             medicalHistory.ImmunizationHistories = immunizations;
 
 
-            stud. Address = model.ContactAddress;
-            stud. AdmissionDate = model.AdmissionDate;
+            stud.Address = model.ContactAddress;
+            stud.AdmissionDate = model.AdmissionDate;
             stud.ClassId = model.ClassId;
             stud.Country = model.ContactCountry;
             stud.DateOfBirth = model.DateOfBirth;
@@ -700,7 +701,7 @@ namespace Auth.Core.Services
             await _studentRepo.UpdateAsync(stud);
             await _unitOfWork.SaveChangesAsync();
 
-          
+
 
             _unitOfWork.Commit();
 
@@ -716,10 +717,10 @@ namespace Auth.Core.Services
             }
 
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.StudentClassId, model.ClassId.ToString()));
-          
+
 
             ////PublishMessage
-            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>{ 
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>{
                 new StudentSharedModel
                 {
                     Id = stud.Id,
@@ -738,7 +739,7 @@ namespace Auth.Core.Services
                     Sex = model.Sex,
                     DoB = model.DateOfBirth,
                     StudentStatusInSchool = stud.StudentStatusInSchool,
-                } 
+                }
             });
 
             result.Data = stud;
@@ -775,7 +776,7 @@ namespace Auth.Core.Services
             var importedData = ExcelReader.FromExcel<StudentBulkUploadExcel>(excelfile);
 
             //check if imported data contains any data
-            if(importedData.Count < 1)
+            if (importedData.Count < 1)
             {
 
                 result.AddError("No data was imported");
@@ -787,7 +788,7 @@ namespace Auth.Core.Services
 
             _unitOfWork.BeginTransaction();
 
-            foreach(var model in importedData)
+            foreach (var model in importedData)
             {
                 var user = new User
                 {
@@ -822,7 +823,7 @@ namespace Auth.Core.Services
                     userResult = await _userManager.CreateAsync(user, model.ContactPhone);
                 }
 
-                if(!userResult.Succeeded)
+                if (!userResult.Succeeded)
                 {
                     result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
                     return result;
@@ -881,7 +882,7 @@ namespace Auth.Core.Services
                 var contactdetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
 
                 //broadcast login detail to email
-                var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name, contactdetails.Email,school.Address,contactdetails.PhoneNumber);
+                var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName, school.Name, contactdetails.Email, school.Address, contactdetails.PhoneNumber, contactdetails.EmailPassword);
 
                 if (emailResult.HasError)
                 {

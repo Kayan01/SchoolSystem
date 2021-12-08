@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AssessmentSvc.Core.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20210921122439_AssessmentMig")]
+    [Migration("20211207085715_AssessmentMig")]
     partial class AssessmentMig
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -457,6 +457,9 @@ namespace AssessmentSvc.Core.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailPassword")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")

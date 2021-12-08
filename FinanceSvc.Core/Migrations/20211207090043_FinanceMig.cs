@@ -198,7 +198,8 @@ namespace FinanceSvc.Core.Migrations
                     Logo = table.Column<string>(nullable: true),
                     Email = table.Column<string>(nullable: true),
                     PhoneNumber = table.Column<string>(nullable: true),
-                    IsActive = table.Column<bool>(nullable: false)
+                    IsActive = table.Column<bool>(nullable: false),
+                    EmailPassword = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {

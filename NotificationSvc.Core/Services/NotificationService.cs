@@ -69,7 +69,7 @@ namespace NotificationSvc.Core.Services
             foreach (var emailMessage in emailMessages)
             {
                 //emailMessage.ReplacementData.Add("FullName", emailMessage.User.FullName);
-                await _emailService.SendEmail(new[] { emailMessage.User.Email }, emailMessage.EmailTemplateType, emailMessage.ReplacementData, emailMessage.Attachments);
+                await _emailService.SendEmail(new[] { emailMessage.User.Email }, emailMessage.EmailTemplateType, emailMessage.ReplacementData,emailMessage.SenderName, emailMessage.EmailPassword,emailMessage.Attachments);
             }
         }
 

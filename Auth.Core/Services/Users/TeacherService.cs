@@ -134,7 +134,7 @@ namespace Auth.Core.Services.Users
                            .Include(x => x.Staff)
                            .ThenInclude(x => x.EducationExperiences)
                             .Include(x => x.Class)
-                            .Select(x=> new {x, ImagePath = x.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path })
+                            .Select(x => new { x, ImagePath = x.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path })
                             .FirstOrDefault();
 
             result.Data = query.x;
@@ -200,7 +200,7 @@ namespace Auth.Core.Services.Users
             var existingUser = await _userManager.FindByEmailAsync(user.Email);
             IdentityResult userResult;
 
-            if(existingUser != null)
+            if (existingUser != null)
             {
                 result.AddError($"User with  Email : {existingUser.Email} already exist");
                 return result;
@@ -219,7 +219,7 @@ namespace Auth.Core.Services.Users
             {
                 userResult = await _userManager.CreateAsync(user, model.ContactDetails.PhoneNumber);
             }
-            
+
 
             if (!userResult.Succeeded)
             {
@@ -355,8 +355,8 @@ namespace Auth.Core.Services.Users
             var school = await _schoolRepo.GetAll().Where(m => m.Id == schoolProperty.Data.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
             var contactDetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
             //broadcast login detail to email
-            
-            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName,school.Name, contactDetails.Email,school.Address, contactDetails.PhoneNumber);
+
+            _ = await _authUserManagement.SendRegistrationEmail(user, school.DomainName, school.Name, contactDetails.Email, school.Address, contactDetails.PhoneNumber, contactDetails.EmailPassword);
 
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
@@ -408,12 +408,12 @@ namespace Auth.Core.Services.Users
                            .Include(x => x.Staff)
                            .ThenInclude(x => x.FileUploads)
                            .Include(x => x.Class)
-                           .Include(x=> x.Staff)
-                           .ThenInclude(x=> x.WorkExperiences)
-                           .Include(x=> x.Staff)
-                           .ThenInclude(x=> x.NextOfKin)
-                           .Include(x=> x.Staff)
-                           .ThenInclude(x=> x.EducationExperiences)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.WorkExperiences)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.NextOfKin)
+                           .Include(x => x.Staff)
+                           .ThenInclude(x => x.EducationExperiences)
                            .FirstOrDefault();
 
             if (teacher == null)
@@ -636,7 +636,7 @@ namespace Auth.Core.Services.Users
 
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TeacherClassId, model.ClassId.ToString()));
 
-           
+
             await _publishService.PublishMessage(Topics.Teacher, BusMessageTypes.TEACHER, new TeacherSharedModel
             {
                 Id = teacher.Id,
@@ -714,7 +714,7 @@ namespace Auth.Core.Services.Users
 
             _unitOfWork.BeginTransaction();
 
-            foreach(var model in importedData)
+            foreach (var model in importedData)
             {
                 //add admin for teacher user
                 var user = new User
@@ -729,7 +729,7 @@ namespace Auth.Core.Services.Users
 
                 var existingUser = await _userManager.FindByEmailAsync(user.Email);
                 IdentityResult userResult;
-                if(existingUser != null)
+                if (existingUser != null)
                 {
                     result.AddError($"USer with Email : {existingUser.Email} already exist");
                     return result;
@@ -748,7 +748,7 @@ namespace Auth.Core.Services.Users
                     userResult = await _userManager.CreateAsync(user, model.PhoneNumber);
                 }
 
-                if(!userResult.Succeeded)
+                if (!userResult.Succeeded)
                 {
                     result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
                     return result;
@@ -773,8 +773,8 @@ namespace Auth.Core.Services.Users
                         State = model.State,
                         Address = model.Address,
                         Country = model.Country,
-                    }, 
-                                         
+                    },
+
                 };
 
                 var lastRegNumber = await _staffRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
@@ -815,7 +815,7 @@ namespace Auth.Core.Services.Users
                 user.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
                 await _userManager.UpdateAsync(user);
 
-               
+
 
                 // _teacherRepo.Insert(teacher);
 
@@ -842,7 +842,7 @@ namespace Auth.Core.Services.Users
                 });
             }
             result.Data = true;
-            
+
             return result;
         }
 

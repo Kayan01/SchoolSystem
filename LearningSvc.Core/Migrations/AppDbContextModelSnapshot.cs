@@ -390,13 +390,13 @@ namespace LearningSvc.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 10, 6, 16, 18, 17, 604, DateTimeKind.Local).AddTicks(7422),
+                            CreationTime = new DateTime(2021, 12, 7, 10, 2, 18, 956, DateTimeKind.Local).AddTicks(9522),
                             Description = "Testing"
                         },
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 10, 6, 16, 18, 17, 604, DateTimeKind.Local).AddTicks(8188),
+                            CreationTime = new DateTime(2021, 12, 7, 10, 2, 18, 957, DateTimeKind.Local).AddTicks(2247),
                             Description = "Unit Test"
                         });
                 });
@@ -428,6 +428,9 @@ namespace LearningSvc.Core.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailPassword")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")

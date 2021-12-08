@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Auth.Core.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20210921155327_GlobalAdminMig")]
-    partial class GlobalAdminMig
+    [Migration("20211206135259_AuthMigration")]
+    partial class AuthMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -251,6 +251,11 @@ namespace Auth.Core.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailPassword")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
@@ -277,7 +282,7 @@ namespace Auth.Core.Migrations
                     b.Property<long?>("SchoolGroupId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("SchoolId")
+                    b.Property<long>("SchoolId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -527,7 +532,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 431, DateTimeKind.Local).AddTicks(3547),
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 236, DateTimeKind.Local).AddTicks(6827),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Johnson International"
@@ -535,7 +540,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 431, DateTimeKind.Local).AddTicks(4696),
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 236, DateTimeKind.Local).AddTicks(7851),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Bariga International"
@@ -543,7 +548,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 3L,
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 431, DateTimeKind.Local).AddTicks(4740),
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 236, DateTimeKind.Local).AddTicks(7903),
                             IsActive = false,
                             IsDeleted = false,
                             Name = "Ikeja International"
@@ -609,7 +614,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 432, DateTimeKind.Local).AddTicks(751),
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 237, DateTimeKind.Local).AddTicks(3894),
                             IsActive = false,
                             IsDeleted = false,
                             IsTerminalClass = false,
@@ -621,7 +626,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 432, DateTimeKind.Local).AddTicks(2160),
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 238, DateTimeKind.Local).AddTicks(9654),
                             IsActive = false,
                             IsDeleted = false,
                             IsTerminalClass = false,
@@ -724,7 +729,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 431, DateTimeKind.Local).AddTicks(7316),
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 237, DateTimeKind.Local).AddTicks(392),
                             IsDeleted = false,
                             Name = "A",
                             TenantId = 1L
@@ -732,11 +737,62 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2L,
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 431, DateTimeKind.Local).AddTicks(8846),
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 237, DateTimeKind.Local).AddTicks(2041),
                             IsDeleted = false,
                             Name = "B",
                             TenantId = 1L
                         });
+                });
+
+            modelBuilder.Entity("Auth.Core.Models.SchoolSubscription", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExpectedNumberOfStudent")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("PricePerStudent")
+                        .HasColumnType("int");
+
+                    b.Property<long>("SchoolId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SchoolId")
+                        .IsUnique();
+
+                    b.ToTable("SchoolSubscriptions");
                 });
 
             modelBuilder.Entity("Auth.Core.Models.SchoolTrackRole", b =>
@@ -1101,6 +1157,62 @@ namespace Auth.Core.Migrations
                     b.ToTable("Students");
                 });
 
+            modelBuilder.Entity("Auth.Core.Models.SubscriptionInvoice", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("AmountPerStudent")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("DeleterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("InvoiceType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("LastModifierUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("NumberOfStudent")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Paid")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("PaidDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("SchoolId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SchoolId");
+
+                    b.ToTable("SubscriptionInvoices");
+                });
+
             modelBuilder.Entity("Auth.Core.Models.Test", b =>
                 {
                     b.Property<int>("Id")
@@ -1143,7 +1255,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1,
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 427, DateTimeKind.Local).AddTicks(6462),
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 232, DateTimeKind.Local).AddTicks(2970),
                             Description = "Testing",
                             IsDeleted = false,
                             Title = "Debug"
@@ -1151,7 +1263,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 2,
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 427, DateTimeKind.Local).AddTicks(9870),
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 232, DateTimeKind.Local).AddTicks(8255),
                             Description = "Unit Test",
                             IsDeleted = false,
                             Title = "Test"
@@ -1365,7 +1477,7 @@ namespace Auth.Core.Migrations
                         new
                         {
                             Id = 1L,
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 416, DateTimeKind.Local).AddTicks(8027),
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 224, DateTimeKind.Local).AddTicks(5622),
                             IsDeleted = false,
                             UserId = 1L,
                             UserType = 1
@@ -1935,6 +2047,9 @@ namespace Auth.Core.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
+                    b.Property<int>("UserStatus")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserType")
                         .HasColumnType("int");
 
@@ -1955,23 +2070,24 @@ namespace Auth.Core.Migrations
                         {
                             Id = 1L,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "a59bce42-7b4d-4871-8455-46c122379581",
-                            CreationTime = new DateTime(2021, 9, 21, 16, 53, 25, 315, DateTimeKind.Local).AddTicks(2347),
-                            Email = "tester@gmail.com",
+                            ConcurrencyStamp = "b5ec81aa-0b38-4610-a618-b099b1ee4a37",
+                            CreationTime = new DateTime(2021, 12, 6, 14, 52, 57, 117, DateTimeKind.Local).AddTicks(8485),
+                            Email = "root@myschooltrack.com",
                             EmailConfirmed = true,
                             FirstName = "Super Admin",
                             IsDeleted = false,
                             IsFirstTimeLogin = false,
-                            LastLoginDate = new DateTime(2021, 9, 21, 16, 53, 25, 316, DateTimeKind.Local).AddTicks(3946),
+                            LastLoginDate = new DateTime(2021, 12, 6, 14, 52, 57, 119, DateTimeKind.Local).AddTicks(1451),
                             LastName = "User",
                             LockoutEnabled = false,
-                            NormalizedEmail = "TESTER@GMAIL.COM",
-                            NormalizedUserName = "TESTER@GMAIL.COM.COM",
-                            PasswordHash = "AQAAAAEAACcQAAAAEM57A+xbgfZVu3XQ3P0aytBwYhHHXdDcpU8B3Yo+WBxnPkkH6Jv3UbmnCJYa5ObQsQ==",
+                            NormalizedEmail = "ROOT@MYSCHOOLTRACK.COM",
+                            NormalizedUserName = "ROOT@MYSCHOOLTRACK.COM",
+                            PasswordHash = "AQAAAAEAACcQAAAAEODiPPnn1G2aR4kS2KVWhwLww0nndr6EtLaOmG9TlKCBM8/9Ai+13e6QdolhkUcU/Q==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "99ae0c45-d682-4542-9ba7-1281e471916b",
                             TwoFactorEnabled = false,
-                            UserName = "tester@gmail.com.com",
+                            UserName = "root@myschooltrack.com",
+                            UserStatus = 0,
                             UserType = 0
                         });
                 });
@@ -2087,7 +2203,9 @@ namespace Auth.Core.Migrations
 
                     b.HasOne("Auth.Core.Models.School", null)
                         .WithMany("SchoolContactDetails")
-                        .HasForeignKey("SchoolId");
+                        .HasForeignKey("SchoolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Auth.Core.Models.Medical.ImmunizationHistory", b =>
@@ -2133,6 +2251,15 @@ namespace Auth.Core.Migrations
                     b.HasOne("Auth.Core.Models.School", "School")
                         .WithMany("SchoolSections")
                         .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Auth.Core.Models.SchoolSubscription", b =>
+                {
+                    b.HasOne("Auth.Core.Models.School", "School")
+                        .WithOne("SchoolSubscription")
+                        .HasForeignKey("Auth.Core.Models.SchoolSubscription", "SchoolId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2184,6 +2311,15 @@ namespace Auth.Core.Migrations
                     b.HasOne("Shared.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Auth.Core.Models.SubscriptionInvoice", b =>
+                {
+                    b.HasOne("Auth.Core.Models.School", "School")
+                        .WithMany("SubscriptionInvoices")
+                        .HasForeignKey("SchoolId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

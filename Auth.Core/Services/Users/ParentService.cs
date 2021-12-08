@@ -39,7 +39,7 @@ namespace Auth.Core.Services.Users
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
         private readonly ISchoolPropertyService _schoolPropertyService;
-        
+
 
         private readonly IAuthUserManagement _authUserManagementService;
         public ParentService(
@@ -76,9 +76,9 @@ namespace Auth.Core.Services.Users
                 return resultModel;
             }
 
-           await _parentRepo.DeleteAsync(parent);
+            await _parentRepo.DeleteAsync(parent);
 
-           await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             resultModel.Data = "Deleted";
             return resultModel;
@@ -89,21 +89,21 @@ namespace Auth.Core.Services.Users
 
             var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
 
-            var query =  _parentRepo.GetAll()
+            var query = _parentRepo.GetAll()
                 .Include(x => x.User)
-                .Include(x=> x.Students)
+                .Include(x => x.Students)
                 .Include(x => x.FileUploads);
 
             var parents = await query.ToPagedListAsync(vm.PageIndex, vm.PageSize);
 
-            var data = new PaginatedModel<ParentListVM>(parents.Select(x=> (ParentListVM)x), vm.PageIndex, vm.PageSize, parents.TotalItemCount);
+            var data = new PaginatedModel<ParentListVM>(parents.Select(x => (ParentListVM)x), vm.PageIndex, vm.PageSize, parents.TotalItemCount);
 
             resultModel.Data = data;
 
             return resultModel;
         }
 
-        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParentsInSchool(long schoolId,QueryModel vm)
+        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParentsInSchool(long schoolId, QueryModel vm)
         {
 
             var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
@@ -161,7 +161,7 @@ namespace Auth.Core.Services.Users
             var resultModel = new ResultModel<ParentDetailVM>();
 
             var query = await _parentRepo.GetAll()
-                .Where(x=> x.Id == Id)
+                .Where(x => x.Id == Id)
                 .Select(model => new {
                     ContactEmail = model.User.Email,
                     ContactHomeAddress = model.HomeAddress,
@@ -190,8 +190,9 @@ namespace Auth.Core.Services.Users
                 return resultModel;
             }
 
-            var children = query.Children?.Select(x => new ChildView {
-                Id = x.Id, 
+            var children = query.Children?.Select(x => new ChildView
+            {
+                Id = x.Id,
                 Image = _documentService.TryGetUploadedFile(x.logoPath),
                 Name = x.Name
             }).ToList();
@@ -226,7 +227,7 @@ namespace Auth.Core.Services.Users
                 .Include(x => x.Parent)
                 .ThenInclude(x => x.FileUploads)
                 .Include(x => x.Parent)
-                .ThenInclude(x=> x.User)
+                .ThenInclude(x => x.User)
                 .Where(x => x.Id == studId)
                 .FirstOrDefaultAsync();
 
@@ -265,7 +266,7 @@ namespace Auth.Core.Services.Users
                     FullName = st.FullName,
                     Id = st.Id,
                     ClassID = st.ClassId,
-                   // ImageId = st.ImageId,
+                    // ImageId = st.ImageId,
                     Image = _documentService.TryGetUploadedFile(st.ImageId),
                     RegNo = st.RegNumber
                 });
@@ -298,7 +299,8 @@ namespace Auth.Core.Services.Users
             var schools = new List<SchoolParentViewModel>();
             foreach (var sch in query2)
             {
-                schools.Add(new SchoolParentViewModel {
+                schools.Add(new SchoolParentViewModel
+                {
                     Id = sch.Id,
                     Image = _documentService.TryGetUploadedFile(sch.ImagePath),
                     Name = sch.Name
@@ -319,7 +321,7 @@ namespace Auth.Core.Services.Users
                 return resultModel;
             }
 
-            
+
             _unitOfWork.BeginTransaction();
 
             var file = new FileUpload();
@@ -334,7 +336,7 @@ namespace Auth.Core.Services.Users
 
                 }
 
-               
+
                 file = await _documentService.TryUploadSupportingDocument(vm.File, vm.DocumentType);
                 if (file == null)
                 {
@@ -359,7 +361,7 @@ namespace Auth.Core.Services.Users
             var existingUser = await _userManager.FindByEmailAsync(user.Email);
             IdentityResult userResult;
 
-            if(existingUser != null)
+            if (existingUser != null)
             {
 
                 return new ResultModel<ParentDetailVM>($"User with Email {existingUser.Email} already exist");
@@ -397,12 +399,12 @@ namespace Auth.Core.Services.Users
                 Sex = vm.Sex,
                 Status = vm.Status,
                 UserId = user.Id,
-                Title= vm.Title,
-                
+                Title = vm.Title,
+
                 FileUploads = new List<FileUpload> { file }
             };
 
-            var lastRegNumber = await _parentRepo.GetAll().OrderBy(m => m.Id).Select(m=>m.RegNumber).LastOrDefaultAsync();
+            var lastRegNumber = await _parentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
             var lastNumber = 0;
             var seperator = schoolProperty.Data.Seperator;
             if (!string.IsNullOrWhiteSpace(lastRegNumber))
@@ -420,7 +422,7 @@ namespace Auth.Core.Services.Users
                 try
                 {
                     nextNumber++;
-                    if(firstTime && !string.IsNullOrWhiteSpace(parent.RegNumber))
+                    if (firstTime && !string.IsNullOrWhiteSpace(parent.RegNumber))
                     {
                         firstTime = false;
                         _parentRepo.Insert(parent);
@@ -453,11 +455,11 @@ namespace Auth.Core.Services.Users
             await _userManager.UpdateAsync(user);
 
             _unitOfWork.Commit();
-            var school = await _schoolRepo.GetAll().Where(m=> m.Id == schoolProperty.Data.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
+            var school = await _schoolRepo.GetAll().Where(m => m.Id == schoolProperty.Data.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
             var contactdetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
 
             //broadcast login detail to email
-            _ = await _authUserManagementService.SendRegistrationEmail(user, "",school.Name,contactdetails.Email,school.Address, contactdetails.PhoneNumber);
+            _ = await _authUserManagementService.SendRegistrationEmail(user, "", school.Name, contactdetails.Email, school.Address, contactdetails.PhoneNumber, contactdetails.EmailPassword);
 
             //Publish to services
             await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
@@ -489,7 +491,7 @@ namespace Auth.Core.Services.Users
 
             _unitOfWork.BeginTransaction();
 
-            var parent = await _parentRepo.GetAll().Include(m=>m.User).FirstOrDefaultAsync(m=>m.Id == Id);
+            var parent = await _parentRepo.GetAll().Include(m => m.User).FirstOrDefaultAsync(m => m.Id == Id);
 
             if (parent == null)
             {

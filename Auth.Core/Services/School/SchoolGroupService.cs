@@ -90,7 +90,8 @@ namespace Auth.Core.Services
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
                 PhoneNumber = model.ContactPhoneNo,
-                IsPrimaryContact = true
+                IsPrimaryContact = true,
+                EmailPassword = model.ContactEmailPassword
             };
 
             var schGroup = new SchoolGroup()
@@ -137,7 +138,7 @@ namespace Auth.Core.Services
             await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.SchoolGroupManager.GetDescription()));
 
             //broadcast login detail to email
-             var emailResult = await _authUserManagement.SendRegistrationEmail(user,"",schGroup.Name, contactDetails.Email,"SchoolTrack",contactDetails.PhoneNumber);
+            var emailResult = await _authUserManagement.SendRegistrationEmail(user, "", schGroup.Name, contactDetails.Email, "SchoolTrack", contactDetails.PhoneNumber, "");
 
             if (emailResult.HasError)
             {
@@ -160,7 +161,7 @@ namespace Auth.Core.Services
                 query = query.Where(x => x.Id == id);
             }
 
-           var data = await  query.Select(x => new SchoolGroupListVM
+            var data = await query.Select(x => new SchoolGroupListVM
             {
                 ContactEmail = x.SchoolContactDetails.FirstOrDefault().Email,
                 ContactFirstName = x.SchoolContactDetails.FirstOrDefault().FirstName,
@@ -185,7 +186,7 @@ namespace Auth.Core.Services
             /*no of schools
              no of students 
              */
-            var data = await _schGroupRepo.GetAll().Where(x=> x.Id == id).Select(x => new GetSchoolGroupAnalyticsVM
+            var data = await _schGroupRepo.GetAll().Where(x => x.Id == id).Select(x => new GetSchoolGroupAnalyticsVM
             {
                 NoOfSchools = x.Schools.Count(),
                 StudentCounts = x.Schools.Select(x => x.Students.Count())
@@ -205,7 +206,7 @@ namespace Auth.Core.Services
             var result = new ResultModel<SchoolGroupListVM>();
 
             var schgrp = await _schGroupRepo.GetAll()
-                .Include(x=> x.SchoolContactDetails)
+                .Include(x => x.SchoolContactDetails)
                 .FirstOrDefaultAsync(x => x.Id == Id);
 
             var user = await _userManager.FindByNameAsync(model.ContactEmail);
@@ -244,7 +245,8 @@ namespace Auth.Core.Services
                 FirstName = model.ContactFirstName,
                 LastName = model.ContactLastName,
                 PhoneNumber = model.ContactPhoneNo,
-                IsPrimaryContact = true
+                IsPrimaryContact = true,
+                EmailPassword = model.ContactEmailPassword
             } };
 
 
@@ -256,7 +258,7 @@ namespace Auth.Core.Services
             schgrp.SecondaryColor = model.SecondaryColor;
 
 
-           await _schGroupRepo.UpdateAsync(schgrp);
+            await _schGroupRepo.UpdateAsync(schgrp);
 
             //update auth user
 
@@ -278,7 +280,7 @@ namespace Auth.Core.Services
             }
 
 
-            _unitOfWork.Commit();          
+            _unitOfWork.Commit();
 
             result.Data = schgrp;
             return result;
