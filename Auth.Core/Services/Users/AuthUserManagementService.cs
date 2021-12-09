@@ -130,7 +130,7 @@ namespace Auth.Core.Services
                 emailModel = new CreateEmailModel(EmailTemplateType.NewManager, new Dictionary<string, string>
                 {
                     {"link", callbackUrl},
-                }, user);
+                },user);
             }
             else
             {
