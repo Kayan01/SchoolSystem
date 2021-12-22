@@ -68,7 +68,7 @@ namespace Auth.API
                 options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
                 options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
 
-                options.User.RequireUniqueEmail = true;
+                options.User.RequireUniqueEmail = false;
                 options.SignIn.RequireConfirmedAccount = true;
                 options.Password.RequiredLength = 6;
 
@@ -162,6 +162,7 @@ namespace Auth.API
                 options.Lockout.AllowedForNewUsers = true;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
                 options.Lockout.MaxFailedAccessAttempts = 3;
+                options.User.RequireUniqueEmail = false;
             })
            .AddEntityFrameworkStores<AppDbContext>()
            .AddDefaultTokenProviders();
@@ -171,6 +172,20 @@ namespace Auth.API
                 options.TokenLifespan = TimeSpan.FromHours(24);
             });
         }
+
+    //    public class ApplicationUserManager : UserManager<ApplicationUser>
+    //    {
+    //...
+    //    public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
+    //        {
+    //            var manager = new ApplicationUserManager(new UserStore<ApplicationUser>(context.Get<ApplicationDbContext>()));
+    //            manager.UserValidator = new UserValidator<ApplicationUser>(manager)
+    //            {
+    //                // This disables the validation check on email addresses
+    //                RequireUniqueEmail = false
+    //            };
+    //        }
+    //    }
 
 
     }
