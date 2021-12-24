@@ -201,23 +201,25 @@ namespace Auth.Core.Services
 
             var existingUser = await _userManager.FindByEmailAsync(user.Email);
             IdentityResult userResult;
+            
+            userResult = await _userManager.CreateAsync(user, model.ContactPhone);
+            
+            //if (existingUser != null)
+            //{
+            //    if (user.Email == parent.User.Email)
+            //    {
+            //        userResult = await _userManager.CreateAsync(user, model.ContactPhone);
+            //    }
+            //    else
+            //    {
+            //        result.AddError($"User with Email : {existingUser.Email} already exist");
+            //        return result;
+            //    }
+            //}
+            //else
+            //{
 
-            if (existingUser != null)
-            {
-                if (user.Email == parent.User.Email)
-                {
-                    userResult = await _userManager.CreateAsync(user, model.ContactPhone);
-                }
-                else
-                {
-                    result.AddError($"User with Email : {existingUser.Email} already exist");
-                    return result;
-                }
-            }
-            else
-            {
-                userResult = await _userManager.CreateAsync(user, model.ContactPhone);
-            }
+            //}
 
 
             if (!userResult.Succeeded)
