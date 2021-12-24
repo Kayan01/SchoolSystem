@@ -199,7 +199,7 @@ namespace Auth.Core.Services
             }
 
 
-            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+            //var existingUser = await _userManager.FindByEmailAsync(user.Email);
             IdentityResult userResult;
             
             userResult = await _userManager.CreateAsync(user, model.ContactPhone);
