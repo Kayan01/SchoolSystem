@@ -212,12 +212,13 @@ namespace Auth.Core.Services
             return new ResultModel<bool>(true, "Success");
         }
 
-        public async Task<ResultModel<(User user, string code)>> GetPasswordRestCode(string email)
+        public async Task<ResultModel<(User user, string code)>> GetPasswordRestCode(string userName)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            //var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                return new ResultModel<(User user, string code)>($"User with {email} does not exist");
+                return new ResultModel<(User user, string code)>($"User with {userName} does not exist");
             }
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
