@@ -382,7 +382,7 @@ namespace Auth.API.Controllers
                     return ApiResponse<string>(errors: result.Errors.Select(x=> x.Description).ToArray());
                 }
 
-                var PasswordResetCode = (await _authUserService.GetPasswordRestCode(user.Email)).Data.code;
+                var PasswordResetCode = (await _authUserService.GetPasswordRestCode(user.UserName)).Data.code;
 
                 return ApiResponse<string>(message: "User confirmed", data : PasswordResetCode, codes: ApiResponseCodes.OK);
             }
