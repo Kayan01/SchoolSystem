@@ -160,16 +160,16 @@ namespace Auth.Core.Services
 
             return new ResultModel<bool>(true, "Success");
         }
-        public async Task<ResultModel<string>> RequestPasswordReset(string email)
+        public async Task<ResultModel<string>> RequestPasswordReset(string userName)
         {
-            var result = await GetPasswordRestCode(email);
+            var result = await GetPasswordRestCode(userName);
 
             if (result.HasError)
                 return new ResultModel<string>(result.ErrorMessages);
 
             await SendPasswordResetEmail(result.Data.user, result.Data.code);
 
-            return new ResultModel<string>(email, "Success");
+            return new ResultModel<string>(userName, "Success");
         }
 
         public async Task<ResultModel<bool>> PassworReset(PasswordResetModel model)
@@ -186,9 +186,9 @@ namespace Auth.Core.Services
 
             var passwordResetModel = JsonConvert.DeserializeObject<PasswordResetQueryModel>(passwordResetModelString);
             //passwordResetModel.Token = WebUtility.UrlDecode(passwordResetModel.Token);
-            var user = await _userManager.FindByEmailAsync(passwordResetModel.Email);
+            var user = await _userManager.FindByNameAsync(passwordResetModel.userName);
             if (user == null)
-                return new ResultModel<bool>($"User with {passwordResetModel?.Email} does not exist");
+                return new ResultModel<bool>($"User with {passwordResetModel?.userName} does not exist");
 
             if (!user.EmailConfirmed)
                 user.EmailConfirmed = true;
@@ -222,7 +222,7 @@ namespace Auth.Core.Services
             }
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var tokenQueryModel = new PasswordResetQueryModel { Email = user.Email, Token = code };
+            var tokenQueryModel = new PasswordResetQueryModel { userName = user.UserName, Token = code };
             var tokenQueryModelString = JsonConvert.SerializeObject(tokenQueryModel);
             code = _protector.Protect(tokenQueryModelString);
 
