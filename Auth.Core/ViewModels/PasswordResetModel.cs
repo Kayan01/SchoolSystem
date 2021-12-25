@@ -13,7 +13,7 @@ namespace Auth.Core.ViewModels
 
     public class PasswordResetQueryModel
     {
-        public string Email { get; set; }
+        public string userName { get; set; }
         public string Token { get; set; }
     }
 }

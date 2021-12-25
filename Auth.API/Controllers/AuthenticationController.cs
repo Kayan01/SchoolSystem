@@ -308,14 +308,14 @@ namespace Auth.API.Controllers
         [HttpPost()]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         [AllowAnonymous]
-        public async Task<IActionResult> RequestPasswordReset([FromForm]string email)
+        public async Task<IActionResult> RequestPasswordReset([FromForm]string userName)
         {
             try
             {
-                if (string.IsNullOrEmpty(email))
+                if (string.IsNullOrEmpty(userName))
                     return ApiResponse<string>(errors: "A valid email is required");
 
-                var result = await _authUserService.RequestPasswordReset(email);
+                var result = await _authUserService.RequestPasswordReset(userName);
 
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
