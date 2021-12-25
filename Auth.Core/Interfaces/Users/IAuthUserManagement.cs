@@ -20,7 +20,7 @@ namespace Auth.Core.Services.Interfaces
         IQueryable<User> GetAllAuthUsersAsync();
 
         Task<ResultModel<bool>> SendRegistrationEmail(User user, string subdomain, string schoolName, string schoolEmail, string address, string phoneNumber, string EmailPassword, string emailTitle = "Confirm your email");
-        Task<ResultModel<string>> RequestPasswordReset(string email);
+        Task<ResultModel<string>> RequestPasswordReset(string userName);
         Task<ResultModel<bool>> PassworReset(PasswordResetModel model);
         Task<ResultModel<(User user, string code)>> GetPasswordRestCode(string email);
     }
