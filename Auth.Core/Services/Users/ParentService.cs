@@ -589,5 +589,31 @@ namespace Auth.Core.Services.Users
                 return new ResultModel<byte[]>(data);
             }
         }
+
+        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentByName(QueryModel vm, string FirstName)
+        {
+            var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
+
+            var query = _parentRepo.GetAll()
+               .Include(x => x.User)
+               .Include(x => x.Students)
+               .Include(x => x.FileUploads).Where(x => x.User.FirstName == FirstName);
+
+
+            if (query == null)
+            {
+                resultModel.AddError($"No parent with that Name : {FirstName}");
+                return resultModel;
+            }
+
+            var parents = query.ToPagedList(vm.PageIndex, vm.PageSize);
+
+            var data = new PaginatedModel<ParentListVM>(parents.Select(x => (ParentListVM)x), vm.PageIndex, vm.PageSize, parents.TotalItemCount);
+
+
+            resultModel.Data = data;
+
+            return resultModel;
+        }
     }
 }
