@@ -263,5 +263,29 @@ namespace Auth.API.Controllers.Users
                 return HandleError(ex);
             }
         }
+
+
+        [HttpGet("{FirstName}")]
+        [ProducesResponseType(typeof(ApiResponse<ParentDetailVM>), 200)]
+        public async Task<IActionResult> GetParentByFirstName(QueryModel vm, string FirstName)
+        {
+            if (FirstName == null)
+            {
+                return ApiResponse<string>(errors: "Invalid First Name provided", codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+            try
+            {
+                var result = await _parentService.GetParentByName(vm,FirstName);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }

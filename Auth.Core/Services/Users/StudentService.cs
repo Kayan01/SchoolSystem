@@ -168,60 +168,24 @@ namespace Auth.Core.Services
                     return result;
                 }
             }
-
-            var Age = DateTime.Now.Year - model.DateOfBirth.Year;
-            User user;
-            if (Age <= 13 && model.ContactEmail == null)
+            //create auth user
+            var user = new User
             {
-                user = new User
-                {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.ContactEmail.Trim(),
+                UserName = model.ContactEmail.Trim(),
+                PhoneNumber = model.ContactPhone,
+                UserType = UserType.Student,
 
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Email = model.ContactPhone,
-                    UserName = model.FirstName,
-                    PhoneNumber = model.ContactPhone,
-                    UserType = UserType.Student,
-                };
-            }
-            else
-            {
-                //create auth user
-                user = new User
-                {
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Email = model.ContactEmail.Trim(),
-                    UserName = model.ContactEmail.Trim(),
-                    PhoneNumber = model.ContactPhone,
-                    UserType = UserType.Student,
-                };
-            }
-
-
+            };
+                
             //var existingUser = await _userManager.FindByEmailAsync(user.Email);
             IdentityResult userResult;
             
             userResult = await _userManager.CreateAsync(user, model.ContactPhone);
             
-            //if (existingUser != null)
-            //{
-            //    if (user.Email == parent.User.Email)
-            //    {
-            //        userResult = await _userManager.CreateAsync(user, model.ContactPhone);
-            //    }
-            //    else
-            //    {
-            //        result.AddError($"User with Email : {existingUser.Email} already exist");
-            //        return result;
-            //    }
-            //}
-            //else
-            //{
-
-            //}
-
-
+           
             if (!userResult.Succeeded)
             {
                 result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
@@ -817,29 +781,11 @@ namespace Auth.Core.Services
                     UserType = UserType.Student
                 };
 
-                var existingUser = await _userManager.FindByEmailAsync(user.Email);
+                
                 IdentityResult userResult;
+                userResult = await _userManager.CreateAsync(user, model.ContactPhone);
 
-                if (existingUser != null)
-                {
-                    result.AddError($"User with Email : {existingUser.Email} already exist");
-                    return result;
-
-                    //existingUser.FirstName = model.FirstName;
-                    //existingUser.LastName = model.LastName;
-                    //existingUser.Email = model.ContactEmail.Trim();
-                    //existingUser.UserName = model.ContactEmail.Trim();
-                    //existingUser.PhoneNumber = model.ContactPhone;
-                    //existingUser.UserType = UserType.Student;
-
-                    //userResult = await _userManager.UpdateAsync(existingUser);
-
-                }
-                else
-                {
-                    userResult = await _userManager.CreateAsync(user, model.ContactPhone);
-                }
-
+            
                 if (!userResult.Succeeded)
                 {
                     result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
