@@ -41,6 +41,15 @@ namespace Shared.Permissions
         ROLE_UPDATE = 1033,
         [Description("ROLE DELETE")]
         ROLE_DELETE = 1034,
+
+        [Description("FINANCE CREATE")]
+        FINANCE_CREATE = 1041,
+        [Description("FINANCE READ")]
+        FINANCE_READ = 1042,
+        [Description("FINANCE UPDATE")]
+        FINANCE_UPDATE = 1043,
+        [Description("FINANCE DELETE")]
+        FINANCE_DELETE = 1044,
     }
 
     /*public static class PermisionProvider

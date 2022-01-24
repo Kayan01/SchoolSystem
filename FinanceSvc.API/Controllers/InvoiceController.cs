@@ -3,6 +3,8 @@ using FinanceSvc.Core.ViewModels.Invoice;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
+using Shared.AspNetCore.Policy;
+using Shared.Permissions;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 using System;
@@ -24,6 +26,7 @@ namespace FinanceSvc.API.Controllers
 
 
         [HttpGet]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<List<InvoiceVM>>), 200)]
         public async Task<IActionResult> GetAllInvoices(long? sessionId, int? termSequence, [FromQuery] QueryModel queryModel)
         {
@@ -41,6 +44,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<List<InvoicePaymentVM>>), 200)]
         public async Task<IActionResult> GetInvoices([FromQuery]InvoiceRequestVM vm, [FromQuery]QueryModel queryModel)
         { 
@@ -58,6 +62,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<List<InvoicePaymentHistoryVM>>), 200)]
         public async Task<IActionResult> GetPaymentHistoryInvoices(long? sessionId, int? termSequence, [FromQuery] QueryModel queryModel)
         {
@@ -75,6 +80,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<List<InvoicePaymentVM>>), 200)]
         public async Task<IActionResult> GetPaymentInvoices(long? sessionId, int? termSequence, [FromQuery] QueryModel queryModel)
         {
@@ -92,6 +98,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<List<InvoicePendingPaymentVM>>), 200)]
         public async Task<IActionResult> GetPendingPaymentInvoices(long? sessionId, int? termSequence, [FromQuery] QueryModel queryModel)
         {
@@ -109,6 +116,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<InvoiceDetailVM>), 200)]
         public async Task<IActionResult> GetInvoice(int id)
         {
@@ -126,6 +134,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpPost]
+        [RequiresPermission(Permission.FINANCE_CREATE)]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> GenerateInvoice([FromBody] InvoicePostVM model)
         {
@@ -150,6 +159,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpPut]
+        [RequiresPermission(Permission.FINANCE_UPDATE)]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UpdateInvoiceSelection([FromBody] InvoiceComponentSelectionUpdateVM model)
         {

@@ -3,6 +3,8 @@ using FinanceSvc.Core.ViewModels.Component;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
+using Shared.AspNetCore.Policy;
+using Shared.Permissions;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 using System;
@@ -23,6 +25,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<List<ComponentVM>>), 200)]
         public async Task<IActionResult> GetComponents()
         {
@@ -40,6 +43,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<ComponentVM>), 200)]
         public async Task<IActionResult> GetComponent(int id)
         {
@@ -57,6 +61,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpPost]
+        [RequiresPermission(Permission.FINANCE_CREATE)]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> NewComponent([FromBody] ComponentPostVM model)
         {
@@ -81,6 +86,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [RequiresPermission(Permission.FINANCE_UPDATE)]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UpdateComponent(long id, [FromBody] ComponentPostVM model)
         {

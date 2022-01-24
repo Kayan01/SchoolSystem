@@ -3,6 +3,8 @@ using FinanceSvc.Core.ViewModels.Fee;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
+using Shared.AspNetCore.Policy;
+using Shared.Permissions;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 using System;
@@ -23,6 +25,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<List<FeeVM>>), 200)]
         public async Task<IActionResult> GetFees()
         {
@@ -41,6 +44,7 @@ namespace FinanceSvc.API.Controllers
 
 
         [HttpGet("{id}")]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<FeeWithComponentVM>), 200)]
         public async Task<IActionResult> GetFee(int id)
         {
@@ -58,6 +62,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpPost]
+        [RequiresPermission(Permission.FINANCE_CREATE)]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> NewFee([FromBody] FeePostVM model)
         {
@@ -82,6 +87,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [RequiresPermission(Permission.FINANCE_UPDATE)]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UpdateFee(long id, [FromBody] FeePostVM model)
         {
