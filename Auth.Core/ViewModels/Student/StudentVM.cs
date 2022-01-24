@@ -103,4 +103,34 @@ namespace Auth.Core.ViewModels.Student
             };
         }
     }
+
+
+    public class StudentVMs
+    {
+        public long Id { get; internal set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string StudentNumber { get; set; }
+        public string Sex { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public string Section { get; set; }
+        public string Class => SchoolClass?.FullName;
+        public bool IsActive { get; set; }
+        public string Image { get; set; }
+
+        public Models.SchoolClass SchoolClass { get; set; }
+        public static implicit operator StudentVMs(Models.Student model)
+        {
+            return model == null ? null : new StudentVMs
+            {
+                Id = model.Id,
+                FirstName = model.User.FirstName,
+                LastName = model.User.LastName,
+                StudentNumber = model.RegNumber,
+                Sex = model.Sex,
+                Section = model.Class.SchoolSection.Name,
+                IsActive = model.IsActive
+            };
+        }
+    }
 }

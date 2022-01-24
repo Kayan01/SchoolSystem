@@ -95,7 +95,8 @@ namespace Auth.Core.Services.Users
                               x.Staff.User.PhoneNumber,
                               x.Staff.User.FirstName,
                               x.Staff.StaffType,
-                              x.Staff.RegNumber
+                              x.Staff.RegNumber,
+                              image = x.Staff.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
                           }
                           );
 
@@ -113,6 +114,7 @@ namespace Auth.Core.Services.Users
                 FirstName = x.FirstName,
                 StaffType = x.StaffType.GetDescription(),
                 StaffNumber = x.RegNumber,
+                Image = x.image ?? _documentService.TryGetUploadedFile(x.image)
             }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
