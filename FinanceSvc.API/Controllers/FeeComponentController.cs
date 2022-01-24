@@ -4,6 +4,8 @@ using FinanceSvc.Core.ViewModels.FeeComponent;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
+using Shared.AspNetCore.Policy;
+using Shared.Permissions;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 using System;
@@ -24,6 +26,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [RequiresPermission(Permission.FINANCE_UPDATE)]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UpdateFeeComponent(long id, [FromBody] FeeComponentPostVM model)
         {

@@ -18,6 +18,7 @@ namespace Shared.PubSub
         public static string Promotion => nameof(Promotion).ToLower();
         public static string Session => nameof(Session).ToLower();
         public static string School => nameof(School).ToLower();
+        public static string ClassAttendance => nameof(ClassAttendance).ToLower();
 
     }
 }

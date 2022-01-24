@@ -50,6 +50,7 @@ namespace AssessmentSvc.Core.Services
         private readonly IHttpClientFactory _clientFactory;
         private readonly IToPDF _toPDF;
         private readonly IRepository<School, long> _schoolRepo;
+        private readonly IAttendanceService _attendanceService;
 
         public ApprovedResultService(
             IRepository<ApprovedResult, long> approvedResultRepo,
@@ -70,7 +71,8 @@ namespace AssessmentSvc.Core.Services
             IToPDF toPDF,
             IHttpClientFactory clientFactory,
             IUnitOfWork unitOfWork,
-            IRepository<School, long> schoolRepo
+            IRepository<School, long> schoolRepo,
+            IAttendanceService attendanceService
         )
         {
             _unitOfWork = unitOfWork;
@@ -92,6 +94,7 @@ namespace AssessmentSvc.Core.Services
             _toPDF = toPDF;
             _clientFactory = clientFactory;
             _schoolRepo = schoolRepo;
+            _attendanceService = attendanceService;
         }
 
         public async Task<ResultModel<string>> SubmitStudentResult(UpdateApprovedStudentResultViewModel vm)
@@ -904,6 +907,19 @@ namespace AssessmentSvc.Core.Services
                 tableArrays.Add(new KeyValuePair<string, IEnumerable<TableObject<object>>>( "Behaviours", BehaviourTables));
                 var classTeacher = classTeachers.FirstOrDefault(m => m.UserId == result.ClassTeacherId) ?? new Teacher();
                 var headTeacher = headTeachers.FirstOrDefault(m => m.UserId == result.HeadTeacherId) ?? new StaffNameAndSignatureVM();
+                
+                var classAttendance = await _attendanceService.GetStudentAttendanceSummary(result.StudentId,classId);
+                
+                long NoOfTimesPresent = default;
+                long NoOfTimesAbsent = default;
+                long TotalNoOfSchoolDays = default;
+
+                foreach (var item in classAttendance.Data)
+                {
+                    NoOfTimesAbsent = item.NoOfTimesAbsent;
+                    NoOfTimesPresent = item.NoOfTimesPresent;
+                    TotalNoOfSchoolDays = item.TotalNoOfSchoolDays;
+                }
 
                 var mainData = new
                 {
@@ -932,7 +948,10 @@ namespace AssessmentSvc.Core.Services
                     ClassTeacherSignature = classTeacher.Signature,
                     HeadTeacherComment = result.HeadTeacherComment,
                     HeadTeacherSignature = headTeacher.Signature,
-                    HeadTeacherName = $"{headTeacher.LastName} {headTeacher.FirstName}"
+                    HeadTeacherName = $"{headTeacher.LastName} {headTeacher.FirstName}",
+                    NoOfTimesPresent = NoOfTimesPresent,
+                    NoOfTimesAbsent = NoOfTimesAbsent,
+                    TotalNoOfSchoolDays = TotalNoOfSchoolDays
                 };
 
                 studentFilePaths.Add(result.StudentId, _toPDF.ResultToPDF(mainData, tableObjects, tableArrays, templatePath, false));

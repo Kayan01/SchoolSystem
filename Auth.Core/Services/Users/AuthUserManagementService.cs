@@ -286,5 +286,10 @@ namespace Auth.Core.Services
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task ConfirmEmailLink(User user)
+        {
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        }
     }
 }

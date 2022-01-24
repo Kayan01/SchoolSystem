@@ -48,6 +48,8 @@ namespace AssessmentSvc.Core.Context
         public DbSet<SchoolPromotionLog> SchoolPromotionLogs { get; set; }
         public DbSet<PromotionSetup> PromotionSetups { get; set; }
         public DbSet<ResultSummary> ResultSummaries { get; set; }
+        public DbSet<AttendanceSubject> SubjectAttendance { get; set; }
+        public DbSet<AttendanceClass> ClassAttendance { get; set; }
 
         public async Task AddSampleData()
         {

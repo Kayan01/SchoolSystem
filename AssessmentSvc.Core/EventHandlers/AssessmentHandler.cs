@@ -20,6 +20,7 @@ namespace AssessmentSvc.Core.EventHandlers
         private readonly ISubjectService _subjectService;
         private readonly ISchoolService _schoolService;
         private readonly ISchoolClassSubjectService _schoolClassSubjectService;
+        private readonly IAttendanceService _attendanceService;
 
         public AssessmentHandler(ILogger<AssessmentHandler> logger,
             ISchoolClassService schoolClassService,
@@ -27,7 +28,8 @@ namespace AssessmentSvc.Core.EventHandlers
             ITeacherService teacherService,
             ISubjectService subjectService,
             ISchoolService schoolService,
-            ISchoolClassSubjectService schoolClassSubjectService
+            ISchoolClassSubjectService schoolClassSubjectService,
+            IAttendanceService attendanceService
             )
         {
             _logger = logger;
@@ -37,6 +39,7 @@ namespace AssessmentSvc.Core.EventHandlers
             _subjectService = subjectService;
             _schoolService = schoolService;
             _schoolClassSubjectService = schoolClassSubjectService;
+            _attendanceService = attendanceService;
         }
 
         public async Task HandleAddOrUpdateStudentAsync(BusMessage message)
@@ -112,6 +115,20 @@ namespace AssessmentSvc.Core.EventHandlers
             }
             catch(Exception e)
             {
+                _logger.LogError(e.Message, e);
+            }
+        }
+
+        public async Task HandleAddOrUpdateClassAttendanceAsync(BusMessage message)
+        {
+            try
+            {
+                var data = JsonConvert.DeserializeObject<ClassAttendanceSharedModel>(message.Data);
+                _attendanceService.AddOrUpdateAttendanceForClassFromBroadCast(data);
+            }
+            catch (Exception e)
+            {
+
                 _logger.LogError(e.Message, e);
             }
         }
