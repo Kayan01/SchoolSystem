@@ -329,7 +329,7 @@ namespace Auth.Core.Services
 
             var result = new ResultModel<PaginatedModel<StudentVM>>();
 
-            var query = _studentRepo.GetAll()
+            var query = _studentRepo.GetAll().Include(x => x.FileUploads)
                 .OrderByDescending(x => x.CreationTime)
                 .Select(x => new StudentVM
                 {
