@@ -41,5 +41,8 @@ namespace Shared.PubSub
         PROMOTION,
         PROMOTION_UPDATE,
         PROMOTION_DELETE,
+        CLASSATTENDANCE,
+        CLASSATTENDANCE_UPDATE,
+        CLASSATTENDANCE_DELETE,
     }
 }

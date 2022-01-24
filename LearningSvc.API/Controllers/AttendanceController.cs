@@ -119,5 +119,22 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<StudentAttendanceSummaryVm>>), 200)]
+        public async Task<IActionResult> GetStudentAttendanceSummary(int studentId, int classId)
+        {
+            try
+            {
+                var result = await _attendanceService.GetStudentAttendanceSummary(studentId, classId);
+                if (result.HasError)
+                    return ApiResponse<List<StudentAttendanceSummaryVm>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
     }
 }

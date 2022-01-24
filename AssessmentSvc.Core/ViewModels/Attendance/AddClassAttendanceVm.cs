@@ -3,28 +3,27 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LearningSvc.Core.ViewModels.Attendance
+namespace AssessmentSvc.Core.ViewModels.Attendance
 {
     public class AddSubjectAttendanceVM
     {
         public long SubjectId { get; set; }
         public DateTime Date { get; set; }
-        public List<StudentAttendanceVM> StudentAttendanceVMs { get; set; }
+        public List<StudentAttendanceVm> StudentAttendanceVMs { get; set; }
     }
-    public class AddClassAttendanceVM
+    public class AddClassAttendanceVm
     {
         public long ClassId { get; set; }
         public DateTime Date { get; set; }
-        public List<StudentAttendanceVM> StudentAttendanceVMs { get; set; }
+        public List<StudentAttendanceVm> StudentAttendanceVm { get; set; }
     }
 
-    public class StudentAttendanceVM
+    public class StudentAttendanceVm
     {
         public long StudentId { get; set; }
         public AttendanceState AttendanceStatus { get; set; }
         public string Remark { get; set; }
     }
-
 
     public class StudentAttendanceSummaryVm
     {

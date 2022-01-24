@@ -45,6 +45,7 @@ namespace LearningSvc.Core.Services
                 .ToListAsync();
 
             var absentStudentsIds = new List<long>();
+            var attendanceClass = new AttendanceClass() { };
             //update existing attendance
             if (currAttendance.Count > 0)
             {
@@ -54,21 +55,34 @@ namespace LearningSvc.Core.Services
 
                     if (currAtt == null)
                     {
-                        await _classAttendanceRepo.InsertAsync(new AttendanceClass
-                        {
+                        attendanceClass.AttendanceDate = model.Date;
+                        attendanceClass.AttendanceStatus = item.AttendanceStatus;
+                        attendanceClass.ClassId = model.ClassId;
+                        attendanceClass.StudentId = item.StudentId;
+                        attendanceClass.Remark = item.Remark;
+
+                        await _classAttendanceRepo.InsertAsync(new AttendanceClass {
                             AttendanceDate = model.Date,
                             AttendanceStatus = item.AttendanceStatus,
                             ClassId = model.ClassId,
                             StudentId = item.StudentId,
-
                             Remark = item.Remark
-                        });
+                    });
+
 
                         if (item.AttendanceStatus == AttendanceState.Absent)
                         {
                             absentStudentsIds.Add(item.StudentId);
                         }
 
+                        await _publishService.PublishMessage(Topics.ClassAttendance, BusMessageTypes.CLASSATTENDANCE, new ClassAttendanceSharedModel
+                        {
+                            AttendanceDate = model.Date,
+                            AttendanceStatus = item.AttendanceStatus,
+                            ClassId = model.ClassId,
+                            StudentId = item.StudentId,
+                            Remark = item.Remark
+                        });
                     }                   
                 }
             }
@@ -76,25 +90,48 @@ namespace LearningSvc.Core.Services
             {
                 foreach (var item in model.StudentAttendanceVMs)
                 {
-                    await _classAttendanceRepo.InsertAsync(new AttendanceClass
-                    {
+                    attendanceClass.AttendanceDate = model.Date;
+                    attendanceClass.AttendanceStatus = item.AttendanceStatus;
+                    attendanceClass.ClassId = model.ClassId;
+                    attendanceClass.StudentId = item.StudentId;
+                    attendanceClass.Remark = item.Remark;
+
+                    await _classAttendanceRepo.InsertAsync(new AttendanceClass {
                         AttendanceDate = model.Date,
                         AttendanceStatus = item.AttendanceStatus,
                         ClassId = model.ClassId,
                         StudentId = item.StudentId,
-                        Remark =  item.Remark
-                    });
+                        Remark = item.Remark
+                });
                    
                     if (item.AttendanceStatus == AttendanceState.Absent)
                     {
                         absentStudentsIds.Add(item.StudentId);
                     }
+
+                    await _publishService.PublishMessage(Topics.ClassAttendance, BusMessageTypes.CLASSATTENDANCE, new ClassAttendanceSharedModel
+                    {
+                        AttendanceDate = model.Date,
+                        AttendanceStatus = item.AttendanceStatus,
+                        ClassId = model.ClassId,
+                        StudentId = item.StudentId,
+                        Remark = item.Remark
+                    });
                 }
             }
 
             await _unitOfWork.SaveChangesAsync();
 
-            SendAttendanceEmails(absentStudentsIds);
+            //await _publishService.PublishMessage(Topics.ClassAttendance, BusMessageTypes.CLASSATTENDANCE, new ClassAttendanceSharedModel { 
+            //    TenantId = attendanceClass.TenantId,
+            //    StudentId = attendanceClass.StudentId,
+            //    ClassId = attendanceClass.ClassId,
+            //    AttendanceDate = attendanceClass.AttendanceDate,
+            //    AttendanceStatus = attendanceClass.AttendanceStatus,
+            //    Remark = attendanceClass.Remark
+            //});
+
+            await SendAttendanceEmails(absentStudentsIds);
             return new ResultModel<string>(data: "Attendance saved");
         }
 
@@ -310,6 +347,31 @@ namespace LearningSvc.Core.Services
             {
                 Emails = emaildata                
             });
+        }
+
+
+        public async Task<ResultModel<List<StudentAttendanceSummaryVm>>> GetStudentAttendanceSummary(long studentId,long classId)
+        {
+            var query = _classAttendanceRepo.GetAll();
+
+            //use student id to query if provided
+             query = query.Where(x => x.StudentId == studentId && x.ClassId == classId).Include(x => x.Student);
+                
+            if (!query.Any())
+            {
+                return new ResultModel<List<StudentAttendanceSummaryVm>>("No attendance Summary for student found");
+            }
+
+            //Group student data by studentId
+            var results = query.GroupBy(x => x.StudentId).Select(x => new StudentAttendanceSummaryVm
+            {
+                StudentId = x.Key,
+                ClassId = classId,
+                NoOfTimesPresent = query.Count(x => x.AttendanceStatus == AttendanceState.Present),
+                NoOfTimesAbsent = query.Count(x => x.AttendanceStatus == AttendanceState.Absent)
+            }).ToList();
+
+            return new ResultModel<List<StudentAttendanceSummaryVm>>(data: results);
         }
 
     }

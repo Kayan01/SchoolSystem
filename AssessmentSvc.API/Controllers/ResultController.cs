@@ -1,4 +1,5 @@
 ﻿using AssessmentSvc.Core.Interfaces;
+using AssessmentSvc.Core.ViewModels.Attendance;
 using AssessmentSvc.Core.ViewModels.Result;
 using AssessmentSvc.Core.ViewModels.Student;
 using Microsoft.AspNetCore.Http;
@@ -19,10 +20,13 @@ namespace AssessmentSvc.API.Controllers
     {
         private readonly IResultService _resultService;
         private readonly IApprovedResultService _approvedResultService;
-        public ResultController(IResultService resultService, IApprovedResultService approvedResultService)
+        private readonly IAttendanceService _attendanceService;
+
+        public ResultController(IResultService resultService, IApprovedResultService approvedResultService,IAttendanceService attendanceService)
         {
             _resultService = resultService;
             _approvedResultService = approvedResultService;
+            _attendanceService = attendanceService;
         }
 
         [HttpGet]
@@ -372,5 +376,23 @@ namespace AssessmentSvc.API.Controllers
             }
         }
 
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<StudentAttendanceSummaryVm>>), 200)]
+        public async Task<IActionResult> GetStudentAttendanceSummary(int studentId, int classId)
+        {
+            try
+            {
+                var result = await _attendanceService.GetStudentAttendanceSummary(studentId, classId);
+                if (result.HasError)
+                    return ApiResponse<List<StudentAttendanceSummaryVm>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
     }
 }
