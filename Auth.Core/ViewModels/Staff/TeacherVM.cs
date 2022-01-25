@@ -2,6 +2,7 @@
 using Auth.Core.ViewModels.SchoolClass;
 using Microsoft.AspNetCore.Http;
 using Shared.Enums;
+using Shared.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
