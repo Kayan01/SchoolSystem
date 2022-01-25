@@ -18,5 +18,8 @@ namespace LearningSvc.Core.Interfaces
 
         Task<ResultModel<IEnumerable<ListStudentAttendanceClassVm>>> GetStudentAttendanceForClass(
             GetStudentAttendanceClassQueryVm vm);
+
+        Task<ResultModel<List<StudentAttendanceSummaryVm>>> GetStudentAttendanceSummary(
+            long studentId, long classId);
     }
 }

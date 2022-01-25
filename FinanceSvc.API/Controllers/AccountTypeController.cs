@@ -3,6 +3,8 @@ using FinanceSvc.Core.ViewModels.AccountType;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
+using Shared.AspNetCore.Policy;
+using Shared.Permissions;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 using System;
@@ -23,6 +25,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<List<AccountTypeVM>>), 200)]
         public async Task<IActionResult> GetAccountTypes()
         {
@@ -40,6 +43,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet("{accountClassId}")]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<List<AccountTypeVM>>), 200)]
         public async Task<IActionResult> GetAccountTypes(long accountClassId)
         {
@@ -57,6 +61,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [RequiresPermission(Permission.FINANCE_READ)]
         [ProducesResponseType(typeof(ApiResponse<AccountTypeVM>), 200)]
         public async Task<IActionResult> GetAccountType(int id)
         {
@@ -74,6 +79,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpPost]
+        [RequiresPermission(Permission.FINANCE_CREATE)]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> NewAccountType([FromBody] AccountTypePostVM model)
         {
@@ -98,6 +104,7 @@ namespace FinanceSvc.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [RequiresPermission(Permission.FINANCE_UPDATE)]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> UpdateAccountType(long id, [FromBody] AccountTypePostVM model)
         {

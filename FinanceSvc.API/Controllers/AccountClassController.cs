@@ -2,6 +2,8 @@
 using FinanceSvc.Core.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
+using Shared.AspNetCore.Policy;
+using Shared.Permissions;
 using Shared.ViewModels;
 using Shared.ViewModels.Enums;
 using System;
@@ -23,6 +25,7 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<AccountClassVM>>), 200)]
+        [RequiresPermission(Permission.FINANCE_READ)]
         public async Task<IActionResult> GetAccountClasses()
         {
             try
@@ -40,6 +43,7 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<AccountClassVM>), 200)]
+        [RequiresPermission(Permission.FINANCE_READ)]
         public async Task<IActionResult> GetAccountClass(int id)
         {
             try
@@ -57,6 +61,7 @@ namespace FinanceSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        [RequiresPermission(Permission.FINANCE_CREATE)]
         public async Task<IActionResult> NewAccountClass([FromBody] AccountClassVM model)
         {
             if (model == null)
@@ -81,6 +86,7 @@ namespace FinanceSvc.API.Controllers
 
         [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        [RequiresPermission(Permission.FINANCE_UPDATE)]
         public async Task<IActionResult> UpdateAccountClass([FromBody] AccountClassVM model)
         {
             if (model == null)
