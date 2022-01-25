@@ -1,4 +1,5 @@
-﻿using AssessmentSvc.Core.Interfaces;
+﻿using AssessmentSvc.Core.Context;
+using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Models;
 using AssessmentSvc.Core.ViewModels.Attendance;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +19,13 @@ namespace AssessmentSvc.Core.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         //private readonly IRepository<AttendanceSubject, long> _subjectAttendanceRepo;
+        private readonly AppDbContext _context;
         private readonly IRepository<AttendanceClass, long> _classAttendanceRepo;
         private readonly IRepository<AttendanceSubject, long> _subjectAttendance;
 
-        public AttendanceService(IUnitOfWork unitOfWork,IRepository<AttendanceClass, long> classAttendanceRepo,IRepository<AttendanceSubject, long> subjectAttendanceRepo)
+        public AttendanceService(AppDbContext context, IUnitOfWork unitOfWork,IRepository<AttendanceClass, long> classAttendanceRepo,IRepository<AttendanceSubject, long> subjectAttendanceRepo)
         {
+            _context = context;
             _unitOfWork = unitOfWork;
             _classAttendanceRepo = classAttendanceRepo;
             _subjectAttendance = subjectAttendanceRepo;
@@ -54,11 +57,10 @@ namespace AssessmentSvc.Core.Services
 
         public async Task<ResultModel<List<StudentAttendanceSummaryVm>>> GetStudentAttendanceSummary(long studentId, long classId)
         {
-            var query = await _classAttendanceRepo.GetAll().Include(x => x.Student)
-                .ToListAsync();
+            var query = await _context.ClassAttendance.Include(x => x.Student).ToListAsync();
 
             //use student id to query if provided
-            query = query.Where(x => x.StudentId == studentId && x.ClassId == classId).ToList();
+            //query = query.Where(x => x.StudentId == studentId && x.ClassId == classId).ToList();
 
             if (!query.Any())
             {
