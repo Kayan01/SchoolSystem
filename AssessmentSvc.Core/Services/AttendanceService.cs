@@ -60,7 +60,7 @@ namespace AssessmentSvc.Core.Services
             var query = await _context.ClassAttendance.Include(x => x.Student).ToListAsync();
 
             //use student id to query if provided
-            //query = query.Where(x => x.StudentId == studentId && x.ClassId == classId).ToList();
+            query = query.Where(x => x.StudentId == studentId && x.ClassId == classId).ToList();
 
             if (!query.Any())
             {
