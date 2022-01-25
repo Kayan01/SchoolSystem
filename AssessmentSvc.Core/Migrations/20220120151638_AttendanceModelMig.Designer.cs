@@ -4,14 +4,16 @@ using AssessmentSvc.Core.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AssessmentSvc.Core.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220120151638_AttendanceModelMig")]
+    partial class AttendanceModelMig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -195,6 +197,8 @@ namespace AssessmentSvc.Core.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
 
                     b.HasIndex("StudentId");
 
@@ -990,6 +994,12 @@ namespace AssessmentSvc.Core.Migrations
 
             modelBuilder.Entity("AssessmentSvc.Core.Models.AttendanceClass", b =>
                 {
+                    b.HasOne("AssessmentSvc.Core.Models.SchoolClass", "SchoolClass")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("AssessmentSvc.Core.Models.Student", "Student")
                         .WithMany()
                         .HasForeignKey("StudentId")
