@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <title></title>
@@ -13,26 +14,29 @@
             border-collapse: collapse;
             width: 100%;
         }
+
         .tContent {
             margin-top: 10px;
             margin-bottom: 10px;
         }
-        .tContent td, .tContent th {
+
+        .tContent td,
+        .tContent th {
             border: 1px solid #dddddd;
             text-align: left;
             padding: 3px;
         }
 
-            .tContent tr:nth-child(odd) {
-                background-color: #EBF0F5;
-            }
+        .tContent tr:nth-child(odd) {
+            background-color: #EBF0F5;
+        }
 
-            .tContent th {
-                color: #355691;
-            }
-
+        .tContent th {
+            color: #355691;
+        }
     </style>
 </head>
+
 <body>
     <table id="tMain">
         <tr>
@@ -167,6 +171,29 @@
 
                                     <tr>
                                         <td>
+                                            Attendance Record
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <table class="tContent">
+                                                <tr>
+                                                    <th>No of School days</th>
+                                                    <th>No of times present</th>
+                                                    <th>No of times absent</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{TotalNoOfSchoolDays}}</td>
+                                                    <td>{{NoOfTimesAbsent}}</td>
+                                                    <td>{{NoOfTimesPresent}}</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td>
                                             <table class="tContent">
                                                 <tr>
                                                     <th>Class Teacher</th>
@@ -219,4 +246,5 @@
         </tr>
     </table>
 </body>
+
 </html>
