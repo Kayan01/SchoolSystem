@@ -354,7 +354,7 @@ namespace Auth.Core.Services
                     DateOfBirth = x.DateOfBirth,
                     Section = x.Section,
                     StudentNumber = x.StudentNumber,
-                    Image = x.image ?? _documentService.TryGetUploadedFile(x.image)
+                    ImagePath = x.image
                 }).ToPagedList(model.PageIndex, model.PageSize);
 
                 resultModel.Data = new PaginatedModel<StudentVMs>(student, model.PageIndex, model.PageSize, student.Count);

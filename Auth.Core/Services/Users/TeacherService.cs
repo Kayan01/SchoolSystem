@@ -114,7 +114,7 @@ namespace Auth.Core.Services.Users
                 FirstName = x.FirstName,
                 StaffType = x.StaffType.GetDescription(),
                 StaffNumber = x.RegNumber,
-                Image = x.image ?? _documentService.TryGetUploadedFile(x.image)
+                ImagePath = x.image
             }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;

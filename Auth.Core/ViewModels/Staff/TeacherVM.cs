@@ -11,7 +11,11 @@ namespace Auth.Core.ViewModels.Staff
 {
     public class TeacherVM : StaffVM
     {
-        public string Image { get; set; }
+        public byte[] Image => ImagePath?.GetBase64StringFromImage();
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public string ImagePath { get; set; }
 
         public static implicit operator TeacherVM (TeachingStaff model)
         {
