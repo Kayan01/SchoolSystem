@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ExcelManager;
+using Shared.Utils;
 
 namespace Auth.Core.ViewModels.Staff
 {
@@ -21,7 +22,12 @@ namespace Auth.Core.ViewModels.Staff
         public string StaffNumber { get; set; }
         public string Sex { get; set; }
         public string EmploymentStatus { get; set; }
-        public string Image { get; set; }
+
+        public byte[] Image => ImagePath?.GetBase64StringFromImage();
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public string ImagePath { get; set; }
 
         public static implicit operator StaffVM(Models.Staff model)
         {
