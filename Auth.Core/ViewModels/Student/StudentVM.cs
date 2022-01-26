@@ -116,11 +116,12 @@ namespace Auth.Core.ViewModels.Student
         public string Section { get; set; }
         public string Class => SchoolClass?.FullName;
         public bool IsActive { get; set; }
-        public byte[] Image => ImagePath?.GetBase64StringFromImage();
+        //public byte[] Image => ImagePath?.GetBase64StringFromImage();
 
-        [System.Text.Json.Serialization.JsonIgnore]
-        [Newtonsoft.Json.JsonIgnore]
-        public string ImagePath { get; set; }
+        //[System.Text.Json.Serialization.JsonIgnore]
+        //[Newtonsoft.Json.JsonIgnore]
+        
+        public string Image { get; set; }
 
         public Models.SchoolClass SchoolClass { get; set; }
         public static implicit operator StudentVMs(Models.Student model)
