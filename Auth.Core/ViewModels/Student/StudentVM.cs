@@ -120,6 +120,7 @@ namespace Auth.Core.ViewModels.Student
 
         //[System.Text.Json.Serialization.JsonIgnore]
         //[Newtonsoft.Json.JsonIgnore]
+        
         public string Image { get; set; }
 
         public Models.SchoolClass SchoolClass { get; set; }

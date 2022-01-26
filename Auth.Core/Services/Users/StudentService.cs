@@ -324,79 +324,75 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInSchool(QueryModel model)
+        public async Task<ResultModel<PaginatedModel<StudentVMs>>> GetAllStudentsInSchool(QueryModel model)
         {
-            var result = new ResultModel<PaginatedModel<StudentVM>>();
+            //var result = new ResultModel<PaginatedModel<StudentVM>>();
 
-            var query = _studentRepo.GetAll().Include(x => x.FileUploads)
-             .OrderByDescending(x => x.CreationTime)
-             .Select(x => new StudentVM
-             {
-                 Id = x.Id,
-                 SchoolClass = x.Class,
-                 DateOfBirth = x.DateOfBirth,
-                 FirstName = x.User.FirstName,
-                 LastName = x.User.LastName,
-                 StudentNumber = x.RegNumber,
-                 Sex = x.Sex,
-                 Section = x.Class.SchoolSection.Name,
-                 IsActive = x.IsActive,
-                 ImagePath = x.FileUploads.Where(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
-             });
+            //var query = _studentRepo.GetAll().Include(x => x.FileUploads)
+            // .OrderByDescending(x => x.CreationTime)
+            // .Select(x => new StudentVM
+            // {
+            //     Id = x.Id,
+            //     SchoolClass = x.Class,
+            //     DateOfBirth = x.DateOfBirth,
+            //     FirstName = x.User.FirstName,
+            //     LastName = x.User.LastName,
+            //     StudentNumber = x.RegNumber,
+            //     Sex = x.Sex,
+            //     Section = x.Class.SchoolSection.Name,
+            //     IsActive = x.IsActive,
+            //     ImagePath = x.FileUploads.Where(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
+            // });
 
-            var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
+            //var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 
-            result.Data = new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount);
+            //result.Data = new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
-            return result;
-
-
-            //var resultModel = new ResultModel<PaginatedModel<StudentVMs>>();
-
-            //var query = await _studentRepo.GetAll().OrderByDescending(x => x.CreationTime)
-            //    .Select(x => new
-            //    {
-            //        x.Id,
-            //        x.User.FirstName,
-            //        x.User.LastName,
-            //        x.Sex,
-            //        x.DateOfBirth,
-            //        section = x.Class.SchoolSection.Name,
-            //        x.IsActive,
-            //        x.RegNumber,
-            //        image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
-            //        //image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
-            //    }).ToListAsync();
-
-            ////var image = query.FirstOrDefault().image.Path;
-            //var student = new List<StudentVMs>();
-
-            //foreach (var studentData in query)
-            //{
-            //    //var getImagePath = studentData.image.Path;
-            //    if (query != null)
-            //    {
-            //        student.Add(new StudentVMs()
-            //        {
-            //            Id = studentData.Id,
-            //            FirstName = studentData.FirstName,
-            //            LastName = studentData.LastName,
-            //            Sex = studentData.Sex,
-            //            DateOfBirth = studentData.DateOfBirth,
-            //            Section = studentData.section,
-            //            StudentNumber = studentData.RegNumber,
-            //            //Image = _documentService.TryGetUploadedFile(studentData.image.Path)
-            //        });
-            //    }
-            //}
-
-            //var data = student.ToPagedList(model.PageIndex, model.PageSize);
-
-            //resultModel.Data = new PaginatedModel<StudentVMs>(data, model.PageIndex, model.PageSize, query.Count);
+            //return result;
 
 
-            //return resultModel;
+            var resultModel = new ResultModel<PaginatedModel<StudentVMs>>();
 
+            var query = await _studentRepo.GetAll().OrderByDescending(x => x.CreationTime)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.User.FirstName,
+                    x.User.LastName,
+                    x.Sex,
+                    x.DateOfBirth,
+                    section = x.Class.SchoolSection.Name,
+                    x.IsActive,
+                    x.RegNumber,
+                    image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                    //image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                }).ToListAsync();
+
+            if (query != null)
+            {
+                var student = query.Select(x => new StudentVMs
+                {
+
+                    Id = x.Id,
+                    FirstName = x.FirstName,
+                    LastName = x.LastName,
+                    Sex = x.Sex,
+                    DateOfBirth = x.DateOfBirth,
+                    Section = x.section,
+                    StudentNumber = x.RegNumber,
+                    Image = x.image == null ? null : _documentService.TryGetUploadedFile(x.image)
+                }).ToList();
+
+
+                var data = student.ToPagedList(model.PageIndex, model.PageSize);
+
+                resultModel.Data = new PaginatedModel<StudentVMs>(data, model.PageIndex, model.PageSize, query.Count);
+
+
+                return resultModel;
+            }
+
+            return resultModel;
         }
 
         public async Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInClass(QueryModel model, long classId)
