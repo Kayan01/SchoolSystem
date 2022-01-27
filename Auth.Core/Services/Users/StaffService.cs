@@ -105,7 +105,7 @@ namespace Auth.Core.Services
                 PhoneNumber = x.PhoneNumber,
                 UserId = x.UserId,
                 StaffNumber = x.RegNumber,
-                ImagePath = x.image
+                ImagePath = x.image == null ? null : _documentService.TryGetUploadedFile(x.image)
             }), model.PageIndex, model.PageSize, pagedData.TotalItemCount);
 
             return result;
