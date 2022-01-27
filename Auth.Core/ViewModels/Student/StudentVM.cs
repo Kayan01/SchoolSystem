@@ -122,7 +122,8 @@ namespace Auth.Core.ViewModels.Student
         //[Newtonsoft.Json.JsonIgnore]
         
         public string Image { get; set; }
-
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public Models.SchoolClass SchoolClass { get; set; }
         public static implicit operator StudentVMs(Models.Student model)
         {
