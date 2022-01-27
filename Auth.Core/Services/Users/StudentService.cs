@@ -364,8 +364,8 @@ namespace Auth.Core.Services
                     section = x.Class.SchoolSection.Name,
                     x.IsActive,
                     x.RegNumber,
+                    x.Class,
                     image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
-                    //image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
                 }).ToListAsync();
 
             if (query != null)
@@ -380,6 +380,7 @@ namespace Auth.Core.Services
                     DateOfBirth = x.DateOfBirth,
                     Section = x.section,
                     StudentNumber = x.RegNumber,
+                    SchoolClass = x.Class,
                     Image = x.image == null ? null : _documentService.TryGetUploadedFile(x.image)
                 }).ToList();
 

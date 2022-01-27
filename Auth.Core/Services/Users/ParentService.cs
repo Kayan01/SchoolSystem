@@ -120,19 +120,6 @@ namespace Auth.Core.Services.Users
                     Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
                 }).ToListAsync();
 
-            //var query = await _studentRepo.GetAll()
-            //    .Select(x => new
-            //    {
-            //        Email = x.Parent.User.Email,
-            //        FullName = x.Parent.User.FullName,
-            //        Id = x.ParentId,
-            //        ParentCreationYear = x.Parent.CreationTime.Year,
-            //        PhoneNumber = x.Parent.User.PhoneNumber,
-            //        Status = x.Parent.Status,
-            //        Image = x.Parent.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
-            //    })
-            //     .ToListAsync();
-
             if (query != null)
             {
                 var parents = query.Select(x => new ParentListVM
