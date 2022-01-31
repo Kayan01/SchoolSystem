@@ -27,5 +27,11 @@ namespace AssessmentSvc.Core.ViewModels.Result
         public List<SubjectResultBreakdown> Breakdowns { get; set; } = new List<SubjectResultBreakdown>();
         public List<GradeSetupListVM> GradeSetup { get; set; }
         public long StudentId { get; internal set; }
+        public long? NoOfTimesAbsent { get; set; }
+        public long? NoOfTimesPresent { get; set; }
+        public long? TotalNoOfSchoolDays { get; set; }
+
+        
+
     }
 }

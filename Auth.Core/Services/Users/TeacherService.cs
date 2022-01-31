@@ -85,7 +85,7 @@ namespace Auth.Core.Services.Users
         public async Task<ResultModel<PaginatedModel<TeacherVM>>> GetTeachers(QueryModel model)
         {
             var result = new ResultModel<PaginatedModel<TeacherVM>>();
-            var query = _teacherRepo.GetAll()
+            var query = _teacherRepo.GetAll().Include(x => x.Staff)
                           .Select(x => new
                           {
                               x.Id,
@@ -104,7 +104,7 @@ namespace Auth.Core.Services.Users
 
 
 
-            result.Data = new PaginatedModel<TeacherVM>(pagedData.Select(x => new TeacherVM
+            result.Data = new PaginatedModel<TeacherVM>(pagedData.Where(x => x.StaffType == StaffType.TeachingStaff).Select(x => new TeacherVM
             {
                 Email = x.Email,
                 PhoneNumber = x.PhoneNumber,

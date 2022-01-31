@@ -524,7 +524,6 @@ namespace AssessmentSvc.Core.Services
 
             result.Data.Breakdowns = studResult;
 
-
             var ApprovedResultInfo = await _resultRepo.GetAll()
                 .Where(x => x.SessionSetupId == currSessionAndTerm.sessionId &&
                     x.SchoolClassId == classId &&
@@ -552,6 +551,19 @@ namespace AssessmentSvc.Core.Services
                 return new ResultModel<StudentReportSheetVM>("Result not found");
             }
 
+            var classAttendance = await _attendanceService.GetStudentAttendanceSummary(studentId,classId);
+
+            long NoOfTimesPresent = 0;
+            long NoOfTimesAbsent = 0;
+            long TotalNoOfSchoolDays = 0;
+
+            foreach (var item in classAttendance.Data)
+            {
+                NoOfTimesAbsent = item.NoOfTimesAbsent;
+                NoOfTimesPresent = item.NoOfTimesPresent;
+                TotalNoOfSchoolDays = item.TotalNoOfSchoolDays;
+            }
+
             result.Data.SubjectOffered = resultsBySubjects.Count();
 
             result.Data.RegNumber = ApprovedResultInfo.RegNumber;
@@ -564,6 +576,9 @@ namespace AssessmentSvc.Core.Services
             result.Data.HeadTeacherId = ApprovedResultInfo.HeadTeacherId;
             result.Data.Sex = ApprovedResultInfo.Sex;
             result.Data.Age = DateTime.Now.Year - ApprovedResultInfo.DateOfBirth.Year;
+            result.Data.NoOfTimesAbsent = NoOfTimesAbsent;
+            result.Data.NoOfTimesPresent = NoOfTimesPresent;
+            result.Data.TotalNoOfSchoolDays = TotalNoOfSchoolDays;
 
             return result;
         }
@@ -907,12 +922,12 @@ namespace AssessmentSvc.Core.Services
                 tableArrays.Add(new KeyValuePair<string, IEnumerable<TableObject<object>>>( "Behaviours", BehaviourTables));
                 var classTeacher = classTeachers.FirstOrDefault(m => m.UserId == result.ClassTeacherId) ?? new Teacher();
                 var headTeacher = headTeachers.FirstOrDefault(m => m.UserId == result.HeadTeacherId) ?? new StaffNameAndSignatureVM();
-                
-                var classAttendance = await _attendanceService.GetStudentAttendanceSummary(result.StudentId,classId);
-                
-                long NoOfTimesPresent = default;
-                long NoOfTimesAbsent = default;
-                long TotalNoOfSchoolDays = default;
+
+                var classAttendance = await _attendanceService.GetStudentAttendanceSummary(result.StudentId, classId);
+
+                long NoOfTimesPresent = 0;
+                long NoOfTimesAbsent = 0;
+                long TotalNoOfSchoolDays = 0;
 
                 foreach (var item in classAttendance.Data)
                 {
