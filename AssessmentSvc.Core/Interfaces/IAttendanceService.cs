@@ -13,6 +13,6 @@ namespace AssessmentSvc.Core.Interfaces
         void AddOrUpdateAttendanceForClassFromBroadCast(ClassAttendanceSharedModel model);
         void AddOrUpdateAttendanceForSubjectFromBroadCast(AttendanceSubject model);
         Task<ResultModel<List<StudentAttendanceSummaryVm>>> GetStudentAttendanceSummary(
-            long studentId, long classId);
+            long? studentId, long classId);
     }
 }

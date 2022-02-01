@@ -347,26 +347,14 @@ namespace Auth.Core.Services.Users
 
             
             IdentityResult userResult;
+
+
+            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+
+            if (existingUser != null)
+                return new ResultModel<ParentDetailVM>($"User with Email {existingUser.Email} already exist");
+            
             userResult = await _userManager.CreateAsync(user, vm.PhoneNumber);
-
-            //if (existingUser != null)
-            //{
-
-            //return new ResultModel<ParentDetailVM>($"User with Email {existingUser.Email} already exist");
-
-            //existingUser.FirstName = vm.FirstName;
-            //existingUser.LastName = vm.LastName;
-            //existingUser.Email = vm.EmailAddress.Trim();
-            //existingUser.UserName = vm.EmailAddress.Trim();
-            //existingUser.PhoneNumber = vm.PhoneNumber;
-            //existingUser.UserType = UserType.Parent;
-
-            //userResult = await _userManager.UpdateAsync(existingUser);
-            //}
-            //else
-            //{
-
-            //}
 
             if (!userResult.Succeeded)
             {

@@ -55,8 +55,13 @@ namespace AssessmentSvc.Core.Services
 
         }
 
-        public async Task<ResultModel<List<StudentAttendanceSummaryVm>>> GetStudentAttendanceSummary(long studentId, long classId)
+        public async Task<ResultModel<List<StudentAttendanceSummaryVm>>> GetStudentAttendanceSummary(long? studentId, long classId)
         {
+            if (studentId == null)
+            {
+                return new ResultModel<List<StudentAttendanceSummaryVm>>("No attendance Summary for student found");
+            }
+
             var query = await _context.ClassAttendance.Include(x => x.Student).ToListAsync();
 
             //use student id to query if provided
