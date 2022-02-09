@@ -969,7 +969,7 @@ namespace AssessmentSvc.Core.Services
                     TotalNoOfSchoolDays = TotalNoOfSchoolDays
                 };
 
-                studentFilePaths.Add(result.StudentId, _toPDF.ResultToPDF(mainData, tableObjects, tableArrays, templatePath, false));
+                studentFilePaths.Add(result.StudentId, _toPDF.ResultToPDF(mainData, mainData.StudentName, tableObjects, tableArrays, templatePath, false));
             }
 
             return studentFilePaths;
