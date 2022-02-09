@@ -9,7 +9,7 @@ namespace AssessmentSvc.Core.Utils
 {
     public interface IToPDF
     {
-        string ResultToPDF(object mainData, IEnumerable<TableObject<object>> tableObj, IEnumerable<KeyValuePair<string, IEnumerable<TableObject<object>>>> tableArrays, string htmlTemplatePath, bool isLandscape = false);
+        string ResultToPDF(object mainData, string studentName, IEnumerable<TableObject<object>> tableObj, IEnumerable<KeyValuePair<string, IEnumerable<TableObject<object>>>> tableArrays, string htmlTemplatePath, bool isLandscape = false);
     }
         public class ToPDF : IToPDF
     {
@@ -23,10 +23,10 @@ namespace AssessmentSvc.Core.Utils
             _converter = converter;
         }
 
-        public string ResultToPDF( object mainData, IEnumerable<TableObject<object>> tableObj, IEnumerable<KeyValuePair<string, IEnumerable<TableObject<object>>>> tableArrays, string htmlTemplatePath, bool isLandscape = false)
+        public string ResultToPDF(object mainData, string studentName, IEnumerable<TableObject<object>> tableObj, IEnumerable<KeyValuePair<string, IEnumerable<TableObject<object>>>> tableArrays, string htmlTemplatePath, bool isLandscape = false)
         {
             var pdf = _converter.ConvertToPDFBytesToList(mainData, tableObj, tableArrays, htmlTemplatePath, isLandscape);
-            var path = $"result/{Guid.NewGuid()}.pdf";
+            var path = $"result/{studentName}.pdf";
             _fileStorageService.SaveBytes(path, pdf);
 
             return path;

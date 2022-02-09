@@ -18,7 +18,8 @@ namespace AssessmentSvc.Core.Test.Mocks
 
             Mock.Setup(m => 
                 m.ResultToPDF(
-                    It.IsAny<object>(), 
+                    It.IsAny<object>(),
+                    It.IsAny<string>(),
                     It.IsAny<List<TableObject<object>>>(), 
                     It.IsAny<List<KeyValuePair<string, IEnumerable<TableObject<object>>>>>(),
                     It.IsAny<string>(),
