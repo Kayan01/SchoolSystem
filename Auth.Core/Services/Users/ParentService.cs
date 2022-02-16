@@ -133,7 +133,7 @@ namespace Auth.Core.Services.Users
                     Image = x.Image == null ? null : _documentService.TryGetUploadedFile(x.Image),
                 }).ToPagedList(vm.PageIndex, vm.PageSize);
 
-                var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, parents.Count);
+                var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, query.Count);
                 resultModel.Data = data;
 
                 return resultModel;
@@ -570,10 +570,11 @@ namespace Auth.Core.Services.Users
         {
             var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
 
-            var query = _parentRepo.GetAll()
+            var query = await _parentRepo.GetAll()
                .Include(x => x.User)
                .Include(x => x.Students)
-               .Include(x => x.FileUploads).Where(x => x.User.FirstName == FirstName);
+               .Include(x => x.FileUploads)
+               .Where(x => x.User.FirstName.Contains(FirstName) || x.User.LastName.Contains(FirstName)).ToListAsync();
 
 
             if (query == null)
