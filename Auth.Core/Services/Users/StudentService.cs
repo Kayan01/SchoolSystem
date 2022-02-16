@@ -326,31 +326,7 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<PaginatedModel<StudentVMs>>> GetAllStudentsInSchool(QueryModel model)
         {
-            //var result = new ResultModel<PaginatedModel<StudentVM>>();
-
-            //var query = _studentRepo.GetAll().Include(x => x.FileUploads)
-            // .OrderByDescending(x => x.CreationTime)
-            // .Select(x => new StudentVM
-            // {
-            //     Id = x.Id,
-            //     SchoolClass = x.Class,
-            //     DateOfBirth = x.DateOfBirth,
-            //     FirstName = x.User.FirstName,
-            //     LastName = x.User.LastName,
-            //     StudentNumber = x.RegNumber,
-            //     Sex = x.Sex,
-            //     Section = x.Class.SchoolSection.Name,
-            //     IsActive = x.IsActive,
-            //     ImagePath = x.FileUploads.Where(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
-            // });
-
-            //var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
-
-            //result.Data = new PaginatedModel<StudentVM>(pagedData, model.PageIndex, model.PageSize, pagedData.TotalItemCount);
-
-            //return result;
-
-
+            
             var resultModel = new ResultModel<PaginatedModel<StudentVMs>>();
 
             var query = await _studentRepo.GetAll().OrderByDescending(x => x.CreationTime)
