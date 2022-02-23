@@ -72,5 +72,30 @@ namespace Auth.API.Controllers.Setup
                 return HandleError(ex);
             }
         }
+
+
+        [HttpPut]
+        [ProducesResponseType(typeof(ApiResponse<SchoolPropertyVM>), 200)]
+        public async Task<IActionResult> UpdateSchoolProperty([FromBody] SchoolPropertyVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+            try
+            {
+                var result = await _schoolPropertyService.UpdateSchoolProperty(model);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<object>(message: "Update Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }
