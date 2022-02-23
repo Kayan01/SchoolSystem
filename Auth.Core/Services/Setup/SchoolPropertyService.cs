@@ -55,7 +55,6 @@ namespace Auth.Core.Services.Setup
         {
             var result = new ResultModel<SchoolPropertyVM>();
 
-
             //check if prefix and seperator has been setup for any other school
             var check = await _schoolPropRepo.GetAll()
                 .Where(x => !x.IsDeleted && 
@@ -100,5 +99,40 @@ namespace Auth.Core.Services.Setup
             return result;
 
         }
+
+        public async Task<ResultModel<SchoolPropertyVM>> UpdateSchoolProperty(SchoolPropertyVM model)
+        {
+            var result = new ResultModel<SchoolPropertyVM>();
+
+            //check if prefix and seperator has been setup for any other school
+            var check = await _schoolPropRepo.GetAll()
+                .Where(x => !x.IsDeleted &&
+                x.Prefix == model.Prefix &&
+                x.Seperator == model.Seperator && x.TenantId == model.TenantId)
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync();
+
+            if (check == null)
+            {
+                return new ResultModel<SchoolPropertyVM>("No School Has been Setup using these configuration prefix and seperator");
+            }
+
+            check.TenantId = model.TenantId;
+            check.NumberOfTerms = model.NumberOfTerms;
+            check.Prefix = model.Prefix;
+            check.ClassDays = model.ClassDays;
+            check.Seperator = model.Seperator;
+            check.LastModificationTime = DateTime.Now;
+            check.EnrollmentAmount = model.EnrollmentAmount;
+
+            await _schoolPropRepo.UpdateAsync(check);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            result.Data = model;
+            return result;
+
+        }
+
     }
 }

@@ -32,7 +32,7 @@ namespace AssessmentSvc.Core.Services
 
             foreach (var model in models)
             {
-                var student = studentList.FirstOrDefault(x => x.Id == model.Id);
+                var student = studentList.FirstOrDefault(x => x.Id == model.Id && x.TenantId == model.TenantId);
                 if (student == null)
                 {
                     student = _studentRepo.Insert(new Student
@@ -56,6 +56,7 @@ namespace AssessmentSvc.Core.Services
                 student.Sex = model.Sex;
                 student.DateOfBirth = model.DoB;
                 student.StudentStatusInSchool = model.StudentStatusInSchool;
+                
             }
 
             _unitOfWork.SaveChanges();
