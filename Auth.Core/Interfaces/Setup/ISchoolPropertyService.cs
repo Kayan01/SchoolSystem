@@ -11,5 +11,6 @@ namespace Auth.Core.Interfaces.Setup
     {
         Task<ResultModel<SchoolPropertyVM>> GetSchoolProperty();
         Task<ResultModel<SchoolPropertyVM>> SetSchoolProperty(SchoolPropertyVM model);
+        Task<ResultModel<SchoolPropertyVM>> UpdateSchoolProperty(SchoolPropertyVM model);
     }
 }
