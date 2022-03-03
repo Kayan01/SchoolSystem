@@ -220,7 +220,7 @@ namespace Auth.Core.Test.Services.Users
 
             var AddStudent = await studentService.AddStudentToSchool(studentData);
 
-            var DeleteStudent = await studentService.DeleteStudent(AddStudent.Data.Id);
+            var DeleteStudent = await studentService.DeleteStudent(AddStudent.Data.Id, "Session");
 
             Assert.That(!(DeleteStudent.ErrorMessages.Contains("Student not found")));
             Assert.That(DeleteStudent.Data == true);
@@ -275,9 +275,9 @@ namespace Auth.Core.Test.Services.Users
 
             var AddStudent = await studentService.AddStudentToSchool(studentData);
 
-            var Removestudent = await studentService.DeleteStudent(AddStudent.Data.Id);
+            var Removestudent = await studentService.DeleteStudent(AddStudent.Data.Id, "Session");
 
-            var DeleteStudent = await studentService.DeleteStudent(AddStudent.Data.Id);
+            var DeleteStudent = await studentService.DeleteStudent(AddStudent.Data.Id, "Session");
 
             Assert.That(DeleteStudent.ErrorMessages.Contains("Student not found"));
             Assert.That(DeleteStudent.Data == false);
@@ -566,7 +566,7 @@ namespace Auth.Core.Test.Services.Users
             studentData.ClassId = 3;
 
             var AddStudent = await studentService.AddStudentToSchool(studentData);
-            var removeStudent = await studentService.DeleteStudent(AddStudent.Data.Id);
+            var removeStudent = await studentService.DeleteStudent(AddStudent.Data.Id, "Session");
             var result = await studentService.GetStudentProfileByUserId(AddStudent.Data.UserId.Value);
 
             Assert.That(result.ErrorMessages.Contains("Student does not exist"));
@@ -685,7 +685,7 @@ namespace Auth.Core.Test.Services.Users
             //Add student
             var AddStudent = await studentService.AddStudentToSchool(studentData);
             //remove student
-            var removeStudent = await studentService.DeleteStudent(AddStudent.Data.Id);
+            var removeStudent = await studentService.DeleteStudent(AddStudent.Data.Id, "Session");
             //Trying to update using the id of the deleted student
             var result = await studentService.UpdateStudent(AddStudent.Data.Id, updateData);
 
