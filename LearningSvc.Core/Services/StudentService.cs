@@ -25,7 +25,7 @@ namespace LearningSvc.Core.Services
         public void AddOrUpdateStudentFromBroadcast(List<StudentSharedModel> models)
         {
             var idList = models.Select(m => m.Id).Distinct();
-            var studentList = _studentRepo.GetAll().Where(m => idList.Contains(m.Id)).ToList();
+            var studentList = _studentRepo.GetAll().Where(m => idList.Contains(m.Id) && m.IsDeleted == false).ToList();
 
             foreach (var model in models)
             {
@@ -59,7 +59,7 @@ namespace LearningSvc.Core.Services
 
         public async Task<long> GetStudentClassIdByUserId(long userId)
         {
-            var student = await _studentRepo.GetAll().Where(m => m.UserId == userId).FirstOrDefaultAsync();
+            var student = await _studentRepo.GetAll().Where(m => m.UserId == userId && m.IsDeleted == false).FirstOrDefaultAsync();
             if (student == null)
             {
                 return 0;
@@ -68,7 +68,7 @@ namespace LearningSvc.Core.Services
         }
         public async Task<long> GetStudentIdByUserId(long userId)
         {
-            var student = await _studentRepo.GetAll().Where(m => m.UserId == userId).FirstOrDefaultAsync();
+            var student = await _studentRepo.GetAll().Where(m => m.UserId == userId && m.IsDeleted == false).FirstOrDefaultAsync();
             if (student == null)
             {
                 return 0;

@@ -14,7 +14,7 @@ namespace Auth.Core.Services.Interfaces
     {
         Task<ResultModel<StudentVM>> AddStudentToSchool(CreateStudentVM model);
 
-        Task<ResultModel<bool>> DeleteStudent(long Id);
+        Task<ResultModel<bool>> DeleteStudent(long Id, string sessionName);
 
         Task<ResultModel<PaginatedModel<StudentVMs>>> GetAllStudentsInSchool(QueryModel model);
         Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInClass(QueryModel model, long classId);

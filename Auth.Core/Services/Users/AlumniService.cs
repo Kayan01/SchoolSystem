@@ -92,7 +92,7 @@ namespace Auth.Core.Services
         {
 
             var resultmodel = new ResultModel<List<AlumniDetailVM>>();
-            var query = _alumniRepo.GetAll();
+            var query = _alumniRepo.GetAll().Where(x => x.IsDeleted == false);
             var vmList = new List<AlumniDetailVM>();
             if (!query.Any())
                 return resultmodel;
@@ -125,7 +125,7 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<AlumniDetailVM>> GetAlumniById(long Id)
         {
-            var query = await _alumniRepo.GetAll().Where(x => x.Id == Id).FirstOrDefaultAsync();
+            var query = await _alumniRepo.GetAll().Where(x => x.Id == Id && x.IsDeleted == false).FirstOrDefaultAsync();
 
             if (query == null)
             {
@@ -137,7 +137,7 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<AlumniDetailVM>> UpdateAlumni(UpdateAlumniVM model)
         {
-            var alumni = await _alumniRepo.GetAll().Where(x => x.Id == model.Id).FirstOrDefaultAsync();
+            var alumni = await _alumniRepo.GetAll().Where(x => x.Id == model.Id && x.IsDeleted == false).FirstOrDefaultAsync();
 
             if (alumni == null)
             {
@@ -151,9 +151,21 @@ namespace Auth.Core.Services
             return new ResultModel<AlumniDetailVM>(alumni);
         }
 
-        public Task<ResultModel<bool>> DeleteAlumni(long Id)
+        public async Task<ResultModel<bool>> DeleteAlumni(long Id)
         {
-            throw new NotImplementedException();
+            var alumni = await _alumniRepo.GetAll().Where(x => x.Id == Id && x.IsDeleted == false).FirstOrDefaultAsync();
+
+            if (alumni == null)
+            {
+                return new ResultModel<bool>($"No Alumni with Id : {Id}");
+            }
+
+            alumni.IsDeleted = true;
+            alumni.DeletionTime = DateTime.Now;
+
+            var succeed = await _alumniRepo.UpdateAsync(alumni);
+
+            return new ResultModel<bool>(true);
         }
     }
 }
