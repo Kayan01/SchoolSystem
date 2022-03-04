@@ -1,5 +1,6 @@
 ﻿using Auth.Core.Interfaces.Setup;
 using Auth.Core.Models;
+using Auth.Core.Models.Alumni;
 using Auth.Core.Models.Medical;
 using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
@@ -44,6 +45,7 @@ namespace Auth.Core.Services
         private readonly UserManager<User> _userManager;
         private readonly IHttpUserService _httpUserService;
         private readonly ISchoolPropertyService _schoolPropertyService;
+        private readonly IRepository<Alumni, long> _alumniRepo;
 
         private readonly IAuthUserManagement _authUserManagement;
         public StudentService(
@@ -57,7 +59,8 @@ namespace Auth.Core.Services
             IHttpUserService httpUserService,
             UserManager<User> userManager,
             ISchoolPropertyService schoolPropertyService,
-            IAuthUserManagement authUserManagement)
+            IAuthUserManagement authUserManagement,
+            IRepository<Alumni, long> alumniRepo)
         {
             _studentRepo = studentRepo;
             _classRepo = classRepo;
@@ -70,6 +73,7 @@ namespace Auth.Core.Services
             _httpUserService = httpUserService;
             _schoolPropertyService = schoolPropertyService;
             _authUserManagement = authUserManagement;
+            _alumniRepo = alumniRepo;
         }
 
         private async Task<Student> SaveStudentWithSystemRegNumber(Student student, string schoolSeperator, string schoolPrefix)
@@ -302,12 +306,12 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<bool>> DeleteStudent(long userId)
+        public async Task<ResultModel<bool>> DeleteStudent(long userId, string sessionName)
         {
             var result = new ResultModel<bool> { Data = false };
 
             //check if the student exists
-            var std = await _studentRepo.FirstOrDefaultAsync(x => x.Id == userId);
+            var std = await _studentRepo.GetAll().Include(x => x.Parent).Include(x => x.User).FirstOrDefaultAsync(x => x.UserId == userId && x.IsDeleted == false);
 
             if (std == null)
             {
@@ -316,11 +320,48 @@ namespace Auth.Core.Services
             }
 
             //delete auth user
-            await _studentRepo.DeleteAsync(std);
+            std.IsDeleted = true;
+            std.DeletionTime = DateTime.Now;
+            await _studentRepo.UpdateAsync(std);
+
+
+            //update the isdeleted field in user table as well
+            var id = userId.ToString();
+            var findUser = await _userManager.FindByIdAsync(id);
+            findUser.IsDeleted = true;
+            findUser.DeletionTime = DateTime.Now;
+
+            var updateUser = await _userManager.UpdateAsync(findUser);
+
+            var alumni = new Alumni(std,sessionName);
+            alumni = await _alumniRepo.InsertAsync(alumni);
 
             await _unitOfWork.SaveChangesAsync();
-            result.Data = true;
+            ////PublishMessage
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT_UPDATE, new List<StudentSharedModel>{
+                new StudentSharedModel
+                {
+                    Id = std.Id,
+                    RegNumber = std.RegNumber,
+                    IsActive = true,
+                    ClassId = std.ClassId,
+                    TenantId = std.TenantId,
+                    UserId = std.UserId,
+                    FirstName = std.User.FirstName,
+                    LastName = std.User.LastName,
+                    Email = std.User.Email,
+                    Phone = std.User.PhoneNumber,
+                    //ParentName = $"{std.Parent.User.FirstName} {std.Parent.User.LastName}",
+                    //ParentEmail = std.Parent.User.Email,
+                    ParentId = std.Parent.Id,
+                    Sex = std.Sex,
+                    DoB = std.DateOfBirth,
+                    StudentStatusInSchool = std.StudentStatusInSchool,
+                    IsDeleted = std.IsDeleted
+                }
+            });
 
+            result.Data = true;
             return result;
         }
 
@@ -329,7 +370,7 @@ namespace Auth.Core.Services
             
             var resultModel = new ResultModel<PaginatedModel<StudentVMs>>();
 
-            var query = await _studentRepo.GetAll().OrderByDescending(x => x.CreationTime)
+            var query = await _studentRepo.GetAll().Where(x => x.IsDeleted == false).OrderByDescending(x => x.CreationTime)
                 .Select(x => new
                 {
                     x.Id,
@@ -375,7 +416,7 @@ namespace Auth.Core.Services
         public async Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInClass(QueryModel model, long classId)
         {
             var query = _studentRepo.GetAll()
-                .Where(x => x.ClassId == classId)
+                .Where(x => x.ClassId == classId && x.IsDeleted == false)
                 .Select(x => new StudentVM
                 {
                     Id = x.Id,
@@ -401,7 +442,7 @@ namespace Auth.Core.Services
         public async Task<ResultModel<StudentDetailVM>> GetStudentById(long Id)
         {
             var result = new ResultModel<StudentDetailVM>();
-            var std = await _studentRepo.GetAll().Where(x => x.Id == Id)
+            var std = await _studentRepo.GetAll().Where(x => x.Id == Id && x.IsDeleted == false)
                         .Select(x => new
                         {
                             x.TenantId,
@@ -501,7 +542,7 @@ namespace Auth.Core.Services
         public async Task<ResultModel<StudentDetailVM>> GetStudentProfileByUserId(long Id)
         {
             var result = new ResultModel<StudentDetailVM>();
-            var std = await _studentRepo.GetAll().Where(x => x.UserId == Id)
+            var std = await _studentRepo.GetAll().Where(x => x.UserId == Id && x.IsDeleted == false)
                         .Select(x => new
                         {
                             x.Id,
@@ -586,7 +627,7 @@ namespace Auth.Core.Services
             var result = new ResultModel<StudentVM>();
 
             var stud = await _studentRepo.GetAll()
-                .Where(x => x.Id == Id)
+                .Where(x => x.Id == Id && x.IsDeleted == false)
                 .Include(x => x.User)
                 .Include(c => c.Class)
                 .FirstOrDefaultAsync();

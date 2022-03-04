@@ -6,6 +6,6 @@ namespace Shared.Enums
 {
     public enum StudentStatusInSchool
     {
-        IsStudent, IsGraduated, IsWithdrawn
+        IsStudent, IsGraduated, IsWithdrawn , IsDeactivated
     }
 }

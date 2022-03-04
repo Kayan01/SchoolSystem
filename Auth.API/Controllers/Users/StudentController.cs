@@ -166,14 +166,14 @@ namespace Auth.API.Controllers
         [HttpDelete("{id}")]
         [RequiresPermission(Permission.STUDENT_DELETE)]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
-        public async Task<IActionResult> DeleteStudent(long id)
+        public async Task<IActionResult> DeleteStudent(long id,[FromForm]string sessionName)
         {
             if ( id <1)
                 return ApiResponse<string>(errors: "Invalid student Id");
 
             try
             {
-                var result = await _studentService.DeleteStudent(id);
+                var result = await _studentService.DeleteStudent(id, sessionName);
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<bool>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
