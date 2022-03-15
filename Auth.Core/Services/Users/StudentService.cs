@@ -311,7 +311,7 @@ namespace Auth.Core.Services
             var result = new ResultModel<bool> { Data = false };
 
             //check if the student exists
-            var std = await _studentRepo.GetAll().Include(x => x.Parent).Include(x => x.User).FirstOrDefaultAsync(x => x.UserId == userId && x.IsDeleted == false);
+            var std = await _studentRepo.GetAll().Include(x => x.Parent).Include(x => x.User).FirstOrDefaultAsync(x => x.Id == userId && x.IsDeleted == false);
 
             if (std == null)
             {
@@ -326,7 +326,7 @@ namespace Auth.Core.Services
 
 
             //update the isdeleted field in user table as well
-            var id = userId.ToString();
+            var id = std.UserId.ToString();
             var findUser = await _userManager.FindByIdAsync(id);
             findUser.IsDeleted = true;
             findUser.DeletionTime = DateTime.Now;
