@@ -41,7 +41,7 @@ namespace Auth.Core.Services
         private readonly IRepository<Student, long> _studentRepo;
         private readonly IRepository<School, long> _schoolRepo;
         private readonly IDocumentService _documentService;
-
+        private readonly UserManager<User> _userManager;
 
         public AlumniService(
             IPublishService publishService, IStudentService studentService,
@@ -49,7 +49,8 @@ namespace Auth.Core.Services
             IRepository<Student, long> studentRepo,
             IUnitOfWork unitOfWork,
             IRepository<School, long> schoolRepo,
-            IDocumentService documentService
+            IDocumentService documentService,
+            UserManager<User> userManager
             )
         {
             _publishService = publishService;
@@ -59,7 +60,7 @@ namespace Auth.Core.Services
             _studentRepo = studentRepo;
             _schoolRepo = schoolRepo;
             _documentService = documentService;
-
+            _userManager = userManager;
 
         }
 
@@ -92,34 +93,67 @@ namespace Auth.Core.Services
         {
 
             var resultmodel = new ResultModel<List<AlumniDetailVM>>();
-            var query = _alumniRepo.GetAll().Where(x => x.IsDeleted == false);
+
+            //if (!string.IsNullOrWhiteSpace(queryVM.SessionName))
+            //{
+
+            //}
+            var query = _alumniRepo.GetAll().Where(x => x.IsDeleted == false).Where(x => x.SessionName == queryVM.SessionName);
+           
             var vmList = new List<AlumniDetailVM>();
+            var alumniList = new List<AlumniDetailVM>();
             if (!query.Any())
                 return resultmodel;
 
-            if (!string.IsNullOrWhiteSpace(queryVM.SessionName))
+            var user = new User();
+
+            foreach (var alumniUser in query)
             {
-                query = query.Where(x => x.SessionName == queryVM.SessionName).Include(x => x.User);
+                var userId = alumniUser.UserId.ToString();
+                user = await _userManager.FindByIdAsync(userId);
+
+                var alumniData = new AlumniDetailVM()
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Id = alumniUser.Id,
+                    RegNumber = alumniUser.RegNumber,
+                    Sex = alumniUser.Sex,
+                    DateOfBirth = alumniUser.DateOfBirth
+
+                };
+
+                alumniList.Add(alumniData);
+
+                //if (!string.IsNullOrWhiteSpace(queryVM.SessionName))
+                //{
+                //    query = query.Where(x => x.SessionName == queryVM.SessionName);
+
+                //    //query = query.Include(x => x.User).Where(x => x.SessionName == queryVM.SessionName && x.User.IsDeleted == true);
+                //}
+                
             }
-           
             resultmodel.TotalCount = query.Count();
-            var data = await query.Select(x => new AlumniDetailVM() { 
-                FirstName = x.User.FirstName,
-                LastName = x.User.LastName,
-                Email = x.User.Email,
+            var data = alumniList.Select(x => new AlumniDetailVM()
+            {
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                Email = x.Email,
                 Id = x.Id,
                 RegNumber = x.RegNumber,
                 Sex = x.Sex,
                 DateOfBirth = x.DateOfBirth
 
-            }).ToPagedListAsync(model.PageIndex, model.PageSize);
+            }).ToPagedList(model.PageIndex, model.PageSize);
 
             vmList = data.Select(x => (AlumniDetailVM)x).ToList();
+
+
 
             resultmodel.Data = vmList;
 
             return resultmodel;
-
 
         }
 
