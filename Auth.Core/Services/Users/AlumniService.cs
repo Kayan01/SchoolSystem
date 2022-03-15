@@ -91,65 +91,31 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<List<AlumniDetailVM>>> GetAllAlumni(QueryModel model, GetAlumniQueryVM queryVM)
         {
-
             var resultmodel = new ResultModel<List<AlumniDetailVM>>();
-
-            //if (!string.IsNullOrWhiteSpace(queryVM.SessionName))
-            //{
-
-            //}
-            var query = _alumniRepo.GetAll().Where(x => x.IsDeleted == false).Where(x => x.SessionName == queryVM.SessionName);
-           
+            var query = _alumniRepo.GetAll().Where(x => x.IsDeleted == false);
             var vmList = new List<AlumniDetailVM>();
-            var alumniList = new List<AlumniDetailVM>();
             if (!query.Any())
                 return resultmodel;
 
-            var user = new User();
-
-            foreach (var alumniUser in query)
+            if (!string.IsNullOrWhiteSpace(queryVM.SessionName))
             {
-                var userId = alumniUser.UserId.ToString();
-                user = await _userManager.FindByIdAsync(userId);
-
-                var alumniData = new AlumniDetailVM()
-                {
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Email = user.Email,
-                    Id = alumniUser.Id,
-                    RegNumber = alumniUser.RegNumber,
-                    Sex = alumniUser.Sex,
-                    DateOfBirth = alumniUser.DateOfBirth
-
-                };
-
-                alumniList.Add(alumniData);
-
-                //if (!string.IsNullOrWhiteSpace(queryVM.SessionName))
-                //{
-                //    query = query.Where(x => x.SessionName == queryVM.SessionName);
-
-                //    //query = query.Include(x => x.User).Where(x => x.SessionName == queryVM.SessionName && x.User.IsDeleted == true);
-                //}
-                
+                query = query.Where(x => x.SessionName == queryVM.SessionName).Include(x => x.User);
             }
+
             resultmodel.TotalCount = query.Count();
-            var data = alumniList.Select(x => new AlumniDetailVM()
+            var data = await query.Select(x => new AlumniDetailVM()
             {
-                FirstName = x.FirstName,
-                LastName = x.LastName,
-                Email = x.Email,
+                FirstName = x.User.FirstName,
+                LastName = x.User.LastName,
+                Email = x.User.Email,
                 Id = x.Id,
                 RegNumber = x.RegNumber,
                 Sex = x.Sex,
                 DateOfBirth = x.DateOfBirth
 
-            }).ToPagedList(model.PageIndex, model.PageSize);
+            }).ToPagedListAsync(model.PageIndex, model.PageSize);
 
             vmList = data.Select(x => (AlumniDetailVM)x).ToList();
-
-
 
             resultmodel.Data = vmList;
 
