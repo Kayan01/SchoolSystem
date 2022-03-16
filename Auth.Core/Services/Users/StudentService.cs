@@ -328,8 +328,8 @@ namespace Auth.Core.Services
             //update the isdeleted field in user table as well
             var id = std.UserId.ToString();
             var findUser = await _userManager.FindByIdAsync(id);
-            findUser.IsDeleted = true;
-            findUser.DeletionTime = DateTime.Now;
+            findUser.UserStatus = UserStatus.Deactivated;
+            
 
             var updateUser = await _userManager.UpdateAsync(findUser);
 
