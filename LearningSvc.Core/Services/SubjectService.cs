@@ -132,10 +132,16 @@ namespace LearningSvc.Core.Services
 
         public async Task<ResultModel<List<SubjectVM>>> GetAllSubjects()
         {
-            var result = new ResultModel<List<SubjectVM>>
+            var result = new ResultModel<List<SubjectVM>>();
+
+            var data = await _subjectRepo.GetAll().Select(x => new SubjectVM
             {
-                Data = await _subjectRepo.GetAll().Select(x => (SubjectVM)x).ToListAsync()
-            };
+                Id = x.Id,
+                Name = x.Name,
+                IsActive = x.IsActive
+            }).ToListAsync();
+
+            result.Data = data;
             return result;
         }
 
