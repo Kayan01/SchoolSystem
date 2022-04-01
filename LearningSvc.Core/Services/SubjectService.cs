@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Shared.Pagination;
 using IPagedList;
 using Shared.PubSub;
+using LearningSvc.Core.Context;
 
 namespace LearningSvc.Core.Services
 {
@@ -23,18 +24,21 @@ namespace LearningSvc.Core.Services
         private readonly IClassSubjectService _classSubjectService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPublishService _publishService;
+        private readonly AppDbContext _context;
 
         public SubjectService(IUnitOfWork unitOfWork, 
             IRepository<Subject, long> subjectRepo, 
             IRepository<SchoolClass, long> schoolClassRepo, 
             IClassSubjectService classSubjectService,
-            IPublishService publishService)
+            IPublishService publishService,
+            AppDbContext context)
         {
             _unitOfWork = unitOfWork;
             _subjectRepo = subjectRepo;
             _schoolClassRepo = schoolClassRepo;
             _classSubjectService = classSubjectService;
             _publishService = publishService;
+            _context = context;
         }
 
         public async Task<ResultModel<SubjectVM>> AddSubject(SubjectInsertVM model)
@@ -132,16 +136,12 @@ namespace LearningSvc.Core.Services
 
         public async Task<ResultModel<List<SubjectVM>>> GetAllSubjects()
         {
+
             var result = new ResultModel<List<SubjectVM>>();
 
-            var data = await _subjectRepo.GetAll().Select(x => new SubjectVM
-            {
-                Id = x.Id,
-                Name = x.Name,
-                IsActive = x.IsActive
-            }).ToListAsync();
+            var subjects = await _context.Subjects.ToListAsync();
+            result.Data = subjects.Select(x => (SubjectVM)x).ToList();
 
-            result.Data = data;
             return result;
         }
 
