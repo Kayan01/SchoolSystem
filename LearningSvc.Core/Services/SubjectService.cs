@@ -134,13 +134,13 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<SubjectVM>>> GetAllSubjects()
+        public async Task<ResultModel<List<SubjectVM>>> GetAllSubjects(int tenantId)
         {
 
             var result = new ResultModel<List<SubjectVM>>();
 
             var subjects = await _context.Subjects.ToListAsync();
-            result.Data = subjects.Select(x => (SubjectVM)x).ToList();
+            result.Data = subjects.Where( x => x.TenantId == tenantId).Select(x => (SubjectVM)x).ToList();
 
             return result;
         }
