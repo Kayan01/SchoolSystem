@@ -28,7 +28,7 @@ namespace AssessmentSvc.Core.Services
         public void AddOrUpdateStudentFromBroadcast(List<StudentSharedModel> models)
         {
             var idList = models.Select(m => m.Id).Distinct();
-            var studentList = _studentRepo.GetAll().Where(m => idList.Contains(m.Id)).ToList();
+            var studentList = _studentRepo.GetAll().Where(m => idList.Contains(m.Id) && m.IsDeleted == false).ToList();
 
             foreach (var model in models)
             {
@@ -64,7 +64,7 @@ namespace AssessmentSvc.Core.Services
 
         public async Task<long> GetStudentClassIdByUserId(long userId)
         {
-            var student = await _studentRepo.GetAll().Where(m => m.UserId == userId).FirstOrDefaultAsync();
+            var student = await _studentRepo.GetAll().Where(m => m.UserId == userId && m.IsDeleted == false).FirstOrDefaultAsync();
             if (student == null)
             {
                 return 0;
@@ -75,7 +75,7 @@ namespace AssessmentSvc.Core.Services
         public async Task<ResultModel<List<StudentVM>>> GetStudentsByClass(long classId)
         {
             var students = await _studentRepo.GetAll()
-                .Where(m => m.ClassId == classId)
+                .Where(m => m.ClassId == classId && m.IsDeleted == false)
                 .Select(m=>(StudentVM)m).ToListAsync();
 
             return new ResultModel<List<StudentVM>>()
@@ -87,7 +87,7 @@ namespace AssessmentSvc.Core.Services
         public async Task<ResultModel<List<StudentParentMailingInfo>>> GetParentsMailInfo(long[] ids)
         {
             var info = await _studentRepo.GetAll()
-                .Where(m => ids.Any(n=>n == m.Id))
+                .Where(m => ids.Any(n=>n == m.Id) && m.IsDeleted == false)
                 .Select(m => new StudentParentMailingInfo()
                 {
                     Email= m.ParentEmail,
