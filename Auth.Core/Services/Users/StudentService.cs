@@ -183,13 +183,13 @@ namespace Auth.Core.Services
                 UserType = UserType.Student,
 
             };
-                
+
             //var existingUser = await _userManager.FindByEmailAsync(user.Email);
             IdentityResult userResult;
-            
+
             userResult = await _userManager.CreateAsync(user, model.ContactPhone);
-            
-           
+
+
             if (!userResult.Succeeded)
             {
                 result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
@@ -329,11 +329,11 @@ namespace Auth.Core.Services
             var id = std.UserId.ToString();
             var findUser = await _userManager.FindByIdAsync(id);
             findUser.UserStatus = UserStatus.Deactivated;
-            
+
 
             var updateUser = await _userManager.UpdateAsync(findUser);
 
-            var alumni = new Alumni(std,sessionName);
+            var alumni = new Alumni(std, sessionName);
             alumni = await _alumniRepo.InsertAsync(alumni);
 
             await _unitOfWork.SaveChangesAsync();
@@ -367,7 +367,7 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<PaginatedModel<StudentVMs>>> GetAllStudentsInSchool(QueryModel model)
         {
-            
+
             var resultModel = new ResultModel<PaginatedModel<StudentVMs>>();
 
             var query = await _studentRepo.GetAll().Where(x => x.IsDeleted == false).OrderByDescending(x => x.CreationTime)
@@ -842,11 +842,11 @@ namespace Auth.Core.Services
                     UserType = UserType.Student
                 };
 
-                
+
                 IdentityResult userResult;
                 userResult = await _userManager.CreateAsync(user, model.ContactPhone);
 
-            
+
                 if (!userResult.Succeeded)
                 {
                     result.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
@@ -938,6 +938,50 @@ namespace Auth.Core.Services
             result.Data = true;
 
             return result;
+        }
+
+        public async Task<ResultModel<PaginatedModel<StudentVMs>>> SearchForStudentByName(QueryModel model,string name)
+        {
+            var resultModel = new ResultModel<PaginatedModel<StudentVMs>>();
+
+            var query = await _studentRepo.GetAll().Where(x => x.User.FirstName.Contains(name) || x.User.LastName.Contains(name) && x.IsDeleted == false)
+                .Select(x => new {
+                    x.Id,
+                    x.User.FirstName,
+                    x.User.LastName,
+                    x.Sex,
+                    x.DateOfBirth,
+                    section = x.Class.SchoolSection.Name,
+                    x.IsActive,
+                    x.RegNumber,
+                    x.Class,
+                    image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                }).ToListAsync();
+
+            if (query != null)
+            {
+                var student = query.Select(x => new StudentVMs
+                {
+
+                    Id = x.Id,
+                    FirstName = x.FirstName,
+                    LastName = x.LastName,
+                    Sex = x.Sex,
+                    DateOfBirth = x.DateOfBirth,
+                    Section = x.section,
+                    StudentNumber = x.RegNumber,
+                    SchoolClass = x.Class,
+                    Image = x.image == null ? null : _documentService.TryGetUploadedFile(x.image)
+                }).ToList();
+
+                var data = student.ToPagedList(model.PageIndex, model.PageSize);
+
+                resultModel.Data = new PaginatedModel<StudentVMs>(data, model.PageIndex, model.PageSize, query.Count);
+
+            }
+
+            return resultModel;
+
         }
     }
 }
