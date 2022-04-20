@@ -41,11 +41,11 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<SubjectVM>>), 200)]
-        public async Task<IActionResult> GetAllSubjects(int tenantId)
+        public async Task<IActionResult> GetAllSubjects()
         {
             try
             {
-                var result = await _subjectService.GetAllSubjects(tenantId);
+                var result = await _subjectService.GetAllSubjects();
                 if (result.HasError)
                     return ApiResponse<List<SubjectVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<List<SubjectVM>>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
