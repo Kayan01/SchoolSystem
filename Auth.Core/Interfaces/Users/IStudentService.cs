@@ -23,5 +23,6 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<StudentDetailVM>> GetStudentProfileByUserId(long Id);
         Task<ResultModel<byte[]>> GetStudentsExcelSheet();
         Task<ResultModel<bool>> AddBulkStudent(IFormFile excelfile);
+        Task<ResultModel<PaginatedModel<StudentVMs>>> SearchForStudentByName(QueryModel model, string name);
     }
 }

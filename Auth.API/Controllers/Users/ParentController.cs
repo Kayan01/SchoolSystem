@@ -264,6 +264,29 @@ namespace Auth.API.Controllers.Users
             }
         }
 
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        public async Task<IActionResult> AddBulkParent([FromForm] IFormFile file)
+        {
+            if (file == null)
+                return ApiResponse<string>(errors: "No file uploaded");
+
+            if (!ModelState.IsValid)
+                return ApiResponse<object>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _parentService.UploadBulkParentData(file);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
 
         [HttpGet("{FirstName}")]
         [ProducesResponseType(typeof(ApiResponse<ParentDetailVM>), 200)]

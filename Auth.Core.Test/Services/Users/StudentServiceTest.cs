@@ -19,6 +19,7 @@ using Auth.Core.ViewModels.SchoolClass;
 using Auth.Core.Models;
 using Auth.Core.ViewModels;
 using System.Linq;
+using Auth.Core.Models.Contact;
 
 namespace Auth.Core.Test.Services.Users
 {
@@ -29,7 +30,7 @@ namespace Auth.Core.Test.Services.Users
         public void Setup()
         {
         }
-
+         
         [Test]
         public async Task AddStudent_Test()
         {
@@ -80,8 +81,15 @@ namespace Auth.Core.Test.Services.Users
             studentData.ClassId = 3;
 
             var result = await studentService.AddStudentToSchool(studentData);
+            var query = QueryModelData();
+            var getALlStudent = await studentService.GetStudentById(result.Data.Id);
 
+            Assert.That(getALlStudent.Data.RegNumber == result.Data.StudentNumber);
+            Assert.AreEqual(result.Data.UserId, getALlStudent.Data.UserId);
+            Assert.AreEqual(result.Data.Id, getALlStudent.Data.Id);
+            Assert.AreEqual(result.Data.StudentNumber, getALlStudent.Data.RegNumber);
             Assert.AreEqual(result.Data.Email,studentData.ContactEmail);
+            
         }
 
         [Test]
@@ -880,11 +888,29 @@ namespace Auth.Core.Test.Services.Users
 
         private School AddSchoolData()
         {
+            var listOfConttactDetails = new List<SchoolContactDetails>();
+            var contactDetails = new SchoolContactDetails()
+            {
+                Email = "dabby@yopmail.com",
+                EmailPassword = "Osabuede",
+                PhoneNumber = "09089786756",
+                FirstName = "Test",
+                LastName = "Tested"          
+            };
+
+            listOfConttactDetails.Add(contactDetails);
+
             var school = new School()
             {
                 Id = 4,
                 DomainName = "Test",
-                Name = "Test School"
+                Name = "Test School",
+                SchoolContactDetails = listOfConttactDetails,
+                Address = "No 8 kuolmi close",
+                City =  "Ajah",
+                Country =  "Nigeria",
+                IsActive = true,
+                PrimaryColor = "#000000"
             };
 
             return school;
@@ -924,7 +950,7 @@ namespace Auth.Core.Test.Services.Users
             var data = new QueryModel()
             {
                 PageIndex = 1,
-                PageSize = 5
+                PageSize = 10
             };
             return data;
         }
@@ -990,5 +1016,8 @@ namespace Auth.Core.Test.Services.Users
 
             return data;
         }
+        
+
+    
     }
 }

@@ -2,6 +2,7 @@
 using Auth.Core.ViewModels.School;
 using Auth.Core.ViewModels.Student;
 using IPagedList;
+using Microsoft.AspNetCore.Http;
 using Shared.Pagination;
 using Shared.ViewModels;
 using System;
@@ -23,6 +24,7 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<ParentDetailVM>> UpdateParent(long Id,UpdateParentVM vm);
         Task<ResultModel<string>> DeleteParent(long Id);
         Task<ResultModel<byte[]>> GetParentExcelSheet();
+        Task<ResultModel<bool>> UploadBulkParentData(IFormFile excelfile);
         Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentByName(QueryModel vm, string FirstName);
     }
 }

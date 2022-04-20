@@ -224,5 +224,30 @@ namespace Auth.API.Controllers
             }
         }
 
+
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<PaginatedModel<StudentVM>>),200)]
+        public async Task<IActionResult> GetStudentByName(QueryModel model,string name)
+        {
+
+            if (name == null)
+                return ApiResponse<string>(errors: "Name Field Cannot be Empty");
+
+            try
+            {
+                var result = await _studentService.SearchForStudentByName(model,name);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+
+        }
+
     }
 }
