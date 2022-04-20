@@ -123,6 +123,7 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
+
         public async Task<ResultModel<PaginatedModel<SubjectVM>>> GetAllSubjects(QueryModel queryModel)
         {
             var query = await _subjectRepo.GetAll().Select(x => (SubjectVM)x).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
@@ -134,14 +135,19 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<List<SubjectVM>>> GetAllSubjects(int tenantId)
-        {
 
+        public async Task<ResultModel<List<SubjectVM>>> GetAllSubjects()
+        {
             var result = new ResultModel<List<SubjectVM>>();
 
-            var subjects = await _context.Subjects.ToListAsync();
-            result.Data = subjects.Where( x => x.TenantId == tenantId).Select(x => (SubjectVM)x).ToList();
+            var data = await _subjectRepo.GetAll().Select(x => new SubjectVM
+            {
+                Id = x.Id,
+                Name = x.Name,
+                IsActive = x.IsActive
+            }).ToListAsync();
 
+            result.Data = data;
             return result;
         }
 

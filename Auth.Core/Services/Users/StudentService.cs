@@ -78,7 +78,7 @@ namespace Auth.Core.Services
 
         private async Task<Student> SaveStudentWithSystemRegNumber(Student student, string schoolSeperator, string schoolPrefix)
         {
-            var lastRegNumber = await _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
+            var lastRegNumber = _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync().Result;
             var lastNumber = 0;
             var seperator = schoolSeperator;
             if (!string.IsNullOrWhiteSpace(lastRegNumber))
@@ -99,7 +99,7 @@ namespace Auth.Core.Services
                     {
                         firstTime = false;
                         _studentRepo.Insert(student);
-                        await _unitOfWork.SaveChangesAsync();
+                        _unitOfWork.SaveChanges();
                     }
                     else
                     {
@@ -107,7 +107,7 @@ namespace Auth.Core.Services
 
                         firstTime = false;
                         _studentRepo.Insert(student);
-                        await _unitOfWork.SaveChangesAsync();
+                        _unitOfWork.SaveChanges();
                     }
 
 
@@ -301,7 +301,8 @@ namespace Auth.Core.Services
                 PhoneNumber = user.PhoneNumber,
                 DateOfBirth = stud.DateOfBirth,
                 Id = stud.Id,
-                UserId = stud.UserId
+                UserId = stud.UserId,
+                StudentNumber = user.UserName
             };
             return result;
         }
@@ -480,7 +481,8 @@ namespace Auth.Core.Services
                             x.Town,
                             x.State,
                             x.IsActive,
-                            image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName())
+                            image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()),
+                            x.UserId
                         }).FirstOrDefaultAsync();
 
             if (std == null)
@@ -531,8 +533,8 @@ namespace Auth.Core.Services
                 ParentLastName = std.ParentLastName,
                 PhoneNumber = std.PhoneNumber,
                 Religion = std.Religion,
-                IsActive = std.IsActive
-
+                IsActive = std.IsActive,
+                UserId = std.UserId
             };
 
             result.Data = data;
