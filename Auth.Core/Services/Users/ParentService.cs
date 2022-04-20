@@ -7,10 +7,13 @@ using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels.Parent;
 using Auth.Core.ViewModels.School;
 using Auth.Core.ViewModels.Student;
+using ExcelManager;
 using IPagedList;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Extensions;
+using Shared.AspNetCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.Entities;
@@ -39,8 +42,7 @@ namespace Auth.Core.Services.Users
         private readonly UserManager<User> _userManager;
         private readonly IDocumentService _documentService;
         private readonly ISchoolPropertyService _schoolPropertyService;
-
-
+        private readonly IHttpUserService _httpUserService;
         private readonly IAuthUserManagement _authUserManagementService;
         public ParentService(
             IPublishService publishService,
@@ -51,7 +53,8 @@ namespace Auth.Core.Services.Users
             UserManager<User> userManager,
             IDocumentService documentService,
             ISchoolPropertyService schoolPropertyService,
-            IAuthUserManagement authUserManagementService
+            IAuthUserManagement authUserManagementService,
+            IHttpUserService httpUserService
             )
         {
             _publishService = publishService;
@@ -63,6 +66,7 @@ namespace Auth.Core.Services.Users
             _schoolRepo = schoolRepo;
             _authUserManagementService = authUserManagementService;
             _schoolPropertyService = schoolPropertyService;
+            _httpUserService = httpUserService;
         }
         public async Task<ResultModel<string>> DeleteParent(long Id)
         {
@@ -564,6 +568,166 @@ namespace Auth.Core.Services.Users
             {
                 return new ResultModel<byte[]>(data);
             }
+        }
+
+
+        public async Task<ResultModel<bool>> UploadBulkParentData(IFormFile excelfile)
+        {
+            var resultModel = new ResultModel<bool>();
+
+            var schoolProperty = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolProperty.HasError)
+            {
+                resultModel.AddError(schoolProperty.ValidationErrors);
+                return resultModel;
+            }
+
+            var importedData = ExcelReader.FromExcel<AddParentVM>(excelfile);
+
+            //Check if imported data contains any data
+            if (importedData.Count < 1)
+            {
+                resultModel.AddError("No data was Imported");
+
+                return resultModel;
+            }
+
+            var parents = new List<Parent>();
+
+            _unitOfWork.BeginTransaction();
+
+            foreach (var parent in importedData)
+            {
+                var user = new User
+                {
+                    FirstName = parent.FirstName,
+                    LastName = parent.LastName, 
+                    Email = parent.EmailAddress.Trim(),
+                    UserName = parent.EmailAddress.Trim(),
+                    PhoneNumber = parent.PhoneNumber,
+                    UserType = UserType.Parent
+                };
+
+                IdentityResult userResult;
+
+                var existingUser = await _userManager.FindByEmailAsync(user.Email);
+
+                if (existingUser != null)
+                    return new ResultModel<bool>($"User with Email {existingUser.Email} already exist");
+
+                userResult = await _userManager.CreateAsync(user, parent.PhoneNumber);
+
+                if (userResult.Succeeded)
+                {
+                    resultModel.AddError(string.Join(';', userResult.Errors.Select(x => x.Description)));
+                    return resultModel;
+                }
+
+                //Add TenantId to UserClaims
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+                //Add User-Type to claims
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, UserType.Parent.GetDescription()));
+
+                var ParentUpload = new Parent
+                {
+                    HomeAddress = parent.HomeAddress,
+                    IdentificationNumber = parent.IdentificationNumber,
+                    IdentificationType = parent.ModeOfIdentification,
+                    Occupation = parent.Occupation,
+                    OfficeAddress = parent.OfficeAddress,
+                    SecondaryEmail = parent.SecondaryEmailAddress,
+                    SecondaryPhoneNumber = parent.SecondaryPhoneNumber,
+                    Sex = parent.Sex,
+                    Status = parent.Status,
+                    UserId = user.Id,
+                    Title = parent.Title
+                };
+
+                var lastRegNumber = await _parentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync();
+                var lastNumber = 0;
+                var seperator = schoolProperty.Data.Seperator;
+                if (!string.IsNullOrWhiteSpace(lastRegNumber))
+                {
+                    var rtn = int.TryParse(lastRegNumber.Split(seperator).Last(), out var num);
+
+                    lastNumber = rtn ? num : 0;
+                }
+                var nextNumber = lastNumber;
+                var firstTime = true;
+                var saved = false;
+
+                while (!saved)
+                {
+                    try
+                    {
+                        nextNumber++;
+                        if (firstTime && !string.IsNullOrWhiteSpace(ParentUpload.RegNumber))
+                        {
+                            firstTime = false;
+                            _parentRepo.Insert(ParentUpload);
+                            await _unitOfWork.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            ParentUpload.RegNumber = $"PAT{seperator}{DateTime.Now.Year}{seperator}{nextNumber.ToString("00000")}";
+                            firstTime = false;
+                            _parentRepo.Insert(ParentUpload);
+                            await _unitOfWork.SaveChangesAsync();
+                        }
+
+                        saved = true;
+                    }
+                    // 2627 is unique constraint (includes primary key), 2601 is unique index
+                    catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlException && (sqlException.Number == 2627 || sqlException.Number == 2601))
+                    {
+                        saved = false;
+                    }
+                }
+
+                //change user's username to reg number
+                user.UserName = ParentUpload.RegNumber;
+                user.NormalizedUserName = ParentUpload.RegNumber.ToUpper();
+                await _userManager.UpdateAsync(user);
+
+                _unitOfWork.Commit();
+
+                var school = await _schoolRepo.GetAll().Where(m => m.Id == schoolProperty.Data.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
+                var contactdetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
+
+                //broadcast login detail to email
+                var emailResult = await _authUserManagementService.SendRegistrationEmail(user, "", school.Name, contactdetails.Email, school.Address, contactdetails.PhoneNumber, contactdetails.EmailPassword);
+
+                if (emailResult.HasError)
+                {
+                    return new ResultModel<bool>(emailResult.ErrorMessages);
+                }
+                parents.Add(ParentUpload);
+            }
+
+            _unitOfWork.Commit();
+
+            foreach (var parent in parents)
+            {
+                //Publish to services
+                await _publishService.PublishMessage(Topics.Parent, BusMessageTypes.PARENT, new ParentSharedModel
+                {
+                    Id = parent.Id,
+                    SecondaryEmail = parent.SecondaryEmail,
+                    IsActive = true,
+                    SecondaryPhoneNumber = parent.SecondaryPhoneNumber,
+                    HomeAddress = parent.HomeAddress,
+                    UserId = parent.UserId,
+                    IsDeleted = parent.IsDeleted,
+                    OfficeAddress = parent.OfficeAddress,
+                    RegNumber = parent.RegNumber
+                });
+
+                resultModel.Data = true;
+
+                return resultModel;
+            }
+
+            return resultModel;
         }
 
         public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentByName(QueryModel vm, string FirstName)

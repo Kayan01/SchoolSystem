@@ -43,7 +43,6 @@ namespace LearningSvc.Core.Test.Tests.SubjectService
                 context.Subjects.AddRange(subjects);
                 context.SaveChanges();
 
-
                 var result = await _subjectService.GetAllSubjects();
 
                 Assert.IsNotNull(result);

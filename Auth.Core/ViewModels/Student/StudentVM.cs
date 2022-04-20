@@ -58,6 +58,8 @@ namespace Auth.Core.ViewModels.Student
         public string RegNumber { get; internal set; }
         public bool IsActive { get; set; }
         public bool Disability { get; set; }
+
+        public long UserId { get; set; }
     }
 
     public class ImmunizationHistoryVM
