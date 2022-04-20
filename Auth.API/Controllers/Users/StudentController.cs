@@ -226,17 +226,17 @@ namespace Auth.API.Controllers
 
 
 
-        [HttpGet]
+        [HttpGet("{Name}")]
         [ProducesResponseType(typeof(ApiResponse<PaginatedModel<StudentVM>>),200)]
-        public async Task<IActionResult> GetStudentByName(QueryModel model,string name)
+        public async Task<IActionResult> GetStudentByName([FromQuery]QueryModel model,string Name)
         {
 
-            if (name == null)
+            if (Name == null)
                 return ApiResponse<string>(errors: "Name Field Cannot be Empty");
 
             try
             {
-                var result = await _studentService.SearchForStudentByName(model,name);
+                var result = await _studentService.SearchForStudentByName(model, Name);
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
