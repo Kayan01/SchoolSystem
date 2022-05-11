@@ -756,5 +756,31 @@ namespace Auth.Core.Services.Users
 
             return resultModel;
         }
+
+        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentBySchoolAndName(QueryModel vm,SearchParentVm model)
+        {
+            var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
+
+            var query = await _parentRepo.GetAll()
+               .Include(x => x.User)
+               .Include(x => x.Students)
+               .Include(x => x.FileUploads)
+               .Where(x => x.Students.Any(n => n.TenantId == model.SchoolId) && x.User.FirstName.Contains(model.Name) || x.User.LastName.Contains(model.Name)).ToListAsync();
+
+
+            if (query == null)
+            {
+                resultModel.AddError($"No parent with that Name : {model.Name}");
+                return resultModel;
+            }
+            var parents = query.ToPagedList(vm.PageIndex, vm.PageSize);
+
+            var data = new PaginatedModel<ParentListVM>(parents.Select(x => (ParentListVM)x), vm.PageIndex, vm.PageSize, parents.TotalItemCount);
+            
+
+            resultModel.Data = data;
+
+            return resultModel;
+        }
     }
 }
