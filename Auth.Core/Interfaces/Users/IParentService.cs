@@ -26,5 +26,6 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<byte[]>> GetParentExcelSheet();
         Task<ResultModel<bool>> UploadBulkParentData(IFormFile excelfile);
         Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentByName(QueryModel vm, string FirstName);
+        Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentBySchoolAndName(QueryModel vm, SearchParentVm model);
     }
 }

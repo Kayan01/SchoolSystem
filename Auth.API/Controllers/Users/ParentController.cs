@@ -310,5 +310,29 @@ namespace Auth.API.Controllers.Users
                 return HandleError(ex);
             }
         }
+
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ParentDetailVM>), 200)]
+        public async Task<IActionResult> GetParentBySchoolIdAndName(QueryModel vm,[FromQuery]SearchParentVm model)
+        {
+            if (model == null)
+            {
+                return ApiResponse<string>(errors: "Invalid First Name provided", codes: ApiResponseCodes.INVALID_REQUEST);
+            }
+
+            try
+            {
+                var result = await _parentService.GetParentBySchoolAndName(vm,model);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }
