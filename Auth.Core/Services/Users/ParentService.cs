@@ -761,11 +761,12 @@ namespace Auth.Core.Services.Users
         {
             var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
 
-            var query = await _parentRepo.GetAll()
+            var query = await _parentRepo.GetAll().Where(x => x.Students.Any(n => n.TenantId == model.SchoolId))
                .Include(x => x.User)
                .Include(x => x.Students)
-               .Include(x => x.FileUploads)
-               .Where(x => x.Students.Any(n => n.TenantId == model.SchoolId) && x.User.FirstName.Contains(model.Name) || x.User.LastName.Contains(model.Name)).ToListAsync();
+               .Include(x => x.FileUploads).ToListAsync();
+
+            query.Where(x => x.User.FirstName.Contains(model.Name) || x.User.LastName.Contains(model.Name));
 
 
             if (query == null)
