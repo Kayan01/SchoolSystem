@@ -25,6 +25,7 @@ using Shared.PubSub;
 using System.Text;
 using Shared.Extensions;
 using Microsoft.Data.SqlClient;
+using System;
 
 namespace Auth.Core.Services
 {
@@ -37,6 +38,8 @@ namespace Auth.Core.Services
         private readonly UserManager<User> _userManager;
         private readonly IPublishService _publishService;
         private readonly IAuthUserManagement _authUserManagement;
+        private readonly IRepository<SchoolSubscription, long> _subscriptionRepo;
+
         public SchoolService(
         IRepository<School, long> schoolRepo,
             IUnitOfWork unitOfWork,
@@ -44,7 +47,8 @@ namespace Auth.Core.Services
         IDocumentService documentService,
         IRepository<SchoolGroup, long> schoolGroupRepo,
         IAuthUserManagement authUserManagement,
-            UserManager<User> userManager)
+        UserManager<User> userManager,
+        IRepository<SchoolSubscription, long> subscriptionRepo)
         {
             _unitOfWork = unitOfWork;
             _schoolRepo = schoolRepo;
@@ -53,6 +57,7 @@ namespace Auth.Core.Services
             _publishService = publishService;
             _schoolGroupRepo = schoolGroupRepo;
             _authUserManagement = authUserManagement;
+            _subscriptionRepo = subscriptionRepo;
         }
 
         public async Task<ResultModel<bool>> CheckSchoolDomain(CreateSchoolVM model)
@@ -756,7 +761,129 @@ namespace Auth.Core.Services
 
             return new ResultModel<bool>(data: true, message: "School was activated");
         }
+
+        //Deactivated Schools With Past Subscription Date.
+        //First retrieve all Schools Subcriptions.
+        ///Check against current Date if its past
+        ///Store Past Subcriptions date schools Ids in a List 
+        ///Pass Ids in a foreach loop to the deactivate school 
+        ///
+        ///
+        ///Trigger Endpoint to check for past subscriptions school daily using hangfire
+        ///
+
+        public async Task<ResultModel<string>> CheckForSchoolWithExpiredSubcription()
+        {
+            var resultModel = new ResultModel<string>();
+            var serverDate = DateTime.UtcNow;
+            var deactivateSchool = new ResultModel<bool>();
+
+            var getAllSubcriptions = _subscriptionRepo.GetAll();
+            if (getAllSubcriptions == null)
+            {
+                return resultModel;
+            }
+            
+            foreach (var subcription in getAllSubcriptions)
+            {
+                if (subcription.EndDate < serverDate)
+                {
+                    deactivateSchool = await DeActivateSchool(subcription.SchoolId);
+                    if (deactivateSchool.Data == true)
+                    {
+                        resultModel.Data = deactivateSchool.Message;
+                        return resultModel;
+                    }
+                }
+            }
+            return resultModel;
+        }
+
+
+        public async Task<ResultModel<string>> NotifySubcriptionExpirationDateToAdmin(long schoolId)
+        {
+            var resultModel = new ResultModel<string>();
+            var serverDate = DateTime.UtcNow;
+            var getSchoolSubcriptionStatus = await _subscriptionRepo.GetAll().Where(x => x.SchoolId == schoolId).FirstOrDefaultAsync();
+            var year = 0;
+            var month = 0;
+            var days = 0;
+
+           
+            if (getSchoolSubcriptionStatus == null)
+            {
+                return resultModel;
+            }
+
+
+            if (serverDate.Year > getSchoolSubcriptionStatus.EndDate.Year)
+            {
+                year = serverDate.Year - getSchoolSubcriptionStatus.EndDate.Year;
+                Console.WriteLine($"Your Subscription expired {year} year ago. \n...Prompt User that deactivation will Commence today else they need to subcribe");
+
+                resultModel.Message = $"Your Subscription expired {year} year ago";
+                return resultModel;
+            }
+            else if (serverDate.Year == getSchoolSubcriptionStatus.EndDate.Year)
+            {
+                if (serverDate.Month > getSchoolSubcriptionStatus.EndDate.Month)
+                {
+                    Console.WriteLine($"Expired with {serverDate.Month - getSchoolSubcriptionStatus.EndDate.Month} months...Prompt User");
+
+                    month = serverDate.Month - getSchoolSubcriptionStatus.EndDate.Month;
+                    if (month == 1)
+                    {
+                        resultModel.Message = $"Expired with {month} month.";
+                        return resultModel;
+                    }
+
+                    resultModel.Message = $"Expired with {month} months.";
+                    return resultModel;
+                }
+                else if (serverDate.Month < getSchoolSubcriptionStatus.EndDate.Month)
+                {
+                    month = getSchoolSubcriptionStatus.EndDate.Month - serverDate.Month;
+                    if (month <= 2)
+                    {
+                        Console.WriteLine($"Subscription Due in {month} months...Prompt User");
+
+                        resultModel.Message = $"Subscription Due in {month} months";
+                        return resultModel;
+                    }
+                }
+                else if (serverDate.Month == getSchoolSubcriptionStatus.EndDate.Month)
+                {
+                    if (serverDate.Day > getSchoolSubcriptionStatus.EndDate.Day)
+                    {
+                        days = serverDate.Day - getSchoolSubcriptionStatus.EndDate.Day;
+                        Console.WriteLine($"Subscription Expired {days} Days ago...Prompt User");
+
+                        resultModel.Message = $"Subscription Expired {days} Days ago";
+                        return resultModel;
+                    }
+                    else if (serverDate.Day < getSchoolSubcriptionStatus.EndDate.Day)
+                    {
+                        days = getSchoolSubcriptionStatus.EndDate.Day -serverDate.Day;
+                        Console.WriteLine($"Subscription is Due in {days} Days...Prompt User");
+                        
+                        resultModel.Message = $"Subscription is Due in {days} Days ago";
+                        return resultModel;
+                    }
+                    else if (serverDate.Day == getSchoolSubcriptionStatus.EndDate.Day)
+                    {
+                        days = getSchoolSubcriptionStatus.EndDate.Day -serverDate.Day;
+                        if (days == 0)
+                        {
+                            Console.WriteLine($"Subscription is Due {days} Days...Prompt User");
+
+                            resultModel.Message = $"Subscription s Due {days} Days.";
+                            return resultModel;
+                        }
+                       
+                    }   
+                }
+            }
+            return resultModel;
+        }
     }
-
-
 }

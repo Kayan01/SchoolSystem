@@ -34,6 +34,8 @@ using Auth.Core.Services.Setup;
 using Microsoft.Extensions.Logging;
 using Shared.Infrastructure.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Auth.Core.Interfaces.SchoolReport;
+using Auth.Core.Services.SchoolReport;
 
 namespace Auth.API
 {
@@ -150,6 +152,7 @@ namespace Auth.API
             services.AddScoped<IPromotionService, PromotionService>();
             services.AddScoped<ISchoolSubscriptionService, SchoolSubscriptionService>();
             services.AddScoped<ISubscriptionInvoiceService, SubscriptionInvoiceService>();
+            services.AddScoped<IReportService, ReportService>();
             services.AddTransient<AuthHandler>();
 
             // Registers required services for health checks
