@@ -294,7 +294,7 @@ namespace UserManagement.API.Controllers
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
 
-                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data : result.Data);
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data : result.Message);
             }
             catch (Exception ex)
             {
