@@ -16,6 +16,7 @@ using Shared.Utils;
 using Shared.Tenancy;
 using Shared.Collections;
 using Shared.Infrastructure.HealthChecks;
+using Hangfire;
 
 namespace Auth.API
 {
@@ -53,6 +54,9 @@ namespace Auth.API
             ConfigureIdentity(services);
             AddIdentityProvider(services);
             ConfigureDIService(services);
+
+            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("Default")));
+            services.AddHangfireServer();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,6 +83,8 @@ namespace Auth.API
             });
 
             app.UseCustomHealthChecksAPI();
+
+            app.UseHangfireDashboard();
         }
 
         public void AddEntityFrameworkDbContext(IServiceCollection services)

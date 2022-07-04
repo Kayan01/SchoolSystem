@@ -26,5 +26,7 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<bool>> CheckSchoolDomain(CreateSchoolVM model);
         Task<ResultModel<bool>> DeActivateSchool(long Id);
         Task<ResultModel<bool>> ActivateSchool(long Id);
+        Task<ResultModel<string>> CheckForSchoolWithExpiredSubcription();
+        Task<ResultModel<string>> NotifySubcriptionExpirationDateToAdmin(long schoolId);
     }
 }
