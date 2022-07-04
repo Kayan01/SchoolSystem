@@ -821,7 +821,7 @@ namespace Auth.Core.Services
                 year = serverDate.Year - getSchoolSubcriptionStatus.EndDate.Year;
                 Console.WriteLine($"Your Subscription expired {year} year ago. \n...Prompt User that deactivation will Commence today else they need to subcribe");
 
-                resultModel.Message = $"Your Subscription expired {year} year ago";
+                resultModel.Message = $"Your Subscription expired {year} year(s) ago";
                 return resultModel;
             }
             else if (serverDate.Year == getSchoolSubcriptionStatus.EndDate.Year)
@@ -837,7 +837,7 @@ namespace Auth.Core.Services
                         return resultModel;
                     }
 
-                    resultModel.Message = $"Expired with {month} months.";
+                    resultModel.Message = $"Expired with {month} month(s).";
                     return resultModel;
                 }
                 else if (serverDate.Month < getSchoolSubcriptionStatus.EndDate.Month)
@@ -845,9 +845,9 @@ namespace Auth.Core.Services
                     month = getSchoolSubcriptionStatus.EndDate.Month - serverDate.Month;
                     if (month <= 2)
                     {
-                        Console.WriteLine($"Subscription Due in {month} months...Prompt User");
+                        Console.WriteLine($"Subscription Due in {month} month(s)...Prompt User");
 
-                        resultModel.Message = $"Subscription Due in {month} months";
+                        resultModel.Message = $"Subscription Due in {month} month(s)";
                         return resultModel;
                     }
                 }
@@ -856,9 +856,9 @@ namespace Auth.Core.Services
                     if (serverDate.Day > getSchoolSubcriptionStatus.EndDate.Day)
                     {
                         days = serverDate.Day - getSchoolSubcriptionStatus.EndDate.Day;
-                        Console.WriteLine($"Subscription Expired {days} Days ago...Prompt User");
+                        Console.WriteLine($"Subscription Expired {days} Day(s) ago...Prompt User");
 
-                        resultModel.Message = $"Subscription Expired {days} Days ago";
+                        resultModel.Message = $"Subscription Expired {days} Day(s) ago";
                         return resultModel;
                     }
                     else if (serverDate.Day < getSchoolSubcriptionStatus.EndDate.Day)
@@ -866,7 +866,7 @@ namespace Auth.Core.Services
                         days = getSchoolSubcriptionStatus.EndDate.Day -serverDate.Day;
                         Console.WriteLine($"Subscription is Due in {days} Days...Prompt User");
                         
-                        resultModel.Message = $"Subscription is Due in {days} Days ago";
+                        resultModel.Message = $"Subscription is Due in {days} Day(s) ago";
                         return resultModel;
                     }
                     else if (serverDate.Day == getSchoolSubcriptionStatus.EndDate.Day)
@@ -876,7 +876,7 @@ namespace Auth.Core.Services
                         {
                             Console.WriteLine($"Subscription is Due {days} Days...Prompt User");
 
-                            resultModel.Message = $"Subscription s Due {days} Days.";
+                            resultModel.Message = $"Subscription Due {days} Day(s).";
                             return resultModel;
                         }
                        
