@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.School;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,12 @@ namespace UserManagement.API.Controllers
     public class SchoolController : BaseController
     {
         private readonly ISchoolService _schoolService;
+        private readonly IRecurringJobManager _recurringJobManager;
 
-        public SchoolController(ISchoolService schoolService)
+        public SchoolController(ISchoolService schoolService, IRecurringJobManager recurringJobManager)
         {
             _schoolService = schoolService;
+            _recurringJobManager = recurringJobManager;
         }
 
         [HttpPost]
@@ -253,6 +256,45 @@ namespace UserManagement.API.Controllers
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> TriggerCheckForSchoolWithExpiredSubcriptionReccuringJob()
+        {
+            try
+            {
+                Console.WriteLine("Triggering Endpoint Uisng HangFire");
+                _recurringJobManager.AddOrUpdate("jobId", () => _schoolService.CheckForSchoolWithExpiredSubcription(), Cron.Daily);
+                Console.WriteLine("Hangfire Triggering Done");
+
+                return ApiResponse<object>(message: "Enpoint Successfully Triggered", codes: ApiResponseCodes.OK);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet("{schoolId}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> NotifySubcriptionExpirationDateToAdmin(long schoolId)
+        {
+            try
+            {
+
+                var result = await _schoolService.NotifySubcriptionExpirationDateToAdmin(schoolId);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data : result.Data);
             }
             catch (Exception ex)
             {
