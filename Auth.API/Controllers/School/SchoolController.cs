@@ -264,7 +264,6 @@ namespace UserManagement.API.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> TriggerCheckForSchoolWithExpiredSubcriptionReccuringJob()
         {
@@ -273,7 +272,6 @@ namespace UserManagement.API.Controllers
                 Console.WriteLine("Triggering Endpoint Uisng HangFire");
                 _recurringJobManager.AddOrUpdate("jobId", () => _schoolService.CheckForSchoolWithExpiredSubcription(), Cron.Daily);
                 Console.WriteLine("Hangfire Triggering Done");
-
                 return ApiResponse<object>(message: "Enpoint Successfully Triggered", codes: ApiResponseCodes.OK);
             }
             catch (Exception ex)
@@ -283,7 +281,6 @@ namespace UserManagement.API.Controllers
         }
 
         [HttpGet("{schoolId}")]
-        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
         public async Task<IActionResult> NotifySubcriptionExpirationDateToAdmin(long schoolId)
         {
