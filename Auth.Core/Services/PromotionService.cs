@@ -104,7 +104,7 @@ namespace Auth.Core.Services
 
                         if (curclass.IsTerminalClass)
                         {
-                            _alumniRepo.Insert(new Alumni(student, model.SessionName)); //if current class is a terminal class, create an alumni record.
+                            _alumniRepo.Insert(new Alumni(student, model.SessionName,"Promotion")); //if current class is a terminal class, create an alumni record.
 
                             try
                             {
