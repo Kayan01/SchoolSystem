@@ -77,4 +77,13 @@ namespace Auth.Core.ViewModels.Student
         public List<DocumentType> DocumentTypes { get; set; } = new List<DocumentType>();
     }
 
+
+    public class DeactivateStudent
+    {
+        public string SessionName { get; set; }
+        
+        public string DeactivationReason { get; set; }
+
+    }
+
 }
