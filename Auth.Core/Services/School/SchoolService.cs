@@ -725,21 +725,34 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<bool>> DeActivateSchool(long Id)
         {
-            var users = await _schoolRepo.GetAll().Where(x => x.Id == Id).Select(x =>
-                new
-                {
-                    studentUserIds = x.Students.Select(x => x.UserId),
-                    staffUserIds = x.Staffs.Select(x => x.UserId),
-                    teachingUserIds = x.TeachingStaffs.Select(x => x.Staff.UserId)
-                }
-            ).FirstOrDefaultAsync();
+            
+            try
+            {
+                var users = await _schoolRepo.GetAll().Where(x => x.Id == Id).Include(x => x.Staffs)
+                    .Include(x => x.Students)
+                    .Include(x => x.TeachingStaffs)
+                    .Select(x => new {
+                      studentUserIds = x.Students.Select(x => x.UserId),
+                      staffUserIds = x.Staffs.Select(x => x.UserId),
+                      teachingUserIds = x.TeachingStaffs.Select(x => x.Staff.UserId)
+                  }).FirstOrDefaultAsync();
 
-            await _authUserManagement.DisableUsersAsync(users.staffUserIds.Concat(users.studentUserIds.Concat(users.teachingUserIds)));
+                await _authUserManagement.DisableUsersAsync(users.staffUserIds.Concat(users.studentUserIds.Concat(users.teachingUserIds)));
 
-            _schoolRepo.Update(Id, x => x.IsActive = false);
-            await _unitOfWork.SaveChangesAsync();
+                //_schoolRepo.Update(Id, x => x.IsActive = false);
+                Func<School, Task> school = scho => _schoolRepo.GetAllListAsync(x => x.Id == Id);
+                await _schoolRepo.UpdateAsync(Id, school);
+                await _unitOfWork.SaveChangesAsync();
 
-            return new ResultModel<bool>(data: true, message: "School was deactivated");
+                return new ResultModel<bool>(data: true, message: "School was deactivated");
+            }
+            catch (Exception ex)
+            {
+                var error = "Get all details failed \n" + ex.Message;
+                throw;
+            }
+          
+
 
         }
 
@@ -788,12 +801,22 @@ namespace Auth.Core.Services
             {
                 if (subcription.EndDate < serverDate)
                 {
-                    deactivateSchool = await DeActivateSchool(subcription.SchoolId);
-                    if (deactivateSchool.Data == true)
+                    try
                     {
-                        resultModel.Data = deactivateSchool.Message;
+                        deactivateSchool = await DeActivateSchool(subcription.SchoolId);
+                        if (deactivateSchool.Data == true)
+                        {
+                            resultModel.Data = deactivateSchool.Message;
+                            resultModel.TotalCount += 1;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        resultModel.AddError("Deactivation Failed\n : " + ex.Message);
                         return resultModel;
                     }
+                   
+                    
                 }
             }
             return resultModel;

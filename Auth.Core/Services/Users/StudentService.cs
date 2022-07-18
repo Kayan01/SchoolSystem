@@ -307,7 +307,7 @@ namespace Auth.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<bool>> DeleteStudent(long userId, string sessionName)
+        public async Task<ResultModel<bool>> DeleteStudent(long userId,DeactivateStudent model)
         {
             var result = new ResultModel<bool> { Data = false };
 
@@ -334,7 +334,7 @@ namespace Auth.Core.Services
 
             var updateUser = await _userManager.UpdateAsync(findUser);
 
-            var alumni = new Alumni(std, sessionName);
+            var alumni = new Alumni(std, model.SessionName, model.DeactivationReason);
             alumni = await _alumniRepo.InsertAsync(alumni);
 
             await _unitOfWork.SaveChangesAsync();

@@ -12,7 +12,7 @@ namespace Auth.Core.Models.Alumni
 
         }
 
-        public Alumni(Student student, string sessionName)
+        public Alumni(Student student, string sessionName, string reason)
         {
             DateOfBirth = student.DateOfBirth;
             Address = student.Address;
@@ -33,6 +33,8 @@ namespace Auth.Core.Models.Alumni
             StateOfOrigin = student.StateOfOrigin;
             SessionName = sessionName;
             UserId = student.UserId;
+            AlumniReason = reason;
+
         }
 
 
@@ -54,5 +56,6 @@ namespace Auth.Core.Models.Alumni
         public long MedicalDetailID { get; set; }
         public string SessionName { get; set; }
         public string TermName { get; set; }
+        public string AlumniReason { get; set; }
     }
 }

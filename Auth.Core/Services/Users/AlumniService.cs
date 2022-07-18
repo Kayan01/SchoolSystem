@@ -70,7 +70,7 @@ namespace Auth.Core.Services
         {
             //var studentResult =await _studentService.GetStudentById(vm.StudId);
             
-            var student = await _studentRepo.GetAll().Where(m => m.Id == vm.StudId).FirstOrDefaultAsync();
+            var student = await _studentRepo.GetAll().Where(m => m.UserId == vm.StudId).FirstOrDefaultAsync();
 
             if (student == null)
             {
@@ -80,7 +80,7 @@ namespace Auth.Core.Services
 
             //var student = studentResult.Data;
 
-            var alumni = new Alumni(student, vm.SessionName);
+            var alumni = new Alumni(student, vm.SessionName,vm.Reason);
            
             await _alumniRepo.InsertAsync(alumni);
 

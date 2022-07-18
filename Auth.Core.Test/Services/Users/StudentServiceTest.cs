@@ -228,7 +228,13 @@ namespace Auth.Core.Test.Services.Users
 
             var AddStudent = await studentService.AddStudentToSchool(studentData);
 
-            var DeleteStudent = await studentService.DeleteStudent(AddStudent.Data.Id, "Session");
+            var newAlumni = new DeactivateStudent
+            {
+                SessionName = "session",
+                DeactivationReason = "Promoted"
+            };
+
+            var DeleteStudent = await studentService.DeleteStudent(AddStudent.Data.Id, newAlumni);
 
             Assert.That(!(DeleteStudent.ErrorMessages.Contains("Student not found")));
             Assert.That(DeleteStudent.Data == true);
@@ -283,9 +289,16 @@ namespace Auth.Core.Test.Services.Users
 
             var AddStudent = await studentService.AddStudentToSchool(studentData);
 
-            var Removestudent = await studentService.DeleteStudent(AddStudent.Data.Id, "Session");
+            var newAlumni = new DeactivateStudent
+            {
+                SessionName = "session",
+                DeactivationReason = "Promoted"
+            };
 
-            var DeleteStudent = await studentService.DeleteStudent(AddStudent.Data.Id, "Session");
+
+            var Removestudent = await studentService.DeleteStudent(AddStudent.Data.Id, newAlumni);
+
+            var DeleteStudent = await studentService.DeleteStudent(AddStudent.Data.Id, newAlumni);
 
             Assert.That(DeleteStudent.ErrorMessages.Contains("Student not found"));
             Assert.That(DeleteStudent.Data == false);
@@ -574,7 +587,14 @@ namespace Auth.Core.Test.Services.Users
             studentData.ClassId = 3;
 
             var AddStudent = await studentService.AddStudentToSchool(studentData);
-            var removeStudent = await studentService.DeleteStudent(AddStudent.Data.Id, "Session");
+
+            var newAlumni = new DeactivateStudent
+            {
+                SessionName = "session",
+                DeactivationReason = "Promoted"
+            };
+
+            var removeStudent = await studentService.DeleteStudent(AddStudent.Data.Id, newAlumni);
             var result = await studentService.GetStudentProfileByUserId(AddStudent.Data.UserId.Value);
 
             Assert.That(result.ErrorMessages.Contains("Student does not exist"));
@@ -693,7 +713,14 @@ namespace Auth.Core.Test.Services.Users
             //Add student
             var AddStudent = await studentService.AddStudentToSchool(studentData);
             //remove student
-            var removeStudent = await studentService.DeleteStudent(AddStudent.Data.Id, "Session");
+
+            var newAlumni = new DeactivateStudent
+            {
+                SessionName = "session",
+                DeactivationReason = "Promoted"
+            };
+
+            var removeStudent = await studentService.DeleteStudent(AddStudent.Data.Id, newAlumni);
             //Trying to update using the id of the deleted student
             var result = await studentService.UpdateStudent(AddStudent.Data.Id, updateData);
 

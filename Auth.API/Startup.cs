@@ -84,7 +84,7 @@ namespace Auth.API
 
             app.UseCustomHealthChecksAPI();
 
-            app.UseHangfireDashboard();
+            app.UseHangfireDashboard("/SchoolTrackDashboard");
         }
 
         public void AddEntityFrameworkDbContext(IServiceCollection services)
