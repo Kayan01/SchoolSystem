@@ -305,7 +305,7 @@ namespace Auth.Core.Services
 
                 if (vm.Status == ClassPoolVM.ClassPoolVM_PromotionStatus.Graduated)
                 {
-                    _alumniRepo.Insert(new Alumni(item.Student, item.SessionName)); //create an alumni record.
+                    _alumniRepo.Insert(new Alumni(item.Student, item.SessionName,"Graduated")); //create an alumni record.
 
                     item.PromotionStatus = Enumeration.PromotionStatus.Graduated;
                     item.ToClassId = null;
@@ -329,7 +329,7 @@ namespace Auth.Core.Services
                 }
                 else if (vm.Status == ClassPoolVM.ClassPoolVM_PromotionStatus.Withdrawn)
                 {
-                    _alumniRepo.Insert(new Alumni(item.Student, item.SessionName)); //create an alumni record.
+                    _alumniRepo.Insert(new Alumni(item.Student, item.SessionName,"With Drawn")); //create an alumni record.
 
                     item.PromotionStatus = Enumeration.PromotionStatus.Withdrawn;
 
@@ -363,7 +363,7 @@ namespace Auth.Core.Services
 
                     if (curclass.IsTerminalClass)
                     {
-                        _alumniRepo.Insert(new Alumni(item.Student, item.SessionName)); //if current class is a terminal class, create an alumni record.
+                        _alumniRepo.Insert(new Alumni(item.Student, item.SessionName, "Promoted")); //if current class is a terminal class, create an alumni record.
                     }
 
 

@@ -80,7 +80,7 @@ namespace Auth.Core.Services
 
             //var student = studentResult.Data;
 
-            var alumni = new Alumni(student, vm.SessionName);
+            var alumni = new Alumni(student, vm.SessionName,vm.Reason);
            
             await _alumniRepo.InsertAsync(alumni);
 
