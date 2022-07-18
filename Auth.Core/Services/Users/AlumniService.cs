@@ -70,7 +70,7 @@ namespace Auth.Core.Services
         {
             //var studentResult =await _studentService.GetStudentById(vm.StudId);
             
-            var student = await _studentRepo.GetAll().Where(m => m.Id == vm.StudId).FirstOrDefaultAsync();
+            var student = await _studentRepo.GetAll().Where(m => m.UserId == vm.StudId).FirstOrDefaultAsync();
 
             if (student == null)
             {
