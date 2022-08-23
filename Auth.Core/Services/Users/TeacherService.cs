@@ -6,7 +6,9 @@ using Auth.Core.Models.Setup;
 using Auth.Core.Models.UserDetails;
 using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Staff;
+using ClosedXML.Excel;
 using ExcelManager;
 using IPagedList;
 using Microsoft.AspNetCore.Http;
@@ -30,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using static Shared.Utils.CoreConstants;
@@ -846,6 +849,92 @@ namespace Auth.Core.Services.Users
             result.Data = true;
 
             return result;
+        }
+
+        public async Task<ResultModel<ExportPayloadVM>> GetAllTeacherDataExcel(StaffTypeVM model)
+        {
+            var resultModel = new ResultModel<ExportPayloadVM>();
+
+            var query = await _staffRepo.GetAllIncluding(x => x.User)
+                .Where(x => x.StaffType == model.Staff)
+                .ToListAsync();
+
+            if (query == null)
+            {
+                resultModel.Data = null;
+                resultModel.Message = "No Teacher Found In School.";
+                return resultModel;
+            }
+
+            try
+            {
+                using (var workbook = new XLWorkbook())
+                {
+                    var workSheet = workbook.Worksheets.Add("TeacherSheet");
+
+                    for (int i = 1; i <= 11; i++)
+                    {
+                        var headFormat = workSheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold();
+                        headFormat.WorksheetRow().Height = 11;
+                    }
+
+                    var currentRow = 1;
+
+                    workSheet.Cell(1, 1).Value = "FirstName";
+                    workSheet.Cell(1, 2).Value = "LastName";
+                    workSheet.Cell(1, 3).Value = "TeacherId";
+                    workSheet.Cell(1, 4).Value = "Address";
+                    workSheet.Cell(1, 5).Value = "State";
+                    workSheet.Cell(1, 6).Value = "Country";
+                    workSheet.Cell(1, 7).Value = "BloodGroup";
+                    workSheet.Cell(1, 8).Value = "Religion";
+                    workSheet.Cell(1, 9).Value = "EmploymentDate";
+                    workSheet.Cell(1, 10).Value = "RegNumber";
+                    workSheet.Cell(1, 11).Value = "IsActive";
+
+
+                    foreach (var data in query)
+                    {
+                        currentRow += 1;
+                        workSheet.Cell(currentRow, 1).Value = $"{data.User.FirstName}";
+                        workSheet.Cell(currentRow, 2).Value = $"{data.User.LastName}";
+                        workSheet.Cell(currentRow, 3).Value = $"{data.Id}";
+                        workSheet.Cell(currentRow, 4).Value = $"{data.Address}";
+                        workSheet.Cell(currentRow, 5).Value = $"{data.State}";
+                        workSheet.Cell(currentRow, 6).Value = $"{data.Country}";
+                        workSheet.Cell(currentRow, 7).Value = $"{data.BloodGroup}";
+                        workSheet.Cell(currentRow, 8).Value = $"{data.Religion}";
+                        workSheet.Cell(currentRow, 9).Value = $"{data.EmploymentDate}";
+                        workSheet.Cell(currentRow, 10).Value = $"{data.RegNumber}";
+                        workSheet.Cell(currentRow, 11).Value = $"{data.IsActive}";
+                    }
+                    var byteData = new byte[0];
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        byteData = content;
+                    }
+
+                    var payload = new ExportPayloadVM
+                    {
+                        FileName = "TeacherData",
+                        Base64String = Convert.ToBase64String(byteData)
+                    };
+
+                    resultModel.Data = payload;
+                    resultModel.TotalCount = query.Count;
+                }
+            }
+            catch (Exception ex)
+            {
+                resultModel.AddError($"Exception Occured : {ex.Message}");
+                return resultModel;
+            }
+
+            return resultModel;
         }
 
         #region notification

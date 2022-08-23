@@ -4,7 +4,9 @@ using Auth.Core.Models.Alumni;
 using Auth.Core.Models.Medical;
 using Auth.Core.Models.Users;
 using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Student;
+using ClosedXML.Excel;
 using ExcelManager;
 using IPagedList;
 using Microsoft.AspNetCore.Http;
@@ -26,6 +28,7 @@ using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -984,6 +987,100 @@ namespace Auth.Core.Services
 
             return resultModel;
 
+        }
+
+        public async Task<ResultModel<ExportPayloadVM>> ExportStudentData(StudentExportVM model)
+        {
+            var resultModel = new ResultModel<ExportPayloadVM>();
+
+            var query = await _studentRepo.GetAllIncluding(x => x.Class)
+                .Include(x => x.User)
+                .Include(x => x.Parent)
+                .ToListAsync();
+
+
+            if (model.classId != null)
+            {
+                query = query.Where(x => x.ClassId == model.classId).ToList();
+            }
+
+            if (query == null)
+            {
+                resultModel.Data = null;
+                resultModel.Message = "No Student Found";
+                return resultModel;
+            }
+
+            try
+            {
+                using (var workbook = new XLWorkbook())
+                {
+                    var workSheet = workbook.Worksheets.Add("AttendanceSheet");
+
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        var headFormat = workSheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold();
+                        headFormat.WorksheetRow().Height = 11;
+                    }
+
+                    var currentRow = 1;
+
+                    workSheet.Cell(1, 1).Value = "FirstName";
+                    workSheet.Cell(1, 2).Value = "LastName";
+                    workSheet.Cell(1, 3).Value = "ClassName";
+                    workSheet.Cell(1, 4).Value = "StudentId";
+                    workSheet.Cell(1, 5).Value = "Address";
+                    workSheet.Cell(1, 6).Value = "State";
+                    workSheet.Cell(1, 7).Value = "Country";
+                    workSheet.Cell(1, 8).Value = "ParentFullName";
+                    workSheet.Cell(1, 9).Value = "MedicalBloodGroup";
+                    workSheet.Cell(1, 10).Value = "MedicalGenotype";
+                    workSheet.Cell(1, 11).Value = "Religion";
+
+
+                    foreach (var data in query)
+                    {
+                        var parent = await _parentRepo.GetAllIncluding(x => x.User).Where(x => x.Id == data.Id).FirstOrDefaultAsync();
+
+                        currentRow += 1;
+                        workSheet.Cell(currentRow, 1).Value = $"{data.User.FirstName}";
+                        workSheet.Cell(currentRow, 2).Value = $"{data.User.LastName}";
+                        workSheet.Cell(currentRow, 3).Value = $"{data.Class.Name} {data.Class.ClassArm}";
+                        workSheet.Cell(currentRow, 4).Value = $"{data.Id}";
+                        workSheet.Cell(currentRow, 5).Value = $"{data.Address}";
+                        workSheet.Cell(currentRow, 6).Value = $"{data.State}";
+                        workSheet.Cell(currentRow, 7).Value = $"{data.Country}";
+                        workSheet.Cell(currentRow, 8).Value = $"{parent.User.FirstName} {parent.User.LastName}";
+                        workSheet.Cell(currentRow, 9).Value = $"{data.MedicalDetail.BloodGroup}";
+                        workSheet.Cell(currentRow, 10).Value = $"{data.MedicalDetail.Genotype}";
+                        workSheet.Cell(currentRow, 11).Value = $"{data.Religion}";
+                    }
+                    var byteData = new byte[0];
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        byteData = content;
+                    }
+
+                    var payload = new ExportPayloadVM
+                    {
+                        FileName = "StudentData",
+                        Base64String = Convert.ToBase64String(byteData)
+                    };
+
+                    resultModel.Data = payload;
+                }
+            }
+            catch (Exception ex)
+            {
+                resultModel.AddError($"Exception Occured : {ex.Message}");
+                return resultModel;
+            }
+
+            return resultModel;
         }
     }
 }

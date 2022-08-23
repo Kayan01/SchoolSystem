@@ -716,5 +716,23 @@ namespace AssessmentSvc.Core.Services
 
             return rtn;
         }
+
+
+        /*
+         * Get total Number Of students in School in Excel
+         * Get Total Number Of Students in Class in Excel
+         * Get Total Number of students taking a subject in excel
+         * Get Total Number Of Teachers in Excel
+         * Get Total Number of School Tied to a group of school
+         * Get Total Number Of Student in each school tied to a group of school
+         * Get total of all students in all school tied to a group of school
+
+         * Check Reset passsword template File to present correct data
+
+         * Check result page to have result summary in it
+         * 
+         * 
+         * Create records to be exportable via PDF/EXCEl Format
+        */
     }
 }

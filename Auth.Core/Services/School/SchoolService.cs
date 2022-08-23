@@ -889,7 +889,7 @@ namespace Auth.Core.Services
                         days = getSchoolSubcriptionStatus.EndDate.Day -serverDate.Day;
                         Console.WriteLine($"Subscription is Due in {days} Days...Prompt User");
                         
-                        resultModel.Message = $"Subscription is Due in {days} Day(s) ago";
+                        resultModel.Message = $"Subscription is Due in {days} Day(s)";
                         return resultModel;
                     }
                     else if (serverDate.Day == getSchoolSubcriptionStatus.EndDate.Day)

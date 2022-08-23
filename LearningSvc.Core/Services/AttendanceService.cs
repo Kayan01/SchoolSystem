@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using Shared.Enums;
 using Shared.PubSub;
 using static Shared.Utils.CoreConstants;
+using ClosedXML.Excel;
+using System.IO;
 
 namespace LearningSvc.Core.Services
 {
@@ -22,6 +24,7 @@ namespace LearningSvc.Core.Services
         private readonly IRepository<AttendanceClass, long> _classAttendanceRepo;
         private readonly IRepository<Student, long> _studentRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IRepository<SchoolClass, long> _schoolClassRepo;
         private readonly IPublishService _publishService;
 
         public AttendanceService(
@@ -29,7 +32,8 @@ namespace LearningSvc.Core.Services
             IRepository<AttendanceClass, long> classAttendanceRepo,
             IRepository<Student, long> studentRepository,
             IPublishService publishService,
-            IUnitOfWork unitOfWork
+            IUnitOfWork unitOfWork,
+            IRepository<SchoolClass, long> schoolClassRepo
             )
         {
             _classAttendanceRepo = classAttendanceRepo;
@@ -37,6 +41,7 @@ namespace LearningSvc.Core.Services
             _studentRepository = studentRepository;
             _publishService = publishService;
             _unitOfWork = unitOfWork;
+            _schoolClassRepo = schoolClassRepo;
         }
         public async Task<ResultModel<string>> AddAttendanceForClass(AddClassAttendanceVM model)
         {
@@ -372,6 +377,194 @@ namespace LearningSvc.Core.Services
             }).ToList();
 
             return new ResultModel<List<StudentAttendanceSummaryVm>>(data: results);
+        }
+
+        public async Task<ResultModel<List<StudentAttendanceReportVM>>> ExportStudentAttendanceReport(AttendanceRequestVM model)
+        {
+            var result = new ResultModel<List<StudentAttendanceReportVM>>();
+
+            var studentListData = new List<StudentAttendanceReportVM>();
+
+            var GetStudentData = await _classAttendanceRepo.GetAll().Include(x => x.Student).Where(x => x.ClassId == model.ClassId).ToListAsync();
+            //GetStudentData = GetStudentData.Where(x => x.ClassId == model.ClassId).ToList();
+
+            var className = _schoolClassRepo.GetAll().Where(x => x.Id == model.ClassId).FirstOrDefault();
+            if (GetStudentData == null)
+            {
+                result.Message = $"No attendance record for class with {model.ClassId}";
+                return result;
+            }
+
+            if (model.AttendanceStartDate != null && model.AttendanceEndDate != null)
+            {
+                GetStudentData = GetStudentData.Where(x => x.AttendanceDate >= model.AttendanceStartDate && x.AttendanceDate <= model.AttendanceEndDate).ToList();
+                if (GetStudentData == null)
+                {
+                    result.Message = $"No attendance record Specified with start date {model.AttendanceStartDate} and end-date of {model.AttendanceEndDate}";
+                    return result;
+                }
+            }
+            foreach (var student in GetStudentData)
+            {
+                var studentDate = new StudentAttendanceReportVM
+                {
+                    StudentId = student.StudentId,
+                    FullName = student.Student.FirstName + " " +student.Student.LastName,
+                    AttendanceStatus = (int)student.AttendanceStatus,
+                    ClassName = className.Name
+                };
+                studentListData.Add(studentDate);
+            }
+
+            result.Data = studentListData;
+            return result;
+        }
+
+        public async Task<ResultModel<List<StudentAttendanceReportVM>>> ExportClassAttendanceReport(AttendanceRequestVM model)
+        {
+            var resultModel = new ResultModel<List<StudentAttendanceReportVM>>();
+            var groupedData = new List<StudentAttendanceReportVM>();
+            var storeIds = new List<long>();
+
+            if (model == null)
+            {
+                resultModel.AddError("Model Parameters cannot be empty");
+                return resultModel;
+            }
+            var getClassAttendanceData = await _classAttendanceRepo.GetAll()
+              .Include(x => x.SchoolClass)
+              .Include(x => x.Student)
+              .ToListAsync();
+
+            if (model.ClassId != null)
+            {
+                getClassAttendanceData = getClassAttendanceData.Where(x => x.ClassId == model.ClassId).ToList();
+            }
+
+            if (model.tenantId != null)
+            {
+                getClassAttendanceData = getClassAttendanceData.Where(x => x.TenantId == model.tenantId).ToList();
+            }
+
+            if (model.AttendanceStartDate != null && model.AttendanceEndDate != null)
+            {
+                getClassAttendanceData = getClassAttendanceData.Where(x => x.AttendanceDate >= model.AttendanceStartDate && x.AttendanceDate <= model.AttendanceEndDate).ToList();
+                if (getClassAttendanceData == null)
+                {
+                    resultModel.Message = $"No attendance record Specified with start date {model.AttendanceStartDate} and end-date of {model.AttendanceEndDate}";
+                    return resultModel;
+                }
+            }
+
+            if (getClassAttendanceData == null)
+            {
+                resultModel.Data = null;
+                resultModel.Message = $"No attendance record found for class with Id {model.ClassId}";
+                return resultModel;
+            }
+
+            foreach (var student in getClassAttendanceData)
+            {
+                var getData = getClassAttendanceData.Where(x => x.StudentId == student.Student.Id).ToList();
+                if (model.ClassId != null)
+                {
+                    getData = getClassAttendanceData.Where(x => x.ClassId == model.ClassId).ToList();
+                }
+
+                if (!getClassAttendanceData.Any())
+                {
+
+                    return new ResultModel<List<StudentAttendanceReportVM>>("No attendance Summary for student found");
+                }
+
+                //Group student data by studentId
+                var data = getData.GroupBy(x => x.StudentId).Select(x => new StudentAttendanceReportVM
+                {
+                    StudentId = x.Key,
+                    FullName = student.Student.FirstName + " " + student.Student.LastName,
+                    ClassName = student.SchoolClass.Name,
+                    TotalNumberOfTimePresent = getData.Count(x => x.AttendanceStatus == AttendanceState.Present),
+                    TotalNumberOfTimeAbsent = getData.Count(x => x.AttendanceStatus == AttendanceState.Absent)
+                }).ToList();
+
+                bool res = false;
+
+                if (storeIds.Count > 0)
+                {
+                    res = storeIds.Contains(student.StudentId);
+                }
+                
+                if (res == false)
+                {
+                    foreach (var dataItem in data)
+                    {
+                        groupedData.Add(dataItem);
+                    }
+                }                
+                storeIds.Add(student.StudentId);
+            }
+
+            resultModel.Data = groupedData;
+            resultModel.TotalCount = groupedData.Count;
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<byte[]>> ExportAttendanceDataToExcel(List<StudentAttendanceReportVM> model)
+        {
+            var resultModel = new ResultModel<byte[]>();
+
+            if (model == null)
+            {
+                resultModel.AddError($"Model cannot be Null");
+                return resultModel;
+            }
+            try
+            {
+                using(var workbook = new XLWorkbook())
+                {
+                    var workSheet = workbook.Worksheets.Add("AttendanceSheet");
+
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        var headFormat = workSheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold();
+                        headFormat.WorksheetRow().Height = 5;
+                    }
+
+                    var currentRow = 1;
+
+                    workSheet.Cell(1, 1).Value = "FullName";
+                    workSheet.Cell(1, 2).Value = "ClassName";
+                    workSheet.Cell(1, 3).Value = "StudentId";
+                    workSheet.Cell(1, 4).Value = "NoOfTimePresent";
+                    workSheet.Cell(1, 5).Value = "NoOfTimeAbsent";
+
+                    foreach (var data in model)
+                    {
+                        currentRow += 1;
+                        workSheet.Cell(currentRow, 1).Value = $"{data.FullName}";
+                        workSheet.Cell(currentRow, 2).Value = $"{data.ClassName}";
+                        workSheet.Cell(currentRow, 3).Value = $"{data.StudentId}";
+                        workSheet.Cell(currentRow, 4).Value = $"{data.TotalNumberOfTimePresent}";
+                        workSheet.Cell(currentRow, 5).Value = $"{data.TotalNumberOfTimeAbsent}";
+                    }
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        resultModel.Data = content;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                resultModel.AddError($"Exception Occured : {ex.Message}");
+                return resultModel;
+            }
+            return resultModel;
         }
 
     }

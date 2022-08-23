@@ -34,4 +34,25 @@ namespace AssessmentSvc.Core.ViewModels.Attendance
         public int TotalNoOfSchoolDays => NoOfTimesPresent + NoOfTimesAbsent;
 
     }
+
+    public class StudentAttendanceReportVM
+    {
+        public string FullName { get; set; }
+        public string ClassName { get; set; }
+        public int AttendanceStatus { get; set; }
+
+    }
+
+    public class AttendanceExcelReport
+    {
+        public string Base64String { get; set; }
+        public string FileName { get; set; }
+    }
+
+    public class AttendanceRequestVM
+    {
+        public long ClassId { get; set; }
+        public DateTime? AttendanceStartDate { get; set; }
+        public DateTime? AttendanceEndDate { get; set; }
+    }
 }
