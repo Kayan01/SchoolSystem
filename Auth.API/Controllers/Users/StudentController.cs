@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces;
+using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Student;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -247,6 +248,25 @@ namespace Auth.API.Controllers
                 return HandleError(ex);
             }
 
+        }
+
+        [HttpGet]
+        [RequiresPermission(Permission.STUDENT_READ)]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> GetStudentDataInExcel([FromQuery]StudentExportVM model)
+        {
+            try
+            {
+                var result = await _studentService.ExportStudentData(model);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.TotalCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
         }
 
     }

@@ -28,7 +28,7 @@ namespace Auth.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<IEnumerable<AlumniDetailVM>>), 200)]
-        public async Task<IActionResult> GetAllAlumni([FromQuery] QueryModel model,[FromQuery] GetAlumniQueryVM queryVM)
+        public async Task<IActionResult> GetAllAlumni([FromQuery] QueryModel model, [FromQuery] GetAlumniQueryVM queryVM)
         {
 
             if (!ModelState.IsValid)
@@ -112,6 +112,70 @@ namespace Auth.API.Controllers
             }
         }
 
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<PastAlumniDetailVM>), 200)]
+        public async Task<IActionResult> AddPastAlumni([FromForm] AddPastAlumniVM model, long schoolId)
+        {
+            if (!ModelState.IsValid)
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _alumniService.AddPastStudents(model, schoolId);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
+
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<AlumniDetailVM>>), 200)]
+        public async Task<IActionResult> GetAllPastAlumni([FromQuery] QueryModel model, [FromQuery] GetAlumniQueryVM queryVM)
+        {
+
+            if (!ModelState.IsValid)
+                return ApiResponse<object>(ListModelErrors, codes: ApiResponseCodes.INVALID_REQUEST);
+            try
+            {
+                var result = await _alumniService.GetAllPastAlumni(model, queryVM);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.TotalCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet("{pastAlumniId}")]
+        [ProducesResponseType(typeof(ApiResponse<AlumniDetailVM>), 200)]
+        public async Task<IActionResult> GetAllPastAlumniById(long pastAlumniId)
+        {
+
+            if (pastAlumniId < 1)
+                return ApiResponse<string>(errors: "Please provide a alummi Id");
+
+            try
+            {
+                var result = await _alumniService.GetPastAlumniById(pastAlumniId);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
     }
 }

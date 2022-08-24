@@ -24,6 +24,7 @@ namespace Auth.Core.ViewModels
         public string Sex { get; set; }
         public string RegNumber { get; set; }
         public DateTime DateOfBirth { get; set; }
+        public string Reason { get; set; }
 
 
         public static implicit operator AlumniDetailVM(Models.Alumni.Alumni model)

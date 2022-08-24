@@ -21,5 +21,9 @@ namespace LearningSvc.Core.Interfaces
 
         Task<ResultModel<List<StudentAttendanceSummaryVm>>> GetStudentAttendanceSummary(
             long studentId, long classId);
+
+        Task<ResultModel<List<StudentAttendanceReportVM>>> ExportStudentAttendanceReport(AttendanceRequestVM model);
+        Task<ResultModel<List<StudentAttendanceReportVM>>> ExportClassAttendanceReport(AttendanceRequestVM model);
+        Task<ResultModel<byte[]>> ExportAttendanceDataToExcel(List<StudentAttendanceReportVM> model);
     }
 }

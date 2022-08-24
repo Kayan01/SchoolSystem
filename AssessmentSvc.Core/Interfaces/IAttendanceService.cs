@@ -14,5 +14,7 @@ namespace AssessmentSvc.Core.Interfaces
         void AddOrUpdateAttendanceForSubjectFromBroadCast(AttendanceSubject model);
         Task<ResultModel<List<StudentAttendanceSummaryVm>>> GetStudentAttendanceSummary(
             long? studentId, long classId);
+
+        Task<ResultModel<List<StudentAttendanceReportVM>>> ExportStudentAttendanceReport(AttendanceRequestVM model);
     }
 }
