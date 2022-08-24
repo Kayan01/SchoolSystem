@@ -141,4 +141,9 @@ namespace Auth.Core.ViewModels.Student
             };
         }
     }
+
+    public class StudentExportVM
+    {
+        public long? classId { get; set; }
+    }
 }

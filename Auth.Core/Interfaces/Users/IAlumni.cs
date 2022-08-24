@@ -18,5 +18,8 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<AlumniDetailVM>> GetAlumniById(long Id);
         Task<ResultModel<AlumniDetailVM>> UpdateAlumni(UpdateAlumniVM model );
         Task<ResultModel<bool>> DeleteAlumni(long Id);
+        Task<ResultModel<PastAlumniDetailVM>> AddPastStudents(AddPastAlumniVM model, long schoolId);
+        Task<ResultModel<PastAlumniDetailVM>> GetPastAlumniById(long Id);
+        Task<ResultModel<List<PastAlumniDetailVM>>> GetAllPastAlumni(QueryModel model, GetAlumniQueryVM queryVM);
     }
 }

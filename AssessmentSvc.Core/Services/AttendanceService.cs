@@ -22,13 +22,18 @@ namespace AssessmentSvc.Core.Services
         private readonly AppDbContext _context;
         private readonly IRepository<AttendanceClass, long> _classAttendanceRepo;
         private readonly IRepository<AttendanceSubject, long> _subjectAttendance;
+        private readonly IRepository<SchoolClass, long> _classRepo;
 
-        public AttendanceService(AppDbContext context, IUnitOfWork unitOfWork,IRepository<AttendanceClass, long> classAttendanceRepo,IRepository<AttendanceSubject, long> subjectAttendanceRepo)
+        public AttendanceService(AppDbContext context, IUnitOfWork unitOfWork,
+            IRepository<AttendanceClass, long> classAttendanceRepo,
+            IRepository<AttendanceSubject, long> subjectAttendanceRepo,
+            IRepository<SchoolClass, long> classRepo)
         {
             _context = context;
             _unitOfWork = unitOfWork;
             _classAttendanceRepo = classAttendanceRepo;
             _subjectAttendance = subjectAttendanceRepo;
+            _classRepo = classRepo;
         }
         public void AddOrUpdateAttendanceForClassFromBroadCast(ClassAttendanceSharedModel model)
         {
@@ -85,6 +90,42 @@ namespace AssessmentSvc.Core.Services
             return new ResultModel<List<StudentAttendanceSummaryVm>>(results);
         }
 
-       
+
+        public async Task<ResultModel<List<StudentAttendanceReportVM>>> ExportStudentAttendanceReport(AttendanceRequestVM model)
+        {
+            var result = new ResultModel<List<StudentAttendanceReportVM>>();
+
+            var GetStudentData = await _classAttendanceRepo.GetAllListAsync();
+            GetStudentData = GetStudentData.Where(x => x.ClassId == model.ClassId).ToList();
+
+            var className = _classRepo.GetAll().Where(x => x.Id == model.ClassId).FirstOrDefault();
+            if (GetStudentData == null)
+            {
+                result.Message = $"No attendance record for class with {model.ClassId}";
+                return result;
+            }
+
+            if (model.AttendanceStartDate != null && model.AttendanceEndDate != null)
+            {
+                GetStudentData = GetStudentData.Where(x => x.AttendanceDate >= model.AttendanceStartDate && x.AttendanceDate <= model.AttendanceEndDate).ToList();
+                if (GetStudentData == null)
+                {
+                    result.Message = $"No attendance record Specified with start date {model.AttendanceStartDate} and end-date of {model.AttendanceEndDate}";
+                    return result;
+                }
+            }
+            foreach (var student in GetStudentData)
+            {
+                var studentDate = new StudentAttendanceReportVM
+                {
+                    FullName = student.Student.FirstName + student.Student.LastName,
+                    AttendanceStatus = (int)student.AttendanceStatus,
+                    ClassName = className.Name
+                };
+
+                result.Data.Add(studentDate);
+            }
+            return result;
+        }
     }
 }

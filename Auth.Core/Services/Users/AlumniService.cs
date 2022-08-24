@@ -28,6 +28,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Reflection;
 using Microsoft.OpenApi.Extensions;
 using Shared.FileStorage;
+using Auth.Core.Interfaces.Setup;
 
 namespace Auth.Core.Services
 {
@@ -42,6 +43,8 @@ namespace Auth.Core.Services
         private readonly IRepository<School, long> _schoolRepo;
         private readonly IDocumentService _documentService;
         private readonly UserManager<User> _userManager;
+        private readonly IRepository<PastAlumni, long> _pastAlumniRepo;
+        private readonly ISchoolPropertyService _schoolPropertyService;
 
         public AlumniService(
             IPublishService publishService, IStudentService studentService,
@@ -50,7 +53,9 @@ namespace Auth.Core.Services
             IUnitOfWork unitOfWork,
             IRepository<School, long> schoolRepo,
             IDocumentService documentService,
-            UserManager<User> userManager
+            UserManager<User> userManager,
+            IRepository<PastAlumni, long> pastAlumniRepo,
+            ISchoolPropertyService schoolPropertyService
             )
         {
             _publishService = publishService;
@@ -61,7 +66,8 @@ namespace Auth.Core.Services
             _schoolRepo = schoolRepo;
             _documentService = documentService;
             _userManager = userManager;
-
+            _pastAlumniRepo = pastAlumniRepo;
+            _schoolPropertyService = schoolPropertyService;
         }
 
 
@@ -166,6 +172,115 @@ namespace Auth.Core.Services
             var succeed = await _alumniRepo.UpdateAsync(alumni);
 
             return new ResultModel<bool>(true);
+        }
+
+        public async Task<ResultModel<PastAlumniDetailVM>> AddPastStudents(AddPastAlumniVM model, long schoolId)
+        {
+            var resultModel = new ResultModel<PastAlumniDetailVM>();
+
+            var schoolDetails = await _schoolRepo.GetAll().Where(x => x.Id == schoolId).FirstOrDefaultAsync();
+            if (schoolDetails == null)
+            {
+                resultModel.AddError("School Not Found");
+                return resultModel;
+            }
+
+            var schoolPropertyValues = await _schoolPropertyService.GetSchoolProperty();
+            if (schoolPropertyValues == null)
+            {
+                resultModel.AddError("School Property Not Found");
+                return resultModel;
+            }
+
+            if (model == null)
+            {
+                resultModel.AddError("Model cannot be Empty");
+                return resultModel;
+            }
+
+            var data = new PastAlumni()
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                MiddleName = model.MiddleName,
+                Sex = model.Sex,
+                SchoolId = schoolId,
+                Nationality = model.Nationality,
+                SessionName = model.SessionName,
+                State = model.State,
+                StateOfOrigin = model.StateOfOrigin,
+                Country = model.Country,
+                Address = model.Address,
+                Religion = model.Religion,
+                TermName = model.TermName,
+                MothersMaidenName = model.MothersMaidenName,
+                AlumniReason = model.AlumniReason,
+                YearOfCompletion = model.YearOfCompletion,
+                DateOfBirth = model.DateOfBirth,
+                CreationTime = DateTime.UtcNow,
+                EmailAddress = model.EmailAddress,
+                RegNumber = $"{schoolPropertyValues.Data.Prefix}{schoolPropertyValues.Data.Seperator}STT{schoolPropertyValues.Data.Seperator}{DateTime.Now.Year}{schoolPropertyValues.Data.Seperator}{model.FirstName}{model.YearOfCompletion.Month}"
+            };
+
+            try
+            {
+                await _pastAlumniRepo.InsertAsync(data);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                return new ResultModel<PastAlumniDetailVM>(data: data);
+            }
+            catch (Exception ex)
+            {
+                resultModel.AddError($"Error Occured : {ex.Message}");
+                return resultModel;
+            }
+        }
+
+        public async Task<ResultModel<List<PastAlumniDetailVM>>> GetAllPastAlumni(QueryModel model, GetAlumniQueryVM queryVM)
+        {
+            var resultmodel = new ResultModel<List<PastAlumniDetailVM>>();
+            var query = _pastAlumniRepo.GetAll().Where(x => x.IsDeleted == false);
+            var vmList = new List<PastAlumniDetailVM>();
+            if (!query.Any())
+                return resultmodel;
+
+            if (!string.IsNullOrWhiteSpace(queryVM.SessionName))
+            {
+                query = query.Where(x => x.SessionName == queryVM.SessionName);
+            }
+
+            resultmodel.TotalCount = query.Count();
+            var data = await query.Select(x => new PastAlumniDetailVM()
+            {
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                EmailAddress = x.EmailAddress,
+                Id = x.Id,
+                RegNumber = x.RegNumber,
+                Sex = x.Sex,
+                DateOfBirth = x.DateOfBirth
+
+            }).ToPagedListAsync(model.PageIndex, model.PageSize);
+
+            vmList = data.Select(x => (PastAlumniDetailVM)x).ToList();
+
+            resultmodel.Data = vmList;
+
+            return resultmodel;
+
+        }
+
+        public async Task<ResultModel<PastAlumniDetailVM>> GetPastAlumniById(long Id)
+        {
+            var query = await _pastAlumniRepo.GetAll().Where(x => x.Id == Id && x.IsDeleted == false).FirstOrDefaultAsync();
+
+            if (query == null)
+            {
+                return new ResultModel<PastAlumniDetailVM>($"No Alumni with Id : {Id}");
+            }
+
+            return new ResultModel<PastAlumniDetailVM>(query);
         }
     }
 }

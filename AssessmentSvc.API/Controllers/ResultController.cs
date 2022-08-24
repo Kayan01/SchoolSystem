@@ -394,5 +394,23 @@ namespace AssessmentSvc.API.Controllers
                 return HandleError(ex);
             }
         }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<StudentAttendanceReportVM>>), 200)]
+        public async Task<IActionResult> ExportStudentAttendanceReport([FromQuery] AttendanceRequestVM model)
+        {
+            try
+            {
+                var result = await _attendanceService.ExportStudentAttendanceReport(model);
+                if (result.HasError)
+                    return ApiResponse<List<StudentAttendanceReportVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
     }
 }
