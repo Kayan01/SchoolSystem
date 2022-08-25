@@ -482,7 +482,7 @@ namespace LearningSvc.Core.Services
                 {
                     StudentId = x.Key,
                     FullName = student.Student.FirstName + " " + student.Student.LastName,
-                    ClassName = student.SchoolClass.Name,
+                    ClassName = student.SchoolClass.Name + " " + student.SchoolClass.ClassArm,
                     TotalNumberOfTimePresent = getData.Count(x => x.AttendanceStatus == AttendanceState.Present),
                     TotalNumberOfTimeAbsent = getData.Count(x => x.AttendanceStatus == AttendanceState.Absent)
                 }).ToList();
