@@ -740,8 +740,12 @@ namespace Auth.Core.Services
                 await _authUserManagement.DisableUsersAsync(users.staffUserIds.Concat(users.studentUserIds.Concat(users.teachingUserIds)));
 
                 //_schoolRepo.Update(Id, x => x.IsActive = false);
+                
                 Func<School, Task> school = scho => _schoolRepo.GetAllListAsync(x => x.Id == Id);
-                await _schoolRepo.UpdateAsync(Id, school);
+                
+                _schoolRepo.Update(Id, x => x.IsActive = false);
+                
+                await _schoolRepo.UpdateAsync(Id, school);    
                 await _unitOfWork.SaveChangesAsync();
 
                 return new ResultModel<bool>(data: true, message: "School was deactivated");
