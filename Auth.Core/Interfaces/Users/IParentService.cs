@@ -1,4 +1,5 @@
-﻿using Auth.Core.ViewModels.Parent;
+﻿using Auth.Core.ViewModels;
+using Auth.Core.ViewModels.Parent;
 using Auth.Core.ViewModels.School;
 using Auth.Core.ViewModels.Student;
 using IPagedList;
@@ -27,5 +28,6 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<bool>> UploadBulkParentData(IFormFile excelfile);
         Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentByName(QueryModel vm, string FirstName);
         Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentBySchoolAndName(QueryModel vm, SearchParentVm model);
+        Task<ResultModel<ExportPayloadVM>> ExportParentInSchoolData(long schoolId);
     }
 }

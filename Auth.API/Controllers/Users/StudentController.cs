@@ -269,5 +269,24 @@ namespace Auth.API.Controllers
             }
         }
 
+        [HttpGet]
+        [RequiresPermission(Permission.STUDENT_READ)]
+        [ProducesResponseType(typeof(ApiResponse<PaginatedModel<StudentVM>>), 200)]
+        public async Task<IActionResult> GetAllStudentInSchoolOrClass([FromQuery] QueryModel vM,[FromQuery] StudentExportVM classVm)
+        {
+            try
+            {
+                var result = await _studentService.GetStudentByClass(classVm, vM);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
     }
 }

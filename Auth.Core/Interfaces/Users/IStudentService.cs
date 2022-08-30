@@ -26,5 +26,6 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<bool>> AddBulkStudent(IFormFile excelfile);
         Task<ResultModel<PaginatedModel<StudentVMs>>> SearchForStudentByName(QueryModel model, string name);
         Task<ResultModel<ExportPayloadVM>> ExportStudentData(StudentExportVM model);
+        Task<ResultModel<PaginatedModel<StudentVMs>>> GetStudentByClass(StudentExportVM classVM, QueryModel model);
     }
 }
