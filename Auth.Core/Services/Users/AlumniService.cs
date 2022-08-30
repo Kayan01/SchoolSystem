@@ -90,6 +90,11 @@ namespace Auth.Core.Services
            
             await _alumniRepo.InsertAsync(alumni);
 
+            student.IsDeleted = true;
+            student.LastModificationTime = DateTime.Now;
+
+            await _studentRepo.UpdateAsync(student);
+
             await _unitOfWork.SaveChangesAsync();
 
             return new ResultModel<AlumniDetailVM>(data: alumni);
@@ -124,7 +129,7 @@ namespace Auth.Core.Services
             vmList = data.Select(x => (AlumniDetailVM)x).ToList();
 
             resultmodel.Data = vmList;
-
+            
             return resultmodel;
 
         }

@@ -1,4 +1,5 @@
-﻿using Auth.Core.Interfaces.Setup;
+﻿using Auth.Core.Context;
+using Auth.Core.Interfaces.Setup;
 using Auth.Core.Models;
 using Auth.Core.Models.Alumni;
 using Auth.Core.Models.Medical;
@@ -49,7 +50,7 @@ namespace Auth.Core.Services
         private readonly IHttpUserService _httpUserService;
         private readonly ISchoolPropertyService _schoolPropertyService;
         private readonly IRepository<Alumni, long> _alumniRepo;
-
+        private readonly AppDbContext _context;
         private readonly IAuthUserManagement _authUserManagement;
         public StudentService(
             IRepository<Student, long> studentRepo,
@@ -63,7 +64,8 @@ namespace Auth.Core.Services
             UserManager<User> userManager,
             ISchoolPropertyService schoolPropertyService,
             IAuthUserManagement authUserManagement,
-            IRepository<Alumni, long> alumniRepo)
+            IRepository<Alumni, long> alumniRepo, AppDbContext context
+            )
         {
             _studentRepo = studentRepo;
             _classRepo = classRepo;
@@ -77,12 +79,15 @@ namespace Auth.Core.Services
             _schoolPropertyService = schoolPropertyService;
             _authUserManagement = authUserManagement;
             _alumniRepo = alumniRepo;
+            _context=context;
         }
 
         private async Task<Student> SaveStudentWithSystemRegNumber(Student student, string schoolSeperator, string schoolPrefix)
         {
-            var lastRegNumber = _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync().Result;
+            //var lastRegNumber = _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync().Result;
+            var klastRegNumber = _context.Users.Where(x => x.UserType == UserType.Student && x.UserName.Contains(schoolPrefix)).OrderBy(m => m.Id).Select(m => m.UserName).LastOrDefaultAsync().Result;
             var lastNumber = 0;
+            var lastRegNumber = klastRegNumber.ToString();
             var seperator = schoolSeperator;
             if (!string.IsNullOrWhiteSpace(lastRegNumber))
             {
