@@ -1001,6 +1001,7 @@ namespace Auth.Core.Services
             var query = await _studentRepo.GetAllIncluding(x => x.Class)
                 .Include(x => x.User)
                 .Include(x => x.Parent)
+                .Include(x => x.MedicalDetail)
                 .ToListAsync();
 
 
@@ -1022,7 +1023,7 @@ namespace Auth.Core.Services
                 {
                     var workSheet = workbook.Worksheets.Add("AttendanceSheet");
 
-                    for (int i = 1; i <= 5; i++)
+                    for (int i = 1; i <= 11; i++)
                     {
                         var headFormat = workSheet.Cell(1, i);
                         headFormat.Style.Font.SetBold();
@@ -1046,7 +1047,7 @@ namespace Auth.Core.Services
 
                     foreach (var data in query)
                     {
-                        var parent = await _parentRepo.GetAllIncluding(x => x.User).Where(x => x.Id == data.Id).FirstOrDefaultAsync();
+                        var parent = await _parentRepo.GetAllIncluding(x => x.User).Where(x => x.Id == data.Parent.Id).FirstOrDefaultAsync();
 
                         currentRow += 1;
                         workSheet.Cell(currentRow, 1).Value = $"{data.User.FirstName}";
@@ -1082,6 +1083,59 @@ namespace Auth.Core.Services
             catch (Exception ex)
             {
                 resultModel.AddError($"Exception Occured : {ex.Message}");
+                return resultModel;
+            }
+
+            return resultModel;
+        }
+
+
+        public async Task<ResultModel<PaginatedModel<StudentVMs>>> GetStudentByClass(StudentExportVM classVM, QueryModel model)
+        {
+            var resultModel = new ResultModel<PaginatedModel<StudentVMs>>();
+
+            var query = await _studentRepo.GetAll().Where(x => x.IsDeleted == false).Include(x => x.Class).OrderByDescending(x => x.CreationTime)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.User.FirstName,
+                    x.User.LastName,
+                    x.Sex,
+                    x.DateOfBirth,
+                    section = x.Class.SchoolSection.Name,
+                    x.IsActive,
+                    x.RegNumber,
+                    x.Class,
+                    image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                }).ToListAsync();
+
+            if (query != null)
+            {
+                if (model != null)
+                {
+                    query = query.Where(x => x.Class.Id == classVM.classId).ToList();
+                }
+                
+                var student = query.Select(x => new StudentVMs
+                {
+
+                    Id = x.Id,
+                    FirstName = x.FirstName,
+                    LastName = x.LastName,
+                    Sex = x.Sex,
+                    DateOfBirth = x.DateOfBirth,
+                    Section = x.section,
+                    StudentNumber = x.RegNumber,
+                    SchoolClass = x.Class,
+                    Image = x.image == null ? null : _documentService.TryGetUploadedFile(x.image)
+                }).ToList();
+
+
+                var data = student.ToPagedList(model.PageIndex, model.PageSize);
+
+                resultModel.Data = new PaginatedModel<StudentVMs>(data, model.PageIndex, model.PageSize, query.Count);
+
+
                 return resultModel;
             }
 

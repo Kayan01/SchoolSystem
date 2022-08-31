@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Auth.Core.Interfaces.Users;
+using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Parent;
 using Auth.Core.ViewModels.School;
 using Auth.Core.ViewModels.Student;
@@ -328,6 +329,24 @@ namespace Auth.API.Controllers.Users
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> GetParentDataInExcel(long schoolid)
+        {
+            try
+            {
+                var result = await _parentService.ExportParentInSchoolData(schoolid);
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.TotalCount);
             }
             catch (Exception ex)
             {
