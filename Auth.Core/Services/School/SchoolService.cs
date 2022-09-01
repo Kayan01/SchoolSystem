@@ -860,11 +860,11 @@ namespace Auth.Core.Services
                     month = serverDate.Month - getSchoolSubcriptionStatus.EndDate.Month;
                     if (month == 1)
                     {
-                        resultModel.Message = $"Expired with {month} month.";
+                        resultModel.Message = $"Your School Subcription has Expired.";
                         return resultModel;
                     }
 
-                    resultModel.Message = $"Expired with {month} month(s).";
+                    resultModel.Message = $"Your School Subcription has Expired {month} month(s) ago.";
                     return resultModel;
                 }
                 else if (serverDate.Month < getSchoolSubcriptionStatus.EndDate.Month)
