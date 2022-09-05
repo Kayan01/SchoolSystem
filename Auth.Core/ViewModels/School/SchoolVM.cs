@@ -46,4 +46,13 @@ namespace Auth.Core.ViewModels
         }
        
     }
+
+
+    public class userCount
+    {
+        public long TotalUsers { get; set; }
+        public long TotalStudents { get; set; }
+        public long TotalStaffs { get; set; }
+        public long TotalTeachers { get; set; }
+    }
 }
