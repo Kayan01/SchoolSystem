@@ -249,7 +249,7 @@ namespace Auth.Core.Services
                      x.State,
                      staffCount = x.Staffs.Count,
                      studentCount = x.Students.Count,
-                     teacherCount = x.Students.Count,
+                     teacherCount = x.TeachingStaffs.Count,
                      x.WebsiteAddress,
                      x.IsActive,
                      x.SchoolGroupId
@@ -903,13 +903,62 @@ namespace Auth.Core.Services
                         {
                             Console.WriteLine($"Subscription is Due {days} Days...Prompt User");
 
-                            resultModel.Message = $"Subscription Due {days} Day(s).";
+                            resultModel.Message = $"Subscription is Due in : {days} Day(s).";
                             return resultModel;
                         }
                        
                     }   
                 }
             }
+            return resultModel;
+        }
+
+        public async Task<ResultModel<userCount>> TotalUsersOnPlatform()
+        {
+            var resultModel = new ResultModel<userCount>();
+
+            var totalUsers = 0;
+            var totalStaffs = 0;
+            var totalStudents = 0;
+            var totalTeachers = 0;
+
+
+            var firstQuery = _schoolRepo.GetAll();
+
+            var query = firstQuery.Include(x => x.Staffs)
+                .Include(x => x.FileUploads)
+                .Include(x => x.Students)
+                .Include(x => x.TeachingStaffs)
+                .OrderByDescending(x => x.CreationTime)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Name,
+                    staffCount = x.Staffs.Count,
+                    studentCount = x.Students.Count,
+                    teacherCount = x.TeachingStaffs.Count,
+                    x.IsActive,
+                    x.SchoolGroupId
+                });
+
+            foreach (var school in query)
+            {
+                totalUsers += school.staffCount + school.studentCount;
+                totalStudents += school.studentCount;
+                totalStaffs += school.staffCount;
+                totalTeachers += school.teacherCount;
+            }
+
+            var data = new userCount
+            {
+                TotalTeachers = totalTeachers,
+                TotalStaffs = totalStaffs,
+                TotalStudents = totalStudents,
+                TotalUsers = totalUsers
+            };
+
+            resultModel.Data = data;
+
             return resultModel;
         }
     }
