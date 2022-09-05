@@ -298,5 +298,23 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
+
+        [HttpGet]
+        //[Authorize]
+        [ProducesResponseType(typeof(ApiResponse<IEnumerable<SchoolVM>>), 200)]
+        public async Task<IActionResult> GetTotalUsersOnPlatform()
+        {
+            try
+            {
+                var result = await _schoolService.TotalUsersOnPlatform();
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Total user count retrieved Successfully.",codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }
