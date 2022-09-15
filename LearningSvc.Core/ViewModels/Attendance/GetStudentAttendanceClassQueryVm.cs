@@ -23,6 +23,7 @@ namespace LearningSvc.Core.ViewModels.Attendance
         public int AttendanceStatus { get; set; }
         public int TotalNumberOfTimePresent { get; set; }
         public int TotalNumberOfTimeAbsent { get; set; }
+        public string SubjectName { get; set; }
 
     }
 
@@ -36,6 +37,7 @@ namespace LearningSvc.Core.ViewModels.Attendance
     {
         public long? tenantId { get; set; }
         public long? ClassId { get; set; }
+        public long? SubjectId { get; set; }
         public DateTime? AttendanceStartDate { get; set; }
         public DateTime? AttendanceEndDate { get; set; }
     }
