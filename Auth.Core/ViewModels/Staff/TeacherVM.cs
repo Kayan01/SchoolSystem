@@ -101,4 +101,10 @@ namespace Auth.Core.ViewModels.Staff
             };
         }
     }
+
+    public class TeacherVMDetails
+    {
+        public long TeacherId { get; set; }
+        public string TeacherName { get; set; }
+    }
 }
