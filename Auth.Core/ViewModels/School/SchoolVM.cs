@@ -54,5 +54,6 @@ namespace Auth.Core.ViewModels
         public long TotalStudents { get; set; }
         public long TotalStaffs { get; set; }
         public long TotalTeachers { get; set; }
+        public long TotalParents { get; set; }
     }
 }

@@ -937,6 +937,26 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
+        public async Task<ResultModel<TeacherVMDetails>> GetTeacherIdByUserId(long userId)
+        {
+            var resultModel = new ResultModel<TeacherVMDetails>();
+
+            var query = await _staffRepo.GetAllIncluding(x => x.User).Where(x => x.UserId == userId).FirstOrDefaultAsync();
+
+            if (query != null)
+            {
+                var result = new TeacherVMDetails
+                {
+                    TeacherId = query.Id,
+                    TeacherName = query.User.FirstName + " " + query.User.LastName,
+                };
+
+                resultModel.Data = result;
+            }
+
+            return resultModel;
+        }
+
         #region notification
 
         private async Task<ResultModel<bool>> NewTeacherNotification(TeachingStaff teacher, string email)
@@ -966,6 +986,8 @@ namespace Auth.Core.Services.Users
 
             return new ResultModel<bool>(true, "Success");
         }
+
+       
 
         #endregion
 

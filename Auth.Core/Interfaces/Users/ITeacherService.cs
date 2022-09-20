@@ -22,5 +22,6 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<byte[]>> GetTeachersExcelSheet();
         Task<ResultModel<bool>> AddBulkTeacher(IFormFile excelfile);
         Task<ResultModel<ExportPayloadVM>> GetAllTeacherDataExcel(StaffTypeVM model);
+        Task<ResultModel<TeacherVMDetails>> GetTeacherIdByUserId(long userId);
     }
 }
