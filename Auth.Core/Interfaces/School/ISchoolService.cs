@@ -29,5 +29,6 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<string>> CheckForSchoolWithExpiredSubcription();
         Task<ResultModel<string>> NotifySubcriptionExpirationDateToAdmin(long schoolId);
         Task<ResultModel<userCount>> TotalUsersOnPlatform();
+        Task<ResultModel<byte[]>> ExportSchoolSubscriptionDetails();
     }
 }

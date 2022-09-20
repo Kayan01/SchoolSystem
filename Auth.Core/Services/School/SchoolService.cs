@@ -27,6 +27,8 @@ using Shared.Extensions;
 using Microsoft.Data.SqlClient;
 using System;
 using Auth.Core.Models.Users;
+using ClosedXML.Excel;
+using System.IO;
 
 namespace Auth.Core.Services
 {
@@ -41,6 +43,7 @@ namespace Auth.Core.Services
         private readonly IAuthUserManagement _authUserManagement;
         private readonly IRepository<SchoolSubscription, long> _subscriptionRepo;
         private readonly IRepository<Parent, long> _parentRepo;
+        private readonly IRepository<SubscriptionInvoice, long> _invoiceRepo;
 
         public SchoolService(
         IRepository<School, long> schoolRepo,
@@ -51,7 +54,8 @@ namespace Auth.Core.Services
         IAuthUserManagement authUserManagement,
         UserManager<User> userManager,
         IRepository<SchoolSubscription, long> subscriptionRepo,
-        IRepository<Parent, long> parentRepo)
+        IRepository<Parent, long> parentRepo,
+        IRepository<SubscriptionInvoice, long> invoiceRepo)
         {
             _unitOfWork = unitOfWork;
             _schoolRepo = schoolRepo;
@@ -62,6 +66,7 @@ namespace Auth.Core.Services
             _authUserManagement = authUserManagement;
             _subscriptionRepo = subscriptionRepo;
             _parentRepo = parentRepo;
+            _invoiceRepo = invoiceRepo;
         }
 
         public async Task<ResultModel<bool>> CheckSchoolDomain(CreateSchoolVM model)
@@ -969,6 +974,66 @@ namespace Auth.Core.Services
 
             resultModel.Data = data;
 
+            return resultModel;
+        }
+
+        public async Task<ResultModel<byte[]>> ExportSchoolSubscriptionDetails()
+        {
+            var resultModel = new ResultModel<byte[]>();
+
+            var query = await _subscriptionRepo.GetAll()
+                .Include(x => x.School)
+                .ToListAsync();
+
+            try
+            {
+                using (var workbook = new XLWorkbook())
+                {
+                    var worksheet = workbook.Worksheets.Add("SchoolSubscriptionSheet");
+                    
+                    for (int i = 0; i < query.Count; i++)
+                    {
+                        var headFormat = worksheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold(true);
+                        headFormat.Style.Font.SetFontColor(XLColor.BallBlue);
+                        headFormat.Style.Alignment.SetIndent(5);
+                        headFormat.WorksheetRow().Height = 12; ;
+                    }
+
+                    var currentRow = 1;
+
+                    worksheet.Cell(1, 1).Value = "School Name";
+                    worksheet.Cell(1, 2).Value = "SchoolId";
+                    worksheet.Cell(1, 3).Value = "Subscription StartDate";
+                    worksheet.Cell(1, 4).Value = "Subscription EndDate";
+                    worksheet.Cell(1, 5).Value = "Expected Students";
+                    worksheet.Cell(1, 6).Value = "Price PerStudent";
+
+                    foreach (var data in query)
+                    {
+                        currentRow += 1;
+                        worksheet.Cell(currentRow, 1).Value = $"{data.School.Name}";
+                        worksheet.Cell(currentRow, 2).Value = $"{data.SchoolId}";
+                        worksheet.Cell(currentRow, 3).Value = $"{data.StartDate}";
+                        worksheet.Cell(currentRow, 4).Value = $"{data.EndDate}";
+                        worksheet.Cell(currentRow, 5).Value = $"{data.ExpectedNumberOfStudent}";
+                        worksheet.Cell(currentRow, 6).Value = $"{data.PricePerStudent}";
+                    }
+
+                    using(var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        resultModel.Data = content;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                resultModel.AddError($"Exception Occured : {ex.Message}");
+                return resultModel;
+            }
             return resultModel;
         }
     }

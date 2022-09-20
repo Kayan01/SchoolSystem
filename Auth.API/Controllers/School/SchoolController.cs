@@ -316,5 +316,33 @@ namespace UserManagement.API.Controllers
                 return HandleError(ex);
             }
         }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> ExportSchoolScrib()
+        {
+            var payload = new ExportPayloadVM();
+            try
+            {
+                var res = await _schoolService.ExportSchoolSubscriptionDetails();
+                if (res.Data != null)
+                {
+                    payload = new ExportPayloadVM
+                    {
+                        FileName = "SubscriptionDetails",
+                        Base64String = Convert.ToBase64String(res.Data),
+                    };
+                }
+
+                return ApiResponse(data: payload, message: "Export Successful",totalCount: res.TotalCount);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+
+        }
+
     }
 }
