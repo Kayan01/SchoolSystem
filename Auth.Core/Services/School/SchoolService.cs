@@ -26,6 +26,7 @@ using System.Text;
 using Shared.Extensions;
 using Microsoft.Data.SqlClient;
 using System;
+using Auth.Core.Models.Users;
 
 namespace Auth.Core.Services
 {
@@ -39,6 +40,7 @@ namespace Auth.Core.Services
         private readonly IPublishService _publishService;
         private readonly IAuthUserManagement _authUserManagement;
         private readonly IRepository<SchoolSubscription, long> _subscriptionRepo;
+        private readonly IRepository<Parent, long> _parentRepo;
 
         public SchoolService(
         IRepository<School, long> schoolRepo,
@@ -48,7 +50,8 @@ namespace Auth.Core.Services
         IRepository<SchoolGroup, long> schoolGroupRepo,
         IAuthUserManagement authUserManagement,
         UserManager<User> userManager,
-        IRepository<SchoolSubscription, long> subscriptionRepo)
+        IRepository<SchoolSubscription, long> subscriptionRepo,
+        IRepository<Parent, long> parentRepo)
         {
             _unitOfWork = unitOfWork;
             _schoolRepo = schoolRepo;
@@ -58,6 +61,7 @@ namespace Auth.Core.Services
             _schoolGroupRepo = schoolGroupRepo;
             _authUserManagement = authUserManagement;
             _subscriptionRepo = subscriptionRepo;
+            _parentRepo = parentRepo;
         }
 
         public async Task<ResultModel<bool>> CheckSchoolDomain(CreateSchoolVM model)
@@ -917,10 +921,11 @@ namespace Auth.Core.Services
         {
             var resultModel = new ResultModel<userCount>();
 
-            var totalUsers = 0;
+            long totalUsers = 0;
             var totalStaffs = 0;
             var totalStudents = 0;
             var totalTeachers = 0;
+            
 
 
             var firstQuery = _schoolRepo.GetAll();
@@ -934,16 +939,19 @@ namespace Auth.Core.Services
                 {
                     x.Id,
                     x.Name,
-                    staffCount = x.Staffs.Count,
+                    staffCount = x.Staffs.Where(x => x.StaffType == StaffType.NonTeachingStaff).Count(),
                     studentCount = x.Students.Count,
-                    teacherCount = x.TeachingStaffs.Count,
+                    teacherCount = x.Staffs.Where(x => x.StaffType == StaffType.TeachingStaff).Count(),
                     x.IsActive,
                     x.SchoolGroupId
                 });
 
+            var parents = await _parentRepo.GetAll().Where(x => x.IsDeleted == false).LongCountAsync();
+            
+
             foreach (var school in query)
             {
-                totalUsers += school.staffCount + school.studentCount;
+                totalUsers += school.staffCount + school.studentCount + totalTeachers;
                 totalStudents += school.studentCount;
                 totalStaffs += school.staffCount;
                 totalTeachers += school.teacherCount;
@@ -954,7 +962,9 @@ namespace Auth.Core.Services
                 TotalTeachers = totalTeachers,
                 TotalStaffs = totalStaffs,
                 TotalStudents = totalStudents,
-                TotalUsers = totalUsers
+                TotalUsers = totalUsers + parents,
+                TotalParents = parents
+                
             };
 
             resultModel.Data = data;

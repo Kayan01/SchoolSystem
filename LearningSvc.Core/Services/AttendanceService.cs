@@ -510,6 +510,78 @@ namespace LearningSvc.Core.Services
             return resultModel;
         }
 
+        public async Task<ResultModel<List<StudentAttendanceReportVM>>> studentSubjectAttendanceView(AttendanceRequestVM model)
+        {
+            var resultModel =  new ResultModel<List<StudentAttendanceReportVM>>();
+            var groupedData = new List<StudentAttendanceReportVM>();
+            var storeIds = new List<long>();
+
+            var query = await _subjectAttendanceRepo.GetAll()
+                .Include(x => x.Student)
+                .Include(x => x.SchoolClassSubject.Subject)
+                .ToListAsync();
+
+            if (model.AttendanceStartDate != null && model.AttendanceEndDate != null)
+            {
+                query = query.Where(x => x.AttendanceDate >= model.AttendanceStartDate && x.AttendanceDate <= model.AttendanceEndDate).ToList();
+                if (query == null)
+                {
+                    resultModel.Message = $"No attendance record Specified with start date {model.AttendanceStartDate} and end-date of {model.AttendanceEndDate}";
+                    return resultModel;
+                }
+            }
+
+            if (model.SubjectId != null)
+            {
+                query = query.Where(x => x.SubjectId == model.SubjectId).ToList();
+            }
+
+            if (query == null)
+            {
+                resultModel.Data = null;
+                resultModel.Message = $"No attendance record found for subject with Id {model.ClassId}";
+                return resultModel;
+            }
+            foreach (var student in query)
+            {
+                var getData = query.Where(x => x.StudentId == student.Student.Id).ToList();
+                if (model.ClassId != null)
+                {
+                    getData = query.Where(x => x.SubjectId == model.SubjectId).ToList();
+                }
+
+                var data = getData.GroupBy(x => x.StudentId).Select(x => new StudentAttendanceReportVM
+                {
+                    StudentId = x.Key,
+                    FullName = student.Student.FirstName + " " + student.Student.LastName,
+                    SubjectName = student.SchoolClassSubject.Subject.Name,
+                    TotalNumberOfTimePresent = getData.Count(x => x.AttendanceStatus == AttendanceState.Present),
+                    TotalNumberOfTimeAbsent = getData.Count(x => x.AttendanceStatus == AttendanceState.Absent)
+                }).ToList();
+
+                bool res = false;
+
+                if (storeIds.Count > 0)
+                {
+                    res = storeIds.Contains(student.StudentId);
+                }
+
+                if (res == false)
+                {
+                    foreach (var dataItem in data)
+                    {
+                        groupedData.Add(dataItem);
+                    }
+                }
+                storeIds.Add(student.StudentId);
+            }
+
+            resultModel.Data = groupedData;
+            resultModel.TotalCount = groupedData.Count;
+
+            return resultModel;
+        }
+
         public async Task<ResultModel<byte[]>> ExportAttendanceDataToExcel(List<StudentAttendanceReportVM> model)
         {
             var resultModel = new ResultModel<byte[]>();
@@ -525,11 +597,11 @@ namespace LearningSvc.Core.Services
                 {
                     var workSheet = workbook.Worksheets.Add("AttendanceSheet");
 
-                    for (int i = 1; i <= 5; i++)
+                    for (int i = 1; i <= 6; i++)
                     {
                         var headFormat = workSheet.Cell(1, i);
                         headFormat.Style.Font.SetBold();
-                        headFormat.WorksheetRow().Height = 5;
+                        headFormat.WorksheetRow().Height = 12;
                     }
 
                     var currentRow = 1;
@@ -539,6 +611,7 @@ namespace LearningSvc.Core.Services
                     workSheet.Cell(1, 3).Value = "StudentId";
                     workSheet.Cell(1, 4).Value = "NoOfTimePresent";
                     workSheet.Cell(1, 5).Value = "NoOfTimeAbsent";
+                    workSheet.Cell(1, 6).Value = "Subject Name";
 
                     foreach (var data in model)
                     {
@@ -548,6 +621,7 @@ namespace LearningSvc.Core.Services
                         workSheet.Cell(currentRow, 3).Value = $"{data.StudentId}";
                         workSheet.Cell(currentRow, 4).Value = $"{data.TotalNumberOfTimePresent}";
                         workSheet.Cell(currentRow, 5).Value = $"{data.TotalNumberOfTimeAbsent}";
+                        workSheet.Cell(currentRow, 6).Value = $"{data.SubjectName}";
                     }
 
                     using (var stream = new MemoryStream())

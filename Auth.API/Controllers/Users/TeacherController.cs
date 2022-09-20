@@ -239,5 +239,24 @@ namespace Auth.API.Controllers.Users
             }
         }
 
+        [HttpGet("{userId}")]
+        [ProducesResponseType(typeof(ApiResponse<TeacherVMDetails>), 200)]
+        public async Task<IActionResult> GetTeacherDetailsByUserId(long userId)
+        {
+            try
+            {
+                var result = await _teacherService.GetTeacherIdByUserId(userId);
+
+                if (result.HasError)
+                    return ApiResponse<TeacherVMDetails>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<TeacherVMDetails>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
     }
 }
