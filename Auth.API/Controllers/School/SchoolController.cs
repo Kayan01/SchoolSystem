@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.School;
+using Auth.Core.ViewModels.Subscription;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -333,8 +334,70 @@ namespace UserManagement.API.Controllers
                         Base64String = Convert.ToBase64String(res.Data),
                     };
                 }
-
                 return ApiResponse(data: payload, message: "Export Successful",totalCount: res.TotalCount);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+
+        }
+
+        [HttpGet("{invoiceStatus}")]
+        [ProducesResponseType(typeof(ApiResponse<List<GetInvoiceDetails>>), 200)]
+        public async Task<IActionResult> GetSchoolInvoiceReportView(int invoiceStatus)
+        {
+            try
+            {
+
+                var result = await _schoolService.GetSchoolInvoiceReport(invoiceStatus);
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<object>(data: result.Data, message: result.Message, codes: ApiResponseCodes.OK, totalCount: result.TotalCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> InvoiceExcelReport(int invoiceStatus)
+        {
+            var result = new ResultModel<ExportPayloadVM>();
+            try
+            {
+                var res = await _schoolService.GetSchoolInvoiceReport(invoiceStatus);
+                if (res.Data != null)
+                {
+                   result = await _schoolService.ExportSchoolInvoiceReport(res.Data);
+                }
+                return ApiResponse(data: result.Data, message: "Export Successful", totalCount: result.TotalCount);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> InvoicePdfReport(int invoiceStatus)
+        {
+            var result = new ResultModel<ExportPayloadVM>();
+            try
+            {
+                var res = await _schoolService.GetSchoolInvoiceReport(invoiceStatus);
+                if (res.Data != null)
+                {
+                    result = await _schoolService.ExportSchoolInvoicePdf(res.Data);
+                }
+                return ApiResponse(data: result.Data, message: "Export Successful", totalCount: result.TotalCount);
             }
             catch (Exception ex)
             {

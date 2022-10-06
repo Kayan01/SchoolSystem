@@ -1,4 +1,5 @@
-﻿using Auth.Core.ViewModels;
+﻿using Auth.Core.Models;
+using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Staff;
 using Microsoft.AspNetCore.Http;
 using Shared.Pagination;
@@ -21,7 +22,9 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<bool>> DeleteTeacher(long userId);
         Task<ResultModel<byte[]>> GetTeachersExcelSheet();
         Task<ResultModel<bool>> AddBulkTeacher(IFormFile excelfile);
-        Task<ResultModel<ExportPayloadVM>> GetAllTeacherDataExcel(StaffTypeVM model);
+        Task<ResultModel<List<Staff>>> GetAllTeacherData(StaffTypeVM model);
         Task<ResultModel<TeacherVMDetails>> GetTeacherIdByUserId(long userId);
+        Task<ResultModel<ExportPayloadVM>> ExportTeacherDataPDF(List<Staff> model);
+        Task<ResultModel<ExportPayloadVM>> ExportTeacherDataExcel(List<Staff> model);
     }
 }

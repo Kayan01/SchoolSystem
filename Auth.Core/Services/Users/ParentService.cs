@@ -1,4 +1,5 @@
-﻿using Auth.Core.Interfaces.Setup;
+﻿using ArrayToPdf;
+using Auth.Core.Interfaces.Setup;
 using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
 using Auth.Core.Models.Contact;
@@ -27,6 +28,7 @@ using Shared.PubSub;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -787,9 +789,9 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<ExportPayloadVM>> ExportParentInSchoolData(long schoolId)
+        public async Task<ResultModel<List<ParentListVM>>> ParentInSchoolData(long schoolId)
         {
-            var resultModel = new ResultModel<ExportPayloadVM>();
+            var resultModel = new ResultModel<List<ParentListVM>>();
 
             var query = await _parentRepo.GetAll().Where(x => x.Students.Any(n => n.TenantId == schoolId))
                 .Select(x => new
@@ -818,66 +820,110 @@ namespace Auth.Core.Services.Users
                     Image = x.Image == null ? null : _documentService.TryGetUploadedFile(x.Image),
                 }).ToList();
 
-                try
+                resultModel.Data = parents;
+              }
+
+            return resultModel;
+        }
+
+
+        public async Task<ResultModel<ExportPayloadVM>> ExportParentDetailsExcel(List<ParentListVM> model)
+        {
+            var resultModel = new ResultModel<ExportPayloadVM>();
+
+            try
+            {
+                using (var workbook = new XLWorkbook())
                 {
-                    using (var workbook = new XLWorkbook())
+                    var workSheet = workbook.Worksheets.Add("AttendanceSheet");
+
+                    for (int i = 1; i <= 7; i++)
                     {
-                        var workSheet = workbook.Worksheets.Add("AttendanceSheet");
-
-                        for (int i = 1; i <= 7; i++)
-                        {
-                            var headFormat = workSheet.Cell(1, i);
-                            headFormat.Style.Font.SetBold();
-                            headFormat.WorksheetRow().Height = 15;
-                        }
-
-                        var currentRow = 1;
-
-                        workSheet.Cell(1, 1).Value = "FULL NAME";
-                        workSheet.Cell(1, 2).Value = "PHONE NUMBER";
-                        workSheet.Cell(1, 3).Value = "EMAIL";
-                        workSheet.Cell(1, 4).Value = "PARENT ID";
-                        workSheet.Cell(1, 5).Value = "PARENT CODE";
-                        workSheet.Cell(1, 6).Value = "STATUS";
-                        workSheet.Cell(1, 7).Value = "ADDRESS";
-
-                        foreach (var data in parents)
-                        {
-                            var parent = await _parentRepo.GetAllIncluding(x => x.User).Where(x => x.Id == data.Id).FirstOrDefaultAsync();
-
-                            currentRow += 1;
-                            workSheet.Cell(currentRow, 1).Value = $"{data.FullName}";
-                            workSheet.Cell(currentRow, 2).Value = $"{data.PhoneNumber}";
-                            workSheet.Cell(currentRow, 3).Value = $"{data.Email}";
-                            workSheet.Cell(currentRow, 4).Value = $"{data.Id}";
-                            workSheet.Cell(currentRow, 5).Value = $"{data.ParentCode}";
-                            workSheet.Cell(currentRow, 6).Value = $"{data.Status}";
-                            workSheet.Cell(currentRow, 7).Value = $"{data.HomeAddress}";
-                        }
-                        var byteData = new byte[0];
-                        using (var stream = new MemoryStream())
-                        {
-                            workbook.SaveAs(stream);
-                            var content = stream.ToArray();
-
-                            byteData = content;
-                        }
-
-                        var payload = new ExportPayloadVM
-                        {
-                            FileName = "StudentData",
-                            Base64String = Convert.ToBase64String(byteData)
-                        };
-
-                        resultModel.Data = payload;
+                        var headFormat = workSheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold();
+                        headFormat.WorksheetRow().Height = 15;
                     }
-                }
-                catch (Exception ex)
-                {
-                    resultModel.AddError($"Exception Occured : {ex.Message}");
-                    return resultModel;
+                    var currentRow = 1;
+
+                    workSheet.Cell(1, 1).Value = "FULL NAME";
+                    workSheet.Cell(1, 2).Value = "PHONE NUMBER";
+                    workSheet.Cell(1, 3).Value = "EMAIL";
+                    workSheet.Cell(1, 4).Value = "PARENT ID";
+                    workSheet.Cell(1, 5).Value = "PARENT CODE";
+                    workSheet.Cell(1, 6).Value = "STATUS";
+                    workSheet.Cell(1, 7).Value = "ADDRESS";
+
+                    foreach (var data in model)
+                    {
+                        var parent = await _parentRepo.GetAllIncluding(x => x.User).Where(x => x.Id == data.Id).FirstOrDefaultAsync();
+
+                        currentRow += 1;
+                        workSheet.Cell(currentRow, 1).Value = $"{data.FullName}";
+                        workSheet.Cell(currentRow, 2).Value = $"{data.PhoneNumber}";
+                        workSheet.Cell(currentRow, 3).Value = $"{data.Email}";
+                        workSheet.Cell(currentRow, 4).Value = $"{data.Id}";
+                        workSheet.Cell(currentRow, 5).Value = $"{data.ParentCode}";
+                        workSheet.Cell(currentRow, 6).Value = $"{data.Status}";
+                        workSheet.Cell(currentRow, 7).Value = $"{data.HomeAddress}";
+                    }
+                    var byteData = new byte[0];
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        byteData = content;
+                    }
+
+                    var payload = new ExportPayloadVM
+                    {
+                        FileName = "StudentData",
+                        Base64String = Convert.ToBase64String(byteData)
+                    };
+
+                    resultModel.Data = payload;
                 }
             }
+            catch (Exception ex)
+            {
+                resultModel.AddError($"Exception Occured : {ex.Message}");
+                return resultModel;
+            }
+
+
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<ExportPayloadVM>> ExportParentDetailsPDF(List<ParentListVM> model)
+        {
+            var resultModel = new ResultModel<ExportPayloadVM>();
+
+            var table = new DataTable("AttendanceReport");
+
+            table.Columns.Add("FULL NAME", typeof(string));
+            table.Columns.Add("PHONE NUMBER", typeof(string));
+            DataColumn className = table.Columns.Add("EMAIL", typeof(string));
+            table.Columns.Add("PARENT ID", typeof(long));
+            table.Columns.Add("PARENT CODE", typeof(string));
+            DataColumn subjectName = table.Columns.Add("ADDRESS", typeof(string));
+
+            foreach (var item in model)
+            {
+                table.Rows.Add(item.FullName, item.PhoneNumber,
+                    item.Email, item.Id,
+                    item.ParentCode, item.HomeAddress);
+            }
+
+            var pdf = table.ToPdf();
+
+            var payload = new ExportPayloadVM
+            {
+                FileName = "ParentData",
+                Base64String = Convert.ToBase64String(pdf)
+            };
+
+            resultModel.Data = payload;
 
             return resultModel;
         }

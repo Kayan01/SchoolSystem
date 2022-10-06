@@ -29,6 +29,10 @@ using System;
 using Auth.Core.Models.Users;
 using ClosedXML.Excel;
 using System.IO;
+using Auth.Core.ViewModels.Subscription;
+using Auth.Core.Enumerations;
+using System.Data;
+using ArrayToPdf;
 
 namespace Auth.Core.Services
 {
@@ -1034,6 +1038,172 @@ namespace Auth.Core.Services
                 resultModel.AddError($"Exception Occured : {ex.Message}");
                 return resultModel;
             }
+            return resultModel;
+        }
+
+        public async Task<ResultModel<List<GetInvoiceDetails>>> GetSchoolInvoiceReport(int invoiceStatus)
+        {
+            var resultModel = new ResultModel<List<GetInvoiceDetails>>();
+            var invoiceList = new List<GetInvoiceDetails>();
+
+            var query = await _invoiceRepo.GetAllIncluding(x => x.School).ToListAsync();
+
+            if (invoiceStatus == 1)
+            {
+                query = query.Where(x => x.Paid == true).ToList();
+            }
+            else if(invoiceStatus == 0)
+            {
+                query = query.Where(x => x.Paid == false).ToList();
+            }
+            else
+            {
+                resultModel.AddError("Wrong inovice Status supplied");
+                return resultModel;
+            }
+
+            if (query == null)
+            {
+                return resultModel;
+            }
+
+            var data = new GetInvoiceDetails();
+
+            foreach(var schoolInvoice in query)
+            {
+                data = new GetInvoiceDetails
+                {
+                    SchoolName = schoolInvoice.School.Name,
+                    DueDate = schoolInvoice.DueDate,
+                    PaidDate = schoolInvoice.PaidDate,
+                    ExpectedStudent = schoolInvoice.NumberOfStudent,
+                    Paid = schoolInvoice.Paid
+                };
+                invoiceList.Add(data);
+            }
+
+            resultModel.TotalCount = query.Count;
+            resultModel.Data = invoiceList;
+            return resultModel;
+        }
+
+        public async Task<ResultModel<ExportPayloadVM>> ExportSchoolInvoiceReport(List<GetInvoiceDetails> model)
+        {
+            var resultModel = new ResultModel<ExportPayloadVM>();
+
+            if (model == null)
+            {
+                return resultModel;
+            }
+
+            try
+            {
+                using (var workbook = new XLWorkbook())
+                {
+                    var workSheet = workbook.Worksheets.Add("InvoiceReport");
+
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        var headFormat = workSheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold();
+                        headFormat.WorksheetRow().Height = 11;
+                    }
+
+                    var cuurentRow = 1;
+
+                    workSheet.Cell(1, 1).Value = "SchoolName";
+                    workSheet.Cell(1, 2).Value = "ExpectedStudent";
+                    workSheet.Cell(1, 3).Value = "PaidDate";
+                    workSheet.Cell(1, 4).Value = "DueDate";
+                    workSheet.Cell(1, 5).Value = "Paid";
+
+                    foreach (var data in model)
+                    {
+                        cuurentRow +=1;
+                        workSheet.Cell(cuurentRow, 1).Value = data.SchoolName;
+                        workSheet.Cell(cuurentRow, 2).Value = data.ExpectedStudent;
+                        workSheet.Cell(cuurentRow, 5).Value = data.Paid;
+
+                        if (data.Paid == false)
+                        {
+                            workSheet.Cell(cuurentRow, 4).Value = data.DueDate;
+                        }
+                        else
+                        {
+                            workSheet.Cell(cuurentRow, 3).Value = data.PaidDate;
+                        }
+                    }
+                    var byteData = new byte[0];
+                    
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        byteData = content;
+                    }
+                    var payload = new ExportPayloadVM
+                    {
+                        FileName = "InvoiceReport",
+                        Base64String = Convert.ToBase64String(byteData)
+                    };
+
+                    resultModel.Data = payload;
+                    resultModel.TotalCount = model.Count;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                resultModel.AddError($"Exception Occured : {ex.Message}");
+                return resultModel;
+            }
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<ExportPayloadVM>> ExportSchoolInvoicePdf(List<GetInvoiceDetails> model)
+        {
+            var status = false;
+            var resultModel = new ResultModel<ExportPayloadVM>();
+
+            var table = new DataTable("AttendanceReport");
+
+            table.Columns.Add("SCHOOLNAME", typeof(string));
+            DataColumn dueDate = table.Columns.Add("DUE_DATE", typeof(DateTime));
+            DataColumn paidDate = table.Columns.Add("PAID_DATE", typeof(DateTime));
+            table.Columns.Add("EXP_STUDENT", typeof(long));
+            table.Columns.Add("PAID", typeof(bool));
+            
+
+            foreach (var item in model)
+            {
+                table.Rows.Add(item.SchoolName,item.DueDate,
+                    item.PaidDate,item.ExpectedStudent,
+                    item.Paid);
+
+                status = item.Paid;
+            }
+            if (status == true)
+            {
+                table.Columns.Remove(dueDate);
+            }
+            else
+            {
+                table.Columns.Remove(paidDate);
+            }
+
+            var pdf = table.ToPdf();
+
+            var payload = new ExportPayloadVM
+            {
+                FileName = "StudentData",
+                Base64String = Convert.ToBase64String(pdf)
+            };
+
+            resultModel.Data = payload;
+
+
             return resultModel;
         }
     }

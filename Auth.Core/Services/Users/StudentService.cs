@@ -1,4 +1,5 @@
-﻿using Auth.Core.Context;
+﻿using ArrayToPdf;
+using Auth.Core.Context;
 using Auth.Core.Interfaces.Setup;
 using Auth.Core.Models;
 using Auth.Core.Models.Alumni;
@@ -28,6 +29,7 @@ using Shared.Utils;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -994,9 +996,9 @@ namespace Auth.Core.Services
 
         }
 
-        public async Task<ResultModel<ExportPayloadVM>> ExportStudentData(StudentExportVM model)
+        public async Task<ResultModel<List<Student>>> ExportStudentData(StudentExportVM model)
         {
-            var resultModel = new ResultModel<ExportPayloadVM>();
+            var resultModel = new ResultModel<List<Student>>();
 
             var query = await _studentRepo.GetAllIncluding(x => x.Class)
                 .Include(x => x.User)
@@ -1017,11 +1019,19 @@ namespace Auth.Core.Services
                 return resultModel;
             }
 
+            resultModel.Data = query;
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<ExportPayloadVM>> ExportStudentDataExcel(List<Student> model)
+        {
+            var resultModel = new ResultModel<ExportPayloadVM>();
             try
             {
                 using (var workbook = new XLWorkbook())
                 {
-                    var workSheet = workbook.Worksheets.Add("AttendanceSheet");
+                    var workSheet = workbook.Worksheets.Add("Student Data Excel");
 
                     for (int i = 1; i <= 11; i++)
                     {
@@ -1035,17 +1045,16 @@ namespace Auth.Core.Services
                     workSheet.Cell(1, 1).Value = "FirstName";
                     workSheet.Cell(1, 2).Value = "LastName";
                     workSheet.Cell(1, 3).Value = "ClassName";
-                    workSheet.Cell(1, 4).Value = "StudentId";
-                    workSheet.Cell(1, 5).Value = "Address";
-                    workSheet.Cell(1, 6).Value = "State";
-                    workSheet.Cell(1, 7).Value = "Country";
-                    workSheet.Cell(1, 8).Value = "ParentFullName";
-                    workSheet.Cell(1, 9).Value = "MedicalBloodGroup";
-                    workSheet.Cell(1, 10).Value = "MedicalGenotype";
-                    workSheet.Cell(1, 11).Value = "Religion";
+                    workSheet.Cell(1, 4).Value = "Address";
+                    workSheet.Cell(1, 5).Value = "State";
+                    workSheet.Cell(1, 6).Value = "Country";
+                    workSheet.Cell(1, 7).Value = "ParentFullName";
+                    workSheet.Cell(1, 8).Value = "MedicalBloodGroup";
+                    workSheet.Cell(1, 9).Value = "MedicalGenotype";
+                    workSheet.Cell(1, 10).Value = "Religion";
 
 
-                    foreach (var data in query)
+                    foreach (var data in model)
                     {
                         var parent = await _parentRepo.GetAllIncluding(x => x.User).Where(x => x.Id == data.Parent.Id).FirstOrDefaultAsync();
 
@@ -1053,14 +1062,13 @@ namespace Auth.Core.Services
                         workSheet.Cell(currentRow, 1).Value = $"{data.User.FirstName}";
                         workSheet.Cell(currentRow, 2).Value = $"{data.User.LastName}";
                         workSheet.Cell(currentRow, 3).Value = $"{data.Class.Name} {data.Class.ClassArm}";
-                        workSheet.Cell(currentRow, 4).Value = $"{data.Id}";
-                        workSheet.Cell(currentRow, 5).Value = $"{data.Address}";
-                        workSheet.Cell(currentRow, 6).Value = $"{data.State}";
-                        workSheet.Cell(currentRow, 7).Value = $"{data.Country}";
-                        workSheet.Cell(currentRow, 8).Value = $"{parent.User.FirstName} {parent.User.LastName}";
-                        workSheet.Cell(currentRow, 9).Value = $"{data.MedicalDetail.BloodGroup}";
-                        workSheet.Cell(currentRow, 10).Value = $"{data.MedicalDetail.Genotype}";
-                        workSheet.Cell(currentRow, 11).Value = $"{data.Religion}";
+                        workSheet.Cell(currentRow, 4).Value = $"{data.Address}";
+                        workSheet.Cell(currentRow, 5).Value = $"{data.State}";
+                        workSheet.Cell(currentRow, 6).Value = $"{data.Country}";
+                        workSheet.Cell(currentRow, 7).Value = $"{parent.User.FirstName} {parent.User.LastName}";
+                        workSheet.Cell(currentRow, 8).Value = $"{data.MedicalDetail.BloodGroup}";
+                        workSheet.Cell(currentRow, 9).Value = $"{data.MedicalDetail.Genotype}";
+                        workSheet.Cell(currentRow, 10).Value = $"{data.Religion}";
                     }
                     var byteData = new byte[0];
                     using (var stream = new MemoryStream())
@@ -1086,9 +1094,46 @@ namespace Auth.Core.Services
                 return resultModel;
             }
 
+
             return resultModel;
         }
 
+        public async Task<ResultModel<ExportPayloadVM>> ExportStudentDataPDF(List<Student> model)
+        {
+            var resultModel = new ResultModel<ExportPayloadVM>();
+
+            var table = new DataTable("Student Data PDF");
+
+            table.Columns.Add("FIRST_NAME", typeof(string));
+            table.Columns.Add("LAST_NAME", typeof(string));
+            DataColumn className = table.Columns.Add("CLASS_NAME", typeof(string));
+            table.Columns.Add("ADDRESS", typeof(string));
+            DataColumn subjectName = table.Columns.Add("STATE", typeof(string));
+            table.Columns.Add("COUNTRY", typeof(string));
+            table.Columns.Add("MEDICAL_BG", typeof(string));
+            table.Columns.Add("GENOTYPE", typeof(string));
+            table.Columns.Add("RELIGION", typeof(string));
+
+            foreach (var item in model)
+            {
+                table.Rows.Add(item.User.FirstName, item.User.LastName,
+                    item.Class.Name + " " + item.Class.ClassArm,
+                    item.Address, item.State, item.Country,item.MedicalDetail.BloodGroup,
+                    item.MedicalDetail.Genotype,item.Religion);
+            }
+
+            var pdf = table.ToPdf();
+
+            var payload = new ExportPayloadVM
+            {
+                FileName = "StudentData",
+                Base64String = Convert.ToBase64String(pdf)
+            };
+
+            resultModel.Data = payload;
+
+            return resultModel;
+        }
 
         public async Task<ResultModel<PaginatedModel<StudentVMs>>> GetStudentByClass(StudentExportVM classVM, QueryModel model)
         {

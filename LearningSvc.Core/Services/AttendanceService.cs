@@ -15,6 +15,8 @@ using Shared.PubSub;
 using static Shared.Utils.CoreConstants;
 using ClosedXML.Excel;
 using System.IO;
+using System.Data;
+using ArrayToPdf;
 
 namespace LearningSvc.Core.Services
 {
@@ -523,7 +525,10 @@ namespace LearningSvc.Core.Services
 
             if (model.AttendanceStartDate != null && model.AttendanceEndDate != null)
             {
-                query = query.Where(x => x.AttendanceDate >= model.AttendanceStartDate && x.AttendanceDate <= model.AttendanceEndDate).ToList();
+                query = query.Where(x => x.AttendanceDate.Date
+                >= model.AttendanceStartDate.Value.Date &&
+                x.AttendanceDate.Date <= 
+                model.AttendanceEndDate.Value.Date).ToList();
                 if (query == null)
                 {
                     resultModel.Message = $"No attendance record Specified with start date {model.AttendanceStartDate} and end-date of {model.AttendanceEndDate}";
@@ -585,6 +590,8 @@ namespace LearningSvc.Core.Services
         public async Task<ResultModel<byte[]>> ExportAttendanceDataToExcel(List<StudentAttendanceReportVM> model)
         {
             var resultModel = new ResultModel<byte[]>();
+            
+            string isNullColumn = "";
 
             if (model == null)
             {
@@ -607,11 +614,11 @@ namespace LearningSvc.Core.Services
                     var currentRow = 1;
 
                     workSheet.Cell(1, 1).Value = "FullName";
-                    workSheet.Cell(1, 2).Value = "ClassName";
+                    object className = workSheet.Cell(1, 2).Value = "ClassName";
                     workSheet.Cell(1, 3).Value = "StudentId";
                     workSheet.Cell(1, 4).Value = "NoOfTimePresent";
                     workSheet.Cell(1, 5).Value = "NoOfTimeAbsent";
-                    workSheet.Cell(1, 6).Value = "Subject Name";
+                    object subject = workSheet.Cell(1, 6).Value = "Subject Name";
 
                     foreach (var data in model)
                     {
@@ -622,6 +629,24 @@ namespace LearningSvc.Core.Services
                         workSheet.Cell(currentRow, 4).Value = $"{data.TotalNumberOfTimePresent}";
                         workSheet.Cell(currentRow, 5).Value = $"{data.TotalNumberOfTimeAbsent}";
                         workSheet.Cell(currentRow, 6).Value = $"{data.SubjectName}";
+
+                        if (data.ClassName == null)
+                        {
+                            isNullColumn = "ClassName";
+                        }
+                        else if (data.SubjectName == null)
+                        {
+                            isNullColumn = "SubjectName";
+                        }
+                    }
+
+                    if (isNullColumn == "ClassName")
+                    {
+                        workSheet.Column(2).Delete();
+                    }
+                    else if (isNullColumn == "SubjectName")
+                    {
+                        workSheet.Column(6).Delete();
                     }
 
                     using (var stream = new MemoryStream())
@@ -632,12 +657,60 @@ namespace LearningSvc.Core.Services
                         resultModel.Data = content;
                     }
                 }
+
+
             }
             catch (Exception ex)
             {
                 resultModel.AddError($"Exception Occured : {ex.Message}");
                 return resultModel;
             }
+            return resultModel;
+        }
+
+        public async Task<ResultModel<byte[]>> ExportAttendanceDataToPdf(List<StudentAttendanceReportVM> model)
+        {
+            var resultModel = new ResultModel<byte[]>();
+
+            string isNullColumn = "";
+
+            var table = new DataTable("AttendanceReport");
+
+            table.Columns.Add("StudentId", typeof(long));
+            table.Columns.Add("FullName", typeof(string));
+            DataColumn className = table.Columns.Add("ClassName", typeof(string));
+            table.Columns.Add("TotalNumberOfTimePresent", typeof(double));
+            table.Columns.Add("TotalNumberOfTimeAbsent", typeof(long));
+            DataColumn subjectName = table.Columns.Add("SubjectName", typeof(string));
+            
+            foreach (var item in model)
+            {
+                table.Rows.Add(item.StudentId, item.FullName,
+                    item.ClassName, item.TotalNumberOfTimePresent,
+                    item.TotalNumberOfTimeAbsent, item.SubjectName);
+
+                if (item.ClassName == null)
+                {
+                    isNullColumn = "ClassName";
+                }
+                else if(item.SubjectName == null)
+                {
+                    isNullColumn = "SubjectName";
+                }
+            }
+
+            if (isNullColumn == "ClassName")
+            {
+                table.Columns.Remove(className);
+            }
+            else if(isNullColumn == "SubjectName")
+            {
+                table.Columns.Remove(subjectName);
+            }
+            
+            var pdf = table.ToPdf();
+            resultModel.Data = pdf;
+
             return resultModel;
         }
 

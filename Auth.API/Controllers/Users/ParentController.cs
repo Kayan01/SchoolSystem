@@ -340,9 +340,39 @@ namespace Auth.API.Controllers.Users
         [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
         public async Task<IActionResult> GetParentDataInExcel(long schoolid)
         {
+            var result = new ResultModel<ExportPayloadVM>();
+
             try
             {
-                var result = await _parentService.ExportParentInSchoolData(schoolid);
+                var parentData = await _parentService.ParentInSchoolData(schoolid);
+                if (!(parentData == null))
+                {
+                    result = await _parentService.ExportParentDetailsExcel(parentData.Data);
+                }
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.TotalCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> GetParentDataInPDF(long schoolid)
+        {
+            var result = new ResultModel<ExportPayloadVM>();
+
+            try
+            {
+                var parentData = await _parentService.ParentInSchoolData(schoolid);
+                if (!(parentData == null))
+                {
+                    result = await _parentService.ExportParentDetailsPDF(parentData.Data);
+                }
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
