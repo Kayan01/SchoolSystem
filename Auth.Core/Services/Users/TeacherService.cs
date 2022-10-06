@@ -1,4 +1,5 @@
-﻿using Auth.Core.Context;
+﻿using ArrayToPdf;
+using Auth.Core.Context;
 using Auth.Core.Interfaces.Setup;
 using Auth.Core.Interfaces.Users;
 using Auth.Core.Models;
@@ -31,6 +32,7 @@ using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -851,9 +853,9 @@ namespace Auth.Core.Services.Users
             return result;
         }
 
-        public async Task<ResultModel<ExportPayloadVM>> GetAllTeacherDataExcel(StaffTypeVM model)
+        public async Task<ResultModel<List<Staff>>> GetAllTeacherData(StaffTypeVM model)
         {
-            var resultModel = new ResultModel<ExportPayloadVM>();
+            var resultModel = new ResultModel<List<Staff>>();
 
             var query = await _staffRepo.GetAllIncluding(x => x.User)
                 .Where(x => x.StaffType == model.Staff)
@@ -866,6 +868,14 @@ namespace Auth.Core.Services.Users
                 return resultModel;
             }
 
+            resultModel.Data = query;
+           
+            return resultModel;
+        }
+
+        public async Task<ResultModel<ExportPayloadVM>> ExportTeacherDataExcel(List<Staff> model)
+        {
+            var resultModel = new ResultModel<ExportPayloadVM>();
             try
             {
                 using (var workbook = new XLWorkbook())
@@ -883,31 +893,29 @@ namespace Auth.Core.Services.Users
 
                     workSheet.Cell(1, 1).Value = "FirstName";
                     workSheet.Cell(1, 2).Value = "LastName";
-                    workSheet.Cell(1, 3).Value = "TeacherId";
-                    workSheet.Cell(1, 4).Value = "Address";
-                    workSheet.Cell(1, 5).Value = "State";
-                    workSheet.Cell(1, 6).Value = "Country";
-                    workSheet.Cell(1, 7).Value = "BloodGroup";
-                    workSheet.Cell(1, 8).Value = "Religion";
-                    workSheet.Cell(1, 9).Value = "EmploymentDate";
-                    workSheet.Cell(1, 10).Value = "RegNumber";
-                    workSheet.Cell(1, 11).Value = "IsActive";
+                    workSheet.Cell(1, 3).Value = "Address";
+                    workSheet.Cell(1, 4).Value = "State";
+                    workSheet.Cell(1, 5).Value = "Country";
+                    workSheet.Cell(1, 6).Value = "BloodGroup";
+                    workSheet.Cell(1, 7).Value = "Religion";
+                    workSheet.Cell(1, 8).Value = "EmploymentDate";
+                    workSheet.Cell(1, 9).Value = "RegNumber";
+                    workSheet.Cell(1, 10).Value = "IsActive";
 
 
-                    foreach (var data in query)
+                    foreach (var data in model)
                     {
                         currentRow += 1;
                         workSheet.Cell(currentRow, 1).Value = $"{data.User.FirstName}";
                         workSheet.Cell(currentRow, 2).Value = $"{data.User.LastName}";
-                        workSheet.Cell(currentRow, 3).Value = $"{data.Id}";
-                        workSheet.Cell(currentRow, 4).Value = $"{data.Address}";
-                        workSheet.Cell(currentRow, 5).Value = $"{data.State}";
-                        workSheet.Cell(currentRow, 6).Value = $"{data.Country}";
-                        workSheet.Cell(currentRow, 7).Value = $"{data.BloodGroup}";
-                        workSheet.Cell(currentRow, 8).Value = $"{data.Religion}";
-                        workSheet.Cell(currentRow, 9).Value = $"{data.EmploymentDate}";
-                        workSheet.Cell(currentRow, 10).Value = $"{data.RegNumber}";
-                        workSheet.Cell(currentRow, 11).Value = $"{data.IsActive}";
+                        workSheet.Cell(currentRow, 3).Value = $"{data.Address}";
+                        workSheet.Cell(currentRow, 4).Value = $"{data.State}";
+                        workSheet.Cell(currentRow, 5).Value = $"{data.Country}";
+                        workSheet.Cell(currentRow, 6).Value = $"{data.BloodGroup}";
+                        workSheet.Cell(currentRow, 7).Value = $"{data.Religion}";
+                        workSheet.Cell(currentRow, 8).Value = $"{data.EmploymentDate}";
+                        workSheet.Cell(currentRow, 9).Value = $"  {data.RegNumber}   ";
+                        workSheet.Cell(currentRow, 10).Value = $"{data.IsActive}";
                     }
                     var byteData = new byte[0];
                     using (var stream = new MemoryStream())
@@ -925,7 +933,7 @@ namespace Auth.Core.Services.Users
                     };
 
                     resultModel.Data = payload;
-                    resultModel.TotalCount = query.Count;
+                    resultModel.TotalCount = model.Count;
                 }
             }
             catch (Exception ex)
@@ -933,6 +941,46 @@ namespace Auth.Core.Services.Users
                 resultModel.AddError($"Exception Occured : {ex.Message}");
                 return resultModel;
             }
+
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<ExportPayloadVM>> ExportTeacherDataPDF(List<Staff> model)
+        {
+            var resultModel = new ResultModel<ExportPayloadVM>();
+
+            var table = new DataTable("AttendanceReport");
+
+            table.Columns.Add("FIRST_NAME", typeof(string));
+            table.Columns.Add("LAST_NAME", typeof(string));
+            table.Columns.Add("ADDRESS", typeof(string));
+            DataColumn subjectName = table.Columns.Add("STATE", typeof(string));
+            table.Columns.Add("COUNTRY", typeof(string));
+            table.Columns.Add("MEDICAL_BG", typeof(string));
+            table.Columns.Add("RELIGION", typeof(string));
+            table.Columns.Add("EMP_DATE", typeof(DateTime));
+            table.Columns.Add("REG_NUMBER", typeof(string));
+            table.Columns.Add("IS_ACTIVE", typeof(bool));
+
+            foreach (var item in model)
+            {
+                table.Rows.Add(item.User.FirstName, item.User.LastName,item.Address,
+                    item.State, item.Country, item.BloodGroup, item.Religion,
+                    item.EmploymentDate.Year + "-" + item.EmploymentDate.Month + "-" + item.EmploymentDate.Day,
+                    item.RegNumber, item.IsActive);
+            }
+
+            var pdf = table.ToPdf();
+
+            var payload = new ExportPayloadVM
+            {
+                FileName = "StudentData",
+                Base64String = Convert.ToBase64String(pdf)
+            };
+
+            resultModel.Data = payload;
+
 
             return resultModel;
         }

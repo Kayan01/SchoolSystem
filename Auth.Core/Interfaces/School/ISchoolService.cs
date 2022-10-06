@@ -8,6 +8,7 @@ using Auth.Core.ViewModels.School;
 using Shared.Utils;
 using Shared.Pagination;
 using Microsoft.AspNetCore.Http;
+using Auth.Core.ViewModels.Subscription;
 
 namespace Auth.Core.Services.Interfaces
 {
@@ -29,5 +30,9 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<string>> CheckForSchoolWithExpiredSubcription();
         Task<ResultModel<string>> NotifySubcriptionExpirationDateToAdmin(long schoolId);
         Task<ResultModel<userCount>> TotalUsersOnPlatform();
+        Task<ResultModel<byte[]>> ExportSchoolSubscriptionDetails();
+        Task<ResultModel<List<GetInvoiceDetails>>> GetSchoolInvoiceReport(int invoiceStatus);
+        Task<ResultModel<ExportPayloadVM>> ExportSchoolInvoiceReport(List<GetInvoiceDetails> model);
+        Task<ResultModel<ExportPayloadVM>> ExportSchoolInvoicePdf(List<GetInvoiceDetails> model);
     }
 }

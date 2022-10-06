@@ -8,6 +8,7 @@ using Shared.Utils;
 using Shared.Pagination;
 using Microsoft.AspNetCore.Http;
 using Auth.Core.ViewModels;
+using Auth.Core.Models;
 
 namespace Auth.Core.Services.Interfaces
 {
@@ -25,7 +26,9 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<byte[]>> GetStudentsExcelSheet();
         Task<ResultModel<bool>> AddBulkStudent(IFormFile excelfile);
         Task<ResultModel<PaginatedModel<StudentVMs>>> SearchForStudentByName(QueryModel model, string name);
-        Task<ResultModel<ExportPayloadVM>> ExportStudentData(StudentExportVM model);
         Task<ResultModel<PaginatedModel<StudentVMs>>> GetStudentByClass(StudentExportVM classVM, QueryModel model);
+        Task<ResultModel<List<Student>>> ExportStudentData(StudentExportVM model);
+        Task<ResultModel<ExportPayloadVM>> ExportStudentDataExcel(List<Student> model);
+        Task<ResultModel<ExportPayloadVM>> ExportStudentDataPDF(List<Student> model);
     }
 }

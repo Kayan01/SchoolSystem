@@ -26,5 +26,6 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<List<StudentAttendanceReportVM>>> ExportClassAttendanceReport(AttendanceRequestVM model);
         Task<ResultModel<byte[]>> ExportAttendanceDataToExcel(List<StudentAttendanceReportVM> model);
         Task<ResultModel<List<StudentAttendanceReportVM>>> studentSubjectAttendanceView(AttendanceRequestVM model);
+        Task<ResultModel<byte[]>> ExportAttendanceDataToPdf(List<StudentAttendanceReportVM> model);
     }
 }

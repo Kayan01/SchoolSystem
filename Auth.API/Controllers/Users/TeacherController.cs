@@ -223,10 +223,38 @@ namespace Auth.API.Controllers.Users
         [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
         public async Task<IActionResult> GetTeachersDataInExcel([FromQuery]StaffTypeVM model)
         {
-
+            var result = new ResultModel<ExportPayloadVM>();
             try
             {
-                var result = await _teacherService.GetAllTeacherDataExcel(model);
+                var teacherData = await _teacherService.GetAllTeacherData(model);
+                if (result != null)
+                {
+                    result = await _teacherService.ExportTeacherDataExcel(teacherData.Data);
+                }
+
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.TotalCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> GetTeachersDataInPDF([FromQuery] StaffTypeVM model)
+        {
+            var result = new ResultModel<ExportPayloadVM>();
+            try
+            {
+                var teacherData = await _teacherService.GetAllTeacherData(model);
+                if (result != null)
+                {
+                    result = await _teacherService.ExportTeacherDataPDF(teacherData.Data);
+                }
 
                 if (result.HasError)
                     return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
