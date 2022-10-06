@@ -27,6 +27,12 @@ using Shared.Extensions;
 using Microsoft.Data.SqlClient;
 using System;
 using Auth.Core.Models.Users;
+using ClosedXML.Excel;
+using System.IO;
+using Auth.Core.ViewModels.Subscription;
+using Auth.Core.Enumerations;
+using System.Data;
+using ArrayToPdf;
 
 namespace Auth.Core.Services
 {
@@ -41,6 +47,7 @@ namespace Auth.Core.Services
         private readonly IAuthUserManagement _authUserManagement;
         private readonly IRepository<SchoolSubscription, long> _subscriptionRepo;
         private readonly IRepository<Parent, long> _parentRepo;
+        private readonly IRepository<SubscriptionInvoice, long> _invoiceRepo;
 
         public SchoolService(
         IRepository<School, long> schoolRepo,
@@ -51,7 +58,8 @@ namespace Auth.Core.Services
         IAuthUserManagement authUserManagement,
         UserManager<User> userManager,
         IRepository<SchoolSubscription, long> subscriptionRepo,
-        IRepository<Parent, long> parentRepo)
+        IRepository<Parent, long> parentRepo,
+        IRepository<SubscriptionInvoice, long> invoiceRepo)
         {
             _unitOfWork = unitOfWork;
             _schoolRepo = schoolRepo;
@@ -62,6 +70,7 @@ namespace Auth.Core.Services
             _authUserManagement = authUserManagement;
             _subscriptionRepo = subscriptionRepo;
             _parentRepo = parentRepo;
+            _invoiceRepo = invoiceRepo;
         }
 
         public async Task<ResultModel<bool>> CheckSchoolDomain(CreateSchoolVM model)
@@ -968,6 +977,232 @@ namespace Auth.Core.Services
             };
 
             resultModel.Data = data;
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<byte[]>> ExportSchoolSubscriptionDetails()
+        {
+            var resultModel = new ResultModel<byte[]>();
+
+            var query = await _subscriptionRepo.GetAll()
+                .Include(x => x.School)
+                .ToListAsync();
+
+            try
+            {
+                using (var workbook = new XLWorkbook())
+                {
+                    var worksheet = workbook.Worksheets.Add("SchoolSubscriptionSheet");
+                    
+                    for (int i = 0; i < query.Count; i++)
+                    {
+                        var headFormat = worksheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold(true);
+                        headFormat.Style.Font.SetFontColor(XLColor.BallBlue);
+                        headFormat.Style.Alignment.SetIndent(5);
+                        headFormat.WorksheetRow().Height = 12; ;
+                    }
+
+                    var currentRow = 1;
+
+                    worksheet.Cell(1, 1).Value = "School Name";
+                    worksheet.Cell(1, 2).Value = "SchoolId";
+                    worksheet.Cell(1, 3).Value = "Subscription StartDate";
+                    worksheet.Cell(1, 4).Value = "Subscription EndDate";
+                    worksheet.Cell(1, 5).Value = "Expected Students";
+                    worksheet.Cell(1, 6).Value = "Price PerStudent";
+
+                    foreach (var data in query)
+                    {
+                        currentRow += 1;
+                        worksheet.Cell(currentRow, 1).Value = $"{data.School.Name}";
+                        worksheet.Cell(currentRow, 2).Value = $"{data.SchoolId}";
+                        worksheet.Cell(currentRow, 3).Value = $"{data.StartDate}";
+                        worksheet.Cell(currentRow, 4).Value = $"{data.EndDate}";
+                        worksheet.Cell(currentRow, 5).Value = $"{data.ExpectedNumberOfStudent}";
+                        worksheet.Cell(currentRow, 6).Value = $"{data.PricePerStudent}";
+                    }
+
+                    using(var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        resultModel.Data = content;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                resultModel.AddError($"Exception Occured : {ex.Message}");
+                return resultModel;
+            }
+            return resultModel;
+        }
+
+        public async Task<ResultModel<List<GetInvoiceDetails>>> GetSchoolInvoiceReport(int invoiceStatus)
+        {
+            var resultModel = new ResultModel<List<GetInvoiceDetails>>();
+            var invoiceList = new List<GetInvoiceDetails>();
+
+            var query = await _invoiceRepo.GetAllIncluding(x => x.School).ToListAsync();
+
+            if (invoiceStatus == 1)
+            {
+                query = query.Where(x => x.Paid == true).ToList();
+            }
+            else if(invoiceStatus == 0)
+            {
+                query = query.Where(x => x.Paid == false).ToList();
+            }
+            else
+            {
+                resultModel.AddError("Wrong inovice Status supplied");
+                return resultModel;
+            }
+
+            if (query == null)
+            {
+                return resultModel;
+            }
+
+            var data = new GetInvoiceDetails();
+
+            foreach(var schoolInvoice in query)
+            {
+                data = new GetInvoiceDetails
+                {
+                    SchoolName = schoolInvoice.School.Name,
+                    DueDate = schoolInvoice.DueDate,
+                    PaidDate = schoolInvoice.PaidDate,
+                    ExpectedStudent = schoolInvoice.NumberOfStudent,
+                    Paid = schoolInvoice.Paid
+                };
+                invoiceList.Add(data);
+            }
+
+            resultModel.TotalCount = query.Count;
+            resultModel.Data = invoiceList;
+            return resultModel;
+        }
+
+        public async Task<ResultModel<ExportPayloadVM>> ExportSchoolInvoiceReport(List<GetInvoiceDetails> model)
+        {
+            var resultModel = new ResultModel<ExportPayloadVM>();
+
+            if (model == null)
+            {
+                return resultModel;
+            }
+
+            try
+            {
+                using (var workbook = new XLWorkbook())
+                {
+                    var workSheet = workbook.Worksheets.Add("InvoiceReport");
+
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        var headFormat = workSheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold();
+                        headFormat.WorksheetRow().Height = 11;
+                    }
+
+                    var cuurentRow = 1;
+
+                    workSheet.Cell(1, 1).Value = "SchoolName";
+                    workSheet.Cell(1, 2).Value = "ExpectedStudent";
+                    workSheet.Cell(1, 3).Value = "PaidDate";
+                    workSheet.Cell(1, 4).Value = "DueDate";
+                    workSheet.Cell(1, 5).Value = "Paid";
+
+                    foreach (var data in model)
+                    {
+                        cuurentRow +=1;
+                        workSheet.Cell(cuurentRow, 1).Value = data.SchoolName;
+                        workSheet.Cell(cuurentRow, 2).Value = data.ExpectedStudent;
+                        workSheet.Cell(cuurentRow, 5).Value = data.Paid;
+
+                        if (data.Paid == false)
+                        {
+                            workSheet.Cell(cuurentRow, 4).Value = data.DueDate;
+                        }
+                        else
+                        {
+                            workSheet.Cell(cuurentRow, 3).Value = data.PaidDate;
+                        }
+                    }
+                    var byteData = new byte[0];
+                    
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        byteData = content;
+                    }
+                    var payload = new ExportPayloadVM
+                    {
+                        FileName = "InvoiceReport",
+                        Base64String = Convert.ToBase64String(byteData)
+                    };
+
+                    resultModel.Data = payload;
+                    resultModel.TotalCount = model.Count;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                resultModel.AddError($"Exception Occured : {ex.Message}");
+                return resultModel;
+            }
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<ExportPayloadVM>> ExportSchoolInvoicePdf(List<GetInvoiceDetails> model)
+        {
+            var status = false;
+            var resultModel = new ResultModel<ExportPayloadVM>();
+
+            var table = new DataTable("AttendanceReport");
+
+            table.Columns.Add("SCHOOLNAME", typeof(string));
+            DataColumn dueDate = table.Columns.Add("DUE_DATE", typeof(DateTime));
+            DataColumn paidDate = table.Columns.Add("PAID_DATE", typeof(DateTime));
+            table.Columns.Add("EXP_STUDENT", typeof(long));
+            table.Columns.Add("PAID", typeof(bool));
+            
+
+            foreach (var item in model)
+            {
+                table.Rows.Add(item.SchoolName,item.DueDate,
+                    item.PaidDate,item.ExpectedStudent,
+                    item.Paid);
+
+                status = item.Paid;
+            }
+            if (status == true)
+            {
+                table.Columns.Remove(dueDate);
+            }
+            else
+            {
+                table.Columns.Remove(paidDate);
+            }
+
+            var pdf = table.ToPdf();
+
+            var payload = new ExportPayloadVM
+            {
+                FileName = "StudentData",
+                Base64String = Convert.ToBase64String(pdf)
+            };
+
+            resultModel.Data = payload;
+
 
             return resultModel;
         }

@@ -255,9 +255,38 @@ namespace Auth.API.Controllers
         [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
         public async Task<IActionResult> GetStudentDataInExcel([FromQuery]StudentExportVM model)
         {
+            var result = new ResultModel<ExportPayloadVM>();
             try
             {
-                var result = await _studentService.ExportStudentData(model);
+                var studentData = await _studentService.ExportStudentData(model);
+                if (studentData != null)
+                {
+                    result = await _studentService.ExportStudentDataExcel(studentData.Data);
+                }
+
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.TotalCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [RequiresPermission(Permission.STUDENT_READ)]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> GetStudentDataInPDF([FromQuery] StudentExportVM model)
+        {
+            var result = new ResultModel<ExportPayloadVM>();
+            try
+            {
+                var studentData = await _studentService.ExportStudentData(model);
+                if (studentData != null)
+                {
+                    result = await _studentService.ExportStudentDataPDF(studentData.Data);
+                }
 
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());

@@ -28,6 +28,8 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<bool>> UploadBulkParentData(IFormFile excelfile);
         Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentByName(QueryModel vm, string FirstName);
         Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentBySchoolAndName(QueryModel vm, SearchParentVm model);
-        Task<ResultModel<ExportPayloadVM>> ExportParentInSchoolData(long schoolId);
+        Task<ResultModel<List<ParentListVM>>> ParentInSchoolData(long schoolId);
+        Task<ResultModel<ExportPayloadVM>> ExportParentDetailsExcel(List<ParentListVM> model);
+        Task<ResultModel<ExportPayloadVM>> ExportParentDetailsPDF(List<ParentListVM> model);
     }
 }
