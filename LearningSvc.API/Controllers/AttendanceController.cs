@@ -256,7 +256,7 @@ namespace LearningSvc.API.Controllers
             var payload = new AttendanceExcelReport();
             try
             {
-                var res = await _attendanceService.ExportClassAttendanceReport(model); ;
+                var res = await _attendanceService.ExportClassAttendanceReport(model);
                 if (res.Data != null)
                 {
                     var result = await _attendanceService.ExportAttendanceDataToPdf(res.Data);
@@ -285,7 +285,7 @@ namespace LearningSvc.API.Controllers
             var payload = new AttendanceExcelReport();
             try
             {
-                var res = await _attendanceService.studentSubjectAttendanceView(model); ;
+                var res = await _attendanceService.studentSubjectAttendanceView(model);
                 if (res.Data != null)
                 {
                     var result = await _attendanceService.ExportAttendanceDataToPdf(res.Data);
