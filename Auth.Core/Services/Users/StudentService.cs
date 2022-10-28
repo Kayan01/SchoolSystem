@@ -89,6 +89,10 @@ namespace Auth.Core.Services
             //var lastRegNumber = _studentRepo.GetAll().OrderBy(m => m.Id).Select(m => m.RegNumber).LastOrDefaultAsync().Result;
             var klastRegNumber = _context.Users.Where(x => x.UserType == UserType.Student && x.UserName.Contains(schoolPrefix)).OrderBy(m => m.Id).Select(m => m.UserName).LastOrDefaultAsync().Result;
             var lastNumber = 0;
+            if (klastRegNumber == null)
+            {
+                klastRegNumber = "";
+            }
             var lastRegNumber = klastRegNumber.ToString();
             var seperator = schoolSeperator;
             if (!string.IsNullOrWhiteSpace(lastRegNumber))
