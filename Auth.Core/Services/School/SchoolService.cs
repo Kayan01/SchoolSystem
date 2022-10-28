@@ -1206,5 +1206,39 @@ namespace Auth.Core.Services
 
             return resultModel;
         }
+
+        public async Task<ResultModel<GroupOfSchoolCollatedData>> GetGroupOfSchoolSchoolsData(long Id)
+        {
+            var resultModel = new ResultModel<GroupOfSchoolCollatedData>();
+            var totalStudents = 0;
+            var totalStaffs = 0;
+
+            var query = await _schoolRepo.GetAllIncluding(x => x.Students)
+                .Include(x => x.Staffs)
+                .Where(x => x.SchoolGroupId == Id).ToListAsync();
+
+            if (query.Count == 0)
+            {
+                resultModel.Data = null;
+                resultModel.Message = "Payload Empty.";
+                return resultModel;
+            }
+
+            foreach (var data in query)
+            {
+                totalStaffs += data.Staffs.Count();
+                totalStudents += data.Students.Count();
+            }
+
+            var res = new GroupOfSchoolCollatedData()
+            {
+                TotalSchool = query.Count,
+                TotalStaffs = totalStaffs,
+                TotalStudents = totalStudents
+            };
+
+            resultModel.Data = res; 
+            return resultModel;
+        }
     }
 }

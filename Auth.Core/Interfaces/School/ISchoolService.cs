@@ -34,5 +34,6 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<List<GetInvoiceDetails>>> GetSchoolInvoiceReport(int invoiceStatus);
         Task<ResultModel<ExportPayloadVM>> ExportSchoolInvoiceReport(List<GetInvoiceDetails> model);
         Task<ResultModel<ExportPayloadVM>> ExportSchoolInvoicePdf(List<GetInvoiceDetails> model);
+        Task<ResultModel<GroupOfSchoolCollatedData>> GetGroupOfSchoolSchoolsData(long Id);
     }
 }
