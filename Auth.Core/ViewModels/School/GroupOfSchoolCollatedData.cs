@@ -9,6 +9,8 @@ namespace Auth.Core.ViewModels.School
         public long TotalSchool { get; set; }
         public long TotalStaffs { get; set; }
         public long TotalStudents { get; set; }
+        public long TotalUsers { get; set; }
+
 
     }
 }

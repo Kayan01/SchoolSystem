@@ -1234,7 +1234,8 @@ namespace Auth.Core.Services
             {
                 TotalSchool = query.Count,
                 TotalStaffs = totalStaffs,
-                TotalStudents = totalStudents
+                TotalStudents = totalStudents,
+                TotalUsers = totalStudents + totalStaffs,
             };
 
             resultModel.Data = res; 
