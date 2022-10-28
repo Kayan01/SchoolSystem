@@ -478,11 +478,10 @@ namespace LearningSvc.Core.Services
 
                     return new ResultModel<List<StudentAttendanceReportVM>>("No attendance Summary for student found");
                 }
-
                 //Group student data by studentId
-                var data = getData.GroupBy(x => x.StudentId).Select(x => new StudentAttendanceReportVM
+                var data = getData.GroupBy(x => new { x.StudentId, x.Student.FirstName, x.Student.Id }).Select(x => new StudentAttendanceReportVM
                 {
-                    StudentId = x.Key,
+                    StudentId = x.Key.StudentId,
                     FullName = student.Student.FirstName + " " + student.Student.LastName,
                     ClassName = student.SchoolClass.Name + " " + student.SchoolClass.ClassArm,
                     TotalNumberOfTimePresent = getData.Count(x => x.AttendanceStatus == AttendanceState.Present),
@@ -520,6 +519,7 @@ namespace LearningSvc.Core.Services
 
             var query = await _subjectAttendanceRepo.GetAll()
                 .Include(x => x.Student)
+                .Include(x => x.SchoolClassSubject)
                 .Include(x => x.SchoolClassSubject.Subject)
                 .ToListAsync();
 
@@ -538,7 +538,7 @@ namespace LearningSvc.Core.Services
 
             if (model.SubjectId != null)
             {
-                query = query.Where(x => x.SubjectId == model.SubjectId).ToList();
+                query = query.Where(x => x.SchoolClassSubject.SubjectId == model.SubjectId).ToList();
             }
 
             if (query == null)
@@ -555,9 +555,9 @@ namespace LearningSvc.Core.Services
                     getData = query.Where(x => x.SubjectId == model.SubjectId).ToList();
                 }
 
-                var data = getData.GroupBy(x => x.StudentId).Select(x => new StudentAttendanceReportVM
+                var data = getData.GroupBy(x => new { x.StudentId, x.Student.FirstName, x.Student.Id }).Select(x => new StudentAttendanceReportVM
                 {
-                    StudentId = x.Key,
+                    StudentId = x.Key.StudentId,
                     FullName = student.Student.FirstName + " " + student.Student.LastName,
                     SubjectName = student.SchoolClassSubject.Subject.Name,
                     TotalNumberOfTimePresent = getData.Count(x => x.AttendanceStatus == AttendanceState.Present),
@@ -710,6 +710,200 @@ namespace LearningSvc.Core.Services
             
             var pdf = table.ToPdf();
             resultModel.Data = pdf;
+
+            return resultModel;
+        }
+
+
+        public async Task<ResultModel<byte[]>> ExportStudentAttendanceForSubjectExcel(List<GetStudentAttendanceSubjectVm> model)
+        {
+            var resultModel = new ResultModel<byte[]>();
+
+            if (model == null)
+            {
+                resultModel.Data = null;
+                resultModel.Message = "Empty payload.";
+                return resultModel;
+            }
+
+            try
+            {
+                using (var workbook = new XLWorkbook())
+                {
+                    var workSheet = workbook.Worksheets.Add("AttendanceSheet");
+
+                    for (int i = 1; i <= 6; i++)
+                    {
+                        var headFormat = workSheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold();
+                        headFormat.WorksheetRow().Height = 12;
+                    }
+
+                    var currentRow = 1;
+
+                    workSheet.Cell(1, 1).Value = "SubjectName";
+                    object className = workSheet.Cell(1, 2).Value = "NoOfTImesHeld";
+                    workSheet.Cell(1, 3).Value = "NoOfTimesAttended";
+
+                    foreach (var data in model)
+                    {
+                        currentRow += 1;
+                        workSheet.Cell(currentRow, 1).Value = $"{data.SubjectName}";
+                        workSheet.Cell(currentRow, 2).Value = $"{data.NoOfTImesHeld}";
+                        workSheet.Cell(currentRow, 3).Value = $"{data.NoOfTimesAttended}";
+                    }
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        resultModel.Data = content;
+                        resultModel.Message = "Successful";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex.InnerException;
+            }
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<byte[]>> ExportStudentAttendanceForClassExcel(IEnumerable<ListStudentAttendanceClassVm> model)
+        {
+            var resultModel = new ResultModel<byte[]>();
+
+            if (model == null)
+            {
+                resultModel.Data = null;
+                resultModel.Message = "Empty payload.";
+                return resultModel;
+            }
+
+            try
+            {
+                using (var workbook = new XLWorkbook())
+                {
+                    var workSheet = workbook.Worksheets.Add("AttendanceSheet");
+
+                    for (int i = 1; i <= 6; i++)
+                    {
+                        var headFormat = workSheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold();
+                        headFormat.WorksheetRow().Height = 12;
+                    }
+
+                    var currentRow = 1;
+
+                    object className = workSheet.Cell(1, 2).Value = "AttendanceDate";
+                    workSheet.Cell(1, 3).Value = "AttendanceStatus";
+                    workSheet.Cell(1, 4).Value = "Reason";
+
+                    foreach (var data in model)
+                    {
+                        currentRow += 1;
+                        foreach (var item in data.AttendanceClassVms)
+                        {
+                            workSheet.Cell(currentRow, 1).Value = $"{item.AttendanceDate}";
+                            workSheet.Cell(currentRow, 2).Value = $"{item.AttendanceStatus}";
+                            workSheet.Cell(currentRow, 3).Value = $"{item.Reason}";
+                        }
+                    }
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        resultModel.Data = content;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex.InnerException;
+            }
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<byte[]>> ExportStudentAttendanceForSubjectPDF(List<GetStudentAttendanceSubjectVm> model)
+        {
+            var resultModel = new ResultModel<byte[]>();
+
+            if (model == null)
+            {
+                resultModel.Data = null;
+                resultModel.Message = "Empty payload.";
+                return resultModel;
+            }
+
+            try
+            {
+                var table = new DataTable("AttendanceReport");
+
+                table.Columns.Add("SubjectName", typeof(long));
+                table.Columns.Add("NoOfTImesHeld", typeof(string));
+                DataColumn className = table.Columns.Add("NoOfTimesAttended", typeof(string));
+              
+                foreach (var item in model)
+                {
+                    table.Rows.Add(item.SubjectName, item.NoOfTImesHeld,
+                        item.NoOfTimesAttended);
+                }
+
+                var pdf = table.ToPdf();
+                resultModel.Data = pdf;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex.InnerException;
+            }
+
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<byte[]>> ExportStudentAttendanceForClassPDF(IEnumerable<ListStudentAttendanceClassVm> model)
+        {
+            var resultModel = new ResultModel<byte[]>();
+
+            if (model == null)
+            {
+                resultModel.Data = null;
+                resultModel.Message = "Empty payload.";
+                return resultModel;
+            }
+
+            try
+            {
+                var table = new DataTable("AttendanceReport");
+
+                table.Columns.Add("AttendanceDate", typeof(DateTime));
+                table.Columns.Add("AttendanceStatus", typeof(AttendanceState));
+                table.Columns.Add("Reason", typeof(string));
+
+                foreach (var item in model)
+                {
+                    foreach (var data in item.AttendanceClassVms)
+                    {
+                        table.Rows.Add(data.AttendanceDate,data.AttendanceStatus,data.Reason);
+                    }
+                }
+
+                var pdf = table.ToPdf();
+                resultModel.Data = pdf;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex.InnerException;
+            }
 
             return resultModel;
         }

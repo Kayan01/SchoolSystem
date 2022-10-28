@@ -306,5 +306,123 @@ namespace LearningSvc.API.Controllers
                 return HandleError(ex);
             }
         }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<AttendanceExcelReport>), 200)]
+        public async Task<IActionResult> ExportSingleStudentAttendanceForSubjectExcel(GetStudentAttendanceSubjectQueryVm model)
+        {
+            var payload = new AttendanceExcelReport();
+            try
+            {
+                var res = await _attendanceService.GetStudentAttendanceForSubject(model);
+                if (res.Data != null)
+                {
+                    var result = await _attendanceService.ExportStudentAttendanceForSubjectExcel(res.Data);
+                    if (result.HasError)
+                        return ApiResponse<AttendanceExcelReport>(errors: result.ErrorMessages.ToArray());
+
+                    payload = new AttendanceExcelReport
+                    {
+                        FileName = "AttendanceSummary",
+                        Base64String = Convert.ToBase64String(result.Data)
+                    };
+                }
+                return ApiResponse(data: payload, message: "Successful", totalCount: res.TotalCount);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<AttendanceExcelReport>), 200)]
+        public async Task<IActionResult> ExportSingleStudentAttendanceForClassExcel(GetStudentAttendanceClassQueryVm model)
+        {
+            var payload = new AttendanceExcelReport();
+            try
+            {
+                var res = await _attendanceService.GetStudentAttendanceForClass(model);
+                if (res.Data != null)
+                {
+                    var result = await _attendanceService.ExportStudentAttendanceForClassExcel(res.Data);
+                    if (result.HasError)
+                        return ApiResponse<AttendanceExcelReport>(errors: result.ErrorMessages.ToArray());
+
+                    payload = new AttendanceExcelReport
+                    {
+                        FileName = "AttendanceSummary",
+                        Base64String = Convert.ToBase64String(result.Data)
+                    };
+                }
+                return ApiResponse(data: payload, message: "Successful", totalCount: res.TotalCount);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<AttendanceExcelReport>), 200)]
+        public async Task<IActionResult> ExportSingleStudentAttendanceForSubjectPDF(GetStudentAttendanceSubjectQueryVm model)
+        {
+            var payload = new AttendanceExcelReport();
+            try
+            {
+                var res = await _attendanceService.GetStudentAttendanceForSubject(model);
+                if (res.Data != null)
+                {
+                    var result = await _attendanceService.ExportStudentAttendanceForSubjectPDF(res.Data);
+                    if (result.HasError)
+                        return ApiResponse<AttendanceExcelReport>(errors: result.ErrorMessages.ToArray());
+
+                    payload = new AttendanceExcelReport
+                    {
+                        FileName = "AttendanceSummary",
+                        Base64String = Convert.ToBase64String(result.Data)
+                    };
+                }
+                return ApiResponse(data: payload, message: "Successful", totalCount: res.TotalCount);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<AttendanceExcelReport>), 200)]
+        public async Task<IActionResult> ExportSingleStudentAttendanceForClassPDF(GetStudentAttendanceClassQueryVm model)
+        {
+            var payload = new AttendanceExcelReport();
+            try
+            {
+                var res = await _attendanceService.GetStudentAttendanceForClass(model);
+                if (res.Data != null)
+                {
+                    var result = await _attendanceService.ExportStudentAttendanceForClassPDF(res.Data);
+                    if (result.HasError)
+                        return ApiResponse<AttendanceExcelReport>(errors: result.ErrorMessages.ToArray());
+
+                    payload = new AttendanceExcelReport
+                    {
+                        FileName = "AttendanceSummary",
+                        Base64String = Convert.ToBase64String(result.Data)
+                    };
+                }
+                return ApiResponse(data: payload, message: "Successful", totalCount: res.TotalCount);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
+
+
     }
 }
