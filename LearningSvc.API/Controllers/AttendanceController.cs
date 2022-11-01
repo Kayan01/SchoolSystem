@@ -309,7 +309,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<AttendanceExcelReport>), 200)]
-        public async Task<IActionResult> ExportSingleStudentAttendanceForSubjectExcel(GetStudentAttendanceSubjectQueryVm model)
+        public async Task<IActionResult> ExportSingleStudentAttendanceForSubjectExcel([FromQuery] GetStudentAttendanceSubjectQueryVm model)
         {
             var payload = new AttendanceExcelReport();
             try
@@ -338,7 +338,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<AttendanceExcelReport>), 200)]
-        public async Task<IActionResult> ExportSingleStudentAttendanceForClassExcel(GetStudentAttendanceClassQueryVm model)
+        public async Task<IActionResult> ExportSingleStudentAttendanceForClassExcel([FromQuery]GetStudentAttendanceClassQueryVm model)
         {
             var payload = new AttendanceExcelReport();
             try
@@ -367,7 +367,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<AttendanceExcelReport>), 200)]
-        public async Task<IActionResult> ExportSingleStudentAttendanceForSubjectPDF(GetStudentAttendanceSubjectQueryVm model)
+        public async Task<IActionResult> ExportSingleStudentAttendanceForSubjectPDF([FromQuery] GetStudentAttendanceSubjectQueryVm model)
         {
             var payload = new AttendanceExcelReport();
             try
@@ -396,7 +396,7 @@ namespace LearningSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<AttendanceExcelReport>), 200)]
-        public async Task<IActionResult> ExportSingleStudentAttendanceForClassPDF(GetStudentAttendanceClassQueryVm model)
+        public async Task<IActionResult> ExportSingleStudentAttendanceForClassPDF([FromQuery] GetStudentAttendanceClassQueryVm model)
         {
             var payload = new AttendanceExcelReport();
             try

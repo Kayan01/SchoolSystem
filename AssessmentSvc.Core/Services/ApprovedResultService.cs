@@ -1,10 +1,12 @@
-﻿using AssessmentSvc.Core.Interfaces;
+﻿using ArrayToPdf;
+using AssessmentSvc.Core.Interfaces;
 using AssessmentSvc.Core.Models;
 using AssessmentSvc.Core.Utils;
 using AssessmentSvc.Core.ViewModels;
 using AssessmentSvc.Core.ViewModels.Result;
 using AssessmentSvc.Core.ViewModels.SessionSetup;
 using AssessmentSvc.Core.ViewModels.Student;
+using ClosedXML.Excel;
 using DinkToPdf.Contracts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +20,7 @@ using Shared.Utils;
 using Shared.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -1105,6 +1108,136 @@ namespace AssessmentSvc.Core.Services
 
             return new ResultModel<List<ClassResultApprovalVM>>(rtnData);
 
+        }
+
+        public async Task<ResultModel<ExportViewModel>> ExportBroadSheetExcel(List<ResultBroadSheet> model)
+        {
+            var resultModel = new ResultModel<ExportViewModel>();
+
+            if (model == null)
+            {
+                resultModel.Data = null;
+                resultModel.Message = "Empty payload";
+                
+                return resultModel;
+            }
+
+            try
+            {
+                using (var workbook = new XLWorkbook())
+                {
+                    var workSheet = workbook.Worksheets.Add("BroadSheet");
+
+                    for (int i = 1; i <= 6; i++)
+                    {
+                        var headFormat = workSheet.Cell(1, i);
+                        headFormat.Style.Font.SetBold();
+                        headFormat.WorksheetRow().Height = 12;
+                    }
+
+                    var currentRow = 1;
+
+                    workSheet.Cell(1, 1).Value = "STUDENT-NAME";
+                    workSheet.Cell(1, 2).Value = "STUDENT-REGNO";
+                    workSheet.Cell(1, 3).Value = "SUBJECT";
+                    workSheet.Cell(1, 4).Value = "SCORE";
+                    workSheet.Cell(1, 5).Value = "AVG-SCORE";
+
+                    foreach (var data in model)
+                    {
+                        currentRow += 1;
+                        workSheet.Cell(currentRow, 1).Value = $"{data.StudentName}";
+                        workSheet.Cell(currentRow, 2).Value = $"{data.StudentRegNo}";
+                        foreach (var item in data.AssessmentAndScores)
+                        {
+                            workSheet.Cell(currentRow, 3).Value = $"{item.SubjectName}";
+                            workSheet.Cell(currentRow, 4).Value = $"{item.Score}";
+                            if (data.AssessmentAndScores.Count > 1)
+                            {
+                                currentRow += 1;
+                            }
+                            
+                        }
+                        workSheet.Cell(currentRow, 5).Value = $"{data.AverageScore}";
+                    }
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        var re = new ExportViewModel()
+                        {
+                            FileName = "BroadSheet",
+                            Base64String = Convert.ToBase64String(content)
+                    };
+
+                        resultModel.Data = re;
+                        resultModel.Message = "Successful";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex.InnerException;
+            }
+
+            return resultModel;
+        }
+
+        public async Task<ResultModel<ExportViewModel>> ExportBroadSheetPDF(List<ResultBroadSheet> model)
+        {
+            var resultModel = new ResultModel<ExportViewModel>();
+
+            if (model == null)
+            {
+                resultModel.Data = null;
+                resultModel.Message = "Empty payload.";
+                return resultModel;
+            }
+
+            try
+            {
+                var table = new DataTable("AttendanceReport");
+
+                table.Columns.Add("STUDENT-NAME", typeof(string));
+                table.Columns.Add("STUDENT-REGNO", typeof(string));
+                var sub = table.Columns.Add("SUBJECT", typeof(string));
+                var sco = table.Columns.Add("SCORE", typeof(double));
+                table.Columns.Add("AVG-SCORE", typeof(double));
+
+                var lenght = table.Columns.Count;
+               
+                foreach (var item in model)
+                {
+                    table.Rows.Add(item.StudentName,item.StudentRegNo);
+                    
+                    foreach (var da in item.AssessmentAndScores)
+                    {
+                        table.Rows.Add("","",da.SubjectName,da.Score);
+                    }
+                    table.Rows.Add("", "", "", 0, item.AverageScore);
+                }
+
+                var pdf = table.ToPdf();
+
+                var d = new ExportViewModel()
+                {
+                    FileName = "BroadSheetPDf",
+                    Base64String =  Convert.ToBase64String(pdf)
+                };
+
+                resultModel.Data = d;
+                resultModel.Message = "Export Successful";
+            }
+            catch (Exception ex)
+            {
+
+                throw ex.InnerException;
+            }
+
+            return resultModel;
         }
 
     }
