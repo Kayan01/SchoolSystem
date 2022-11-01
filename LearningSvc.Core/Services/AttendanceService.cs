@@ -200,39 +200,42 @@ namespace LearningSvc.Core.Services
 
         public async Task<ResultModel<List<GetStudentAttendanceSubjectVm>>> GetStudentAttendanceForSubject(GetStudentAttendanceSubjectQueryVm vm)
         {
-            var query = _subjectAttendanceRepo.GetAll();
-
+            var query = await _subjectAttendanceRepo.GetAll()
+                .Include(x => x.SchoolClassSubject.Subject)
+                .Include(x => x.Student)
+                .ToListAsync();
+            
 
             //use student id to query if provided
             if (vm.StudentId.HasValue)
             {
-                query = query.Where(x => x.StudentId == vm.StudentId);
+                query = query.Where(x => x.StudentId == vm.StudentId).ToList();
             }
 
             //use student auth id to query if provided
             if (vm.StudentUserId.HasValue)
             {
-                query = query.Where(x => x.Student.UserId == vm.StudentUserId);
+                query = query.Where(x => x.Student.UserId == vm.StudentUserId).ToList();
             }
 
 
             //add subject query if provided
             if (vm.SubjectId.HasValue)
             {
-                query = query.Where(x => x.SubjectId == vm.SubjectId);
+                query = query.Where(x => x.SchoolClassSubject.SubjectId == vm.SubjectId).ToList();
             }
             //adds date query if provided
             if (vm.Date.HasValue)
             {
-                query = query.Where(x => x.AttendanceDate == vm.Date.Value);
+                query = query.Where(x => x.AttendanceDate == vm.Date.Value).ToList();
             }
 
-            var data = await query.Select(x => new
+            var data = query.Select(x => new
             {
                 x.SubjectId,
                 SubjectName = x.SchoolClassSubject.Subject.Name,
                 x.AttendanceStatus
-            }).ToListAsync();
+            }).ToList();
 
             if (!data.Any())
             {
@@ -742,7 +745,7 @@ namespace LearningSvc.Core.Services
                     var currentRow = 1;
 
                     workSheet.Cell(1, 1).Value = "SubjectName";
-                    object className = workSheet.Cell(1, 2).Value = "NoOfTImesHeld";
+                    workSheet.Cell(1, 2).Value = "NoOfTImesHeld";
                     workSheet.Cell(1, 3).Value = "NoOfTimesAttended";
 
                     foreach (var data in model)
@@ -798,9 +801,9 @@ namespace LearningSvc.Core.Services
 
                     var currentRow = 1;
 
-                    object className = workSheet.Cell(1, 2).Value = "AttendanceDate";
-                    workSheet.Cell(1, 3).Value = "AttendanceStatus";
-                    workSheet.Cell(1, 4).Value = "Reason";
+                    workSheet.Cell(1, 1).Value = "AttendanceDate";
+                    workSheet.Cell(1, 2).Value = "AttendanceStatus";
+                    workSheet.Cell(1, 3).Value = "Reason";
 
                     foreach (var data in model)
                     {
@@ -846,9 +849,9 @@ namespace LearningSvc.Core.Services
             {
                 var table = new DataTable("AttendanceReport");
 
-                table.Columns.Add("SubjectName", typeof(long));
-                table.Columns.Add("NoOfTImesHeld", typeof(string));
-                DataColumn className = table.Columns.Add("NoOfTimesAttended", typeof(string));
+                table.Columns.Add("SubjectName", typeof(string));
+                table.Columns.Add("NoOfTImesHeld", typeof(int));
+                DataColumn className = table.Columns.Add("NoOfTimesAttended", typeof(int));
               
                 foreach (var item in model)
                 {

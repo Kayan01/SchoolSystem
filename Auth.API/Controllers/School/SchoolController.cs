@@ -407,13 +407,13 @@ namespace UserManagement.API.Controllers
 
         }
 
-        [HttpGet("{groupId}")]
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<GroupOfSchoolCollatedData>), 200)]
-        public async Task<IActionResult> GetGroupOfSchoolSchoolsData(int groupId)
+        public async Task<IActionResult> GetGroupOfSchoolSchoolsData([FromQuery]long? groupId,long? Id)
         {
             try
             {
-                var result = await _schoolService.GetGroupOfSchoolSchoolsData(groupId);
+                var result = await _schoolService.GetGroupOfSchoolSchoolsData(Id,groupId);
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
 
