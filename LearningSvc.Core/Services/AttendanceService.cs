@@ -200,11 +200,8 @@ namespace LearningSvc.Core.Services
 
         public async Task<ResultModel<List<GetStudentAttendanceSubjectVm>>> GetStudentAttendanceForSubject(GetStudentAttendanceSubjectQueryVm vm)
         {
-            var query = await _subjectAttendanceRepo.GetAll()
-                .Include(x => x.SchoolClassSubject.Subject)
-                .Include(x => x.Student)
-                .ToListAsync();
-            
+            var query = await _subjectAttendanceRepo.GetAll().Include(x => x.Student)
+                .Include(x => x.SchoolClassSubject.Subject).ToListAsync();
 
             //use student id to query if provided
             if (vm.StudentId.HasValue)
@@ -471,18 +468,22 @@ namespace LearningSvc.Core.Services
             foreach (var student in getClassAttendanceData)
             {
                 var getData = getClassAttendanceData.Where(x => x.StudentId == student.Student.Id).ToList();
-                if (model.ClassId != null)
-                {
-                    getData = getClassAttendanceData.Where(x => x.ClassId == model.ClassId).ToList();
-                }
 
-                if (!getClassAttendanceData.Any())
-                {
+                //if (model.ClassId != null)
+                //{
+                //    getData = getClassAttendanceData.Where(x => x.ClassId == model.ClassId).ToList();
+                //}
 
-                    return new ResultModel<List<StudentAttendanceReportVM>>("No attendance Summary for student found");
-                }
+                //if (!getClassAttendanceData.Any())
+                //{
+
+                //    return new ResultModel<List<StudentAttendanceReportVM>>("No attendance Summary for student found");
+                //}
+
+
                 //Group student data by studentId
-                var data = getData.GroupBy(x => new { x.StudentId, x.Student.FirstName, x.Student.Id }).Select(x => new StudentAttendanceReportVM
+                
+                var data = getData.GroupBy(x => new { x.Student.Id, x.Student.FirstName, x.StudentId}).Select(x => new StudentAttendanceReportVM
                 {
                     StudentId = x.Key.StudentId,
                     FullName = student.Student.FirstName + " " + student.Student.LastName,
@@ -497,14 +498,14 @@ namespace LearningSvc.Core.Services
                 {
                     res = storeIds.Contains(student.StudentId);
                 }
-                
+
                 if (res == false)
                 {
                     foreach (var dataItem in data)
                     {
                         groupedData.Add(dataItem);
                     }
-                }                
+                }
                 storeIds.Add(student.StudentId);
             }
 
