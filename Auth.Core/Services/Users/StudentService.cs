@@ -385,7 +385,8 @@ namespace Auth.Core.Services
 
             var resultModel = new ResultModel<PaginatedModel<StudentVMs>>();
 
-            var query = await _studentRepo.GetAll().Where(x => x.IsDeleted == false).OrderByDescending(x => x.CreationTime)
+            var query = await _studentRepo.GetAll().Include(x => x.Parent.User)
+                .Where(x => x.IsDeleted == false).OrderByDescending(x => x.CreationTime)
                 .Select(x => new
                 {
                     x.Id,
@@ -397,7 +398,9 @@ namespace Auth.Core.Services
                     x.IsActive,
                     x.RegNumber,
                     x.Class,
-                    image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                    image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path,
+                    x.Parent.User.FullName,
+                    x.Parent.User.PhoneNumber
                 }).ToListAsync();
 
             if (query != null)
@@ -413,7 +416,9 @@ namespace Auth.Core.Services
                     Section = x.section,
                     StudentNumber = x.RegNumber,
                     SchoolClass = x.Class,
-                    Image = x.image == null ? null : _documentService.TryGetUploadedFile(x.image)
+                    Image = x.image == null ? null : _documentService.TryGetUploadedFile(x.image),
+                    ParentName  = x.FullName,
+                    Parent_PNum = x.PhoneNumber
                 }).ToList();
 
 
@@ -430,7 +435,7 @@ namespace Auth.Core.Services
 
         public async Task<ResultModel<PaginatedModel<StudentVM>>> GetAllStudentsInClass(QueryModel model, long classId)
         {
-            var query = _studentRepo.GetAll()
+            var query = _studentRepo.GetAll().Include(x => x.Parent.User)
                 .Where(x => x.ClassId == classId && x.IsDeleted == false)
                 .Select(x => new StudentVM
                 {
@@ -445,8 +450,10 @@ namespace Auth.Core.Services
                     PhoneNumber = x.User.PhoneNumber,
                     Section = x.Class.SchoolSection.Name,
                     IsActive = x.IsActive,
-                    ImagePath = x.FileUploads.Where(fileUpload => fileUpload.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault()
-                }); ;
+                    ImagePath = x.FileUploads.Where(fileUpload => fileUpload.Name == DocumentType.ProfilePhoto.GetDisplayName()).Select(x => x.Path).FirstOrDefault(),
+                    ParentName = x.Parent.User.FullName,
+                    Parent_PNum = x.Parent.User.PhoneNumber.ToString()
+                });
 
             var pagedData = await query.ToPagedListAsync(model.PageIndex, model.PageSize);
 

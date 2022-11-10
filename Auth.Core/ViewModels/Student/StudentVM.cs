@@ -85,6 +85,9 @@ namespace Auth.Core.ViewModels.Student
         public long? UserId { get; set; }
         public byte[] Image => ImagePath?.GetBase64StringFromImage();
 
+        public string ParentName { get; set; }
+        public string Parent_PNum { get; set; }
+
         [System.Text.Json.Serialization.JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
         public string ImagePath { get; set; }
@@ -118,11 +121,13 @@ namespace Auth.Core.ViewModels.Student
         public string Section { get; set; }
         public string Class => SchoolClass?.FullName;
         public bool IsActive { get; set; }
+        public string ParentName { get; set; }
+        public string Parent_PNum { get; set; }
         //public byte[] Image => ImagePath?.GetBase64StringFromImage();
 
         //[System.Text.Json.Serialization.JsonIgnore]
         //[Newtonsoft.Json.JsonIgnore]
-        
+
         public string Image { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]

@@ -117,7 +117,8 @@ namespace Auth.Core.Services.Users
 
             var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
 
-            var query = await _parentRepo.GetAll().Where(x => x.Students.Any(n => n.TenantId == schoolId))
+            var query = await _parentRepo.GetAll().Include(x => x.Students)
+                .Where(x => x.Students.Any(n => n.TenantId == schoolId))
                 .Select(x => new
                 {
                     Email = x.User.Email,
@@ -126,7 +127,12 @@ namespace Auth.Core.Services.Users
                     ParentCreationYear = x.CreationTime.Year,
                     PhoneNumber = x.User.PhoneNumber,
                     Status = x.Status,
-                    Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                    Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path,
+                    ChildDetails = x.Students.Where(x => x.TenantId == schoolId).Select(x => new StudentDT
+                    {
+                        StudentName = x.User.FullName,
+                        ClassName = x.Class.FullName
+                    }).ToList()
                 }).ToListAsync();
 
             if (query != null)
@@ -140,6 +146,8 @@ namespace Auth.Core.Services.Users
                     PhoneNumber = x.PhoneNumber,
                     Status = x.Status,
                     Image = x.Image == null ? null : _documentService.TryGetUploadedFile(x.Image),
+                    ChildDetails = x.ChildDetails,
+                    TotalKidsInSchool = x.ChildDetails.Count
                 }).ToPagedList(vm.PageIndex, vm.PageSize);
 
                 var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, query.Count);
