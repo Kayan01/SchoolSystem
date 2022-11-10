@@ -1116,7 +1116,6 @@ namespace Auth.Core.Services
             table.Columns.Add("MEDICAL_BG", typeof(string));
             table.Columns.Add("GENOTYPE", typeof(string));
             table.Columns.Add("PARENT_FNAME", typeof(string));
-            table.Columns.Add("PARENT_EMAIL", typeof(string));
             table.Columns.Add("PARENT_PNUM", typeof(string));
 
             foreach (var item in model)
@@ -1125,7 +1124,7 @@ namespace Auth.Core.Services
                     item.Class.Name + " " + item.Class.ClassArm,
                     item.Address, item.State,item.MedicalDetail.BloodGroup,
                     item.MedicalDetail.Genotype, item.Parent.User.FullName, 
-                    item.Parent.User.Email, item.Parent.User.PhoneNumber
+                    item.Parent.User.PhoneNumber
                     );
             }
 
