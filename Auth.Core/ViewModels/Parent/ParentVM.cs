@@ -71,6 +71,10 @@ namespace Auth.Core.ViewModels.Parent
         public string Image { get; set; }
         public string HomeAddress { get; set; }
         public List<Models.Student> Student { get; set; }
+        public List<StudentDT> ChildDetails { get; set; }
+        public int TotalKidsInSchool { get; set; }
+
+
 
 
         public static implicit operator ParentListVM(Models.Users.Parent model)
@@ -84,9 +88,20 @@ namespace Auth.Core.ViewModels.Parent
                 Email = model.User.Email,
                 Status = model.Status,
                 HomeAddress = model.HomeAddress,
-                Student = model.Students
+                Student = model.Students,
+                ChildDetails = model.Students.Select(x => new StudentDT
+                {
+                    StudentName = x.User.FullName,
+                    ClassName = x.Class.FullName
+                }).ToList()
             };
         }
+    }
+
+    public class StudentDT
+    {
+        public string StudentName { get; set; }
+        public string ClassName { get; set; }
     }
 
 }
