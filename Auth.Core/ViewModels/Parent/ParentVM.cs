@@ -70,6 +70,7 @@ namespace Auth.Core.ViewModels.Parent
         public bool Status { get; set; }
         public string Image { get; set; }
         public string HomeAddress { get; set; }
+        public List<Models.Student> Student { get; set; }
 
 
         public static implicit operator ParentListVM(Models.Users.Parent model)
@@ -82,7 +83,8 @@ namespace Auth.Core.ViewModels.Parent
                 PhoneNumber = model.User.PhoneNumber,
                 Email = model.User.Email,
                 Status = model.Status,
-                HomeAddress = model.HomeAddress
+                HomeAddress = model.HomeAddress,
+                Student = model.Students
             };
         }
     }

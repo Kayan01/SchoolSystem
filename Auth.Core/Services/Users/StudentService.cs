@@ -1006,7 +1006,7 @@ namespace Auth.Core.Services
 
             var query = await _studentRepo.GetAllIncluding(x => x.Class)
                 .Include(x => x.User)
-                .Include(x => x.Parent)
+                .Include(x => x.Parent.User)
                 .Include(x => x.MedicalDetail)
                 .ToListAsync();
 
@@ -1051,11 +1051,11 @@ namespace Auth.Core.Services
                     workSheet.Cell(1, 3).Value = "ClassName";
                     workSheet.Cell(1, 4).Value = "Address";
                     workSheet.Cell(1, 5).Value = "State";
-                    workSheet.Cell(1, 6).Value = "Country";
-                    workSheet.Cell(1, 7).Value = "ParentFullName";
-                    workSheet.Cell(1, 8).Value = "MedicalBloodGroup";
-                    workSheet.Cell(1, 9).Value = "MedicalGenotype";
-                    workSheet.Cell(1, 10).Value = "Religion";
+                    workSheet.Cell(1, 6).Value = "MedicalBloodGroup";
+                    workSheet.Cell(1, 7).Value = "MedicalGenotype";
+                    workSheet.Cell(1, 8).Value = "ParentFullName";
+                    workSheet.Cell(1, 9).Value = "ParentEmail";
+                    workSheet.Cell(1, 10).Value = "ParentPhoneNum";
 
 
                     foreach (var data in model)
@@ -1068,11 +1068,11 @@ namespace Auth.Core.Services
                         workSheet.Cell(currentRow, 3).Value = $"{data.Class.Name} {data.Class.ClassArm}";
                         workSheet.Cell(currentRow, 4).Value = $"{data.Address}";
                         workSheet.Cell(currentRow, 5).Value = $"{data.State}";
-                        workSheet.Cell(currentRow, 6).Value = $"{data.Country}";
-                        workSheet.Cell(currentRow, 7).Value = $"{parent.User.FirstName} {parent.User.LastName}";
-                        workSheet.Cell(currentRow, 8).Value = $"{data.MedicalDetail.BloodGroup}";
-                        workSheet.Cell(currentRow, 9).Value = $"{data.MedicalDetail.Genotype}";
-                        workSheet.Cell(currentRow, 10).Value = $"{data.Religion}";
+                        workSheet.Cell(currentRow, 6).Value = $"{data.MedicalDetail.BloodGroup}";
+                        workSheet.Cell(currentRow, 7).Value = $"{data.MedicalDetail.Genotype}";
+                        workSheet.Cell(currentRow, 8).Value = $"{parent.User.FirstName} {parent.User.LastName}";
+                        workSheet.Cell(currentRow, 9).Value = $"{parent.User.Email}";
+                        workSheet.Cell(currentRow, 10).Value = $"{parent.User.PhoneNumber}";
                     }
                     var byteData = new byte[0];
                     using (var stream = new MemoryStream())
@@ -1110,20 +1110,22 @@ namespace Auth.Core.Services
 
             table.Columns.Add("FIRST_NAME", typeof(string));
             table.Columns.Add("LAST_NAME", typeof(string));
-            DataColumn className = table.Columns.Add("CLASS_NAME", typeof(string));
+            table.Columns.Add("CLASS_NAME", typeof(string));
             table.Columns.Add("ADDRESS", typeof(string));
-            DataColumn subjectName = table.Columns.Add("STATE", typeof(string));
-            table.Columns.Add("COUNTRY", typeof(string));
+            table.Columns.Add("STATE", typeof(string));
             table.Columns.Add("MEDICAL_BG", typeof(string));
             table.Columns.Add("GENOTYPE", typeof(string));
-            table.Columns.Add("RELIGION", typeof(string));
+            table.Columns.Add("PARENT_FNAME", typeof(string));
+            table.Columns.Add("PARENT_PNUM", typeof(string));
 
             foreach (var item in model)
             {
                 table.Rows.Add(item.User.FirstName, item.User.LastName,
                     item.Class.Name + " " + item.Class.ClassArm,
-                    item.Address, item.State, item.Country,item.MedicalDetail.BloodGroup,
-                    item.MedicalDetail.Genotype,item.Religion);
+                    item.Address, item.State,item.MedicalDetail.BloodGroup,
+                    item.MedicalDetail.Genotype, item.Parent.User.FullName, 
+                    item.Parent.User.PhoneNumber
+                    );
             }
 
             var pdf = table.ToPdf();
