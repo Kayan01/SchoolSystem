@@ -1204,7 +1204,7 @@ namespace AssessmentSvc.Core.Services
                 table.Columns.Add("STUDENT-NAME", typeof(string));
                 table.Columns.Add("STUDENT-REGNO", typeof(string));
                 var sub = table.Columns.Add("SUBJECT", typeof(string));
-                var sco = table.Columns.Add("SCORE", typeof(double));
+                var sco = table.Columns.Add("SCORE", typeof(string));
                 table.Columns.Add("AVG-SCORE", typeof(double));
 
                 var lenght = table.Columns.Count;
@@ -1215,9 +1215,9 @@ namespace AssessmentSvc.Core.Services
                     
                     foreach (var da in item.AssessmentAndScores)
                     {
-                        table.Rows.Add("","",da.SubjectName,da.Score);
+                        table.Rows.Add("","",da.SubjectName,da.Score.ToString());
                     }
-                    table.Rows.Add("", "", "", 0, item.AverageScore);
+                    table.Rows.Add("", "", "", "", item.AverageScore);
                 }
 
                 var pdf = table.ToPdf();
