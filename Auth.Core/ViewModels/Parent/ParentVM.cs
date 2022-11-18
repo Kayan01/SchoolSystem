@@ -71,15 +71,49 @@ namespace Auth.Core.ViewModels.Parent
         public string Image { get; set; }
         public string HomeAddress { get; set; }
         public List<Models.Student> Student { get; set; }
+
+
+        public static implicit operator ParentListVM(Models.Users.Parent model)
+        {
+            return model == null ? null : new ParentListVM
+            {
+                FullName = model.User.FullName,
+                Id = model.Id,
+                ParentCode = $"PRT/{model.CreationTime.Year}/{model.Id}",
+                PhoneNumber = model.User.PhoneNumber,
+                Email = model.User.Email,
+                Status = model.Status,
+                HomeAddress = model.HomeAddress,
+            };
+        }
+    }
+
+    public class StudentDT
+    {
+        public string StudentName { get; set; }
+        public string ClassName { get; set; }
+    }
+
+    public class ParentListDetailVM
+    {
+        public long Id { get; set; }
+        public string FullName { get; set; }
+        public string ParentCode { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Email { get; set; }
+        public bool Status { get; set; }
+        public string Image { get; set; }
+        public string HomeAddress { get; set; }
+        public List<Models.Student> Student { get; set; }
         public List<StudentDT> ChildDetails { get; set; }
         public int TotalKidsInSchool { get; set; }
 
 
 
 
-        public static implicit operator ParentListVM(Models.Users.Parent model)
+        public static implicit operator ParentListDetailVM(Models.Users.Parent model)
         {
-            return model == null ? null : new ParentListVM
+            return model == null ? null : new ParentListDetailVM
             {
                 FullName = model.User.FullName,
                 Id = model.Id,
@@ -96,12 +130,6 @@ namespace Auth.Core.ViewModels.Parent
                 }).ToList()
             };
         }
-    }
-
-    public class StudentDT
-    {
-        public string StudentName { get; set; }
-        public string ClassName { get; set; }
     }
 
 }

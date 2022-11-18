@@ -112,10 +112,10 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParentsInSchool(long schoolId, QueryModel vm)
+        public async Task<ResultModel<PaginatedModel<ParentListDetailVM>>> GetAllParentsInSchool(long schoolId, QueryModel vm)
         {
 
-            var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
+            var resultModel = new ResultModel<PaginatedModel<ParentListDetailVM>>();
 
             var query = await _parentRepo.GetAll().Include(x => x.Students)
                 .Where(x => x.Students.Any(n => n.TenantId == schoolId))
@@ -137,7 +137,7 @@ namespace Auth.Core.Services.Users
 
             if (query != null)
             {
-                var parents = query.Select(x => new ParentListVM
+                var parents = query.Select(x => new ParentListDetailVM
                 {
                     Email = x.Email,
                     FullName = x.FullName,
@@ -150,7 +150,7 @@ namespace Auth.Core.Services.Users
                     TotalKidsInSchool = x.ChildDetails.Count
                 }).ToPagedList(vm.PageIndex, vm.PageSize);
 
-                var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, query.Count);
+                var data = new PaginatedModel<ParentListDetailVM>(parents, vm.PageIndex, vm.PageSize, query.Count);
                 resultModel.Data = data;
 
                 return resultModel;
@@ -797,9 +797,9 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<List<ParentListVM>>> ParentInSchoolData(long schoolId)
+        public async Task<ResultModel<List<ParentListDetailVM>>> ParentInSchoolData(long schoolId)
         {
-            var resultModel = new ResultModel<List<ParentListVM>>();
+            var resultModel = new ResultModel<List<ParentListDetailVM>>();
 
             var query = await _parentRepo.GetAll().Include(x => x.Students)
                 .Where(x => x.Students.Any(n => n.TenantId == schoolId))
@@ -821,7 +821,7 @@ namespace Auth.Core.Services.Users
             if (query != null)
             {
                 var studentDataQuery = new List<Student>();
-                var parents = new List<ParentListVM>();
+                var parents = new List<ParentListDetailVM>();
 
                 var index = 0;
                 var studentCount = 0;
@@ -839,7 +839,7 @@ namespace Auth.Core.Services.Users
 
                         if (query[index].Student.Count == studentCount)
                         {
-                            var parent = new ParentListVM()
+                            var parent = new ParentListDetailVM()
                             {
                                 Email = query[index].Email,
                                 FullName = query[index].FullName,
@@ -867,7 +867,7 @@ namespace Auth.Core.Services.Users
         }
 
 
-        public async Task<ResultModel<ExportPayloadVM>> ExportParentDetailsExcel(List<ParentListVM> model)
+        public async Task<ResultModel<ExportPayloadVM>> ExportParentDetailsExcel(List<ParentListDetailVM> model)
         {
             var resultModel = new ResultModel<ExportPayloadVM>();
 
@@ -941,7 +941,7 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<ExportPayloadVM>> ExportParentDetailsPDF(List<ParentListVM> model)
+        public async Task<ResultModel<ExportPayloadVM>> ExportParentDetailsPDF(List<ParentListDetailVM> model)
         {
             var resultModel = new ResultModel<ExportPayloadVM>();
 

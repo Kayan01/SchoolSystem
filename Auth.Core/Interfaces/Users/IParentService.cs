@@ -17,7 +17,7 @@ namespace Auth.Core.Interfaces.Users
     {
         Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParents(QueryModel vm);
         Task<ResultModel<ParentDetailVM>> GetParentsForStudent(long studId);
-        Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParentsInSchool(long schoolId,QueryModel vm);
+        Task<ResultModel<PaginatedModel<ParentListDetailVM>>> GetAllParentsInSchool(long schoolId,QueryModel vm);
         Task<ResultModel<ParentDetailVM>> GetParentById(long Id);
         Task<ResultModel<List<SchoolParentViewModel>>> GetStudentsSchools(long currentUserId);
         Task<ResultModel<List<StudentParentVM>>> GetStudentsInSchool(long parentId);
@@ -28,8 +28,8 @@ namespace Auth.Core.Interfaces.Users
         Task<ResultModel<bool>> UploadBulkParentData(IFormFile excelfile);
         Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentByName(QueryModel vm, string FirstName);
         Task<ResultModel<PaginatedModel<ParentListVM>>> GetParentBySchoolAndName(QueryModel vm, SearchParentVm model);
-        Task<ResultModel<List<ParentListVM>>> ParentInSchoolData(long schoolId);
-        Task<ResultModel<ExportPayloadVM>> ExportParentDetailsExcel(List<ParentListVM> model);
-        Task<ResultModel<ExportPayloadVM>> ExportParentDetailsPDF(List<ParentListVM> model);
+        Task<ResultModel<List<ParentListDetailVM>>> ParentInSchoolData(long schoolId);
+        Task<ResultModel<ExportPayloadVM>> ExportParentDetailsExcel(List<ParentListDetailVM> model);
+        Task<ResultModel<ExportPayloadVM>> ExportParentDetailsPDF(List<ParentListDetailVM> model);
     }
 }
