@@ -1,5 +1,6 @@
 ﻿using FinanceSvc.Core.Services.Interfaces;
 using FinanceSvc.Core.ViewModels.Transaction;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -181,6 +182,67 @@ namespace FinanceSvc.API.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> ExportInvoiceReportExcel([FromQuery]TransStatus model)
+        {
+            var result = new ResultModel<ExportPayloadVM>();
+
+            if (model ==  null)
+            {
+                return ApiResponse<List<TransactionVM>>(message : "Status field cannot be empty", errors: result.ErrorMessages.ToArray());
+            }
+
+            try
+            {
+                var data = await _transactionService.GetAllTransactionReportByStatus(model);
+                if (data == null)
+                {
+                    return ApiResponse(message: "No Invoice record", codes: ApiResponseCodes.OK, data: result.Data, totalCount: data.Data.Count);
+                }
+                
+                result = await _transactionService.ExportTransactionRecordExcel(data.Data);
+                if (result.HasError)
+                    return ApiResponse<List<TransactionVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: data.Data.Count);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> ExportInvoiceReportPDF([FromQuery]TransStatus model)
+        {
+            var result = new ResultModel<ExportPayloadVM>();
+
+            if (model ==  null)
+            {
+                return ApiResponse<List<TransactionVM>>(message: "Status field cannot be empty", errors: result.ErrorMessages.ToArray());
+            }
+
+            try
+            {
+                var data = await _transactionService.GetAllTransactionReportByStatus(model);
+                if (data == null)
+                {
+                    return ApiResponse(message: "No Invoice record", codes: ApiResponseCodes.OK, data: result.Data, totalCount: data.Data.Count);
+                }
+
+                result = await _transactionService.ExportTransactionRecordPDF(data.Data);
+                if (result.HasError)
+                    return ApiResponse<List<TransactionVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: data.Data.Count);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
     }
 }
