@@ -1,5 +1,6 @@
 ﻿using FinanceSvc.Core.Services.Interfaces;
 using FinanceSvc.Core.ViewModels.Transaction;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -26,7 +27,6 @@ namespace FinanceSvc.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        [RequiresPermission(Permission.FINANCE_CREATE)]
         public async Task<IActionResult> NewTransaction([FromBody] TransactionPostVM model)
         {
             if (model == null)
@@ -51,7 +51,6 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<TransactionDetailsVM>), 200)]
-        [RequiresPermission(Permission.FINANCE_READ)]
         public async Task<IActionResult> GetTransaction(int id)
         {
             try
@@ -69,7 +68,6 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TransactionVM>>), 200)]
-        [RequiresPermission(Permission.FINANCE_READ)]
         public async Task<IActionResult> GetAllAwaitingApprovalTransactions()
         {
             try
@@ -87,7 +85,6 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TransactionVM>>), 200)]
-        [RequiresPermission(Permission.FINANCE_READ)]
         public async Task<IActionResult> GetAllPendingTransactions([FromQuery]long? studentId)
         {
             try
@@ -105,7 +102,6 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<List<TransactionVM>>), 200)]
-        [RequiresPermission(Permission.FINANCE_READ)]
         public async Task<IActionResult> GetAllTransactions([FromQuery]QueryModel query)
         {
             try
@@ -123,7 +119,6 @@ namespace FinanceSvc.API.Controllers
 
         [HttpGet("{studentId}")]
         [ProducesResponseType(typeof(ApiResponse<List<TransactionVM>>), 200)]
-        [RequiresPermission(Permission.FINANCE_READ)]
         public async Task<IActionResult> GetTransactionHistory(long studentId)
         {
             try
@@ -141,7 +136,6 @@ namespace FinanceSvc.API.Controllers
 
         [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        [RequiresPermission(Permission.FINANCE_UPDATE)]
         public async Task<IActionResult> UploadTransactionReceipt([FromForm] TransactionReceiptVM model)
         {
             if (model == null)
@@ -166,7 +160,6 @@ namespace FinanceSvc.API.Controllers
 
         [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        [RequiresPermission(Permission.FINANCE_UPDATE)]
         public async Task<IActionResult> ApproveRejectTransaction([FromBody] TransactionApprovalVM model)
         {
             if (model == null)
@@ -189,6 +182,67 @@ namespace FinanceSvc.API.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> ExportInvoiceReportExcel([FromQuery]TransStatus model)
+        {
+            var result = new ResultModel<ExportPayloadVM>();
+
+            if (model ==  null)
+            {
+                return ApiResponse<List<TransactionVM>>(message : "Status field cannot be empty", errors: result.ErrorMessages.ToArray());
+            }
+
+            try
+            {
+                var data = await _transactionService.GetAllTransactionReportByStatus(model);
+                if (data == null)
+                {
+                    return ApiResponse(message: "No Invoice record", codes: ApiResponseCodes.OK, data: result.Data, totalCount: data.Data.Count);
+                }
+                
+                result = await _transactionService.ExportTransactionRecordExcel(data.Data);
+                if (result.HasError)
+                    return ApiResponse<List<TransactionVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: data.Data.Count);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportPayloadVM>), 200)]
+        public async Task<IActionResult> ExportInvoiceReportPDF([FromQuery]TransStatus model)
+        {
+            var result = new ResultModel<ExportPayloadVM>();
+
+            if (model ==  null)
+            {
+                return ApiResponse<List<TransactionVM>>(message: "Status field cannot be empty", errors: result.ErrorMessages.ToArray());
+            }
+
+            try
+            {
+                var data = await _transactionService.GetAllTransactionReportByStatus(model);
+                if (data == null)
+                {
+                    return ApiResponse(message: "No Invoice record", codes: ApiResponseCodes.OK, data: result.Data, totalCount: data.Data.Count);
+                }
+
+                result = await _transactionService.ExportTransactionRecordPDF(data.Data);
+                if (result.HasError)
+                    return ApiResponse<List<TransactionVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: data.Data.Count);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
     }
 }

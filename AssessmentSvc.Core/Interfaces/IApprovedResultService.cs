@@ -1,4 +1,5 @@
-﻿using AssessmentSvc.Core.ViewModels.Result;
+﻿using AssessmentSvc.Core.ViewModels;
+using AssessmentSvc.Core.ViewModels.Result;
 using AssessmentSvc.Core.ViewModels.Student;
 using Shared.ViewModels;
 using System;
@@ -20,5 +21,7 @@ namespace AssessmentSvc.Core.Interfaces
         Task<ResultModel<List<StudentReportSheetVM>>> GetApprovedResultForMultipleStudents(long classId, long[] studentIds, long? curSessionId = null, int? termSequenceNumber = null);
         Task<ResultModel<List<StudentVM>>> GetStudentsWithApprovedResult(long classId, long? curSessionId = null, int? termSequenceNumber = null);
         Task<ResultModel<string>> MailResult(MailResultVM vm);
+        Task<ResultModel<ExportViewModel>> ExportBroadSheetExcel(List<ResultBroadSheet> model);
+        Task<ResultModel<ExportViewModel>> ExportBroadSheetPDF(List<ResultBroadSheet> model);
     }
 }

@@ -1206,5 +1206,52 @@ namespace Auth.Core.Services
 
             return resultModel;
         }
+
+        public async Task<ResultModel<GroupOfSchoolCollatedData>> GetGroupOfSchoolSchoolsData(long? Id, long? GroupId)
+        {
+            var resultModel = new ResultModel<GroupOfSchoolCollatedData>();
+            var totalStudents = 0;
+            var totalStaffs = 0;
+
+            var query = new List<School>();
+
+            if (Id != null)
+            {
+                query = await _schoolRepo.GetAllIncluding(x => x.Students)
+              .Include(x => x.Staffs)
+              .Where(x => x.Id == Id).ToListAsync();
+            }
+            else if (GroupId != null)
+            {
+                query = await _schoolRepo.GetAllIncluding(x => x.Students)
+               .Include(x => x.Staffs)
+               .Where(x => x.SchoolGroupId == GroupId).ToListAsync();
+            }
+           
+
+            if (query.Count == 0)
+            {
+                resultModel.Data = null;
+                resultModel.Message = "Payload Empty.";
+                return resultModel;
+            }
+
+            foreach (var data in query)
+            {
+                totalStaffs += data.Staffs.Count();
+                totalStudents += data.Students.Count();
+            }
+
+            var res = new GroupOfSchoolCollatedData()
+            {
+                TotalSchool = query.Count,
+                TotalStaffs = totalStaffs,
+                TotalStudents = totalStudents,
+                TotalUsers = totalStudents + totalStaffs,
+            };
+
+            resultModel.Data = res; 
+            return resultModel;
+        }
     }
 }

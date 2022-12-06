@@ -1,4 +1,5 @@
 ﻿using AssessmentSvc.Core.Interfaces;
+using AssessmentSvc.Core.ViewModels;
 using AssessmentSvc.Core.ViewModels.Attendance;
 using AssessmentSvc.Core.ViewModels.Result;
 using AssessmentSvc.Core.ViewModels.Student;
@@ -402,6 +403,54 @@ namespace AssessmentSvc.API.Controllers
             try
             {
                 var result = await _attendanceService.ExportStudentAttendanceReport(model);
+                if (result.HasError)
+                    return ApiResponse<List<StudentAttendanceReportVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportViewModel>), 200)]
+        public async Task<IActionResult> ExportBroadSheetExcel([FromQuery]long Id)
+        {
+            var result = new ResultModel<ExportViewModel>();
+            try
+            {
+                var query = _approvedResultService.GetClassTeacherApprovedClassBroadSheet(Id).Result;
+                if (query != null)
+                {
+                    result = await _approvedResultService.ExportBroadSheetExcel(query.Data);
+                }
+               
+                if (result.HasError)
+                    return ApiResponse<List<StudentAttendanceReportVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+
+                return HandleError(ex);
+            }
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<ExportViewModel>), 200)]
+        public async Task<IActionResult> ExportBroadSheetPDF([FromQuery] long Id)
+        {
+            var result = new ResultModel<ExportViewModel>();
+            try
+            {
+                var query = _approvedResultService.GetClassTeacherApprovedClassBroadSheet(Id).Result;
+                if (query != null)
+                {
+                    result = await _approvedResultService.ExportBroadSheetPDF(query.Data);
+                }
+
                 if (result.HasError)
                     return ApiResponse<List<StudentAttendanceReportVM>>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
