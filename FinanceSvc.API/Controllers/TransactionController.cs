@@ -244,5 +244,21 @@ namespace FinanceSvc.API.Controllers
             }
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<TransactionVM>>), 200)]
+        public async Task<IActionResult> GetAllTransactionsByStatus([FromQuery] QueryModel query,[FromQuery] TransStatus model)
+        {
+            try
+            {
+                var result = await _transactionService.ViewAllTransactionReportByStatus(model,query);
+                if (result.HasError)
+                    return ApiResponse<List<TransactionVM>>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }
