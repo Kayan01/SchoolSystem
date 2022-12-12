@@ -389,5 +389,27 @@ namespace FinanceSvc.Core.Services
             return resultModel;
         }
 
+        public async Task<ResultModel<PaginatedModel<TransactionVM>>> ViewAllTransactionReportByStatus(TransStatus model, QueryModel queryModel)
+        {
+            var query = await _transactionRepo.GetAll().Where(x => x.Status == model.Status).OrderByDescending(m => m.Id)
+                .Select(m => new TransactionVM()
+                {
+                    Description = m.Description,
+                    Amount = m.Amount,
+                    InvoiceId = m.InvoiceId,
+                    status = m.Status,
+                    TransactionId = m.Id,
+                    DueDate = m.Invoice.PaymentDate,
+                    FeeType = m.Invoice.Fee.Name,
+                    StudentRegNumber = m.Invoice.Student.RegNumber,
+                    TotalAmount = m.Invoice.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount)
+                }).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
+
+            return new ResultModel<PaginatedModel<TransactionVM>>
+            {
+                Data = new PaginatedModel<TransactionVM>(query, queryModel.PageIndex, queryModel.PageSize, query.TotalItemCount)
+            };
+        }
+
     }
 }
