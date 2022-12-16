@@ -4,6 +4,7 @@ using FinanceSvc.Core.Models;
 using FinanceSvc.Core.Services.Interfaces;
 using FinanceSvc.Core.ViewModels.Transaction;
 using IPagedList;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
@@ -391,7 +392,9 @@ namespace FinanceSvc.Core.Services
 
         public async Task<ResultModel<PaginatedModel<TransactionVM>>> ViewAllTransactionReportByStatus(TransStatus model, QueryModel queryModel)
         {
-            var query = await _transactionRepo.GetAll().Where(x => x.Status == model.Status).OrderByDescending(m => m.Id)
+            var query = await _transactionRepo.GetAll()
+                .Where(x => x.Status == model.Status)
+                .OrderByDescending(m => m.Id)
                 .Select(m => new TransactionVM()
                 {
                     Description = m.Description,
@@ -404,6 +407,9 @@ namespace FinanceSvc.Core.Services
                     StudentRegNumber = m.Invoice.Student.RegNumber,
                     TotalAmount = m.Invoice.InvoiceComponents.Where(m => m.IsSelected).Sum(n => n.Amount)
                 }).ToPagedListAsync(queryModel.PageIndex, queryModel.PageSize);
+
+            query = query.Where(x => x.DueDate >= model.From && x.DueDate <= model.To)
+                .ToPagedList(queryModel.PageIndex, queryModel.PageSize);
 
             return new ResultModel<PaginatedModel<TransactionVM>>
             {
