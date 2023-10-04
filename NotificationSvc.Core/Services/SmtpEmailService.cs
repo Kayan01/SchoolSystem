@@ -1,14 +1,17 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using MailKit.Net.Smtp;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MimeKit;
 using NotificationSvc.Core.Services.Interfaces;
 using NotificationSvc.Core.ViewModels;
 using Shared.Configuration;
+using Shared.FileStorage;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Mail;
+//using System.Net.Mail;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -21,64 +24,121 @@ namespace NotificationSvc.Core.Services
         private readonly ILogger _logger;
         private readonly StringComparison _stringComparison = StringComparison.OrdinalIgnoreCase;
 
-
         public SmtpEmailService(ILogger<SmtpEmailService> logger, IOptions<SmtpConfig> settingSvc)
         {
             _logger = logger;
             _smtpsettings = settingSvc.Value;
         }
 
-        private SmtpClient GetSmtpClient()
-        {
-            var client = new SmtpClient
-            {
-                Host = _smtpsettings.Server,
-                Port = _smtpsettings.Port,
-                EnableSsl = _smtpsettings.UseSSl,
-                UseDefaultCredentials = _smtpsettings.UseDefaultCredentials
-            };
+        //private SmtpClient GetSmtpClient()
+        //{
+        //    var client = new SmtpClient()
+        //    {
+        //        Host = _smtpsettings.Server,
+        //        Port = _smtpsettings.Port,
+        //        EnableSsl = _smtpsettings.UseSSl,
+        //        UseDefaultCredentials = _smtpsettings.UseDefaultCredentials
+        //    };
 
-            if (!_smtpsettings.UseDefaultCredentials)
-                client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
-            return client;
-        }
+        //    if (!_smtpsettings.UseDefaultCredentials)
+        //        client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
+        //    return client;
+        //}
 
         private SmtpClient GetSmtpClient2(string userName, string password)
         {
-            var client = new SmtpClient
-            {
-                Host = _smtpsettings.Server,
-                Port = _smtpsettings.Port,
-                EnableSsl = _smtpsettings.UseSSl,
-                UseDefaultCredentials = _smtpsettings.UseDefaultCredentials
-            };
+            var client = new SmtpClient();
+            //{
+            //    Host = _smtpsettings.Server,
+            //    Port = _smtpsettings.Port,
+            //    EnableSsl = _smtpsettings.UseSSl,
+            //    UseDefaultCredentials = _smtpsettings.UseDefaultCredentials
+            //};
 
-            client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
+            if (!_smtpsettings.UseDefaultCredentials)
+                client.Connect(_smtpsettings.Server, _smtpsettings.Port, MailKit.Security.SecureSocketOptions.Auto);
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+                client.Authenticate(_smtpsettings.UserName, _smtpsettings.Password);
 
-            //if (!_smtpsettings.UseDefaultCredentials)
-            //    if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+            //if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
             //    {
-            //        client.Credentials = new NetworkCredential(userName, password);
+            //        //client.Credentials = new NetworkCredential(userName, password);
+            //        client.Connect(_smtpsettings.Server, _smtpsettings.Port, true);
+            //        client.AuthenticationMechanisms.Remove("XOAUTH2");
+            //        client.Authenticate(userName, password);
             //    }
             //    else
             //    {
-            //        client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
+            //        //client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
+            //        client.Connect(_smtpsettings.Server, _smtpsettings.Port, MailKit.Security.SecureSocketOptions.Auto);
+            //        client.AuthenticationMechanisms.Remove("XOAUTH2");
+            //        client.Authenticate(_smtpsettings.UserName, _smtpsettings.Password);
             //    }
-
+            
             return client;
         }
 
-        private async Task<MailMessage> BuildMailMessage(MailBase mail, Dictionary<string, string> replacements = null)
+        //private async Task<MailMessage> BuildMailMessage(MailBase mail, Dictionary<string, string> replacements = null)
+        //{
+        //    ValidateMail(mail);
+
+        //    var sender = new MailAddress(mail.Sender, mail.SenderDisplayName);
+
+        //    var mailMessage = new MailMessage()
+        //    {
+        //        Subject = mail.Subject,
+        //        IsBodyHtml = mail.IsBodyHtml,
+        //        From = sender,
+        //    };
+
+        //    var mailBody = !mail.BodyIsFile ? mail.Body : await GetEmailBodyTemplate(mail.BodyPath);
+
+        //    if (replacements != null)
+        //        mailBody = Replace(mailBody, replacements, false);
+
+        //    mailMessage.Body = mailBody;
+
+        //    if (mail.Attachments != null && mail.Attachments.Any())
+        //        //for (int i = 0; i < mail.Attachments.Count-1; i++) {
+        //        //    mailMessage.Attachments.Add(mail.Attachments.ElementAt(i));
+        //        //}
+        //        foreach (var attachment in mail.Attachments)
+        //            mailMessage.Attachments.Add(attachment);
+
+        //    foreach (var to in mail.To)
+        //        mailMessage.To.Add(to);
+
+        //    if (mail.Bcc != null && mail.Bcc.Any())
+        //        foreach (var bcc in mail.Bcc)
+        //            mailMessage.Bcc.Add(bcc);
+
+        //    if (mail.CC != null && mail.CC.Any())
+        //        foreach (var cc in mail.CC)
+        //            mailMessage.CC.Add(cc);
+
+        //    return mailMessage;
+        //}
+
+        private async Task<MimeMessage> BuildMailMessage2(MailBase mail, Dictionary<string, string> replacements = null)
         {
             ValidateMail(mail);
 
-            var sender = new MailAddress(mail.Sender, mail.SenderDisplayName);
+            // var sender = new MailAddress(mail.Sender, mail.SenderDisplayName);
+            var sender = new MailboxAddress(mail.Sender, mail.Sender);
 
-            var mailMessage = new MailMessage()
+            //var mailMessage = new MailMessage()
+            //{
+            //    Subject = mail.Subject,
+            //    IsBodyHtml = mail.IsBodyHtml,
+            //    From = sender,
+            //};
+
+            var mailMessage = new MimeMessage()
             {
                 Subject = mail.Subject,
-                IsBodyHtml = mail.IsBodyHtml,
-                From = sender,
+                //Body = new htm(mail.IsBodyHtml? mail.Body : null),
+                Sender = sender,
+
             };
 
             var mailBody = !mail.BodyIsFile ? mail.Body : await GetEmailBodyTemplate(mail.BodyPath);
@@ -86,32 +146,35 @@ namespace NotificationSvc.Core.Services
             if (replacements != null)
                 mailBody = Replace(mailBody, replacements, false);
 
-            mailMessage.Body = mailBody;
+            mailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text=mailBody };
 
             if (mail.Attachments != null && mail.Attachments.Any())
+            {
                 //for (int i = 0; i < mail.Attachments.Count-1; i++) {
                 //    mailMessage.Attachments.Add(mail.Attachments.ElementAt(i));
                 //}
-                foreach (var attachment in mail.Attachments)
-                    mailMessage.Attachments.Add(attachment);
+                //foreach (var attachment in mail.Attachments)
+                //       mailMessage.Attachments.Add(attachment);
+            }
 
             foreach (var to in mail.To)
-                mailMessage.To.Add(to);
+                mailMessage.To.Add(new MailboxAddress(to));
 
             if (mail.Bcc != null && mail.Bcc.Any())
                 foreach (var bcc in mail.Bcc)
-                    mailMessage.Bcc.Add(bcc);
+                    mailMessage.Bcc.Add(new MailboxAddress(bcc));
 
             if (mail.CC != null && mail.CC.Any())
                 foreach (var cc in mail.CC)
-                    mailMessage.CC.Add(cc);
+                    mailMessage.Cc.Add(new MailboxAddress(cc));
 
             return mailMessage;
         }
 
+
         void IMailService.SendMail(MailBase mail)
         {
-            SendMail(mail, null);
+            //SendMail(mail, null);
         }
 
         void IMailService.SendMail(MailBase mail, Dictionary<string, string> replacements)
@@ -137,29 +200,30 @@ namespace NotificationSvc.Core.Services
 
         protected virtual void SendMail(MailBase mail, Dictionary<string, string> replacements)
         {
-            var message = BuildMailMessage(mail, replacements).Result;
-            try
-            {
-                using (var _smtpClient = GetSmtpClient2(mail.Sender, mail.EmailPassword))
-                {
-                    _smtpClient.Send(message);
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.Message, e);
-                throw;
-            }
+        //    var message = BuildMailMessage(mail, replacements).Result;
+        //    try
+        //    {
+        //        using (var _smtpClient = GetSmtpClient2(mail.Sender, mail.EmailPassword))
+        //        {
+        //            _smtpClient.Send(message);
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        _logger.LogError(e.Message, e);
+        //        throw;
+        //    }
         }
 
         protected virtual async Task SendMailAsync(MailBase mail, Dictionary<string, string> replacements)
         {
-            var message = await BuildMailMessage(mail, replacements);
+            mail.IsBodyHtml = true;
+            var message = await BuildMailMessage2(mail, replacements);
             try
             {
                 using (var _smtpClient = GetSmtpClient2(mail.Sender, mail.EmailPassword))
                 {
-                    await _smtpClient.SendMailAsync(message);
+                    await _smtpClient.SendAsync(message);
                 }
             }
             catch (Exception e)

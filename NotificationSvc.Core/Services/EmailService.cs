@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MimeKit;
 using NotificationSvc.Core.Services.Interfaces;
 using NotificationSvc.Core.ViewModels;
 using Shared.Configuration;
@@ -77,7 +78,6 @@ namespace NotificationSvc.Core.Services
             if (senderName == null)
             {
                 mailBase = new Mail(_appSettingsConfiguration.SystemEmail, template.Subject, emailPassword, emailAddresses);
-
             }
             else
             {
@@ -87,6 +87,12 @@ namespace NotificationSvc.Core.Services
             mailBase.IsBodyHtml = true;
             mailBase.BodyIsFile = true;
             mailBase.BodyPath = _documentService.GetFile(template.TemplatePath).PhysicalPath;
+            
+            using (StreamReader streamReader = File.OpenText(_documentService.GetFile(template.TemplatePath).PhysicalPath))
+            {
+                BodyBuilder bodyBuilder = new BodyBuilder();
+                bodyBuilder.HtmlBody = streamReader.ReadToEnd();
+            }
 
             if (attachments != null)
             {
