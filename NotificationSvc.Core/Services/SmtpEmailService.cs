@@ -53,15 +53,17 @@ namespace NotificationSvc.Core.Services
                 UseDefaultCredentials = _smtpsettings.UseDefaultCredentials
             };
 
-            if (!_smtpsettings.UseDefaultCredentials)
-                if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
-                {
-                    client.Credentials = new NetworkCredential(userName, password);
-                }
-                else
-                {
-                    client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
-                }
+            client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
+
+            //if (!_smtpsettings.UseDefaultCredentials)
+            //    if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+            //    {
+            //        client.Credentials = new NetworkCredential(userName, password);
+            //    }
+            //    else
+            //    {
+            //        client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
+            //    }
 
             return client;
         }
