@@ -18,5 +18,9 @@ namespace FinanceSvc.Core.Services.Interfaces
         Task<ResultModel<List<TransactionVM>>> GetAllAwaitingApprovalTransactions();
         Task<ResultModel<string>> UploadTransactionReceipt(TransactionReceiptVM model);
         Task<ResultModel<string>> ApproveRejectTransaction(TransactionApprovalVM model);
+        Task<ResultModel<List<TransactionVM>>> GetAllTransactionReportByStatus(TransStatus model);
+        Task<ResultModel<ExportPayloadVM>> ExportTransactionRecordExcel(List<TransactionVM> model);
+        Task<ResultModel<ExportPayloadVM>> ExportTransactionRecordPDF(List<TransactionVM> model);
+        Task<ResultModel<PaginatedModel<TransactionVM>>> ViewAllTransactionReportByStatus(TransStatus model, QueryModel queryModel);
     }
 }

@@ -112,12 +112,13 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<PaginatedModel<ParentListVM>>> GetAllParentsInSchool(long schoolId, QueryModel vm)
+        public async Task<ResultModel<PaginatedModel<ParentListDetailVM>>> GetAllParentsInSchool(long schoolId, QueryModel vm)
         {
 
-            var resultModel = new ResultModel<PaginatedModel<ParentListVM>>();
+            var resultModel = new ResultModel<PaginatedModel<ParentListDetailVM>>();
 
-            var query = await _parentRepo.GetAll().Where(x => x.Students.Any(n => n.TenantId == schoolId))
+            var query = await _parentRepo.GetAll().Include(x => x.Students)
+                .Where(x => x.Students.Any(n => n.TenantId == schoolId))
                 .Select(x => new
                 {
                     Email = x.User.Email,
@@ -126,12 +127,17 @@ namespace Auth.Core.Services.Users
                     ParentCreationYear = x.CreationTime.Year,
                     PhoneNumber = x.User.PhoneNumber,
                     Status = x.Status,
-                    Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                    Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path,
+                    ChildDetails = x.Students.Where(x => x.TenantId == schoolId).Select(x => new StudentDT
+                    {
+                        StudentName = x.User.FullName,
+                        ClassName = x.Class.FullName
+                    }).ToList()
                 }).ToListAsync();
 
             if (query != null)
             {
-                var parents = query.Select(x => new ParentListVM
+                var parents = query.Select(x => new ParentListDetailVM
                 {
                     Email = x.Email,
                     FullName = x.FullName,
@@ -140,9 +146,11 @@ namespace Auth.Core.Services.Users
                     PhoneNumber = x.PhoneNumber,
                     Status = x.Status,
                     Image = x.Image == null ? null : _documentService.TryGetUploadedFile(x.Image),
+                    ChildDetails = x.ChildDetails,
+                    TotalKidsInSchool = x.ChildDetails.Count
                 }).ToPagedList(vm.PageIndex, vm.PageSize);
 
-                var data = new PaginatedModel<ParentListVM>(parents, vm.PageIndex, vm.PageSize, query.Count);
+                var data = new PaginatedModel<ParentListDetailVM>(parents, vm.PageIndex, vm.PageSize, query.Count);
                 resultModel.Data = data;
 
                 return resultModel;
@@ -789,11 +797,12 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<List<ParentListVM>>> ParentInSchoolData(long schoolId)
+        public async Task<ResultModel<List<ParentListDetailVM>>> ParentInSchoolData(long schoolId)
         {
-            var resultModel = new ResultModel<List<ParentListVM>>();
+            var resultModel = new ResultModel<List<ParentListDetailVM>>();
 
-            var query = await _parentRepo.GetAll().Where(x => x.Students.Any(n => n.TenantId == schoolId))
+            var query = await _parentRepo.GetAll().Include(x => x.Students)
+                .Where(x => x.Students.Any(n => n.TenantId == schoolId))
                 .Select(x => new
                 {
                     Email = x.User.Email,
@@ -803,23 +812,54 @@ namespace Auth.Core.Services.Users
                     PhoneNumber = x.User.PhoneNumber,
                     Status = x.Status,
                     Address = x.HomeAddress,
-                    Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path
+                    Image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path,
+                    Student = x.Students.Where(x => x.TenantId == schoolId).ToList(),
                 }).ToListAsync();
+
+          
 
             if (query != null)
             {
-                var parents = query.Select(x => new ParentListVM
-                {
-                    Email = x.Email,
-                    FullName = x.FullName,
-                    ParentCode = $"PRT/{x.ParentCreationYear}/{x.Id}",
-                    Id = x.Id,
-                    PhoneNumber = x.PhoneNumber,
-                    Status = x.Status,
-                    HomeAddress = x.Address,
-                    Image = x.Image == null ? null : _documentService.TryGetUploadedFile(x.Image),
-                }).ToList();
+                var studentDataQuery = new List<Student>();
+                var parents = new List<ParentListDetailVM>();
 
+                var index = 0;
+                var studentCount = 0;
+                
+                while (query.Count != parents.Count)
+                {
+                    foreach (var studentDetails in query[index].Student)
+                    {
+                        var studentData = _studentRepo.GetAll()
+                            .Include(x => x.User)
+                            .Include(x => x.Class).Where(x => x.Id == studentDetails.Id).FirstOrDefault();
+
+                        studentDataQuery.Add(studentData);
+                        studentCount += 1;
+
+                        if (query[index].Student.Count == studentCount)
+                        {
+                            var parent = new ParentListDetailVM()
+                            {
+                                Email = query[index].Email,
+                                FullName = query[index].FullName,
+                                ParentCode = $"PRT/{query[index].ParentCreationYear}/{query[index].Id}",
+                                Id = query[index].Id,
+                                PhoneNumber = query[index].PhoneNumber,
+                                Status = query[index].Status,
+                                HomeAddress = query[index].Address,
+                                Image = query[index].Image == null ? null : _documentService.TryGetUploadedFile(query[index].Image),
+                                Student = studentDataQuery,
+                            };
+                            
+                            parents.Add(parent);
+                            index++;
+                            studentCount = 0;
+                            studentDataQuery = new List<Student>();
+                        }
+                        
+                    }
+                }
                 resultModel.Data = parents;
               }
 
@@ -827,7 +867,7 @@ namespace Auth.Core.Services.Users
         }
 
 
-        public async Task<ResultModel<ExportPayloadVM>> ExportParentDetailsExcel(List<ParentListVM> model)
+        public async Task<ResultModel<ExportPayloadVM>> ExportParentDetailsExcel(List<ParentListDetailVM> model)
         {
             var resultModel = new ResultModel<ExportPayloadVM>();
 
@@ -848,10 +888,11 @@ namespace Auth.Core.Services.Users
                     workSheet.Cell(1, 1).Value = "FULL NAME";
                     workSheet.Cell(1, 2).Value = "PHONE NUMBER";
                     workSheet.Cell(1, 3).Value = "EMAIL";
-                    workSheet.Cell(1, 4).Value = "PARENT ID";
-                    workSheet.Cell(1, 5).Value = "PARENT CODE";
-                    workSheet.Cell(1, 6).Value = "STATUS";
-                    workSheet.Cell(1, 7).Value = "ADDRESS";
+                    workSheet.Cell(1, 4).Value = "STATUS";
+                    workSheet.Cell(1, 5).Value = "ADDRESS";
+                    workSheet.Cell(1, 6).Value = "NO_OF_KIDS";
+                    workSheet.Cell(1, 7).Value = "CHILD_NAME";
+                    workSheet.Cell(1, 8).Value = "CLASS";
 
                     foreach (var data in model)
                     {
@@ -861,10 +902,15 @@ namespace Auth.Core.Services.Users
                         workSheet.Cell(currentRow, 1).Value = $"{data.FullName}";
                         workSheet.Cell(currentRow, 2).Value = $"{data.PhoneNumber}";
                         workSheet.Cell(currentRow, 3).Value = $"{data.Email}";
-                        workSheet.Cell(currentRow, 4).Value = $"{data.Id}";
-                        workSheet.Cell(currentRow, 5).Value = $"{data.ParentCode}";
-                        workSheet.Cell(currentRow, 6).Value = $"{data.Status}";
-                        workSheet.Cell(currentRow, 7).Value = $"{data.HomeAddress}";
+                        workSheet.Cell(currentRow, 4).Value = $"{data.Status}";
+                        workSheet.Cell(currentRow, 5).Value = $"{data.HomeAddress}";
+                        workSheet.Cell(currentRow, 6).Value = $"{data.Student.Count}";
+
+                        foreach(var item in data.Student)
+                        {
+                            workSheet.Cell(currentRow, 7).Value = $"{item.User.FullName}";
+                            workSheet.Cell(currentRow, 8).Value = $"{item.Class.FullName}";
+                        }
                     }
                     var byteData = new byte[0];
                     using (var stream = new MemoryStream())
@@ -895,7 +941,7 @@ namespace Auth.Core.Services.Users
             return resultModel;
         }
 
-        public async Task<ResultModel<ExportPayloadVM>> ExportParentDetailsPDF(List<ParentListVM> model)
+        public async Task<ResultModel<ExportPayloadVM>> ExportParentDetailsPDF(List<ParentListDetailVM> model)
         {
             var resultModel = new ResultModel<ExportPayloadVM>();
 
@@ -903,16 +949,21 @@ namespace Auth.Core.Services.Users
 
             table.Columns.Add("FULL NAME", typeof(string));
             table.Columns.Add("PHONE NUMBER", typeof(string));
-            DataColumn className = table.Columns.Add("EMAIL", typeof(string));
-            table.Columns.Add("PARENT ID", typeof(long));
-            table.Columns.Add("PARENT CODE", typeof(string));
-            DataColumn subjectName = table.Columns.Add("ADDRESS", typeof(string));
+            table.Columns.Add("EMAIL", typeof(string));
+            table.Columns.Add("ADDRESS", typeof(string));
+            table.Columns.Add("NO_Of_KIDS", typeof(string));
+            table.Columns.Add("CHILD_NAME", typeof(string));
+            table.Columns.Add("CLASS", typeof(string));
 
             foreach (var item in model)
             {
                 table.Rows.Add(item.FullName, item.PhoneNumber,
-                    item.Email, item.Id,
-                    item.ParentCode, item.HomeAddress);
+                    item.Email,item.HomeAddress,item.Student.Count.ToString());
+
+                foreach(var item2 in item.Student)
+                {
+                    table.Rows.Add("", "", "", "", "", item2.User.FullName, item2.Class.FullName);
+                }
             }
 
             var pdf = table.ToPdf();
