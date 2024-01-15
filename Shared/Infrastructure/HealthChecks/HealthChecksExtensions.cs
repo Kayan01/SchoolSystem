@@ -56,7 +56,7 @@ namespace Shared.Infrastructure.HealthChecks
             app.UseHealthChecks("/hc", new HealthCheckOptions()
             {
                 Predicate = _ => true,
-               ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
         }
     }
