@@ -1,73 +1,73 @@
 ﻿{
-  "Routes": [
-    {
-      "DownstreamPathTemplate": "/{catchAll}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
+    "Routes": [
         {
-          "Host": "65.21.111.173",
-          "Port": 58101
-        }
-      ],
-      "UpstreamPathTemplate": "/schtrack-auth/{catchAll}"
-    },
-    {
-      "DownstreamPathTemplate": "/{catchAll}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
+            "DownstreamPathTemplate": "/{catchAll}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "192.168.100.66",
+                    "Port": 58101
+                }
+            ],
+            "UpstreamPathTemplate": "/schtrack-auth/{catchAll}"
+        },
         {
-          "Host": "65.21.111.173",
-          "Port": 58102
-        }
-      ],
-      "UpstreamPathTemplate": "/schtrack-notification/{catchAll}"
-    },
-    {
-      "DownstreamPathTemplate": "/{catchAll}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
+            "DownstreamPathTemplate": "/{catchAll}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "192.168.100.66",
+                    "Port": 58102
+                }
+            ],
+            "UpstreamPathTemplate": "/schtrack-notification/{catchAll}"
+        },
         {
-          "Host": "65.21.111.173",
-          "Port": 58103
-        }
-      ],
-      "UpstreamPathTemplate": "/schtrack-facility/{catchAll}"
-    },
-    {
-      "DownstreamPathTemplate": "/{catchAll}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
+            "DownstreamPathTemplate": "/{catchAll}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "192.168.100.66",
+                    "Port": 58103
+                }
+            ],
+            "UpstreamPathTemplate": "/schtrack-facility/{catchAll}"
+        },
         {
-          "Host": "65.21.111.173",
-          "Port": 58104
-        }
-      ],
-      "UpstreamPathTemplate": "/schtrack-learning/{catchAll}"
-    },
-    {
-      "DownstreamPathTemplate": "/{catchAll}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
+            "DownstreamPathTemplate": "/{catchAll}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "192.168.100.66",
+                    "Port": 58104
+                }
+            ],
+            "UpstreamPathTemplate": "/schtrack-learning/{catchAll}"
+        },
         {
-          "Host": "65.21.111.173",
-          "Port": 58105
-        }
-      ],
-      "UpstreamPathTemplate": "/schtrack-assessment/{catchAll}"
-    },
-    {
-      "DownstreamPathTemplate": "/{catchAll}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
+            "DownstreamPathTemplate": "/{catchAll}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "192.168.100.66",
+                    "Port": 58105
+                }
+            ],
+            "UpstreamPathTemplate": "/schtrack-assessment/{catchAll}"
+        },
         {
-          "Host": "65.21.111.173",
-          "Port": 58106
+            "DownstreamPathTemplate": "/{catchAll}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "192.168.100.66",
+                    "Port": 58106
+                }
+            ],
+            "UpstreamPathTemplate": "/schtrack-finance/{catchAll}"
         }
-      ],
-      "UpstreamPathTemplate": "/schtrack-finance/{catchAll}"
+    ],
+    "GlobalConfiguration": {
+        "BaseUrl": "http://192.168.100.66:58100"
     }
-  ],
-  "GlobalConfiguration": {
-    "BaseUrl": "http://65.21.111.173:58100"
-  }
 }
