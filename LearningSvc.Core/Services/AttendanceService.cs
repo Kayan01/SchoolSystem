@@ -195,14 +195,14 @@ namespace LearningSvc.Core.Services
 
             await _unitOfWork.SaveChangesAsync();
 
-            await _publishService.PublishMessage(Topics.ClassSubject, BusMessageTypes.CLASSATTENDANCE, new ClassAttendanceSharedModel
-            {
-                AttendanceDate = model.Date,
-                AttendanceStatus = item.AttendanceStatus,
-                ClassId = model.ClassId,
-                StudentId = item.StudentId,
-                Remark = item.Remark
-            });
+            //await _publishService.PublishMessage(Topics.ClassSubject, BusMessageTypes.CLASSATTENDANCE, new ClassAttendanceSharedModel
+            //{
+            //    AttendanceDate = model.Date,
+            //    AttendanceStatus = item.AttendanceStatus,
+            //    ClassId = model.ClassId,
+            //    StudentId = item.StudentId,
+            //    Remark = item.Remark
+            //});
 
             return new ResultModel<string>(data: "Attendance saved");
         }
