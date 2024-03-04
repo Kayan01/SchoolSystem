@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Shared.Utils;
+using System;
 
 namespace Auth.API
 {
@@ -30,6 +31,7 @@ namespace Auth.API
             {
                 LogManager.Shutdown();
             }
+      
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
