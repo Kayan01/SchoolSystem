@@ -20,6 +20,7 @@ namespace AssessmentSvc.Core.ViewModels.Result
         public int Position { get; set; }
         public long ClassTeacherId { get; set; }
         public long HeadTeacherId { get; set; }
+        public string HeadTeacherName { get; set; }
         public string ClassTeacherComment { get; set; }
         public string HeadTeacherComment { get; set; }
         public string ClassTeacherSignature { get; set; }
