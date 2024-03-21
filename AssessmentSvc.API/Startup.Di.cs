@@ -117,6 +117,7 @@ namespace AssessmentSvc.API
                                     break;
                                 }
                         }
+                        logger.LogInformation("Event handler registered");
                     }
                     catch (Exception e)
                     {
@@ -125,6 +126,7 @@ namespace AssessmentSvc.API
                 });
                 return handlers;
             });
+
             services.AddSingleton<BoundedMessageChannel<BusMessage>>();
             services.AddHostedService<EventHubProcessorService>();
             services.AddHostedService<EventHubReaderService>();

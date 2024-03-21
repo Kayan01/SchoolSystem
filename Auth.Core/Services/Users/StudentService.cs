@@ -286,6 +286,7 @@ namespace Auth.Core.Services
             {
                 return new ResultModel<StudentVM>(emailResult.ErrorMessages);
             }
+
             //PublishMessage
             await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, new List<StudentSharedModel>{ new StudentSharedModel
             {
@@ -306,6 +307,7 @@ namespace Auth.Core.Services
                 DoB = model.DateOfBirth,
                 StudentStatusInSchool = stud.StudentStatusInSchool,
             } });
+
 
             result.Data = new StudentVM
             {

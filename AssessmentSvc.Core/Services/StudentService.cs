@@ -2,6 +2,7 @@
 using AssessmentSvc.Core.Models;
 using AssessmentSvc.Core.ViewModels.Student;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.ViewModels;
@@ -17,16 +18,20 @@ namespace AssessmentSvc.Core.Services
     {
         private readonly IRepository<Student, long> _studentRepo;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<StudentService> _logger;
 
-        public StudentService(IUnitOfWork unitOfWork, IRepository<Student, long> studentRepo)
+        public StudentService(IUnitOfWork unitOfWork, IRepository<Student, long> studentRepo, ILogger<StudentService> logger)
         {
             _unitOfWork = unitOfWork;
             _studentRepo = studentRepo;
+            _logger = logger;
         }
 
 
         public void AddOrUpdateStudentFromBroadcast(List<StudentSharedModel> models)
         {
+            _logger.LogInformation("Start insert or update of student records");
+
             var idList = models.Select(m => m.Id).Distinct();
             var studentList = _studentRepo.GetAll().Where(m => idList.Contains(m.Id) && m.IsDeleted == false).ToList();
 
@@ -60,6 +65,9 @@ namespace AssessmentSvc.Core.Services
             }
 
             _unitOfWork.SaveChanges();
+
+            _logger.LogInformation("Student records successfuly added to Assessment table");
+            
         }
 
         public async Task<long> GetStudentClassIdByUserId(long userId)
