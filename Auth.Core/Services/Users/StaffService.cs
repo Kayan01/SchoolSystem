@@ -420,7 +420,7 @@ namespace Auth.Core.Services
             var result = new ResultModel<bool> { Data = false };
 
             var staff = await _staffRepo.GetAllIncluding(x => x.User)
-                .FirstOrDefaultAsync(x => x.UserId == Id);
+                .FirstOrDefaultAsync(x => x.Id == Id);
 
             if (staff == null)
             {
