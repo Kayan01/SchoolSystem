@@ -6,6 +6,7 @@ namespace AssessmentSvc.Core.ViewModels.GradeSetup
 {
     public class GradeSetupVM
     {
+        public long? Id { get; set; }
         public string Grade { get; set; }
         public string Interpretation { get; set; }
         public double LowerBound { get; set; }

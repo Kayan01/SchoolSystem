@@ -90,5 +90,25 @@ namespace LearningSvc.API.Controllers
                 return HandleError(ex);
             }
         }
+
+
+
+        [HttpDelete]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> RemoveTeacherToCLassSubject([FromQuery] long Id)
+        {
+            try
+            {
+                var result = await _teacherClassSubjectService.RemoveTeacherToCLassSubject(Id);
+
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<string>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }

@@ -79,26 +79,42 @@ namespace AssessmentSvc.API.Controllers
             }
         }
 
-        //[HttpPost]
-        //[ProducesResponseType(typeof(ApiResponse<List<GradeSetupListVM>>), 200)]
-        //public async Task<IActionResult> AddGradeSetup([FromBody] List<GradeSetupVM> model)
-        //{
-        //    if (!ModelState.IsValid)
-        //        return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
-        //    try
-        //    {
-        //        var result = await _gradeSetupService.UpdateGradeSetup(model);
-        //        if (result.HasError)
-        //            return ApiResponse<List<GradeSetupVM>>(errors: result.ErrorMessages.ToArray());
-        //        return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.Data.Count);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return HandleError(ex);
-        //    }
-        //}
+        [HttpPut]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> UpdateGradeSetup([FromBody] GradeSetupVM model)
+        {
+            if (!ModelState.IsValid)
+                return ApiResponse<string>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+            try
+            {
+                var result = await _gradeSetupService.UpdateGradeSetupById(model);
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: 1);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
 
+        [HttpDelete]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> RemoveGradeSetup([FromQuery] long Id)
+        {
+            try
+            {
+                var result = await _gradeSetupService.RemoveGradeSetupById(Id);
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: 1);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
 
     }
 }
