@@ -85,5 +85,23 @@ namespace LearningSvc.Core.Services
             };
             return result;
         }
+
+        public async Task<ResultModel<string>> RemoveTeacherToCLassSubject(long Id)
+        {
+            var result = new ResultModel<string>();
+           var query = await _teacherClassSubjectRepo.GetAll().Where(x => x.Id == Id).FirstOrDefaultAsync();
+           if (query == null)
+           {
+                result.AddError("Linked Subject not found");
+                return result;
+           }
+
+           _teacherClassSubjectRepo.Delete(query);
+           await _unitOfWork.SaveChangesAsync();
+
+            result.Data = "Subject Un-LInked Successfully";
+            result.Message = "Successful";
+            return result;
+        }
     }
 }
