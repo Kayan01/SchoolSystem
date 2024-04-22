@@ -9,5 +9,6 @@ namespace AssessmentSvc.Core.Interfaces
     public interface ISubjectService
     {
         void AddOrUpdateSubjectFromBroadcast(SubjectSharedModel model);
+        void RemoveSubjectFromBroadCast(SubjectSharedModel model);
     }
 }

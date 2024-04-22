@@ -90,9 +90,13 @@ namespace AssessmentSvc.API
                                 }
                             case (int)BusMessageTypes.SUBJECT:
                             case (int)BusMessageTypes.SUBJECT_UPDATE:
-                            case (int)BusMessageTypes.SUBJECT_DELETE:
                                 {
                                     await handler.HandleAddOrUpdateSubjectAsync(message);
+                                    break;
+                                }
+                            case (int)BusMessageTypes.SUBJECT_DELETE:
+                                {
+                                    await handler.HandleDeleteSubjectAsync(message);
                                     break;
                                 }
                             case (int)BusMessageTypes.SCHOOL:

@@ -14,5 +14,7 @@ namespace LearningSvc.Core.Interfaces
         Task<ResultModel<SubjectVM>> AddSubject(SubjectInsertVM model);
         Task<ResultModel<List<SubjectVM>>> GetAllSubjects();
         Task<ResultModel<SubjectVM>> UpdateSubject(SubjectUpdateVM model);
+
+        Task<ResultModel<string>> RemoveSubject(long SubjectId);
     }
 }
