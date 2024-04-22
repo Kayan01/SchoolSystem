@@ -138,7 +138,7 @@ namespace AssessmentSvc.Core.Services
             }
 
             var query = await _gradeRepository.GetAll().Where(x => x.Id == model.Id).FirstOrDefaultAsync();
-            if (query != null)
+            if (query == null)
             {
                 result.AddError("Grade setup with provided ID does not exist");
                 return result;
