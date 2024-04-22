@@ -98,9 +98,31 @@ namespace AssessmentSvc.Core.Services
             assessment.Name = model.Name;
             assessment.IsExam = model.IsExam;
 
+
+            _assessmentSetupRepo.Update(assessment);
             await _unitOfWork.SaveChangesAsync();
 
-            result.Data = "Saved Successful";
+            result.Data = "Update Successful";
+            return result;
+        }
+
+
+        public async Task<ResultModel<string>> RemoveAssessmentSetup(long Id)
+        {
+            var assessment = await _assessmentSetupRepo.FirstOrDefaultAsync(Id);
+
+            var result = new ResultModel<string>();
+
+            if (assessment == null)
+            {
+                result.AddError("Not found");
+                return result;
+            }
+           
+            _assessmentSetupRepo.Delete(assessment);
+            await _unitOfWork.SaveChangesAsync();
+
+            result.Data = "Removed Successfuly Successful";
             return result;
         }
     }
