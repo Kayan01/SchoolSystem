@@ -82,24 +82,35 @@ namespace AssessmentSvc.Core.Services
             return result;
         }
 
-        public async Task<ResultModel<string>> UpdateAssessmentSetup(AssessmentSetupVM model)
+        public async Task<ResultModel<string>> UpdateAssessmentSetup(List<AssessmentSetupVM> model)
         {
-            var assessment = await _assessmentSetupRepo.FirstOrDefaultAsync(model.Id);
-
             var result = new ResultModel<string>();
 
-            if (assessment == null)
+            var total = model.Sum(x => x.MaxScore);
+            if (total < 100 || total > 100)
             {
-                result.AddError("Not found");
+                result.AddError("Cannot update this record because the total score is less than or more than 100");
                 return result;
             }
-            assessment.SequenceNumber = model.SequenceNumber;
-            assessment.MaxScore = model.MaxScore;
-            assessment.Name = model.Name;
-            assessment.IsExam = model.IsExam;
 
+            foreach (var item in model)
+            {
+                var assessment = await _assessmentSetupRepo.FirstOrDefaultAsync(item.Id);
 
-            _assessmentSetupRepo.Update(assessment);
+                if (assessment == null)
+                {
+                    result.AddError("Record to update with provided Id not found");
+                    return result;
+                }
+
+                assessment.SequenceNumber = item.SequenceNumber;
+                assessment.MaxScore = item.MaxScore;
+                assessment.Name = item.Name;
+                assessment.IsExam = item.IsExam;
+
+                _assessmentSetupRepo.Update(assessment);
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             result.Data = "Update Successful";
