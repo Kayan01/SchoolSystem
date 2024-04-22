@@ -40,9 +40,14 @@ namespace AssessmentSvc.Core.Services
                         Id = cs.Id,
                     });
                 }
-                classSubject.TenantId = cs.TenantId;
-                classSubject.SchoolClassId = cs.SchoolClassId;
-                classSubject.SubjectId = cs.SubjectId;
+                else
+                {
+                    classSubject.TenantId = cs.TenantId;
+                    classSubject.SchoolClassId = cs.SchoolClassId;
+                    classSubject.SubjectId = cs.SubjectId;
+
+                    _schoolClassSubjectRepo.Update(classSubject);
+                }
             }
 
             _unitOfWork.SaveChanges();
