@@ -85,7 +85,7 @@ namespace AssessmentSvc.API.Controllers
 
         [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<string>), 200)]
-        public async Task<IActionResult> UpdateAssessmentSetups([FromBody] AssessmentSetupVM model)
+        public async Task<IActionResult> UpdateAssessmentSetups([FromBody] List<AssessmentSetupVM> model)
         {
             if (!ModelState.IsValid)
                 return ApiResponse<List<AssessmentSetupUploadVM>>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
