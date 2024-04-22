@@ -67,6 +67,7 @@ namespace LearningSvc.Core.Services
                         Id = cls.Id,
                     });
                 }
+               
 
                 if (string.IsNullOrWhiteSpace(schClass.ZoomRoomId))
                 {
@@ -78,9 +79,15 @@ namespace LearningSvc.Core.Services
                     }
                 }
 
-                schClass.TenantId = cls.TenantId;
-                schClass.Name = cls.Name;
-                schClass.ClassArm = cls.ClassArm;
+                if (schClass != null)
+                {
+                    schClass.TenantId = cls.TenantId;
+                    schClass.Name = cls.Name;
+                    schClass.ClassArm = cls.ClassArm;
+
+                    _schoolClassRepo.Update(schClass);
+                }
+
             }
 
             _unitOfWork.SaveChanges();

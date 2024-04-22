@@ -41,9 +41,15 @@ namespace AssessmentSvc.Core.Services
                         Id = cls.Id,
                     });
                 }
-                schClass.TenantId = cls.TenantId;
-                schClass.Name = cls.Name;
-                schClass.ClassArm = cls.ClassArm;
+                else
+                {
+                    schClass.TenantId = cls.TenantId;
+                    schClass.Name = cls.Name;
+                    schClass.ClassArm = cls.ClassArm;
+
+                    _schoolClassRepo.Update(schClass);
+                }
+                
             }
 
             _unitOfWork.SaveChanges();
