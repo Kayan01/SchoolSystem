@@ -82,6 +82,7 @@ namespace AssessmentSvc.Core.Services
             var grades = await _gradeRepository
                 .GetAll()
                 .OrderBy(x => x.Sequence)
+                .Where(x => x.IsDeleted == false)
                 .Select(x => new GradeSetupListVM
                 {
                     Grade = x.Grade,
@@ -103,7 +104,7 @@ namespace AssessmentSvc.Core.Services
             var result = new ResultModel<GradeSetupVM>();
 
             var grade = await _gradeRepository.GetAll()
-                .Where(x => x.Id == Id)
+                .Where(x => x.Id == Id && x.IsDeleted == false)
                 .Select(x => new GradeSetupVM
                 {
                     Grade = x.Grade,
@@ -172,6 +173,9 @@ namespace AssessmentSvc.Core.Services
 
             query.IsDeleted = true;
             query.DeletionTime = DateTime.Now;
+
+            _gradeRepository.Update(query);    
+            await _unitOfWork.SaveChangesAsync();   
 
             result.Message = "Grade Setup successfully Removed";
             result.Data = "Successfully Removed Grade Setup";
