@@ -104,5 +104,23 @@ namespace LearningSvc.API.Controllers
             }
         }
 
+
+        [HttpDelete]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> RemoveSubject([FromQuery]long Id)
+        {
+            try
+            {
+                var result = await _subjectService.RemoveSubject(Id);
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<string>(data: result.Data, message: result.Message, codes: ApiResponseCodes.OK);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
     }
 }

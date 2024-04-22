@@ -94,6 +94,8 @@ namespace AssessmentSvc.Core.EventHandlers
             }
         }
 
+
+
         public async Task HandleAddOrUpdateSchoolAsync(BusMessage message)
         {
             try
@@ -132,5 +134,21 @@ namespace AssessmentSvc.Core.EventHandlers
                 _logger.LogError(e.Message, e);
             }
         }
+
+
+
+        public async Task HandleDeleteSubjectAsync(BusMessage message)
+        {
+            try
+            {
+                var data = JsonConvert.DeserializeObject<SubjectSharedModel>(message.Data);
+                _subjectService.RemoveSubjectFromBroadCast(data);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+            }
+        }
+
     }
 }
