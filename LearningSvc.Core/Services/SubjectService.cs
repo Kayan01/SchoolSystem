@@ -151,5 +151,43 @@ namespace LearningSvc.Core.Services
             return result;
         }
 
+
+        public async Task<ResultModel<string>> RemoveSubject(long SubjectId)
+        {
+            var resultModel = new ResultModel<string>();
+
+            var query = await _subjectRepo.GetAllIncluding(x => x.SchoolClassSubjects).Where(x => x.Id == SubjectId).FirstOrDefaultAsync();
+            if (query == null)
+            {
+                resultModel.AddError("Subject with provided Id does not exist");
+                return resultModel;
+            }
+
+            if (query.SchoolClassSubjects.Count > 0) 
+            {
+                resultModel.AddError("Cannot delete this subject becasue it has  been attached to a class");
+                return resultModel;
+            }
+
+            _subjectRepo.Delete(SubjectId);
+            await _unitOfWork.SaveChangesAsync();
+
+            SubjectSharedModel subjectSharedModel = new SubjectSharedModel()
+            {
+                Id = query.Id,
+                Name = query.Name,
+                TenantId = query.TenantId,
+                IsActive = query.IsActive,
+            };
+
+            await _publishService.PublishMessage(Topics.Subject, BusMessageTypes.SUBJECT_DELETE, subjectSharedModel);
+
+
+            resultModel.Message = "Subject removed Successfully";
+            resultModel.Data = "Delete Action taken Successful";
+
+            return resultModel;
+        }
+
     }
 }
