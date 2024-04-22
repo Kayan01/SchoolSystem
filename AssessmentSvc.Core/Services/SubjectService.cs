@@ -35,10 +35,15 @@ namespace AssessmentSvc.Core.Services
                     Id = model.Id
                 });
             }
+            else
+            {
 
-            subject.TenantId = model.TenantId;
-            subject.Name = model.Name;
-            subject.IsActive = model.IsActive;
+                subject.TenantId = model.TenantId;
+                subject.Name = model.Name;
+                subject.IsActive = model.IsActive;
+
+                _subjectRepo.Update(subject);
+            }
 
             _unitOfWork.SaveChangesAsync();
         }

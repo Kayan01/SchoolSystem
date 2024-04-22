@@ -25,7 +25,7 @@ namespace LearningSvc.Core.Services
         }
 
 
-        public void AddOrUpdateStudentFromBroadcast(List<StudentSharedModel> models)
+        public async void AddOrUpdateStudentFromBroadcast(List<StudentSharedModel> models)
         {
 
             _logger.LogInformation("Start insert or update of student records");
@@ -43,24 +43,28 @@ namespace LearningSvc.Core.Services
                         Id = model.Id
                     });
                 }
+                else 
+                {
+                    student.TenantId = model.TenantId;
+                    student.ClassId = model.ClassId;
+                    student.FirstName = string.IsNullOrEmpty(model.FirstName) ? student.FirstName : model.FirstName;
+                    student.LastName = string.IsNullOrEmpty(model.LastName) ? student.LastName : model.LastName;
+                    student.Email = string.IsNullOrEmpty(model.Email) ? student.Email : model.Email;
+                    student.Phone = string.IsNullOrEmpty(model.Phone) ? student.Phone : model.Phone;
+                    student.ParentEmail = string.IsNullOrEmpty(model.ParentEmail) ? student.ParentEmail : model.ParentEmail;
+                    student.ParentName = string.IsNullOrEmpty(model.ParentName) ? student.ParentName : model.ParentName;
+                    student.ParentId = model.ParentId == 0 ? student.ParentId : model.ParentId;
+                    student.UserId = model.UserId;
+                    student.IsActive = model.IsActive;
+                    student.IsDeleted = model.IsDeleted;
+                    student.RegNumber = model.RegNumber;
+                    student.StudentStatusInSchool = model.StudentStatusInSchool;
 
-                student.TenantId = model.TenantId;
-                student.ClassId = model.ClassId;
-                student.FirstName = string.IsNullOrEmpty(model.FirstName) ? student.FirstName : model.FirstName;
-                student.LastName = string.IsNullOrEmpty(model.LastName) ? student.LastName : model.LastName;
-                student.Email = string.IsNullOrEmpty(model.Email) ? student.Email : model.Email;
-                student.Phone = string.IsNullOrEmpty(model.Phone) ? student.Phone : model.Phone;
-                student.ParentEmail = string.IsNullOrEmpty(model.ParentEmail) ? student.ParentEmail : model.ParentEmail;
-                student.ParentName = string.IsNullOrEmpty(model.ParentName) ? student.ParentName : model.ParentName;
-                student.ParentId = model.ParentId == 0 ? student.ParentId : model.ParentId;
-                student.UserId = model.UserId;
-                student.IsActive = model.IsActive;
-                student.IsDeleted = model.IsDeleted;
-                student.RegNumber = model.RegNumber;
-                student.StudentStatusInSchool = model.StudentStatusInSchool;
+                    await _studentRepo.UpdateAsync(student);
+                }
             }
 
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Student records successfuly added to Assessment table");
         }

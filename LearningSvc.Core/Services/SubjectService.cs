@@ -106,6 +106,7 @@ namespace LearningSvc.Core.Services
             subject.Name = model.Name;
             subject.IsActive = model.IsActive;
 
+            await  _subjectRepo.UpdateAsync(subject);
             await _unitOfWork.SaveChangesAsync();
 
             var subjectSharedModel = new SubjectSharedModel
