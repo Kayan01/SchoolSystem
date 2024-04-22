@@ -81,5 +81,49 @@ namespace AssessmentSvc.API.Controllers
             }
         }
 
+
+
+        [HttpPut]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> UpdateAssessmentSetups([FromBody] AssessmentSetupVM model)
+        {
+            if (!ModelState.IsValid)
+                return ApiResponse<List<AssessmentSetupUploadVM>>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _assessmentSetupService.UpdateAssessmentSetup(model);
+
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+        
+        
+        [HttpDelete]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<IActionResult> RemoveAssessmentSetup([FromQuery] long Id)
+        {
+            if (!ModelState.IsValid)
+                return ApiResponse<List<AssessmentSetupUploadVM>>(errors: ListModelErrors.ToArray(), codes: ApiResponseCodes.INVALID_REQUEST);
+
+            try
+            {
+                var result = await _assessmentSetupService.RemoveAssessmentSetup(Id);
+
+                if (result.HasError)
+                    return ApiResponse<string>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
     }
 }
