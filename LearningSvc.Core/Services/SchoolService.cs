@@ -33,18 +33,21 @@ namespace LearningSvc.Core.Services
                     Id = model.Id
                 });
             }
+            else
+            {
+                school.Email = model.Email;
+                school.PhoneNumber = model.PhoneNumber;
+                school.IsActive = model.IsActive;
+                school.Address = model.Address;
+                school.City = model.City;
+                school.DomainName = model.DomainName;
+                school.Logo = model.Logo;
+                school.Name = model.Name;
+                school.State = model.State;
+                school.WebsiteAddress = model.WebsiteAddress;
 
-            school.Email = model.Email;
-            school.PhoneNumber = model.PhoneNumber;
-            school.IsActive = model.IsActive;
-            school.Address = model.Address;
-            school.City = model.City;
-            school.DomainName = model.DomainName;
-            school.Logo = model.Logo;
-            school.Name = model.Name;
-            school.State = model.State;
-            school.WebsiteAddress = model.WebsiteAddress;
-
+                _schoolRepo.Update(school);
+            }
             _unitOfWork.SaveChanges();
         }
 

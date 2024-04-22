@@ -237,7 +237,7 @@ namespace Auth.Core.Services
             }
            
             // Publish updated Students.
-            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT, publishObj);
+            await _publishService.PublishMessage(Topics.Student, BusMessageTypes.STUDENT_UPDATE, publishObj);
 
             return new ResultModel<string>(data: "Students Promoted successfully");
 
