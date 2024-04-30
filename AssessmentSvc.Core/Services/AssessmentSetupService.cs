@@ -99,16 +99,26 @@ namespace AssessmentSvc.Core.Services
 
                 if (assessment == null)
                 {
-                    result.AddError("Record to update with provided Id not found");
-                    return result;
+                    AssessmentSetup assessmentSetup = new AssessmentSetup()
+                    {
+                        IsExam = item.IsExam,
+                        Name = item.Name,
+                        MaxScore = item.MaxScore,
+                        SequenceNumber = item.SequenceNumber,
+                        TenantId = item.TenantId
+                    };
+
+                    _assessmentSetupRepo.Insert(assessmentSetup);
                 }
+                else
+                {
+                    assessment.SequenceNumber = item.SequenceNumber;
+                    assessment.MaxScore = item.MaxScore;
+                    assessment.Name = item.Name;
+                    assessment.IsExam = item.IsExam;
 
-                assessment.SequenceNumber = item.SequenceNumber;
-                assessment.MaxScore = item.MaxScore;
-                assessment.Name = item.Name;
-                assessment.IsExam = item.IsExam;
-
-                _assessmentSetupRepo.Update(assessment);
+                    _assessmentSetupRepo.Update(assessment);
+                }
             }
 
             await _unitOfWork.SaveChangesAsync();

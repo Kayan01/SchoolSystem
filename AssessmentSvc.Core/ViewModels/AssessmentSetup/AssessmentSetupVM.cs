@@ -11,6 +11,7 @@ namespace AssessmentSvc.Core.ViewModels.AssessmentSetup
         public string Name { get; set; }
         public int MaxScore { get; set; }
         public bool IsExam { get; set; }
+        public long TenantId { get; set; }
 
         public static implicit operator AssessmentSetupVM(Models.AssessmentSetup model)
         {
@@ -20,7 +21,8 @@ namespace AssessmentSvc.Core.ViewModels.AssessmentSetup
                 SequenceNumber = model.SequenceNumber,
                 Name = model.Name,
                 MaxScore = model.MaxScore,
-                IsExam = model.IsExam
+                IsExam = model.IsExam,
+                TenantId = model.TenantId
             };
         }
     }
