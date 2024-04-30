@@ -12,10 +12,9 @@ namespace Shared.Utils
 
         public const string TestPdfTemplatePath1 = @"filestore/pdftemplate/TestPdfTemplate1.html";
         public const string TestPdfTemplatePath2 = @"filestore/pdftemplate/TestPdfTemplate2.html";
-     //   public const string ResultPdfTemplatePath = @"pdftemplate/ResultTemplate.html";
-        public const string ResultPdfTemplatePath = @"filestore/ResultTemplate.html";
-       // public const string InvoicePdfTemplatePath = @"pdftemplate/invoice-email-template.html";
-        public const string InvoicePdfTemplatePath = @"filestore/invoice-email-template.html";
+        public const string ResultPdfTemplatePath = @"pdftemplate/ResultTemplate.html";  
+        public const string InvoicePdfTemplatePath = @"pdftemplate/invoice-email-template.html";
+        
 
         public static class EmailTemplateType
         {
