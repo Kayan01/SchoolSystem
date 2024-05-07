@@ -1023,6 +1023,7 @@ namespace AssessmentSvc.Core.Services
             catch (Exception ex)
             {
                 _logger.LogError($"Error occured : {ex.Message} : Inner exception {ex.InnerException}");
+                _logger.LogInformation($"Error occured : {ex.Message} : Inner exception {ex.InnerException}");
                 return new Dictionary<long, string> { };
             }
         }
@@ -1093,7 +1094,8 @@ namespace AssessmentSvc.Core.Services
             catch (Exception ex)
             {
                 _logger.LogError($"Error occured : {ex.Message} : inner exception {ex.InnerException}");
-                result.AddError($"Error Occured : {ex.Message}");
+                _logger.LogInformation($"Error occured : {ex.Message} : inner exception {ex.InnerException}");
+                result.AddError($"Error Occured : {ex.Message} : inner Exception {ex.InnerException}");
                 return result;
             }
         }

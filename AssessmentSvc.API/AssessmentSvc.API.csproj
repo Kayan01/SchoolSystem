@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <Folder Include="error-logs\" />
+    <Folder Include="Filestore\PdfTemplate\" />
     <Folder Include="Filestore\result\" />
     <Folder Include="logs\" />
   </ItemGroup>
@@ -37,10 +38,10 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<None Update="Filestore\PdfTemplate\ResultTemplate.html">
+		<None Update="Filestore\ResultTemplate.html">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Update="Filestore\PdfTemplate\ResultTemplatex.html">
+		<None Update="Filestore\ResultTemplatex.html">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="libwkhtmltox.dll">
