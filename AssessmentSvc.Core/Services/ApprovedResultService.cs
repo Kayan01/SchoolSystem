@@ -1022,8 +1022,8 @@ namespace AssessmentSvc.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error occured : {ex.Message} : Inner exception {ex.InnerException}");
-                _logger.LogInformation($"Error occured : {ex.Message} : Inner exception {ex.InnerException}");
+                _logger.LogError($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
+                _logger.LogInformation($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
                 return new Dictionary<long, string> { };
             }
         }
@@ -1093,9 +1093,10 @@ namespace AssessmentSvc.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error occured : {ex.Message} : inner exception {ex.InnerException}");
-                _logger.LogInformation($"Error occured : {ex.Message} : inner exception {ex.InnerException}");
-                result.AddError($"Error Occured : {ex.Message} : inner Exception {ex.InnerException}");
+                _logger.LogError($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
+                _logger.LogInformation($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
+
+                result.AddError($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
                 return result;
             }
         }
