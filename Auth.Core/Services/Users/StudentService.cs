@@ -401,8 +401,8 @@ namespace Auth.Core.Services
                     x.RegNumber,
                     x.Class,
                     image = x.FileUploads.FirstOrDefault(x => x.Name == DocumentType.ProfilePhoto.GetDisplayName()).Path,
-                    x.Parent.User.FullName,
-                    x.Parent.User.PhoneNumber
+                    //fullname = x.Parent.User.FullName == null ? "" : x.Parent.User.FullName,
+                    //phonenumber = x.Parent.User.PhoneNumber == null ? "" : x.Parent.User.PhoneNumber
                 }).ToListAsync();
 
             if (query != null)
@@ -419,8 +419,8 @@ namespace Auth.Core.Services
                     StudentNumber = x.RegNumber,
                     SchoolClass = x.Class,
                     Image = x.image == null ? null : _documentService.TryGetUploadedFile(x.image),
-                    ParentName  = x.FullName,
-                    Parent_PNum = x.PhoneNumber
+                    //ParentName  = x.fullname,
+                    //Parent_PNum = x.phonenumber
                 }).ToList();
 
 
