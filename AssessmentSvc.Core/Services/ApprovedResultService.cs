@@ -1024,6 +1024,7 @@ namespace AssessmentSvc.Core.Services
             {
                 _logger.LogError($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
                 _logger.LogInformation($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
+                
                 return new Dictionary<long, string> { };
             }
         }
@@ -1096,7 +1097,7 @@ namespace AssessmentSvc.Core.Services
                 _logger.LogError($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
                 _logger.LogInformation($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
 
-                result.AddError($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
+                result.AddError($"Error Occured : {ex.Message}");
                 return result;
             }
         }
