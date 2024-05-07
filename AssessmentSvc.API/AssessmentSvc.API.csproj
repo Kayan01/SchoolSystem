@@ -37,6 +37,12 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<None Update="Filestore\PdfTemplate\ResultTemplate.html">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Filestore\PdfTemplate\ResultTemplatex.html">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="libwkhtmltox.dll">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
