@@ -26,6 +26,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using static Shared.Utils.CoreConstants;
@@ -856,9 +857,11 @@ namespace AssessmentSvc.Core.Services
                     m.Signature = $"{classTeacherMemeType}base64, {_documentService.TryGetUploadedFile(m.Signature)}";
                 });
 
+                
                 var templatePath = _fileStorageService.MapStorage(CoreConstants.ResultPdfTemplatePath);
-
-
+                
+                _logger.LogInformation($"Current Path of file : {templatePath}");
+                
 
                 var headTeachers = (await headTeacherTask)?.Payload;
 
@@ -1023,7 +1026,6 @@ namespace AssessmentSvc.Core.Services
             catch (Exception ex)
             {
                 _logger.LogError($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
-                _logger.LogInformation($"Error Occured : {ex.Message} : inner Exception {ex.InnerException} {ex.GetBaseException().InnerException} {ex.GetBaseException().Message} {ex.StackTrace}");
                 
                 return new Dictionary<long, string> { };
             }
@@ -1068,6 +1070,7 @@ namespace AssessmentSvc.Core.Services
                 //generate pdf
                 var pdfPaths = await GetStudentsResultPDFS(resultData.Data, vm.classId, currSessionAndTerm.sessionId, currSessionAndTerm.TermSequence, currSessionAndTerm.TenantId);
 
+                _logger.LogInformation($"PdfPaths : {pdfPaths}");
                 var school = await _schoolRepo.GetAll().Where(m => m.Id == currSessionAndTerm.TenantId).FirstOrDefaultAsync();
 
                 await _publishService.PublishMessage(Topics.Notification, BusMessageTypes.NOTIFICATION, new CreateNotificationModel

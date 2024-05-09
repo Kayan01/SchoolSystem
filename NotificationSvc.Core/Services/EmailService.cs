@@ -122,6 +122,7 @@ namespace NotificationSvc.Core.Services
                 {
                     foreach (var attachment in attachments)
                     {
+                        
                         _documentService.DeleteFile(attachment);
                     }
                 }

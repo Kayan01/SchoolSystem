@@ -54,8 +54,7 @@ namespace AssessmentSvc.API
                 return consumerClient;
             });
 
-            services.AddTransient<Func<List<BusHandler>>>(cont =>
-            () =>
+            services.AddTransient<Func<List<BusHandler>>>(cont => () =>
             {
                 List<BusHandler> handlers = new List<BusHandler>();
                 var scope = cont.GetRequiredService<IServiceProvider>().CreateScope();
