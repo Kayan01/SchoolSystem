@@ -22,7 +22,7 @@ namespace Shared.FileStorage
             {
                 throw new ArgumentException(string.Format("File {0} does not exist", path));
             }
-
+           
             fileInfo.Delete();
         }
 
@@ -274,13 +274,25 @@ namespace Shared.FileStorage
 
         public IFileInfo GetFile(string path)
         {
-            var fileInfo = _fileProvider.GetFileInfo(path);
-            if (!fileInfo.Exists)
+            Console.WriteLine(path);
+           
+            try
             {
-                throw new ArgumentException(string.Format("File {0} does not exist", path));
-            }
+                var filePath = _fileProvider.GetFileInfo(path).PhysicalPath;
+                Console.WriteLine(filePath);
 
-            return fileInfo;
+                var fileInfo = _fileProvider.GetFileInfo(path);
+                if (!fileInfo.Exists)
+                {
+                    throw new ArgumentException(string.Format("File {0} does not exist", path));
+                }
+                return fileInfo;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}");
+                return null;
+            }
         }
 
         private static readonly char[] InvalidPathChars = Path.GetInvalidPathChars();

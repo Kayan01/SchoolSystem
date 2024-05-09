@@ -40,7 +40,7 @@ namespace Shared.FileStorage
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.StackTrace + Environment.NewLine + ex.StackTrace);
+                _logger.LogError(ex.Message + "   " + ex.StackTrace + Environment.NewLine + ex.StackTrace);
 
                 return null;
             }
