@@ -45,6 +45,11 @@ namespace FinanceSvc.Core.Services
             school.State = model.State;
             school.WebsiteAddress = model.WebsiteAddress;
 
+            if (school != null)
+            {
+                _schoolRepo.Update(school);
+            }
+
             _unitOfWork.SaveChanges();
         }
 

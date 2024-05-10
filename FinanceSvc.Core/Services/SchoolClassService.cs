@@ -39,9 +39,17 @@ namespace FinanceSvc.Core.Services
                         Id = cls.Id,
                     });
                 }
+
+                if (schClass != null)
+                {
+                    _schoolClassRepo.Update(schClass);
+                }
+
                 schClass.TenantId = cls.TenantId;
                 schClass.Name = cls.Name;
                 schClass.ClassArm = cls.ClassArm;
+
+              
             }
 
             _unitOfWork.SaveChanges();

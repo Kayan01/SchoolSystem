@@ -32,6 +32,10 @@ namespace FinanceSvc.Core.Services
                     Id = model.Id
                 });
             }
+            else
+            {
+                _parentRepo.Update(parent);
+            }
 
             parent.OfficeAddress = model.OfficeAddress;
             parent.LastName = model.LastName;

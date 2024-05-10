@@ -49,24 +49,24 @@ namespace AssessmentSvc.Core.Services
                 }
                 else
                 {
-                    student.TenantId = model.TenantId;
-                    student.ClassId = model.ClassId;
-                    student.FirstName = string.IsNullOrEmpty(model.FirstName) ? student.FirstName : model.FirstName;
-                    student.LastName = string.IsNullOrEmpty(model.LastName) ? student.LastName : model.LastName;
-                    student.Email = string.IsNullOrEmpty(model.Email) ? student.Email : model.Email;
-                    student.Phone = string.IsNullOrEmpty(model.Phone) ? student.Phone : model.Phone;
-                    student.ParentEmail = string.IsNullOrEmpty(model.ParentEmail) ? student.ParentEmail : model.ParentEmail;
-                    student.ParentName = string.IsNullOrEmpty(model.ParentName) ? student.ParentName : model.ParentName;
-                    student.UserId = model.UserId;
-                    student.RegNumber = model.RegNumber;
-                    student.IsActive = model.IsActive;
-                    student.IsDeleted = model.IsDeleted;
-                    student.Sex = model.Sex;
-                    student.DateOfBirth = model.DoB;
-                    student.StudentStatusInSchool = model.StudentStatusInSchool;
-
                     await _studentRepo.UpdateAsync(student);
                 }
+
+                student.TenantId = model.TenantId;
+                student.ClassId = model.ClassId;
+                student.FirstName = string.IsNullOrEmpty(model.FirstName) ? student.FirstName : model.FirstName;
+                student.LastName = string.IsNullOrEmpty(model.LastName) ? student.LastName : model.LastName;
+                student.Email = string.IsNullOrEmpty(model.Email) ? student.Email : model.Email;
+                student.Phone = string.IsNullOrEmpty(model.Phone) ? student.Phone : model.Phone;
+                student.ParentEmail = string.IsNullOrEmpty(model.ParentEmail) ? student.ParentEmail : model.ParentEmail;
+                student.ParentName = string.IsNullOrEmpty(model.ParentName) ? student.ParentName : model.ParentName;
+                student.UserId = model.UserId;
+                student.RegNumber = model.RegNumber;
+                student.IsActive = model.IsActive;
+                student.IsDeleted = model.IsDeleted;
+                student.Sex = model.Sex;
+                student.DateOfBirth = model.DoB;
+                student.StudentStatusInSchool = model.StudentStatusInSchool;
             }
 
             

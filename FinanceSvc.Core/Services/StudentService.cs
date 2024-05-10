@@ -37,6 +37,10 @@ namespace FinanceSvc.Core.Services
                         Id = model.Id
                     });
                 }
+                else 
+                {
+                     _studentRepo.Update(student);
+                }
 
                 student.TenantId = model.TenantId;
                 student.ClassId = model.ClassId;
