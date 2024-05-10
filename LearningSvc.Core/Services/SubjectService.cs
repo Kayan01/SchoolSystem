@@ -118,7 +118,7 @@ namespace LearningSvc.Core.Services
             };
 
 
-            await _publishService.PublishMessage(Topics.Subject, BusMessageTypes.SUBJECT, subjectSharedModel);
+            await _publishService.PublishMessage(Topics.Subject, BusMessageTypes.SUBJECT_UPDATE, subjectSharedModel);
 
             result.Data = new SubjectVM() { Id = subject.Id, Name = model.Name.ToLower(), IsActive = model.IsActive };
             return result;

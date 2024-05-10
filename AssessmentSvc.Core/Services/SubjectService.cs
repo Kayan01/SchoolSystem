@@ -28,6 +28,7 @@ namespace AssessmentSvc.Core.Services
         public void AddOrUpdateSubjectFromBroadcast(SubjectSharedModel model)
         {
             var subject = _subjectRepo.FirstOrDefault(x => x.Id == model.Id && x.TenantId == model.TenantId);
+
             if (subject == null)
             {
                 subject = _subjectRepo.Insert(new Subject

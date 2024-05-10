@@ -69,7 +69,6 @@ namespace AssessmentSvc.Core.Services
                 student.StudentStatusInSchool = model.StudentStatusInSchool;
             }
 
-            
             _unitOfWork.SaveChanges();
 
             _logger.LogInformation("Student records successfuly added to Assessment table");
