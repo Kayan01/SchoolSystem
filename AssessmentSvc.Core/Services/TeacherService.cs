@@ -35,20 +35,21 @@ namespace AssessmentSvc.Core.Services
             }
             else
             {
-                teacher.TenantId = model.TenantId;
-                teacher.ClassId = model.ClassId;
-                teacher.FirstName = string.IsNullOrEmpty(model.FirstName) ? teacher.FirstName : model.FirstName;
-                teacher.LastName = string.IsNullOrEmpty(model.LastName) ? teacher.LastName : model.LastName;
-                teacher.Email = string.IsNullOrEmpty(model.Email) ? teacher.Email : model.Email;
-                teacher.Phone = string.IsNullOrEmpty(model.Phone) ? teacher.Phone : model.Phone;
-                teacher.UserId = model.UserId;
-                teacher.IsActive = model.IsActive;
-                teacher.IsDeleted = model.IsDeleted;
-                teacher.RegNumber = string.IsNullOrEmpty(model.RegNumber) ? teacher.RegNumber : model.RegNumber;
-                teacher.Signature = model.Signature;
-
                 _teacherRepo.Update(teacher);
             }
+
+
+            teacher.TenantId = model.TenantId;
+            teacher.ClassId = model.ClassId;
+            teacher.FirstName = string.IsNullOrEmpty(model.FirstName) ? teacher.FirstName : model.FirstName;
+            teacher.LastName = string.IsNullOrEmpty(model.LastName) ? teacher.LastName : model.LastName;
+            teacher.Email = string.IsNullOrEmpty(model.Email) ? teacher.Email : model.Email;
+            teacher.Phone = string.IsNullOrEmpty(model.Phone) ? teacher.Phone : model.Phone;
+            teacher.UserId = model.UserId;
+            teacher.IsActive = model.IsActive;
+            teacher.IsDeleted = model.IsDeleted;
+            teacher.RegNumber = string.IsNullOrEmpty(model.RegNumber) ? teacher.RegNumber : model.RegNumber;
+            teacher.Signature = model.Signature;
 
             _unitOfWork.SaveChanges();
         }

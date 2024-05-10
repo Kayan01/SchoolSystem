@@ -51,6 +51,11 @@ namespace FinanceSvc.Core.Services
             session.SessionName = model.SessionName;
             session.TermsJSON = model.TermsJSON;
 
+            if (session != null)
+            {
+                _sessionRepo.Update(session);
+            }
+
             _unitOfWork.SaveChanges();
         }
 

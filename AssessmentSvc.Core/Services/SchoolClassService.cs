@@ -40,16 +40,16 @@ namespace AssessmentSvc.Core.Services
                     {
                         Id = cls.Id,
                     });
+                   
                 }
                 else
                 {
-                    schClass.TenantId = cls.TenantId;
-                    schClass.Name = cls.Name;
-                    schClass.ClassArm = cls.ClassArm;
-
                     _schoolClassRepo.Update(schClass);
                 }
-                
+
+                schClass.TenantId = cls.TenantId;
+                schClass.Name = cls.Name;
+                schClass.ClassArm = cls.ClassArm;
             }
 
             _unitOfWork.SaveChanges();
