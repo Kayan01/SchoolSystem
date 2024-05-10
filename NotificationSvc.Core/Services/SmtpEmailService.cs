@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using MimeKit.Text;
 using NotificationSvc.Core.Services.Interfaces;
 using NotificationSvc.Core.ViewModels;
 using Shared.Configuration;
@@ -11,6 +12,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Mime;
+
 //using System.Net.Mail;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -55,36 +58,36 @@ namespace NotificationSvc.Core.Services
             //    UseDefaultCredentials = _smtpsettings.UseDefaultCredentials
             //};
 
-            if (!_smtpsettings.UseDefaultCredentials)
+            //if (!_smtpsettings.UseDefaultCredentials)
+            //    client.Connect(_smtpsettings.Server, _smtpsettings.Port, MailKit.Security.SecureSocketOptions.Auto);
+            //    client.AuthenticationMechanisms.Remove("XOAUTH2");
+            //    client.Authenticate(_smtpsettings.UserName, _smtpsettings.Password);
+
+            if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+            {
+                //client.Credentials = new NetworkCredential(userName, password);
+                client.Connect(_smtpsettings.Server, _smtpsettings.Port, true);
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+                client.Authenticate(userName, password);
+            }
+            else
+            {
+                //client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
                 client.Connect(_smtpsettings.Server, _smtpsettings.Port, MailKit.Security.SecureSocketOptions.Auto);
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
                 client.Authenticate(_smtpsettings.UserName, _smtpsettings.Password);
+            }
 
-            //if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
-            //    {
-            //        //client.Credentials = new NetworkCredential(userName, password);
-            //        client.Connect(_smtpsettings.Server, _smtpsettings.Port, true);
-            //        client.AuthenticationMechanisms.Remove("XOAUTH2");
-            //        client.Authenticate(userName, password);
-            //    }
-            //    else
-            //    {
-            //        //client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
-            //        client.Connect(_smtpsettings.Server, _smtpsettings.Port, MailKit.Security.SecureSocketOptions.Auto);
-            //        client.AuthenticationMechanisms.Remove("XOAUTH2");
-            //        client.Authenticate(_smtpsettings.UserName, _smtpsettings.Password);
-            //    }
-            
             return client;
         }
 
-        //private async Task<MailMessage> BuildMailMessage(MailBase mail, Dictionary<string, string> replacements = null)
+        //private async Task<System.Net.Mail.MailMessage> BuildMailMessage(MailBase mail, Dictionary<string, string> replacements = null)
         //{
         //    ValidateMail(mail);
 
-        //    var sender = new MailAddress(mail.Sender, mail.SenderDisplayName);
+        //    var sender = new System.Net.Mail.MailAddress(mail.Sender, mail.SenderDisplayName);
 
-        //    var mailMessage = new MailMessage()
+        //    var mailMessage = new System.Net.Mail.MailMessage()
         //    {
         //        Subject = mail.Subject,
         //        IsBodyHtml = mail.IsBodyHtml,
@@ -118,6 +121,27 @@ namespace NotificationSvc.Core.Services
 
         //    return mailMessage;
         //}
+        
+        private async Task<MimePart> CreateAttachment(string attachmentPath)
+        {
+            var attachment = new MimePart("application", "octet-stream")
+            {
+                ContentDisposition = new MimeKit.ContentDisposition(MimeKit.ContentDisposition.Attachment),
+                ContentTransferEncoding = ContentEncoding.Base64,
+                FileName = Path.GetFileName(attachmentPath)
+            };
+
+            using (var memory = new MemoryStream())
+            {
+                using (var stream = File.OpenRead(attachmentPath))
+                    await stream.CopyToAsync(memory);
+
+                memory.Position = 0;
+                attachment.Content = new MimeContent(memory);
+            }
+
+            return attachment;
+        }
 
         private async Task<MimeMessage> BuildMailMessage2(MailBase mail, Dictionary<string, string> replacements = null)
         {
@@ -139,6 +163,7 @@ namespace NotificationSvc.Core.Services
                 //Body = new htm(mail.IsBodyHtml? mail.Body : null),
                 Sender = sender,
 
+
             };
 
             var mailBody = !mail.BodyIsFile ? mail.Body : await GetEmailBodyTemplate(mail.BodyPath);
@@ -146,16 +171,36 @@ namespace NotificationSvc.Core.Services
             if (replacements != null)
                 mailBody = Replace(mailBody, replacements, false);
 
-            mailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text=mailBody };
+
+            var builder = new BodyBuilder
+            {
+                HtmlBody = mailBody
+            };
+
+            //mailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text=mailBody };
 
             if (mail.Attachments != null && mail.Attachments.Any())
             {
-                //for (int i = 0; i < mail.Attachments.Count-1; i++) {
-                //    mailMessage.Attachments.Add(mail.Attachments.ElementAt(i));
-                //}
-                //foreach (var attachment in mail.Attachments)
-                //       mailMessage.Attachments.Add(attachment);
+                foreach (var attachmentPath in mail.Attachments)
+                {
+                    var attachment = new MimePart("application", "octet-stream")
+                    {
+                        ContentDisposition = new MimeKit.ContentDisposition(MimeKit.ContentDisposition.Attachment),
+                        ContentTransferEncoding = ContentEncoding.Base64,
+                        FileName = attachmentPath.Name
+                    };
+
+                    using (var memory = new MemoryStream())
+                    {
+                        memory.Position = 0;
+                        attachment.Content = new MimeContent(attachmentPath.ContentStream);
+                    }
+
+                    builder.Attachments.Add(attachment);
+                }
             }
+
+            mailMessage.Body = builder.ToMessageBody();
 
             foreach (var to in mail.To)
                 mailMessage.To.Add(new MailboxAddress(to));
@@ -174,7 +219,7 @@ namespace NotificationSvc.Core.Services
 
         void IMailService.SendMail(MailBase mail)
         {
-            //SendMail(mail, null);
+            SendMail(mail, null);
         }
 
         void IMailService.SendMail(MailBase mail, Dictionary<string, string> replacements)
@@ -200,19 +245,20 @@ namespace NotificationSvc.Core.Services
 
         protected virtual void SendMail(MailBase mail, Dictionary<string, string> replacements)
         {
-        //    var message = BuildMailMessage(mail, replacements).Result;
-        //    try
-        //    {
-        //        using (var _smtpClient = GetSmtpClient2(mail.Sender, mail.EmailPassword))
-        //        {
-        //            _smtpClient.Send(message);
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        _logger.LogError(e.Message, e);
-        //        throw;
-        //    }
+            //mail.IsBodyHtml = true;
+            //var message = BuildMailMessage(mail, replacements);
+            //try
+            //{
+            //    using (var _smtpclient = GetSmtpClient2(mail.Sender, mail.EmailPassword))
+            //    {
+            //        _smtpclient.Send(message);
+            //    }
+            //}
+            //catch (Exception e)
+            //{
+            //    _logger.LogError(e.Message, e);
+            //    throw;
+            //}
         }
 
         protected virtual async Task SendMailAsync(MailBase mail, Dictionary<string, string> replacements)
