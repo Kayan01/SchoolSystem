@@ -122,26 +122,26 @@ namespace NotificationSvc.Core.Services
         //    return mailMessage;
         //}
         
-        private async Task<MimePart> CreateAttachment(string attachmentPath)
-        {
-            var attachment = new MimePart("application", "octet-stream")
-            {
-                ContentDisposition = new MimeKit.ContentDisposition(MimeKit.ContentDisposition.Attachment),
-                ContentTransferEncoding = ContentEncoding.Base64,
-                FileName = Path.GetFileName(attachmentPath)
-            };
+        //private async Task<MimePart> CreateAttachment(string attachmentPath)
+        //{
+        //    var attachment = new MimePart("application", "octet-stream")
+        //    {
+        //        ContentDisposition = new MimeKit.ContentDisposition(MimeKit.ContentDisposition.Attachment),
+        //        ContentTransferEncoding = ContentEncoding.Base64,
+        //        FileName = Path.GetFileName(attachmentPath)
+        //    };
 
-            using (var memory = new MemoryStream())
-            {
-                using (var stream = File.OpenRead(attachmentPath))
-                    await stream.CopyToAsync(memory);
+        //    using (var memory = new MemoryStream())
+        //    {
+        //        using (var stream = File.OpenRead(attachmentPath))
+        //            await stream.CopyToAsync(memory);
 
-                memory.Position = 0;
-                attachment.Content = new MimeContent(memory);
-            }
+        //        memory.Position = 0;
+        //        attachment.Content = new MimeContent(memory);
+        //    }
 
-            return attachment;
-        }
+        //    return attachment;
+        //}
 
         private async Task<MimeMessage> BuildMailMessage2(MailBase mail, Dictionary<string, string> replacements = null)
         {
