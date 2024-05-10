@@ -46,7 +46,9 @@ namespace AssessmentSvc.Core.EventHandlers
         {
             try
             {
+                
                 var data = JsonConvert.DeserializeObject<List<StudentSharedModel>>(message.Data);
+                _logger.LogInformation($"Studen with Id {data[0].Id} and name {data[0].FirstName} broadcast recieved successfully");
                 _studentService.AddOrUpdateStudentFromBroadcast(data);
             }
             catch (Exception e)
