@@ -279,6 +279,7 @@ namespace Auth.Core.Services
 
             var school = await _schoolRepo.GetAll().Where(m => m.Id == stud.TenantId).Include(x => x.SchoolContactDetails).FirstOrDefaultAsync();
             var contactDetails = school.SchoolContactDetails.Where(m => m.SchoolId == schoolProperty.Data.TenantId).FirstOrDefault();
+           
             //broadcast login detail to email
             var emailResult = await _authUserManagement.SendRegistrationEmail(user, school.DomainName, school.Name, contactDetails.Email, school.Address, contactDetails.PhoneNumber, contactDetails.EmailPassword);
 

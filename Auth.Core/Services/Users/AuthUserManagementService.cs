@@ -160,6 +160,7 @@ namespace Auth.Core.Services
 
             return new ResultModel<bool>(true, "Success");
         }
+
         public async Task<ResultModel<string>> RequestPasswordReset(string userName)
         {
             var result = await GetPasswordRestCode(userName);
