@@ -58,25 +58,25 @@ namespace NotificationSvc.Core.Services
             //    UseDefaultCredentials = _smtpsettings.UseDefaultCredentials
             //};
 
-            if (!_smtpsettings.UseDefaultCredentials)
-                client.Connect(_smtpsettings.Server, _smtpsettings.Port, MailKit.Security.SecureSocketOptions.Auto);
-            client.AuthenticationMechanisms.Remove("XOAUTH2");
-            client.Authenticate(_smtpsettings.UserName, _smtpsettings.Password);
-
-            //if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
-            //{
-            //    //client.Credentials = new NetworkCredential(userName, password);
-            //    client.Connect(_smtpsettings.Server, _smtpsettings.Port, true);
-            //    client.AuthenticationMechanisms.Remove("XOAUTH2");
-            //    client.Authenticate(userName, password);
-            //}
-            //else
-            //{
-            //    //client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
+            //if (!_smtpsettings.UseDefaultCredentials)
             //    client.Connect(_smtpsettings.Server, _smtpsettings.Port, MailKit.Security.SecureSocketOptions.Auto);
-            //    client.AuthenticationMechanisms.Remove("XOAUTH2");
-            //    client.Authenticate(_smtpsettings.UserName, _smtpsettings.Password);
-            //}
+            //client.AuthenticationMechanisms.Remove("XOAUTH2");
+            //client.Authenticate(_smtpsettings.UserName, _smtpsettings.Password);
+
+            if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+            {
+                //client.Credentials = new NetworkCredential(userName, password);
+                client.Connect(_smtpsettings.Server, _smtpsettings.Port, true);
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+                client.Authenticate(userName, password);
+            }
+            else
+            {
+                //client.Credentials = new NetworkCredential(_smtpsettings.UserName, _smtpsettings.Password);
+                client.Connect(_smtpsettings.Server, _smtpsettings.Port, MailKit.Security.SecureSocketOptions.Auto);
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+                client.Authenticate(_smtpsettings.UserName, _smtpsettings.Password);
+            }
 
             return client;
         }
