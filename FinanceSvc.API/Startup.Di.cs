@@ -21,6 +21,8 @@ using FinanceSvc.Core.Services;
 using Shared.Net.WorkerService;
 using Microsoft.Extensions.Logging;
 using Shared.Infrastructure.HealthChecks;
+using IdentityModel;
+using Shared.ViewModels;
 
 namespace FinanceSvc.API
 {
@@ -114,10 +116,13 @@ namespace FinanceSvc.API
             services.AddSingleton<BoundedMessageChannel<BusMessage>>();
             services.AddHostedService<EventHubProcessorService>();
             services.AddHostedService<EventHubReaderService>();
-
+            services.AddOptions();
             //Permission not needed here
             //services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
-
+            
+            
+            services.Configure<BaseUrl>(Configuration.GetSection("BaseUrl"));
+            
             Directory.CreateDirectory(Path.Combine(HostingEnvironment.ContentRootPath, Configuration.GetValue<string>("StoragePath")));
 
             services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(
@@ -147,6 +152,7 @@ namespace FinanceSvc.API
 
             //services.AddTransient<IFileUploadService, FileUploadService>();
             services.AddScoped<IFinanceService, FinanceService>();
+            services.AddScoped<IBroadcastDateService, BroadCastDataService>();
             services.AddTransient<FinanceHandler>();
 
             // Registers required services for health checks

@@ -30,5 +30,7 @@ namespace Auth.Core.Services.Interfaces
         Task<ResultModel<List<Student>>> ExportStudentData(StudentExportVM model);
         Task<ResultModel<ExportPayloadVM>> ExportStudentDataExcel(List<Student> model);
         Task<ResultModel<ExportPayloadVM>> ExportStudentDataPDF(List<Student> model);
+
+        Task<ResultModel<FinanceObJ>> GetAllDataNotBroadcasted(DateTime StartDate, DateTime EndDate);
     }
 }

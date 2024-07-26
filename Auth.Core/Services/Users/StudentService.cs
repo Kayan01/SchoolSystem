@@ -1202,5 +1202,110 @@ namespace Auth.Core.Services
 
             return resultModel;
         }
+
+
+
+        //Endpoint to get all records in the db and store in a list from a certain timeframe down
+        public async Task<ResultModel<FinanceObJ>> GetAllDataNotBroadcasted(DateTime StartDate, DateTime EndDate)
+        {
+            var resultModel = new ResultModel<FinanceObJ>();
+
+            try
+            {
+
+
+                //Query Student table
+                var students = await _context.Students.Include(x => x.User)
+                .Where(x => x.CreationTime >=  StartDate && x.CreationTime <= EndDate)
+                .Select(x => new StudentSharedModel
+                {
+                    Id = x.Id,
+                    ClassId = x.ClassId,
+                    DoB = x.DateOfBirth,
+                    Email = x.User.Email,
+                    FirstName = x.User.FirstName,
+                    LastName = x.User.LastName,
+                    ParentId = (long)x.ParentId,
+                    IsActive = x.IsActive,
+                    Sex = x.Sex,
+                    TenantId = x.TenantId,
+                    StudentStatusInSchool = x.StudentStatusInSchool,
+                    IsDeleted = x.IsDeleted,
+                    Phone = x.User.PhoneNumber,
+                    RegNumber = x.RegNumber,
+                    UserId = x.UserId
+                }).ToListAsync();
+
+                //Query Schools Table
+                var schools = await _context.Schools.Include(x => x.SchoolContactDetails)
+                .Where(x => x.CreationTime >= StartDate && x.CreationTime <= EndDate)
+                .Select(x => new SchoolSharedModel
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    DomainName = x.DomainName,
+                    WebsiteAddress = x.WebsiteAddress,
+                    Address = x.Address,
+                    City = x.City,
+                    State = x.State,
+                    PhoneNumber = x.SchoolContactDetails.Where(y => y.SchoolId != null && y.SchoolId == x.Id).Select(x => x.PhoneNumber).FirstOrDefault(),
+                    Email = x.SchoolContactDetails.Where(y => y.SchoolId != null && y.SchoolId == x.Id).Select(x => x.Email).FirstOrDefault(),
+                    EmailPassword = x.SchoolContactDetails.Where(y => y.SchoolId != null && y.SchoolId == x.Id).Select(x => x.EmailPassword).FirstOrDefault(),
+                    IsActive = x.IsActive
+                }).ToListAsync();
+
+                //Query Parent Table
+                var parents = await _context.Parents.Include(x => x.User)
+                .Where(x => x.CreationTime >= StartDate && x.CreationTime <= EndDate)
+                .Select(x => new ParentSharedModel
+                {
+                    Id = x.Id,
+                    FirstName = x.User.FirstName,
+                    LastName = x.User.LastName,
+                    UserId = x.UserId,
+                    Email = x.User.Email,
+                    HomeAddress = x.HomeAddress,
+                    OfficeAddress = x.OfficeAddress,
+                    SecondaryEmail = x.SecondaryEmail,
+                    IsActive = true,
+                    IsDeleted = x.IsDeleted,
+                    Phone = x.User.PhoneNumber,
+                    RegNumber = x.RegNumber,
+                    SecondaryPhoneNumber = x.SecondaryPhoneNumber
+                }).ToListAsync();
+
+                //Query Class Table
+                var classes = await _context.Classes
+                .Where(x => x.CreationTime >= StartDate && x.CreationTime <= EndDate)
+                .Select(x => new ClassSharedModel
+                {
+                    Id = x.Id,
+                    ClassArm = x.ClassArm,
+                    IsTerminalClass = x.IsTerminalClass,
+                    Name = x.Name,
+                    Sequence = x.Sequence,
+                    TenantId = x.TenantId
+                }).ToListAsync();
+
+
+                resultModel.Data = new FinanceObJ
+                {
+                    CLasses = classes,
+                    Parents = parents,
+                    Schools = schools,
+                    Students = students
+                };
+
+                resultModel.Message = "Successful";
+
+            }
+            catch (Exception ex)
+            {
+                resultModel.AddError($"Error Occured During Data extraction: {ex.Message}");
+            }
+
+
+            return resultModel;
+        }
     }
 }
