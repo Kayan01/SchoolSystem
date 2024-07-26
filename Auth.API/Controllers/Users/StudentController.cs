@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Auth.Core.Services.Interfaces;
 using Auth.Core.ViewModels;
 using Auth.Core.ViewModels.Student;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.AspNetCore;
@@ -310,6 +311,27 @@ namespace Auth.API.Controllers
                 if (result.HasError)
                     return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
                 return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data.Items, totalCount: result.Data.TotalItemCount);
+            }
+            catch (Exception ex)
+            {
+                return HandleError(ex);
+            }
+        }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<FinanceObJ>), 200)]
+        public async Task<IActionResult> GetDataFromAuthToFInance([FromQuery] DateTime startDate,[FromQuery] DateTime endDate)
+        {
+            
+            try
+            {
+                var result = await _studentService.GetAllDataNotBroadcasted(startDate, endDate);
+                
+                if (result.HasError)
+                    return ApiResponse<object>(errors: result.ErrorMessages.ToArray());
+                return ApiResponse<object>(message: "Successful", codes: ApiResponseCodes.OK, data: result.Data, totalCount: result.TotalCount);
             }
             catch (Exception ex)
             {
