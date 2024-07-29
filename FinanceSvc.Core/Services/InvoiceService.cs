@@ -4,8 +4,10 @@ using FinanceSvc.Core.Services.Interfaces;
 using FinanceSvc.Core.ViewModels;
 using FinanceSvc.Core.ViewModels.Invoice;
 using IPagedList;
+using log4net.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shared.DataAccess.EfCore.UnitOfWork;
 using Shared.DataAccess.Repository;
 using Shared.FileStorage;
@@ -33,6 +35,7 @@ namespace FinanceSvc.Core.Services
         private readonly IFileStorageService _fileStorageService;
         private readonly IPublishService _publishService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<InvoiceService> _logger;
 
         public InvoiceService(IUnitOfWork unitOfWork,
             IRepository<Invoice, long> invoiceRepo,
@@ -42,7 +45,8 @@ namespace FinanceSvc.Core.Services
        IFileStorageService fileStorageService,
        IPublishService publishService,
        IRepository<School, long> schoolRepo,
-       IConverter converter)
+       IConverter converter,
+       ILogger<InvoiceService> logger)
         {
             _unitOfWork = unitOfWork;
             _invoiceRepo = invoiceRepo;
@@ -53,101 +57,116 @@ namespace FinanceSvc.Core.Services
             _publishService = publishService;
             _converter = converter;
             _schoolRepo = schoolRepo;
+            _logger = logger;
         }
 
         public async Task<ResultModel<string>> AddInvoice(InvoicePostVM model)
         {
             var result = new ResultModel<string>();
 
-            var check = await _invoiceRepo.GetAll().Where(m =>
+            try
+            {
+
+                var check = await _invoiceRepo.GetAll().Where(m =>
                 m.Student.ClassId == model.ClassId &&
                 m.Fee.FeeGroupId == model.FeeGroupId &&
                 m.SessionSetupId == model.SessionId &&
                 m.TermSequenceNumber == model.TermSequence
                 ).FirstOrDefaultAsync();
 
-            if (check != null)
-            {
-                result.AddError("Invoice has been generated for this class before!");
-                return result;
-            }
-
-            var fee = await _feeRepo.GetAll().Include(m => m.FeeComponents).ThenInclude(n => n.Component).Where(m => m.FeeGroupId == model.FeeGroupId && m.SchoolClassId == model.ClassId).FirstOrDefaultAsync();
-
-            if (fee is null)
-            {
-                result.AddError("No Fee has been created for this Fee Group and Class");
-                return result;
-            }
-
-            var students = await _studentRepo.GetAll().Where(m => m.ClassId == model.ClassId).Select(m => new
-            {
-                m.Id,
-                ClassName = $"{ m.Class.Name} {m.Class.ClassArm}",
-                FullName = $"{m.FirstName} {m.LastName}",
-                ParentEmail = m.Parent.Email,
-                SchoolId = m.TenantId
-            }).ToListAsync();
-
-            if (students?.Count < 1)
-            {
-                result.AddError("No Student was found in this Class.");
-                return result;
-            }
-            var session = await _sessionRepo.GetAll().FirstOrDefaultAsync(x => x.Id == model.SessionId);
-
-
-            var emailData = new List<InvoicePdfVM>();
-
-            var school = await _schoolRepo.GetAll().FirstOrDefaultAsync(x => x.Id == students.First().SchoolId);
-
-            foreach (var student in students)
-            {
-                var invoice = new Invoice()
+                if (check != null)
                 {
-                    ApprovalStatus = Enumerations.InvoiceApprovalStatus.Approved,
-                    FeeId = fee.Id,
-                    SessionSetupId = model.SessionId,
-                    PaymentDate = model.PaymentDate,
-                    StudentId = student.Id,
-                    PaymentStatus = Enumerations.InvoicePaymentStatus.Unpaid,
-                    TermSequenceNumber = model.TermSequence,
-                    ComponentSelected = false,
-                    InvoiceComponents = fee.FeeComponents.Select(m => new InvoiceComponent()
+                    result.AddError("Invoice has been generated for this class before!");
+                    return result;
+                }
+
+                var fee = await _feeRepo.GetAll().Include(m => m.FeeComponents)
+                .ThenInclude(n => n.Component)
+                .Where(m => m.FeeGroupId == model.FeeGroupId && m.SchoolClassId == model.ClassId)
+                .FirstOrDefaultAsync();
+
+                if (fee is null)
+                {
+                    result.AddError("No Fee has been created for this Fee Group and Class");
+                    return result;
+                }
+
+                var students = await _studentRepo.GetAll().Where(m => m.ClassId == model.ClassId).Select(m => new
+                {
+                    m.Id,
+                    ClassName = $"{m.Class.Name} {m.Class.ClassArm}",
+                    FullName = $"{m.FirstName} {m.LastName}",
+                    ParentEmail = m.Parent.Email,
+                    SchoolId = m.TenantId
+                }).ToListAsync();
+
+                if (students?.Count < 1)
+                {
+                    result.AddError("No Student was found in this Class.");
+                    return result;
+                }
+                var session = await _sessionRepo.GetAll().FirstOrDefaultAsync(x => x.Id == model.SessionId);
+
+
+                var emailData = new List<InvoicePdfVM>();
+
+                var school = await _schoolRepo.GetAll().FirstOrDefaultAsync(x => x.Id == students.First().SchoolId);
+
+                foreach (var student in students)
+                {
+                    var invoice = new Invoice()
                     {
-                        Amount = m.Amount,
-                        ComponentName = m.Component.Name,
-                        IsSelected = true,
-                        IsCompulsory = m.IsCompulsory,
-                    }).ToList()
-                };
+                        ApprovalStatus = Enumerations.InvoiceApprovalStatus.Approved,
+                        FeeId = fee.Id,
+                        SessionSetupId = model.SessionId,
+                        PaymentDate = model.PaymentDate,
+                        StudentId = student.Id,
+                        PaymentStatus = Enumerations.InvoicePaymentStatus.Unpaid,
+                        TermSequenceNumber = model.TermSequence,
+                        ComponentSelected = false,
+                        InvoiceComponents = fee.FeeComponents.Select(m => new InvoiceComponent()
+                        {
+                            Amount = m.Amount,
+                            ComponentName = m.Component.Name,
+                            IsSelected = true,
+                            IsCompulsory = m.IsCompulsory,
+                        }).ToList()
+                    };
 
-                var invoiceId = await _invoiceRepo.InsertAndGetIdAsync(invoice);
+                    var invoiceId = await _invoiceRepo.InsertAndGetIdAsync(invoice);
 
-                //get invoice email data
-                var mainData = new
-                {
-                    TotalAmount = fee.FeeComponents.Sum(x => x.Amount),
-                    termName = model.TermSequence,
-                    session = session?.SessionName,
-                    InvoiceDueDate = model.PaymentDate.ToLongDateString(),
-                    invoiceDate = DateTime.Now.Date.ToLongDateString(),
-                    invoiceNumber = invoiceId.ToString("000000"),
-                    className = student.ClassName,
-                    studentName = student.FullName,
-                    SchoolLogoPath = school?.Logo
-                };
+                    //get invoice email data
+                    var mainData = new
+                    {
+                        TotalAmount = fee.FeeComponents.Sum(x => x.Amount),
+                        termName = model.TermSequence,
+                        session = session?.SessionName,
+                        InvoiceDueDate = model.PaymentDate.ToLongDateString(),
+                        invoiceDate = DateTime.Now.Date.ToLongDateString(),
+                        invoiceNumber = invoiceId.ToString("000000"),
+                        className = student.ClassName,
+                        studentName = student.FullName,
+                        SchoolLogoPath = school?.Logo
+                    };
 
-                var listData = (IEnumerable<dynamic>)fee.FeeComponents.Select(x => new { Description = x.Component.Name, Compulsory = x.IsCompulsory, Amount = x.Amount }).ToList();
+                    var listData = (IEnumerable<dynamic>)fee.FeeComponents.Select(x => new { Description = x.Component.Name, Compulsory = x.IsCompulsory, Amount = x.Amount }).ToList();
 
-                var kv = new KeyValuePair<dynamic, IEnumerable<dynamic>>(mainData, listData);
-                var item = new InvoicePdfVM { ParentEmail = student.ParentEmail, KeyValuePair = kv , StudentName = student.FullName};
-                emailData.Add(item);
+                    var kv = new KeyValuePair<dynamic, IEnumerable<dynamic>>(mainData, listData);
+                    var item = new InvoicePdfVM { ParentEmail = student.ParentEmail, KeyValuePair = kv, StudentName = student.FullName };
+                    emailData.Add(item);
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                await SendInvoicePdf(emailData);
+
+            }
+            catch (Exception ex)
+            {
+                result.AddError($"Error Occured : {ex.Message}");
+                return result;
             }
 
-            await _unitOfWork.SaveChangesAsync();
-
-            await SendInvoicePdf(emailData);
 
             result.Data = "Saved successfully";
             return result;
@@ -405,7 +424,10 @@ namespace FinanceSvc.Core.Services
 
         public async Task SendInvoicePdf(List<InvoicePdfVM> data)
         {
-            
+            try
+            {
+
+          
             var pdfsaved = new List<KeyValuePair<InvoicePdfVM, string>>();
             var tableConfig = new TableAttributeConfig
             {
@@ -435,6 +457,12 @@ namespace FinanceSvc.Core.Services
                    new List<string> { m.Value }
                 )).ToList()
             });
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error Occured : {ex.Message} \n Inner Exception {ex.InnerException}");   
+            }
         }
 
       
