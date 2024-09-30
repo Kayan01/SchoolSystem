@@ -822,14 +822,12 @@ namespace Auth.Core.Services.Users
                 user.NormalizedUserName = teacher.Staff.RegNumber.ToUpper();
                 await _userManager.UpdateAsync(user);
 
+                //Add TenantId to UserClaims
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+                //add stafftype to claims
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, StaffType.TeachingStaff.GetDescription()));
 
 
-                // _teacherRepo.Insert(teacher);
-
-
-                // teacher.Staff.TenantId = teacher.TenantId;//TODO remove this when the tenant Id is automatically added to Staff
-
-                // teachers.Add(teacher);
             }
 
             _unitOfWork.Commit();
