@@ -32,6 +32,7 @@ using System.Data.SqlClient;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using ExcelManager;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace Auth.Core.Services
 {
@@ -517,6 +518,7 @@ namespace Auth.Core.Services
             staff.User.PhoneNumber = model.ContactDetails.PhoneNumber;
             staff.User.MiddleName = model.OtherNames;
 
+            
             //create next of kin
             var nextOfKin = new NextOfKin
             {
@@ -748,10 +750,16 @@ namespace Auth.Core.Services
                 user.UserName = staff.RegNumber;
                 user.NormalizedUserName = staff.RegNumber.ToUpper();
                 await _userManager.UpdateAsync(user);
+
+                //Add TenantId to UserClaims
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.TenantId, _httpUserService.GetCurrentUser().TenantId?.ToString()));
+                //add stafftype to claims
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimsKey.UserType, StaffType.NonTeachingStaff.GetDescription()));
             }
 
             // await _unitOfWork.SaveChangesAsync();
             _unitOfWork.Commit();
+
 
             foreach (var staff in staffs)
             {
