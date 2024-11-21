@@ -9,7 +9,6 @@ namespace Shared.Pagination
         {
             Items = items;
         }
-
         public override IEnumerable<T> Items { get; }
     }
 }
